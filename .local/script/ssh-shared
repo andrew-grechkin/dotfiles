@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+TMUX_SHARED_SOCKET="/tmp/tmux-shared-socket-$USER"
+
+CMD=(ssh -t "$1" tmux -u -S "$TMUX_SHARED_SOCKET" attach-session)
+echo -n "${CMD[@]}" | clipcopy
+
+ssh -t "$1" "tmux -u -S '$TMUX_SHARED_SOCKET' new-session -s 'shared-session-$USER' -A \; server-access -a '$2'"

@@ -1,0 +1,346 @@
+#!/usr/bin/env perl
+
+use v5.40;
+use autodie;
+use open 'IO' => ':raw';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin class declared_refs defer refaliasing);
+use builtin      qw(is_bool);
+
+use English        qw(-no_match_vars);
+use File::Basename qw(basename);
+use List::Util     qw(head);
+use Getopt::Long   qw(:config auto_version bundling no_ignore_case);
+
+my %options = (
+    'FORMAT'       => undef,
+    'LENIENT'      => 0,
+    'LINE_BY_LINE' => 0,
+    'RECURSIVE'    => 0,
+    'TYPE'         => undef,
+    'VERBOSE'      => 0,
+);
+
+class ReaderFileHandle {
+    field $fh : param : reader;
+    field $doc = undef;
+    field $lines : reader = [];
+
+    ADJUST {
+        my \@lines = $lines;
+        @lines = <$fh>;
+        chomp(@lines);
+        return $self;
+    }
+
+    method doc() {
+        $doc = join "\n", $lines->@* unless $doc;
+        return $doc;
+    }
+}
+
+class ParserJSONC {
+    use JSON::PP qw();
+
+    use constant {'JSON' => JSON::PP->new->canonical->utf8(1)->boolean_values(false, true)->pretty->space_before(0),};
+
+    field $lenient : param = false;
+    field $type : reader   = 'json';
+
+    ADJUST {
+        JSON()->relaxed if $options{'LENIENT'};
+
+        return $self;
+    }
+
+    method parse($reader) {
+        my @decoded = map {JSON()->decode($_)} $reader->lines->@*;
+        return \@decoded;
+    }
+}
+
+class ParserJSON {
+    use JSON::PP qw();
+
+    use constant {
+        'JSON'          => JSON::PP->new->canonical->utf8(1)->boolean_values(false, true)->pretty->space_before(0),
+        'JSON_ONE_LINE' => JSON::PP->new->canonical->utf8(1)->boolean_values(false, true)->pretty(false)->indent(0),
+    };
+
+    field $lenient : param = false;
+    field $type : reader   = 'json';
+
+    ADJUST {
+        JSON()->relaxed if $options{'LENIENT'};
+        return $self;
+    }
+
+    method parse($reader) {return [JSON()->decode($reader->doc)]}
+    method decode($str)   {return JSON()->decode($str)}
+
+    method dump($data_aref) {
+        if ($data_aref->@* > 1) {
+            print JSON_ONE_LINE()->encode($_) . "\n" foreach $data_aref->@*;
+        } else {
+            print JSON()->encode($data_aref->[0]);
+        }
+        return;
+    }
+}
+
+class ParserYAML {
+    use YAML::XS qw();
+
+    field $type : reader = 'yaml';
+
+    method parse($reader) {
+        ##         local $YAML::XS::Boolean = 'JSON::PP'; ## no critic [Variables::ProhibitPackageVars]
+        my @decoded = YAML::XS::Load($reader->doc);
+        return \@decoded;
+    }
+
+    method dump($data_aref) {
+        print YAML::XS::Dump($_) foreach $data_aref->@*;
+        return;
+    }
+}
+
+class ParserPerl {
+    use Data::Dumper qw(Dumper);
+    use Encode       qw();
+
+    field $type : reader = 'Perl';
+
+    method parse($reader) {
+        my $decoded = eval Encode::decode('UTF-8', $reader->doc, Encode::FB_CROAK); ## no critic [BuiltinFunctions::ProhibitStringyEval]
+        return [$decoded];
+    }
+
+    method dump($data_aref) {
+        ## prevent hex codes for wide chars in output
+        local *Data::Dumper::qquote = sub {
+            my $str       = shift;
+            my $new_lines = $str =~ s{(\R)}{\\n}g;
+            if ($new_lines) {
+                $str =~ s{(["\$@])}{\\$1}g;
+                qq["$str"];
+            } else {
+                $str =~ s{'}{\\'}g;
+                qq['$str'];
+            }
+        };
+        local $Data::Dumper::Useperl = 1;
+
+        # other option is to recode after dump
+        # ->Dump =~ s/\\x [{] ([[:xdigit:]]{2,}) [}]/chr hex $1/gerx,
+
+        print Encode::encode(
+            'UTF-8',
+            Data::Dumper->new([$data_aref->[0]])
+                ->Indent(1)
+                ->Quotekeys(1)
+                ->Sortkeys(1)
+                ->Terse(1)
+                ->Trailingcomma(1)
+                ->Useqq(0)
+                ->Dump,
+
+            Encode::FB_CROAK,
+        );
+        return;
+    }
+}
+
+class ParserTSV {
+    use Fcntl qw(SEEK_SET SEEK_CUR SEEK_END);
+
+    use Text::CSV qw();
+
+    use constant {
+        'TSV' => Text::CSV->new({
+            auto_diag   => 0,
+            binary      => 1,
+            eol         => "\n",
+            escape_char => undef,
+            quote_char  => undef,
+            sep_char    => "\t",
+        }),
+    };
+
+    field $type : reader = 'tsv';
+
+    method parse($reader) {
+        seek $reader->fh, 0, SEEK_SET;
+
+        my @header = TSV()->header($reader->fh, {munge_column_names => 'none'});
+        my @lines;
+
+        TSV()->column_names(@header);
+        while (my $line_href = TSV()->getline_hr($reader->fh)) {
+            chomp($line_href->%*);
+            push @lines, $line_href;
+        }
+
+        return [\@lines];
+    }
+
+    method dump($data_aref) {
+
+        TSV()->column_names(sort keys $data_aref->[0][0]->%*);
+        TSV()->print(\*STDOUT, [TSV()->column_names]);
+
+        TSV()->print_hr(\*STDOUT, $_) foreach $data_aref->[0]->@*;
+        return;
+    }
+}
+
+sub main() {
+    local $OUTPUT_AUTOFLUSH = 1;
+
+    ## set defaults based on the script name
+    my ($input, $output) = split m/2/, basename($0);
+    if ($output) {
+        $options{'TYPE'}   = $input;
+        $options{'FORMAT'} = $output;
+    }
+
+    GetOptions(
+        'format|f=s'     => \$options{'FORMAT'},
+        'json|j'         => sub {$options{'FORMAT'} = 'json'},
+        'lenient|l'      => \$options{'LENIENT'},
+        'line-by-line|n' => \$options{'LINE_BY_LINE'},
+        'perl|p'         => sub {$options{'FORMAT'} = 'perl'},
+        'recursive|r'    => \$options{'RECURSIVE'},
+        'type|t=s'       => \$options{'TYPE'},
+        'verbose|v+'     => \$options{'VERBOSE'},
+        'yaml|y'         => sub {$options{'FORMAT'} = 'yaml'},
+    ) or die "Unable to process command line options\n";
+
+    my %supported_dumpers = (
+        'json' => ParserJSON->new,
+        'perl' => ParserPerl->new,
+        'tsv'  => ParserTSV->new,
+        'yaml' => ParserYAML->new,
+    );
+
+    my @data;
+    my $type;
+
+    my %parser_options = %options{qw(lenient)};
+    my $parser_json    = ParserJSON->new(%parser_options);
+    my @supported_parsers
+        = (ParserJSONC->new(%parser_options), $parser_json, ParserYAML->new, ParserPerl->new, ParserTSV->new);
+
+    if ($options{'TYPE'}) {
+        @supported_parsers = grep {$_->type eq $options{'TYPE'}} @supported_parsers;
+    }
+
+    if ($options{'LINE_BY_LINE'}) {
+        while (<>) {
+            chomp;
+
+            open my $fh, '<', \$_;
+            ($type, \@data) = parse_file_handle(\@supported_parsers, $fh);
+
+            my $dumper = $supported_dumpers{$options{'FORMAT'}};
+            $dumper->dump(\@data);
+            STDOUT->flush;
+        }
+
+        return 0;
+    }
+
+    if (@ARGV) {
+        foreach my $file (@ARGV) {
+            -e -r $file
+                or die "file does not exist: $file\n";
+            open my $fh, '<', $file;
+            ($type, \@data) = parse_file_handle(\@supported_parsers, $fh);
+            close $fh;
+        }
+    } else {
+        ($type, \@data) = parse_file_handle(\@supported_parsers, *STDIN);
+    }
+
+    unless ($options{'FORMAT'}) {
+        if   ($type eq 'yaml') {$options{'FORMAT'} = 'json'}
+        else                   {$options{'FORMAT'} = 'yaml'}
+    }
+
+    if ($options{'RECURSIVE'}) {
+        @data = map {unjson_recursive_inplace($parser_json, $_)} @data;
+    }
+
+    if (@data) {
+        my $dumper = $supported_dumpers{$options{'FORMAT'}};
+        $dumper->dump(\@data);
+    } else {
+        warn "empty input\n";
+    }
+
+    return 0;
+}
+
+sub parse_file_handle ($parsers_aref, $fh) {
+    my ($type, @data, @errors);
+
+    my $reader = ReaderFileHandle->new(fh => $fh)
+        or return;
+
+    my \@parsers = $parsers_aref;
+
+    foreach my $parser (@parsers) {
+        try {
+            my \@decoded = $parser->parse($reader);
+            $type //= $parser->type;
+            push @data, @decoded;
+            return ($type, \@data);
+        } catch ($err) {                                                       # parsing failed
+            push @errors, sprintf("unable to parse file as %s: %s\n", $parser->type, $err);
+        };
+    }
+
+    warn $_ foreach head(-1, @errors);
+    die $errors[-1];
+}
+
+sub unjson_recursive_inplace ($parser, $data) {
+    if (ref $data eq 'HASH') {
+        foreach (values $data->%*) {
+            next if is_bool($_);
+            $_ = __SUB__->($parser, $_);
+        }
+    } elsif (ref $data eq 'ARRAY') {
+        foreach (values $data->@*) {
+            next if is_bool($_);
+            $_ = __SUB__->($parser, $_);
+        }
+    } elsif (!ref $data) {
+        try {
+            # fix quoted characters in the mysqldump output
+            $data =~ s/\\(
+                    (?:[arnt'"\\]) |               # Single char escapes
+                    (?:[ul].) |                    # uc or lc next char
+                    (?:x[0-9a-fA-F]{2}) |          # 2 digit hex escape
+                    (?:x\{[0-9a-fA-F]+\}) |        # more than 2 digit hex
+                    (?:\d{2,3}) |                  # octal
+                    (?:N\{U\+[0-9a-fA-F]{2,4}\})   # unicode by hex
+                )/"qq|\\$1|"/geex;
+
+            my $decoded = $parser->decode($data);
+            if (ref $decoded) {
+                $data = $decoded;
+                __SUB__->($parser, $data);
+            }
+        } catch ($e) {
+            ## not an encoded json
+        };
+    }
+
+    return $data;
+}
+
+exit main();
+
+__END__

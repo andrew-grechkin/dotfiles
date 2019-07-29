@@ -1,0 +1,42 @@
+#!/usr/bin/env perl
+
+# man: PerlIO
+
+use v5.36;
+use autodie;
+use open ':std', 'OUT' => ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
+
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+
+our $VERSION = 1;
+
+GetOptions('codepage|c=s' => \(my $codepage = undef))
+    or die "Unable to process command line options\n";
+
+$codepage
+    or die "Please provide --codepage option\n";
+
+@ARGV
+    or push(@ARGV, '-');
+
+while (my $ARGV = shift) {
+    my $fh = *STDIN;
+    $ARGV eq '-'
+        or open($fh, '<', $ARGV);
+
+    binmode($fh, ":raw :crlf :encoding($codepage)");
+
+    while (<$fh>) {
+        chomp;
+    } continue {
+        say;
+    }
+
+    $ARGV eq '-'
+        or close($fh);
+}
+
+__END__

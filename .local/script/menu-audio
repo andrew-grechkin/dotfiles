@@ -1,0 +1,16 @@
+#!/usr/bin/env zsh
+
+set -Eeuo pipefail
+
+FOLDER="${1:-/media/nfs/home/music}"
+
+function list_files() {
+	(
+		cd "$FOLDER"
+		while read -r LINE; do
+			echo "$LINE	mpv --quiet --no-osc --term-osd=force --no-audio-display -- \"${FOLDER}/$LINE\""
+		done < <(fd --no-ignore -t d -E '@eaDir' --relative-path)
+	) | sort
+}
+
+list_files | fzf-execute

@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC1090
+set -Eeuo pipefail
+
+VERB_URL=()
+if [[ $# -eq 0 ]]; then
+	if [[ -z "${URI:-}" ]]; then
+		echo 'Not enough arguments' >/dev/stderr
+		exit 1
+	else
+		VERB_URL+=("$URI")
+	fi
+else
+	FILE="${1:-}"
+
+	if [[ -n "$FILE" && -r "$FILE" ]]; then
+		shift
+		source "$FILE" && {
+			readarray -t VARS < <(sed -nE '/^[[:space:]]*#/d; s/^[[:space:]]*([[:alpha:]_][[:alnum:]_]+?)=.+/\1/p' "$FILE") || true
+			export "${VARS[@]}"
+		}
+		if [[ -n "${VERB:-}" ]]; then
+			VERB_URL+=("$VERB")
+		fi
+
+		if [[ -z "${HOST:-}" ]]; then
+			if [[ -z "${URI:-}" ]]; then
+				VERB_URL+=("${HOST:-:80}${URI:-/}")
+			else
+				VERB_URL+=("$URI")
+			fi
+		else
+				VERB_URL+=("${HOST}${URI:-/}")
+		fi
+	fi
+fi
+
+if [[ "$0" =~ xh$ ]]; then
+	XH=(xh)
+else
+	XH=(xhs)
+fi
+
+if [[ "${CURL:-0}" == "1" ]]; then
+	OPTS+=(
+		--curl
+	)
+else
+	OPTS+=(
+		--all
+		--pretty=all
+		--print=HBhbm
+	)
+fi
+
+if [[ -n "${BODY:-}" ]]; then
+	OPTS+=(
+		--raw="$BODY"
+	)
+fi
+
+"${XH[@]}" "${VERB_URL[@]}" "$@" "${OPTS[@]}"

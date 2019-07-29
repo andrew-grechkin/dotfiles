@@ -1,0 +1,28 @@
+#!/usr/bin/env zsh
+
+# vim: filetype=sh
+# man: zshexpn
+
+set -Euo pipefail
+
+if [[ "$#" -eq "1" ]] && [[ "$1" =~ \.git/?$ ]]; then
+	if [[ "$1" =~ /\.git/?$ ]]; then
+		REPO=$(dirname "$1")
+	else
+		REPO="$1"
+	fi
+
+	echo -n "$(tput setaf 3)"
+	echo "Gc $REPO"
+	echo -n "$(tput sgr0)"
+
+	nice git -C "$REPO" gc
+else
+	fd -HuL -td -tf -0 '\.git\z' "${1:-$PWD}" | {
+		if [[ -n "$(command -v parallel)" ]]; then
+			parallel -j-50% --delay 0.3 -0 "$0" {}
+		else
+			xargs -0 --max-args=1 --no-run-if-empty "$0"
+		fi
+	}
+fi

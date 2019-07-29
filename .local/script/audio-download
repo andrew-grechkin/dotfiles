@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+while getopts '' opt; do
+	case ${opt} in
+		:)
+			echo "Option -${OPTARG} requires an argument."
+			exit 1
+			;;
+		?)
+			exit 1
+			;;
+	esac
+done
+
+shift $((OPTIND - 1))
+
+OPTIONS=(
+	--embed-thumbnail
+	--format="ba[ext=m4a]"
+	--list-formats
+	--no-config
+	--no-simulate
+)
+
+exec yt-dlp "${OPTIONS[@]}" "$@"

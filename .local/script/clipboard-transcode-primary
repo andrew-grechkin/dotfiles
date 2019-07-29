@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+xclip -o -sel p 2>/dev/null \
+	| kbd-transcode \
+	| clipcopy
+
+xdotool key Shift+Insert
+
+# xdotool key Ctrl+Shift

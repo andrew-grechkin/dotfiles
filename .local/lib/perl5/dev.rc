@@ -1,0 +1,105 @@
+# vim: filetype=sh
+# shellcheck shell=bash
+
+# usage:
+#   source "$(git rev-parse --show-toplevel)/dev.rc"
+
+# => environment -------------------------------------------------------------------------------------------------- {{{1
+
+REQUIRED_PERL_VERSION="${REQUIRED_PERL_VERSION:-5.40.0}"
+
+if command git rev-parse HEAD &>/dev/null; then
+	REPO_ROOT="$(git rev-parse --show-toplevel)"
+	REPO_URL="$(git config --get remote.origin.url)"
+	REPO_NAME="$(basename -s .git "$REPO_URL")"
+else
+	SCRIPT="$(realpath -s "$0")"
+	REPO_ROOT="$(dirname "$SCRIPT")"
+	REPO_NAME="${REPO_NAME:-default}"
+fi
+
+NPROC=4
+[[ -x "$(command -v nproc)" ]] && {
+	NPROC="$(nproc)"
+}
+
+PERLCRITIC_PATH="$REPO_ROOT/.perlcriticrc"
+if [[ -r "$PERLCRITIC_PATH" ]]; then
+	export PERLCRITIC="$PERLCRITIC_PATH"
+fi
+
+HOSTNAME="${HOSTNAME:-$(hostname)}"
+export PERLBREW_ROOT="${PERLBREW_ROOT:-$HOME/.local/share/perlbrew@$HOSTNAME}"
+export PERLBREW_HOME="${PERLBREW_HOME:-$PERLBREW_ROOT}"
+export PATH="$REPO_ROOT/bin:$REPO_ROOT/script:$PATH:$PERLBREW_ROOT/bin"
+export PERL5LIB="$REPO_ROOT/lib:${PERL5LIB:-}"
+
+PERL_NAME="perl-$REQUIRED_PERL_VERSION"
+LIBRARY_NAME="${PERL_NAME}@dev-$REPO_NAME"
+
+# => check prerequisites ------------------------------------------------------------------------------------------ {{{1
+
+function check_prerequisites() {
+	[[ -x "$(command -v perlbrew)"  || -n "$PERLBREW" ]] || {
+		echo "perlbrew not found, installing it from (https://perlbrew.pl/)"
+		curl -sL https://install.perlbrew.pl | bash
+	}
+
+	[[ -f "$PERLBREW_ROOT/etc/bashrc" ]] || {
+		perlbrew init
+	}
+
+	# shellcheck disable=SC1091
+	[[ -n "${PERLBREW_VERSION:-}" ]] || source "$PERLBREW_ROOT/etc/bashrc"
+
+	[[ -x "$(command -v cpanm)" ]] || {
+		perlbrew install-cpanm || return 1
+	}
+	return 0
+}
+
+# => install default perl and library ----------------------------------------------------------------------------- {{{1
+
+function install_perl() {
+	grep -E "\s${PERL_NAME}\s*$" < <(perlbrew list) &>/dev/null || {
+		# https://raw.githubusercontent.com/Perl/perl5/blead/INSTALL
+		echo "Installing required perl: $PERL_NAME (nproc: $NPROC)"
+		nice perlbrew install -nf -j "$NPROC" "$REQUIRED_PERL_VERSION" --as "$PERL_NAME" \
+			-Dinc_version_list=none                                                      \
+			-Duserelocatableinc                                                          \
+			|| return 1
+		echo
+	}
+	return 0
+}
+
+function install_modules() {
+	if [[ ! -f "$PERLBREW_ROOT/libs/${LIBRARY_NAME}/finished" ]]; then
+		grep -E "\s${LIBRARY_NAME}\s*$" < <(perlbrew lib-list) &>/dev/null || {
+			echo "Creating Perl local dev library: $LIBRARY_NAME"
+			perlbrew lib create "$LIBRARY_NAME" || return 1
+			echo
+			[[ -r "$REPO_ROOT/cpanfile" ]] && {
+				echo "Installing required modules from '$REPO_ROOT/cpanfile'"
+				perlbrew exec --with "$LIBRARY_NAME" nice cpanm -nq --installdeps "$REPO_ROOT"
+				touch "$PERLBREW_ROOT/libs/${LIBRARY_NAME}/finished"
+			}
+		}
+	fi
+	return 0
+}
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+if check_prerequisites && install_perl && install_modules; then
+	# different actions if running as part of another script or directly in a user shell
+	if [[ -z "${PS1:-}" ]]; then
+		[[ -n "$*" ]] && perlbrew exec --with "$LIBRARY_NAME" "$@"
+	else
+		perlbrew use "$LIBRARY_NAME"
+	fi
+	(exit 0)
+else
+	echo "Something went wront" >/dev/stderr
+	(exit 1)
+fi

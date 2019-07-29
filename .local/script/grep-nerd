@@ -1,0 +1,62 @@
+#!/usr/bin/env perl
+
+use v5.38;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin class declared_refs defer for_list refaliasing try);
+
+use Mojo::File      qw(path);
+use Mojo::UserAgent qw();
+
+our $VERSION = 1;
+
+use constant {
+    'UA'  => Mojo::UserAgent->new->max_redirects(2)->request_timeout(10)->tap(sub {$_->proxy->detect}),
+    'URL' => Mojo::URL->new('https://raw.githubusercontent.com/ryanoasis/nerd-fonts/master/glyphnames.json'),
+};
+my $desc_file = path("$ENV{XDG_STATE_HOME}/nerd-font.txt");
+
+sub main() {
+    convert_glyphnames() unless (-r $desc_file);
+
+    system('cat', $desc_file) == 0
+        or die "Unable to cat $desc_file";
+
+    return 0;
+}
+
+sub convert_glyphnames() {
+    my \%glyphnames = fetch_glyphnames();
+
+    my $metadata = delete $glyphnames{'METADATA'};
+
+    my $file;
+    open($file, '>', $desc_file);
+    defer {close $file};
+
+    foreach my $key (sort keys %glyphnames) {
+        my ($type, $name) = $key =~ m/\A (.+?) - (.+) \z/xx;
+        $name =~ s/_/ /xx;
+
+        my ($char, $code) = $glyphnames{$key}->@{qw(char code)};
+
+        say {$file} sprintf "%s\t%-8s %-8s %s", $char, $code, $type, $name;
+    }
+
+    return;
+}
+
+sub fetch_glyphnames() {
+    my $response = UA()->get(URL())->result;
+    $response->is_success
+        or die sptintf("Failed to retrieve '%s': %s", URL(), join(' ', $response->code, $response->message));
+
+    return $response->json
+        || die("Failed to decode json: $! $@");
+}
+
+exit main();
+
+__END__

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+compgen -c | sort -u | perl -nlE 'next if m/^\W/; say "$_\t$_"' | fzf-execute

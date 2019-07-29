@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+BAT_OPTIONS=(
+	--style=numbers
+	--color=always
+	--tabs=4
+	-pp
+)
+
+function header() {
+	stat "$1"
+
+	echo -n "  Type: "
+	file -b "$1"
+
+	FILESIZE=$2
+	(( FILESIZE > 10000000)) && return
+
+	echo -n "  SHA1: "
+	sha1sum -b "$1" | awk '{print $1}'
+}
+
+function body() {
+	TYPE=$(file -bi "$1")
+	echo "  MIME: $TYPE"
+
+	FILE=$(basename "$1")
+	# DIR=$(dirname "$1")
+	# BASE="${FILE%.*}"
+	EXT="${FILE##*.}"
+
+	if grep 'application/json' <<<"$TYPE" &>/dev/null; then
+		jq -S  --indent 2 < "$1" | bat -l JSON "${BAT_OPTIONS[@]}" && exit 0
+	elif grep 'application/x-.*executable' <<<"$TYPE" &>/dev/null; then
+		{ readelf -dW "$1" && echo && nm -DC "$1"; } && exit 0
+	elif grep 'application/x-sharedlib' <<<"$TYPE" &>/dev/null; then
+		{
+			{ readelf -dW "$1" && echo && nm -DC "$1"; } || { objdump -xfTC "$1"; }
+		} && exit 0
+	elif grep 'text/x-shellscript' <<<"$TYPE" &>/dev/null; then
+		bat -l 'Bourne Again Shell (bash)' "${BAT_OPTIONS[@]}"  "$1" && exit 0
+	elif grep 'application/x-object' <<<"$TYPE" &>/dev/null; then
+		{ nm -ClS "$1"; echo; objdump -afltSd "$1"; } && exit 0
+	elif grep 'application/x-archive' <<<"$TYPE" &>/dev/null; then
+		nm -C "$1" && exit 0
+	elif grep 'image/' <<<"$TYPE" &>/dev/null; then
+		YAML_FILE="${FILE%%.jpg}.yml"
+		[[ -r "$YAML_FILE" ]] && cat "$YAML_FILE"
+		FILESIZE=$2
+		(( FILESIZE < 10000000)) && {
+			COLS=$(tput cols)
+			COLS=${COLS:-120}
+			{ chafa --clear -c full -s "${COLS}x${COLS}" "$1"; } \
+				|| true
+		}
+		exit 0
+	elif [[ "$EXT" =~ conf$ ]]; then
+		bat -l conf "${BAT_OPTIONS[@]}" "$1" && exit 0
+	elif [[ "$EXT" =~ yaml?$ ]]; then
+		yaml-sanitize < "$1" | yamlfix - | bat -l yaml "${BAT_OPTIONS[@]}" && exit 0
+	else
+		echo
+	fi
+}
+
+function footer() {
+	FILESIZE=$2
+	(( FILESIZE > 10000000)) && return
+
+	if grep 'charset=binary' <<<"$TYPE" &>/dev/null; then
+		hexdump -C "$1" && exit 0
+	elif (( FILESIZE < 1000000 )); then
+		bat "${BAT_OPTIONS[@]}"  "$1" \
+			|| cat "$1"
+		(( FILESIZE > 255)) && return
+		echo
+		hexdump -C "$1" && exit 0
+	fi
+
+	cat "$1"
+}
+
+[[ -f "$1" ]] && {
+	FILESIZE=$(command stat -c %s "$1")
+	header "$1"        "$FILESIZE"
+
+	FILEPATH="$(realpath "$1")"
+	body   "$FILEPATH" "$FILESIZE"
+	footer "$FILEPATH" "$FILESIZE"
+} 2> /dev/null

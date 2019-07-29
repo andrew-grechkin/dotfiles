@@ -1,0 +1,108 @@
+#!/usr/bin/env perl
+
+use v5.36;
+use autodie;
+use charnames ':full';
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
+
+use Encode       qw();
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+use IPC::Open2   qw(open2);
+use Pod::Usage   qw(pod2usage);
+use Scalar::Util qw(looks_like_number);
+use builtin      qw(trim);
+
+use Log::Any          qw($log);
+use Log::Any::Adapter qw(Stderr), (log_level => 'info');
+use Mojo::DOM         qw();
+use Mojo::Util        qw(encode);
+use Path::Tiny        qw(path);
+
+my %options = (
+    'INPLACE' => 0,
+    'VERBOSE' => 0,
+);
+
+sub main() {
+    GetOptions(
+        'help|h'    => sub {pod2usage(-verbose => 99, exitval => 0)},
+        'inplace|i' => \$options{'INPLACE'},
+        'verbose|v' => \$options{'VERBOSE'},
+    ) or die "Unable to process command line options\n";
+
+    $log->{'adapter'}{'log_level'} += $options{'VERBOSE'};
+
+    if (@ARGV) {
+        foreach my $file (map {decode($_)} @ARGV) {
+            -e -r $file
+                or die "File does not exists: $file\n";
+
+            $log->infof("Processing: '%s'", $file);
+            my $octets = process(external_process(path($file)->slurp_raw, 'xmllint', '--encode', 'UTF-8', '-'));
+            my $bytes  = encode('UTF-8', process($octets));
+            $octets = external_process($bytes, 'xmllint', '--format', '-');
+
+            if ($options{'INPLACE'}) {
+                path($file)->spew_utf8($octets);
+            } else {
+                print $octets;
+            }
+        }
+    } else {
+        my $bytes = do {local $/ = undef; <STDIN>};
+        print process('utf-8', $bytes);
+    }
+
+    return 0;
+}
+
+sub external_process ($xml, @cmd) {
+    my $pid = open2(my $chld_out, my $chld_in, @cmd);
+    binmode($chld_in,  ':raw');
+    binmode($chld_out, ':encoding(UTF-8)');
+
+    if (not defined $pid) {
+        say {*STDERR} 'Failed to execute xmllint';
+        return;
+    }
+
+    print {$chld_in} $xml;
+    close $chld_in;
+
+    my @linted = <$chld_out>;
+
+    waitpid($pid, 0)
+        or die "Unable to wait for child to finish: $!\n";
+
+    chomp(@linted);
+    return join("\n", @linted);
+}
+
+sub process ($octets) {
+    my $dom = Mojo::DOM->new($octets);
+    $dom->find('p')->each(
+        sub ($it, @) {
+            my $text = trim($it->content);
+            $text =~ s{(\s)+}{$1}g;
+            $text =~ s{(\A|(?<![.]))[.]{3}(\z|(?=[^.]))}{…}gx;
+            $text =~ s{\A(?:[\N{HYPHEN-MINUS}\N{EN DASH}\N{EM DASH}])\s}{\N{EM DASH}\N{NO-BREAK SPACE}};
+            $text
+                =~ s{(\A|(?<=[.,?!\N{HORIZONTAL ELLIPSIS}]))\s(?:[\N{HYPHEN-MINUS}\N{EN DASH}\N{EM DASH}])\s}{\N{NO-BREAK SPACE}\N{EM DASH}\N{SPACE}}gx;
+            $text =~ s{(\s)(?:\N{EN DASH})(\s)}{$1\N{EM DASH}$2}gx;
+            $it->content($text);
+        },
+    );
+
+    return $dom->to_string;
+}
+
+sub decode ($octets) {
+    return Encode::decode('UTF-8', $octets, Encode::FB_CROAK);
+}
+
+exit main();
+
+__END__

@@ -1,0 +1,18 @@
+#!/usr/bin/env zsh
+
+set -Eo pipefail
+
+SCRIPT=$(cat <<- 'EOSCRIPT'
+	say {*STDERR} $_;
+	my ($p, $n, $s) = m/\A(.+\/) (.+?) [.](\d+) (?: (?:pm)? [.]gz)? \z/xx;
+	say {*STDERR} "path:    $p";
+	say {*STDERR} "name:    $n";
+	say {*STDERR} "section: $s";
+	$m1 = '\":nnoremap <buffer> q :quitall<CR>\"';
+	say sprintf(qq{export MANPAGER="nvim +Man! -c $m1"; man -s $s $n}) if $n && $s;
+EOSCRIPT
+)
+
+sk --ansi --reverse -i -c 'man -wK --regex "{}"' \
+	| perl -nlE "$SCRIPT"                        \
+	| bash

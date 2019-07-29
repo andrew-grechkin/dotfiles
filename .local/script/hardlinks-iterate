@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+# iterate through all hardlinks found in current folder and show them in fzf
+
+set -Euo pipefail
+
+# shellcheck disable=SC2016
+# hardlinks | xargs -d "\n" -ri bash -c 'eval "array=({})"; printf "%s\n" "${array[@]}" | fzf'
+
+hardlinks-scan --json \
+	| jq -r '.[] | @sh' \
+	| xargs -d "\n" -ri bash -c 'eval "array=({})"; printf "%s\n" "${array[@]}" | fzf --multi --bind "tab:toggle-out,shift-tab:toggle-in"'

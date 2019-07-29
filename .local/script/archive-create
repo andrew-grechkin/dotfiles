@@ -1,0 +1,55 @@
+#!/usr/bin/env perl
+
+use v5.38;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin class declared_refs defer for_list refaliasing try);
+
+use Errno        qw(ENOENT);
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+use Pod::Usage   qw(pod2usage);
+
+use Path::Tiny qw(path);
+
+use AnyArchive::Create qw();
+
+our $VERSION = 2.000;
+
+my %options = ('TYPE' => 'tzst');
+
+sub main() {
+    GetOptions(
+        'type|t=s' => \$options{'TYPE'},
+        'help|h'   => sub {pod2usage(-verbose => 99, exitval => 0)},
+    ) or die "Unable to process command line options\n";
+
+    my @items  = map  {path($_)} @ARGV;
+    my @absent = grep {!$_->exists} @items;
+
+    if (@absent) {
+        say {*STDERR} 'Not found:';
+        say {*STDERR} "\t$_" foreach @absent;
+        return ENOENT;
+    }
+
+    my $basename = $items[0]->basename =~ s{(?<!^)(?:[.]tar)?(?:[.][^.\d]+)$}{}xr;    # remove ext
+    my $archive  = Path::Tiny->cwd->child($basename . '.' . $options{'TYPE'});
+
+    $archive->exists
+        and die "File already exists: $archive\n";
+
+    try {
+        AnyArchive::Create::execute($archive, \@items);
+    } catch ($error) {
+        warn $error;
+        return 1;
+    };
+
+    return 0;
+}
+
+exit main();
+
+__END__

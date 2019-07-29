@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+# trim-whole would remove all new lines at the end, it's good to keep the last one
+tmux capture-pane -pJS - | trim-borders | perl -gpE 's/\A\R+|\R\K\R+\z//g'

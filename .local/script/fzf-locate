@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+DIR="${1:-$(pwd)}"
+
+command locate "$DIR" \
+| fzf

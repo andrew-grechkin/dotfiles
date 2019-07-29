@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -Eo pipefail
+
+is-home-network || {
+	is-work-network || exit 0
+}
+
+exit 1

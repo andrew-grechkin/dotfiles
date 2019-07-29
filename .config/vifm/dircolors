@@ -1,0 +1,14 @@
+" generic file types
+highlight BrokenLink cterm=bold ctermfg=red ctermbg=default
+highlight Device cterm=bold ctermfg=yellow ctermbg=default
+highlight Directory cterm=bold ctermfg=blue ctermbg=default
+highlight Executable cterm=bold ctermfg=green ctermbg=default
+highlight Fifo cterm=none ctermfg=yellow ctermbg=black
+highlight Link cterm=bold ctermfg=cyan ctermbg=default
+highlight Socket cterm=bold ctermfg=magenta ctermbg=default
+
+" file name specific highlight
+highlight /^.*\.(csh|sh|zsh)$/I cterm=none ctermfg=green ctermbg=default
+highlight /^.*\.(torrent|7z|ace|alz|arc|arj|bz|bz2|cab|cpio|deb|dict.dz|dsl.dz|dwm|dz|ear|esd|gz|jar|lha|lrz|lz|lz4|lzh|lzma|lzo|rar|rpm|rz|sar|swm|t7z|tar|taz|tbz|tbz2|tgz|tlz|txz|tz|tzo|tzst|war|whl|wim|xz|z|zip|zoo|zst)$/I cterm=bold ctermfg=red ctermbg=default
+highlight /^.*\.(asf|avi|bmp|cgm|dl|emf|flc|fli|flv|gif|gl|jp2|jpeg|jpg|lrv|m2v|m4v|mjpeg|mjpg|mkv|mng|mov|mp4|mp4v|mpeg|mpg|nuv|ogm|ogv|ogx|pbm|pcx|pgm|png|ppm|qt|rm|rmvb|svg|svgz|tga|tif|tiff|ts|vob|webm|webp|wmv|xbm|xcf|xpm|xwd|yuv)$/I cterm=bold ctermfg=magenta ctermbg=default
+highlight /^.*\.(aac|ac3|ape|au|flac|kar|m4a|m4b|mid|midi|mka|mp3|mpa|mpc|oga|ogg|opus|ra|spx|wav|wv|xspf)$/I cterm=bold ctermfg=cyan ctermbg=default

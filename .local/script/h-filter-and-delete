@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+FILE="$XDG_STATE_HOME/zsh/history@$HOSTNAME"
+
+TEMP_FILE=$(mktemp -u)
+
+function finish {
+	rm -f "$TEMP_FILE"
+}
+trap finish EXIT
+
+SKIM_OPTS=(
+	--reverse
+	--regex
+	--print-query
+	# --bind='esc:cancel'
+)
+REGEX="$(sort -u < "$FILE" | sk "${SKIM_OPTS[@]}" | head -1)"
+
+if [[ -n "$REGEX" ]]; then
+	echo "Pruning history for regex: '$REGEX'"
+	cp -f "$FILE" "$FILE.prune.bak"
+
+	echo "Lines before: $(wc -l < "$FILE")"
+	grep -av -P "$REGEX" "$FILE" > "$TEMP_FILE"
+	echo "Lines after: $(wc -l < "$TEMP_FILE")"
+	mv -f "$TEMP_FILE" "$FILE"
+fi

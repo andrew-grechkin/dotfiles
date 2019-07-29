@@ -1,0 +1,79 @@
+#!/usr/bin/env perl
+
+use v5.36;
+use autodie;
+use open IO => ':raw';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
+
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+use Pod::Usage   qw(pod2usage);
+use Scalar::Util qw(looks_like_number);
+
+use YAML::XS qw();
+
+my %options = ('INPLACE' => 0);
+
+# carefull! All comments will be gone
+
+sub main() {
+    GetOptions(
+        'inplace|i' => \$options{'INPLACE'},
+        'help|h'    => sub {pod2usage(-verbose => 99, exitval => 0)},
+    ) or die "Unable to process command line options\n";
+
+    my %data;
+
+    if (@ARGV) {
+        foreach my $file (@ARGV) {
+            -e -r $file
+                or die "file does not exist: $file\n";
+            my @docs = YAML::XS::LoadFile($file);
+            $data{$file} = \@docs;
+        }
+    } else {
+        my @docs = YAML::XS::Load(do {local $/ = undef; <STDIN>});
+        $data{'-'} = \@docs;
+    }
+
+    my $result = _sanitize(\%data);
+    print $result if $result;
+
+    return 0;
+}
+
+sub _sanitize ($data_href) {
+    my \%data = $data_href;
+    my $result;
+
+    local $YAML::XS::Boolean = 'JSON::PP'; ## no critic [Variables::ProhibitPackageVars]
+    while (my ($file, $docs_aref) = each %data) {
+        my \@docs = $docs_aref;
+        try {
+            _fix_section($_) foreach @docs;
+            if ($options{'INPLACE'} && $file ne '-') {
+                YAML::XS::DumpFile($file, @docs);
+            } else {
+                $result .= YAML::XS::Dump(@docs);
+            }
+        } catch ($yaml_error) {
+            die "unable to parse file '$file' as yaml: $yaml_error\n";
+        };
+    }
+
+    return $result;
+}
+
+sub _fix_section ($section) {
+    return unless ref $section eq 'HASH';
+    if (exists $section->{'id'} && looks_like_number($section->{'id'})) {
+        $section->{'id'} = 0 + $section->{'id'};
+    }
+
+    return;
+}
+
+exit main();
+
+__END__

@@ -1,0 +1,39 @@
+#!/usr/bin/env perl
+
+# ABSTRACT: Convert mkv files to mp4 with ffmpeg
+
+use v5.36;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
+
+sub main() {
+    foreach my $file (@ARGV) {
+        next if $file !~ m/[.]mkv\z/x;
+
+        my $out_file = $file =~ s{[.]mkv\z}{.mp4}xgr;
+        if (-e $out_file) {
+            warn "File already exist, skipping: $out_file\n";
+            next;
+        }
+
+        my @cmd = (
+            qw(ffmpeg -loglevel quiet -stats -fflags +genpts -i),                    "$file",
+            qw(-map 0 -ignore_unknown -c:v copy -c:a copy -sn -movflags +faststart), "$out_file",
+        );
+
+        if (system(@cmd) == 0) {
+            unlink $file;
+        } else {
+            warn "Faled to convert files: @{[@cmd]}\n";
+        }
+    }
+
+    return 0;
+}
+
+exit main();
+
+__END__

@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+FILE="$XDG_STATE_HOME/zsh/history@$HOSTNAME"
+
+SKIM_OPTS=(
+	--reverse
+	--regex
+	--print-query
+	# --bind='esc:cancel'
+)
+REGEX="$(sk "${SKIM_OPTS[@]}" < "$FILE" | head -1)"
+
+if [[ -n "$REGEX" ]]; then
+	grep -a -P "$REGEX" "$FILE"
+fi

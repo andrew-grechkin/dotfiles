@@ -1,0 +1,88 @@
+#!/usr/bin/env perl
+
+use v5.38;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin class declared_refs defer for_list refaliasing try);
+
+my @input = <<>>;
+chomp(@input);
+my @ru_en = (
+    ['mp3', 'mp3'],
+    ['ж',   'zh'],
+    ['ц',   'ts'],
+    ['ч',   'ch'],
+    ['ш',   'sh'],
+    ['ск',  'sc'],
+    ['кт',  'ct'],
+    ['щ',   'shsc'],
+    ['ю',   'iu'],
+    ['ю',   'ju'],
+    ['ю',   'yu'],
+    ['я',   'ia'],
+    ['я',   'ja'],
+    ['я',   'ya'],
+    ['а',   'a'],
+    ['б',   'b'],
+    ['в',   'v'],
+    ['г',   'g'],
+    ['д',   'd'],
+    ['е',   'e'],
+    ['ё',   'e'],
+    ['з',   'z'],
+    ['и',   'i'],
+    ['й',   'i'],
+    ['й',   'j'],
+    ['к',   'k'],
+    ['л',   'l'],
+    ['м',   'm'],
+    ['н',   'n'],
+    ['о',   'o'],
+    ['п',   'p'],
+    ['р',   'r'],
+    ['с',   's'],
+    ['т',   't'],
+    ['у',   'u'],
+    ['ф',   'f'],
+    ['х',   'h'],
+    ['ы',   'y'],
+    ['ь',   "'"],
+    ['э',   'e'],
+    [' ',   '_'],
+    ['ц',   'c'],
+);
+
+my @en_ru = map {[reverse $_->@*]} @ru_en;
+my %ru_en = map {$_->[0] => $_->[1]} @ru_en;
+my %en_ru = map {$_->[1] => $_->[0]} @ru_en;
+
+
+# my \%map = exists $en_ru{$input[0]} ? \%en_ru : \%ru_en;
+my \%map = \%en_ru;
+
+foreach my $input (@input) {
+    $input = lc $input;
+
+    my @result;
+NEXT_CHAR:
+    while (length $input) {
+        foreach my $it (@en_ru) {
+            my $en  = $it->[0];
+            my $len = length $en;
+            my $zz  = substr($input, 0, $len);
+
+            if ($en eq $zz) {
+                push @result, $it->[1];
+                substr($input, 0, $len, '');
+                next NEXT_CHAR;
+            }
+        }
+
+        push @result, substr($input, 0, 1);
+        substr($input, 0, 1, '');
+    }
+
+    say(join '', @result);
+}

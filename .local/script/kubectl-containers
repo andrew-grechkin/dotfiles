@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+command kubectl get pods -o jsonpath="{.items[*].spec.containers[*].name}" \
+	| tr ' ' "\n"

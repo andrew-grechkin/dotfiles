@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+# secondarycopy - Copy data to the SECONDARY buffer
+#
+# Usage:
+#  <command> | secondarycopy      - copies stdin to secondary
+#  secondarycopy <file> <file>... - copies file's contents to secondary
+
+if [[ -n "$(command -v xsel)" ]]; then
+	cat "$@" | xsel --input --secondary &>/dev/null
+elif [[ -n "$(command -v xclip)" ]]; then
+	cat "$@" | xclip -sel sec &>/dev/null
+else
+	echo "secondarycopy: xclip/xsel not installed" >/dev/stderr
+	exit 1
+fi

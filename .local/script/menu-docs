@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+cd "${1:-/usr/share/doc}"
+
+FZF_CMD=(
+	fzf
+	--bind="enter:execute(glow -p -s dark {})"
+	--no-multi
+	--preview='glow -p -s dark {}'
+	--reverse
+)
+
+fd -t f -e md | sort -u      \
+	| grep -Pvi '\blicenses?\b' \
+	| "${FZF_CMD[@]}"

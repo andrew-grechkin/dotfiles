@@ -1,0 +1,16 @@
+#!/usr/bin/env -S perl -n
+
+use v5.36;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin);
+
+my $removed = chomp;
+
+s/^(?:[│][[:blank:]]?)//;
+s/[[:blank:]│]+$//;
+
+print $_, "\n" x $removed;
+
+__END__

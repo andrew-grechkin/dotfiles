@@ -1,0 +1,10 @@
+[Unit]
+Description=Fetch Bing picture archive
+
+[Service]
+Type=oneshot
+WorkingDirectory=/media/nfs/home/local/photo/world/bing-original
+ExecStart=/usr/bin/perl "%h/.local/script/bing-wallpaper-archive-download"
+
+[Install]
+WantedBy=default.target

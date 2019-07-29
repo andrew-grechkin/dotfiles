@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -xEeuo pipefail
+
+if [[ -n "${1:-}" ]]; then
+	sudo modprobe nbd max_part=2
+	sudo qemu-nbd --connect=/dev/nbd0 "$1"
+	sudo mount /dev/nbd0p1 /mnt
+	sudo cryptsetup open /dev/nbd0p2 tails
+	mkdir -p /tmp/mnt
+	sudo mount /dev/mapper/tails /tmp/mnt
+fi

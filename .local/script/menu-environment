@@ -1,0 +1,20 @@
+#!/usr/bin/env zsh
+
+set -Eeuo pipefail
+
+# shellcheck disable=SC2016
+PREVIEW='echo -n "\"${}\""'
+
+FZF_CMD=(
+	fzf
+	--ansi
+	--bind="ctrl-y:execute(bash -c '{ echo -n \"{}=\"; $PREVIEW; } | clipcopy')+abort"
+	--bind="enter:execute(bash -c '$PREVIEW | clipcopy')+abort"
+	--bind="ctrl-m:execute(bash -c '{ echo -n \"{}=\"; $PREVIEW; }'| $PAGER)"
+	--preview-window=right:60%:border-left:wrap:nohidden
+	--preview="bash -c '$PREVIEW'"
+)
+
+{
+	env | sort | sed 's/=.*//'
+} | "${FZF_CMD[@]}"

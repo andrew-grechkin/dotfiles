@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -Eo pipefail
+
+# => support synology --------------------------------------------------------------------------------------------- {{{1
+
+[[ -d "/volume1/local/arch/usr" ]] && export OPENSSL_PREFIX="/volume1/local/arch/usr"
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+pyenv install -v 3.11.5
+pyenv global 3.11.5
+pip install pynvim

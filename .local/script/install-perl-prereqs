@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+perl -lnE 'print m/\s* use \s+ ([[:alpha:]:]+)/xx if m/^\s* use \s+ [[:upper:]]/xx' "$@" | sort | uniq | xargs cpanm -nq

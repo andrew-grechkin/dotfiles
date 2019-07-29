@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+python -m pydoc "$@" \
+	|| echo "Nothing found for: $*"

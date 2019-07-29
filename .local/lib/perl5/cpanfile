@@ -1,0 +1,84 @@
+requires "Cpanel::JSON::XS";
+requires "Future::AsyncAwait";
+requires "IO::Socket::SSL";
+requires "IO::Socket::Socks";
+requires "Mojolicious";
+requires "Net::DNS::Native";
+requires "Role::Tiny";
+
+requires "App::cpanminus";
+requires "Carp::Always";
+requires "Data::Dump";
+requires "Data::Printer";
+requires "DateTime::TimeZone";
+requires "File::Map";
+# requires "LWP::Protocol::https";
+requires "Log::Any";
+requires "Path::Tiny";
+requires "Regexp::Debugger";
+requires "Syntax::Keyword::Match";
+requires "Syntax::Operator::Equ";
+requires "Time::Moment";
+requires "YAML::XS";
+
+requires "Neovim::Ext";
+requires "Text::CSV";
+
+on 'develop' => sub {
+    requires "Carp::Assert";
+    requires "MetaCPAN::Client";
+    requires "Perl::Critic";
+    requires "Perl::Critic::Pulp";
+};
+
+feature 'develop' => sub {
+#    requires "App::perlimports"; dep-hell
+    requires "Code::TidyAll";
+    requires "Parallel::ForkManager"; # for Code::TidyAll
+    requires "Sub::StrictDecl";
+    requires "Test2::Harness";
+};
+
+feature 'mojo-extras' => sub {
+    requires "EV";
+    requires "Mojo::Run3";
+};
+
+feature 'mojo-openapi' => sub {
+    requires "Crypt::JWT";
+    requires "CryptX";
+    requires "Mojo::Pg";
+    requires "Mojolicious::Plugin::OpenAPI";
+    requires "Mojolicious::Plugin::Status";
+    requires "Mojolicious::Plugin::SwaggerUI";
+};
+
+feature 'sqlite' => sub {
+    requires "DBD::SQLite";
+    requires "Mojo::SQLite";
+};
+
+feature 'misc' => sub {
+    requires "CHI";
+    requires "DateTime";
+    requires "Sereal";
+    requires "Sort::Naturally";
+};
+
+feature 'experiment' => sub {
+    requires "List::UtilsBy";
+    requires "assign";
+};
+
+feature 'image' => sub {
+    requires "Image::ExifTool";
+    requires "Image::Hash";
+};
+
+feature 'repl' => sub {
+#    requires "DBI::Shell"; dep-hell
+#    requires "Devel::IPerl"; dep-hell
+    requires "Reply";
+    requires "Term::ReadKey";
+    requires "Term::ReadLine::Gnu";
+};

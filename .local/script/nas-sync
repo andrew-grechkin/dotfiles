@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+set -Euo pipefail
+
+SOURCE='home.ams::'
+DEST='.'
+
+if [[ $# -eq 0 ]]; then
+	mapfile -t FOLDERS < <(fd --no-hidden -t d -d 1)
+else
+	FOLDERS=("$@")
+fi
+
+RSYNC_PARAMS=(
+	--sparse
+	--exclude="#recycle"
+	--exclude="#snapshot"
+	--exclude=".Trash-*"
+	--exclude="@eaDir"
+	--rsh=ssh
+	--delete
+	--info=progress2
+	-P
+	-HahXx
+)
+for FOLDER in "${FOLDERS[@]}"; do
+	echo -n "$(tput setaf 3)"
+	echo "Synchronizing $FOLDER..."
+	echo -n "$(tput sgr0)"
+
+	rsync "${RSYNC_PARAMS[@]}" "${SOURCE}${FOLDER}/" "${DEST}/${FOLDER}/"
+done

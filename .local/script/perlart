@@ -1,0 +1,107 @@
+#!/usr/bin/env perl
+
+# video: https://www.youtube.com/watch?v=fVnmYzJfy5s
+
+use v5.36;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
+
+use Getopt::Long qw(:config auto_help auto_version bundling no_ignore_case);
+
+use Code::ART  qw();
+use Path::Tiny qw(path);
+
+GetOptions(
+    'no-cacograms' => \my $no_cacograms,
+    'no-homograms' => \my $no_homograms,
+    'no-parograms' => \my $no_parograms,
+    'no-unused'    => \my $no_unused,
+);
+
+foreach my $file_path (@ARGV) {
+    my $file_content    = path($file_path)->slurp_raw();
+    my $classified_vars = classify_all_vars_in($file_content);
+
+    if (!$no_cacograms) {
+        _report_cacogram($file_path, $file_content, $_)
+            foreach grep {$_->{'is_cacogram'}} values $classified_vars->{'vars'}->%*;
+    }
+
+    if (!$no_homograms) {
+        _report_homograms($file_path, $file_content, $_)
+            foreach grep {$_->{'homograms'}->%*} values $classified_vars->{'vars'}->%*;
+    }
+
+    if (!$no_parograms) {
+        _report_parograms($file_path, $file_content, $_)
+            foreach grep {$_->{'parograms'}->%*} values $classified_vars->{'vars'}->%*;
+    }
+
+    if (!$no_unused) {
+        _report_unused($file_path, $file_content, $_) foreach values $classified_vars->{'vars'}->%*;
+    }
+}
+
+sub _report_cacogram {
+    my ($file_path, $file_content, $check_variable) = @_;
+    foreach my $index ($check_variable->{'declared_at'}, keys $check_variable->{'used_at'}->%*) {
+        my ($line, $offset) = _line_offset($file_content, $index);
+        say "Cacogram '$check_variable->{'decl_name'}' used at $file_path:$line:$offset";
+    }
+    return;
+}
+
+sub _report_homograms {
+    my ($file_path, $file_content, $check_variable) = @_;
+    $check_variable->{'declared_at'} < 0
+        and return;
+    my ($line, $offset) = _line_offset($file_content, $check_variable->{'declared_at'});
+    say "Homogram '$check_variable->{'decl_name'}' usage detected at $file_path:$line:$offset";
+    return;
+}
+
+sub _report_parograms {
+    my ($file_path, $file_content, $check_variable) = @_;
+    my ($line, $offset) = _line_offset($file_content, $check_variable->{'declared_at'});
+    say "Parogram '$check_variable->{'decl_name'}' usage detected at $file_path:$line:$offset";
+    return;
+}
+
+sub _report_unused {
+    my ($file_path, $file_content, $check_variable) = @_;
+    if (not $check_variable->{'used_at'}->%*) {
+        my ($line, $offset) = _line_offset($file_content, $check_variable->{'declared_at'});
+        say "Unused variable '$check_variable->{'decl_name'}' found at $file_path:$line:$offset";
+    }
+    return;
+}
+
+sub _line_offset {
+    my ($file_content, $index) = @_;
+    my $substr    = substr($file_content, 0, $index);
+    my $line      = () = $substr =~ m/\n/g;
+    my $latest_ln = rindex($substr, "\n");
+    return $line + 1, $index - $latest_ln;
+}
+
+__END__
+
+=head1 NAME
+
+perlart - Process perl modules with Code::ART
+
+=head1 SYNOPSIS
+
+perlart [options] [file ...]
+
+ Options:
+   --help            brief help message
+   --no-cacograms    Do not report cacograms
+   --no-homograms    Do not report homograms
+   --no-parograms    Do not report parograms
+   --no-unused       Do not report unused variables
+
+=cut

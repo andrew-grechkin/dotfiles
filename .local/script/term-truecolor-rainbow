@@ -1,0 +1,94 @@
+#!/usr/bin/env perl
+# Author: Todd Larason <jtl@molehill.org>
+# $XFree86: xc/programs/xterm/vttests/256colors2.pl,v 1.1 1999/07/11 08:49:54 dawes Exp $
+
+use v5.36;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
+
+## no critic [ValuesAndExpressions::ProhibitMagicNumbers, ValuesAndExpressions::ProhibitEscapedCharacters]
+print "256 color mode\n\n";
+
+# display back ground colors
+
+print "8 colors (4 bit):\n";
+print 'normal: ';
+for (my $color = 0; $color < 8; $color++) {
+    print(sprintf "\x1b[%s;40m:: %2s ::", $color + 30, $color);
+}
+print "\x1b[0m\n";
+print 'bright: ';
+for (my $color = 0; $color < 8; $color++) {
+    print(sprintf "\x1b[%s;40m:: %2s ::", $color + 90, $color);
+}
+print "\x1b[0m\n";
+print 'bold:   ';
+for (my $color = 0; $color < 8; $color++) {
+    print(sprintf "\x1b[1;%s;40m:: %2s ::", $color + 30, $color);
+}
+
+print "\x1b[0m\n";
+
+print "256 colors (8 bit):\n";
+for (my $fgbg = 38; $fgbg <= 48; $fgbg += 10) {
+
+    # first the system ones:
+    print "System colors:\n";
+    for (my $color = 0; $color < 8; $color++) {
+        print(sprintf "\x1b[${fgbg};5;${color}m:: %2s ::", $color);
+    }
+    print "\x1b[0m\n";
+    for (my $color = 8; $color < 16; $color++) {
+        print(sprintf "\x1b[${fgbg};5;${color}m:: %2s ::", $color);
+    }
+    print "\x1b[0m\n\n";
+
+    # now the color cube
+    print "Color cube, 6x6x6:\n";
+    for (my $green = 0; $green < 6; $green++) {
+        for (my $red = 0; $red < 6; $red++) {
+            for (my $blue = 0; $blue < 6; $blue++) {
+                my $color = 16 + ($red * 36) + ($green * 6) + $blue;
+                print "\x1b[${fgbg};5;${color}m::";
+            }
+            print "\x1b[0m ";
+        }
+        print "\n";
+    }
+
+    # now the grayscale ramp
+    print "Grayscale ramp:\n";
+    for (my $color = 232; $color < 256; $color++) {
+        print "\x1b[${fgbg};5;${color}m::";
+    }
+    print "\x1b[0m\n\n";
+}
+
+print "Examples for the 3-byte color mode\n\n";
+
+for (my $fgbg = 38; $fgbg <= 48; $fgbg += 10) {
+
+    # now the color cube
+    print "Color cube\n";
+    for (my $green = 0; $green < 256; $green += 51) {
+        for (my $red = 0; $red < 256; $red += 51) {
+            for (my $blue = 0; $blue < 256; $blue += 51) {
+                print "\x1b[${fgbg};2;${red};${green};${blue}m::";
+            }
+            print "\x1b[0m ";
+        }
+        print "\n";
+    }
+
+    # now the grayscale ramp
+    print "Grayscale ramp:\n";
+    for (my $gray = 8; $gray < 256; $gray += 10) {
+        print "\x1b[${fgbg};2;${gray};${gray};${gray}m::";
+    }
+    print "\x1b[0m\n\n";
+}
+
+__END__

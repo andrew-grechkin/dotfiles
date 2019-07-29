@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+docker-images | command xargs --no-run-if-empty -I '{}' bash -c 'docker pull {} || true; echo'

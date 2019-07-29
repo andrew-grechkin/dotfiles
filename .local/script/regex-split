@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+tee >(grep -Pi "$1" | sponge "$2") | grep -Piv "$1" | sponge "$3"
+# tee >(grep 'coolregex' >File1) >(grep 'otherregex' >File3) >(grep 'anotherregex' >File4) | grep -v 'coolregex' >File2

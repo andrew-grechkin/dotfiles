@@ -1,0 +1,11 @@
+# vim: filetype=conf
+# https://docs.sqlfluff.com/en/stable/configuration.html
+# https://docs.sqlfluff.com/en/stable/configuration.html#defaultconfig
+# https://docs.sqlfluff.com/en/stable/layout.html
+[sqlfluff]
+dialect = ansi
+exclude_rules = AM04,LT09
+fix_even_unparsable = False
+max_line_length = 120
+output_line_length = 120
+sql_file_exts = .mysql,.sql,.sql.j2,.dml,.ddl

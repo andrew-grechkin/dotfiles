@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -Euo pipefail
+
+if [[ -n "$(command -v xsel)" ]]; then
+	echo "Clipboard: '$(xsel --clipboard --output 2>/dev/null)'"
+	echo
+	echo "Primary: '$(xsel --primary --output 2>/dev/null)'"
+	echo
+	echo "Secondary: '$(xsel --secondary --output 2>/dev/null)'"
+elif [[ -n "$(command -v xclip)" ]]; then
+	echo "Clipboard: '$(xclip -o -sel c 2>/dev/null)'"
+	echo
+	echo "Primary: '$(xclip -o -sel p 2>/dev/null)'"
+	echo
+	echo "Secondary: '$(xclip -o -sel s 2>/dev/null)'"
+fi

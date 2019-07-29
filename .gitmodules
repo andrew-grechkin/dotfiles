@@ -1,0 +1,15 @@
+[submodule "submodules/private"]
+	path = submodules/private
+	url = ssh://home.ams/volume1/service/git/dotfiles-private.git
+[submodule "submodules/secret"]
+	path = submodules/secret
+	url = ssh://home.ams/volume1/service/git/dotfiles-secret.git
+[submodule ".local/share/3rdparty/zsh/zsh-autosuggestions"]
+	path = .local/share/3rdparty/zsh/zsh-autosuggestions
+	url = https://github.com/zsh-users/zsh-autosuggestions
+[submodule ".local/share/3rdparty/zsh/zsh-completions"]
+	path = .local/share/3rdparty/zsh/zsh-completions
+	url = https://github.com/zsh-users/zsh-completions
+[submodule ".local/share/3rdparty/zsh/zsh-syntax-highlighting"]
+	path = .local/share/3rdparty/zsh/zsh-syntax-highlighting
+	url = https://github.com/zsh-users/zsh-syntax-highlighting

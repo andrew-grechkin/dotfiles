@@ -1,0 +1,88 @@
+# vim: filetype=conf
+# man: zathurarc
+
+set selection-clipboard clipboard
+set adjust-open         'width'
+set first-page-column   1:1
+set guioptions          ''
+
+# map [normal]       <Space>      navigate next
+# map [normal]       <BackSpace>  navigate previous
+
+map [normal]       `            toggle_statusbar
+map [fullscreen]   `            toggle_statusbar
+map [presentation] `            toggle_statusbar
+map [presentation] <C-r>        recolor
+
+# midnight mode
+map [normal]       <F1> focus_inputbar ":set recolor-lightcolor \#002b36"
+map [normal]       <F2> focus_inputbar ":set recolor-darkcolor  \#839496"
+map [normal]       <C-1> feedkeys "<F1><Return><F2><Return>"
+map [presentation] <F1> focus_inputbar ":set recolor-lightcolor \#002b36"
+map [presentation] <F2> focus_inputbar ":set recolor-darkcolor  \#839496"
+map [presentation] <C-1> feedkeys "<F1><Return><F2><Return>"
+
+# amber on dark slate
+map [normal]       <F3> focus_inputbar ":set recolor-lightcolor \#0a0a12"
+map [normal]       <F4> focus_inputbar ":set recolor-darkcolor  \#ff9900"
+map [normal]       <C-2> feedkeys "<F3><Return><F4><Return>"
+map [presentation] <F3> focus_inputbar ":set recolor-lightcolor \#0a0a12"
+map [presentation] <F4> focus_inputbar ":set recolor-darkcolor  \#ff9900"
+map [presentation] <C-2> feedkeys "<F3><Return><F4><Return>"
+
+# green on black
+map [normal]       <F6> focus_inputbar ":set recolor-lightcolor \#000000"
+map [normal]       <F7> focus_inputbar ":set recolor-darkcolor  \#00B800"
+map [normal]       <C-3> feedkeys "<F6><Return><F7><Return>"
+map [presentation] <F6> focus_inputbar ":set recolor-lightcolor \#000000"
+map [presentation] <F7> focus_inputbar ":set recolor-darkcolor  \#00B800"
+map [presentation] <C-3> feedkeys "<F6><Return><F7><Return>"
+
+# dark mode
+map [normal]       <F8> focus_inputbar ":set recolor-lightcolor \#000000"
+map [normal]       <F9> focus_inputbar ":set recolor-darkcolor  \#E0E0E0"
+map [normal]       <C-4> feedkeys "<F8><Return><F9><Return>"
+map [presentation] <F8> focus_inputbar ":set recolor-lightcolor \#000000"
+map [presentation] <F9> focus_inputbar ":set recolor-darkcolor  \#E0E0E0"
+map [presentation] <C-4> feedkeys "<F8><Return><F9><Return>"
+
+# => Recolor to dark mode (Ctrl-R toggle) ------------------------------------------------------------------------- {{{1
+
+# set font                    'inconsolata 12'
+set default-bg              '#222222'
+set default-fg              '#90A4AE'
+
+set statusbar-fg            '#B0B0B0'
+set statusbar-bg            '#202020'
+
+set inputbar-bg             '#151515'
+set inputbar-fg             '#FFFFFF'
+
+set notification-error-bg   '#AC4142'
+set notification-error-fg   '#151515'
+
+set notification-warning-bg '#AC4142'
+set notification-warning-fg '#151515'
+
+set highlight-color         '#F4BF75'
+set highlight-active-color  '#6A9FB5'
+
+set completion-highlight-fg '#151515'
+set completion-highlight-bg '#90A959'
+
+set completion-bg           '#303030'
+set completion-fg           '#E0E0E0'
+
+set notification-bg         '#90A959'
+set notification-fg         '#151515'
+
+set recolor                 'true'
+# set recolor-darkcolor       '#90A4AE'
+# set recolor-lightcolor      '#222222'
+set recolor-keephue         'true'
+set recolor-reverse-video   'true'
+
+# set default-bg "#000000" #00
+# set default-fg "#F7F7F6" #01
+set recolor-lightcolor "#000000" #00
+set recolor-darkcolor "#E0E0E0" #06

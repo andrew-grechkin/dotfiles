@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+set -Euo pipefail
+
+command git rev-parse HEAD &>/dev/null || exit 1
+
+if [[ -n "$*" ]]; then
+	REF="$1"
+	shift
+else
+	REF="HEAD"
+fi
+
+{
+	COMMIT="$(git rev-parse "$REF" 2>/dev/null)"
+	if [[ -z "$COMMIT" ]]; then
+		# everything is bad, commit cannot be resolved from ref
+		echo "$REF"
+		exit 0
+	fi
+
+	PARENT2="$(git rev-parse --verify "$COMMIT^2" 2>/dev/null)"
+
+	# shellcheck disable=SC2181
+	if [[ -n "$PARENT2" ]]; then
+		# is a merge commit
+
+		PARENT1="$(git rev-parse --verify "$COMMIT^1")"
+		SPAN="$PARENT1..$PARENT2"
+	else
+		MAIN_BRANCH="$(git branch --list --no-column --remotes | grep -m 1 -Po '\b(origin/(HEAD|main|master))\b' | head -1)"
+
+		if [[ -z "$MAIN_BRANCH" ]]; then
+			# there is no remote main branch configured for this repo
+			MAIN_BRANCH="$(git branch --list --no-column --all | grep -m 1 -Po '\b(origin/(HEAD|main|master))\b' | head -1)"
+		fi
+
+		if [[ -z "$MAIN_BRANCH" ]]; then
+			# this repo is a complete nonsense it doesn't have any main branch
+			echo "$COMMIT"
+			exit 0
+		fi
+
+		if [[ "$COMMIT" == "$(git rev-parse "$MAIN_BRANCH")" ]]; then
+			# COMMIT is the very last commit of the main branch
+			SPAN="$COMMIT"
+		elif git merge-base --is-ancestor "$COMMIT" "$MAIN_BRANCH"; then
+			# COMMIT is the ancestor of the main branch
+			SPAN="$COMMIT"
+		else
+			# COMMIT is in a branch and the branch is not the main one
+			SPAN="$MAIN_BRANCH..$COMMIT"
+		fi
+	fi
+
+	echo "$SPAN"
+} 2>/dev/null

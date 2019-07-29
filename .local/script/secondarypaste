@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+# secondarypaste - Paste data from SECONDARY buffer to stdout
+#
+# Usage:
+#   secondarypaste                - writes secondary buffer's contents to stdout
+#   secondarypaste | <command>    - pastes contents and pipes it to another process
+#   secondarypaste > <file>       - paste contents to a file
+
+if [[ -n "$(command -v xsel)" ]]; then
+	xsel --secondary --output 2>/dev/null
+elif [[ -n "$(command -v xclip)" ]]; then
+	xclip -o -sel sec 2>/dev/null
+else
+	echo "secondarypaste: xclip/xsel not installed" >/dev/stderr
+	exit 1
+fi

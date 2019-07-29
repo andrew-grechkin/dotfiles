@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+BIOS=()
+OPTIONS=()
+
+if [[ "$1" =~ uefi ]]; then
+	BIOS+=(
+		-bios /usr/share/ovmf/x64/OVMF.fd
+	)
+fi
+
+if [[ "$1" =~ usb.qcow2 ]]; then
+	OPTIONS+=(
+		-device "qemu-xhci,id=xhci"
+		-device "usb-storage,bus=xhci.0,drive=stick"
+		-drive "file=$1,if=none,id=stick,format=qcow2"
+	)
+else
+	OPTIONS+=(
+		-drive "file=$1,if=virtio,index=0,media=disk,format=qcow2"
+	)
+fi
+
+CMD=(
+	-audiodev "pa,id=snd0"
+	"${BIOS[@]}"
+	-cpu host
+	-device ich9-intel-hda
+	-device "hda-output,audiodev=snd0"
+	# -netdev "bridge,id=hn0"
+	# -device "virtio-net-pci,netdev=hn0,id=nic1"
+	# -nic "tap,ifname=tap0,romfile=,script=no,downscript=no"
+	# -device "virtio-net,netdev=network0"
+	# -netdev "tap,id=network0,ifname=tap0,script=no,downscript=no"
+	# -device "e1000,netdev=network0,mac=52:55:00:d1:55:01"
+	"${OPTIONS[@]}"
+	-display "gtk,zoom-to-fit=on"
+	-enable-kvm
+	-k en-us
+	-m 4G
+	-nic "user,model=virtio-net-pci,hostfwd=tcp::2222-:22"
+	# -serial stdio
+	-smp 2
+	# -vga std
+	-vga virtio
+	# -virtfs "local,path=$HOME/.cache,mount_tag=host0,security_model=passthrough,id=host0"
+)
+
+qemu-system-x86_64 "${CMD[@]}"

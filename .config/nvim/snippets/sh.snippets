@@ -1,0 +1,86 @@
+snippet #!
+	#!/usr/bin/env bash
+
+	set -Eeuo pipefail
+
+snippet if
+	if [[ $1 ]]; then
+		${0:${VISUAL}}
+	fi
+
+snippet elif
+	elif [[ $1 ]]; then
+		${0:${VISUAL}}
+
+snippet wh
+	while [[ $1 ]]; do
+		${0:${VISUAL}}
+	done
+
+snippet until
+	until [[ $1 ]]; do
+		${0:${VISUAL}}
+	done
+
+snippet fun
+	function ${1:function_name}() {
+		$0
+	}
+
+snippet wht
+	while true; do
+		${0:${VISUAL}}
+	done
+
+snippet for
+	for (( ${2:i} = 0; $2 < ${1:count}; $2++ )); do
+		${0:${VISUAL}}
+	done
+
+snippet fori
+	for ${1:needle} in ${2:haystack}; do
+		${0:${VISUAL}}
+	done
+
+snippet case
+	case ${1:word} in
+		${2:pattern})
+			${0};;
+	esac
+
+snippet go
+	while getopts '${1:o}' ${2:opts}; do
+		case $$2 in
+		${3:o0})
+			${0:#staments};;
+		esac
+	done
+
+snippet sdir "Set SCRIPT_DIR variable to directory script is located"
+	SCRIPT_DIR="\$( cd "\$( dirname "\${BASH_SOURCE[0]}" )" && pwd )"
+
+snippet getopt
+	function usage () {
+		echo "Usage :  \$${0:0} [options] [--]
+		Options:
+		-h|help       Display this message
+		-v|version    Display script version"
+	}
+
+	while getopts ":hv" opt; do
+		case \$opt in
+			h|help     ) usage; exit 0;;
+			v|version  ) echo "\$${0:0} -- Version \$__ScriptVersion"; exit 0;;
+			*          ) echo -e "\\n  Option does not exist : \$OPTARG\\n"
+				usage; exit 1;;
+		esac
+	done
+	shift \$(( $OPTIND-1 ))
+
+snippet root
+	if [ \$(id -u) -ne 0 ]; then exec sudo \$0; fi
+
+snippet fun
+	${1:function_name}() {
+		$0
+	}

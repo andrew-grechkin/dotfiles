@@ -1,0 +1,37 @@
+; vim: filetype=gitconfig
+
+[core]
+	pager = delta
+
+[interactive]
+	diffFilter = delta --color-only --features=interactive
+
+[pager]
+	blame  = delta
+	diff   = delta
+	log    = delta
+	reflog = delta
+	sh     = delta
+	show   = delta
+
+[delta]
+	features                      = line-numbers decorations navigate
+	hyperlinks                    = true
+	side-by-side                  = false
+	syntax-theme                  = "zenburn"
+    tabs                          = 4
+
+[delta "decorations"]
+	commit-decoration-style      = brightblue ul ol
+	commit-style                 = bold brightcyan
+	file-decoration-style        = brightcyan box
+	file-style                   = bold brightyellow
+	hunk-header-style            = none
+	hunk-header-decoration-style = none
+
+[delta "interactive"]
+	keep-plus-minus-markers = false
+
+[delta "line-numbers"]
+	line-numbers-left-style  = cyan
+	line-numbers-right-style = cyan

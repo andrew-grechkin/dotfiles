@@ -1,0 +1,62 @@
+#!/usr/bin/env perl
+
+use v5.36;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
+
+use Encode         qw(decode);
+use Getopt::Long   qw(:config auto_version bundling no_ignore_case);
+use JSON::PP       qw();
+use Module::Loaded qw(is_loaded);
+use Pod::Usage     qw(pod2usage);
+
+use Path::Tiny qw(path);
+
+BEGIN {
+    eval {require YAML::XS}; ## no critic [ErrorHandling::RequireCheckingReturnValueOfEval]
+}
+
+our $VERSION = 1;
+
+my %options = ('JSON' => 0);
+
+sub main() {
+    GetOptions(
+        'json|j' => \$options{'JSON'},
+        'help|h' => sub {pod2usage('-verbose' => 99, 'exitval' => 0)},
+    ) or die "Unable to process command line options\n";
+
+    my @inodes = map {path($_)->stat->ino} @ARGV;
+
+    my %links;
+    foreach my $inode (@inodes) {
+        my @cmd = (qw(sudo btrfs inspect-internal inode-resolve), $inode, '.');
+        chomp(my @links = `@cmd`);
+        $links{$inode} = [sort map {_find_absolute_path($_)} @links];
+    }
+
+    if (!$options{'JSON'} && is_loaded('YAML::XS')) {
+        say decode('UTF-8', YAML::XS::Dump(\%links));
+    } else {
+        say JSON::PP->new->pretty->encode(\%links);
+    }
+
+    return 0;
+}
+
+sub _find_absolute_path ($volume_path, $path = Path::Tiny::cwd()->absolute) {
+    do {
+        my $absolute_path = $path->child($volume_path);
+        return $absolute_path->absolute->stringify if $absolute_path->exists;
+        $path = $path->parent;
+    } until ($path->is_rootdir); ## no critic [ControlStructures::ProhibitPostfixControls]
+
+    return $volume_path;
+}
+
+exit main();
+
+__END__

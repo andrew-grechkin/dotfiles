@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+CWD="${1:-$(pwd)}"
+
+BUILD_TYPE=${BUILD_TYPE:-Debug}
+DIR=".build-$BUILD_TYPE"
+
+cmake -DCMAKE_BUILD_TYPE="$BUILD_TYPE" -S . -B "$CWD/$DIR"
+
+make -j -C "$CWD/$DIR"

@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+set -Eo pipefail
+
+# => support synology --------------------------------------------------------------------------------------------- {{{1
+
+[[ -d "/volume1/local/arch/usr" ]] && export OPENSSL_PREFIX="/volume1/local/arch/usr"
+
+# => environment -------------------------------------------------------------------------------------------------- {{{1
+
+LOCATION="$HOME/.local/lib/perl5"
+
+# shellcheck disable=SC1091
+source "$LOCATION/dev.rc" nice cpanm -nq --installdeps "$LOCATION" --with-develop --with-feature=mojo-extras
+
+# => switch to the library  --------------------------------------------------------------------------------------- {{{1
+
+echo "Switching to '$LIBRARY_NAME'"
+(
+	# shellcheck disable=SC1091
+	source "$PERLBREW_ROOT/etc/bashrc"
+	rm -f "$PERLBREW_ROOT/init" && perlbrew switch "$LIBRARY_NAME"
+)
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+# perlbrew install perl-5.38.0 -nf -j "$NPROC" --as='bperl5380' -Accflags="-DSILENT_NO_TAINT_SUPPORT" -Duseshrplib -Doptimize="-O3" -UDEBUGGING
+# perlbrew install perl-5.38.0 -nf -j "$NPROC" --as='bperl5380-debug' -Accflags="-DSILENT_NO_TAINT_SUPPORT" -Duseshrplib -Doptimize="-Og" -DDEBUGGING --clang
+# perlbrew install perl-5.38.0 -nf -j "$NPROC" --as='bperl5380-jemalloc' -Accflags="-DSILENT_NO_TAINT_SUPPORT" -Aldflags="-ljemalloc" -Duseshrplib -Doptimize="-O3" -UDEBUGGING

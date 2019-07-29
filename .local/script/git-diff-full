@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+git-in-repo && {
+	git --no-pager diff "$@"
+	git --no-pager diff "$@" --cached
+
+	# for FILE in $(git ls-files --others --exclude-standard); do
+	readarray -t FILES < <(git ls-files --others --exclude-standard) || true
+	for FILE in "${FILES[@]}"; do
+		git --no-pager diff --no-index /dev/null "$FILE" || true
+	done
+} | "$(git config core.pager)"

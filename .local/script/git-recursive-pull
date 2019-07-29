@@ -1,0 +1,30 @@
+#!/usr/bin/env zsh
+
+# vim: filetype=sh
+# man: zshexpn
+
+set -Euo pipefail
+
+if [[ "$#" -eq "1" ]] && [[ "$1" =~ \.git/?$ ]]; then
+	REPO=$(dirname "$1")
+
+	if [[ -n "$(git -C "$REPO" branch --show-current)" ]]; then
+		echo -n "$(tput setaf 3)"
+		echo "Updating $REPO"
+		echo -n "$(tput sgr0)"
+
+		git -C "$REPO" -c color.ui=always fetch --force      \
+			&& nice git -C "$REPO" -c color.ui=always bleach \
+			&& nice git -C "$REPO" -c color.ui=always pull
+	fi
+else
+	fd -HuL -E 'bazel-*' -td -tf -0 '\A.git\z' "${1:-$PWD}" | {
+		if [[ -n "$(command -v parallel)" ]]; then
+			parallel -j-2 --delay 0.3 -0 "$0" {}
+		else
+			xargs -0 --max-args=1 --no-run-if-empty "$0"
+		fi
+	}
+fi
+
+exit 0

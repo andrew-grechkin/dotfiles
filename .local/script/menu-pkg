@@ -1,0 +1,192 @@
+#!/usr/bin/env perl
+
+use v5.36;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
+
+use IPC::Open2 qw(open2);
+
+our $VERSION = 2;
+
+sub detect_os() {
+    chomp(my $NAME = `grep '^NAME=' /etc/os-release`);
+
+    my ($name) = $NAME =~ m/^NAME="? (.*?) "?$/x;
+
+    return $name;
+}
+
+sub fetch_packages ($os_name) {
+    state %commands = (
+        'Arch Linux'    => ['pacman -Qqd', 'pacman -Qqe', 'pacman -Slq'],
+        'CentOS Stream' => [
+            'dnf repoquery -C --installed --qf=%{name} 2>/dev/null',
+            'dnf repoquery -C --userinstalled --qf=%{name} 2>/dev/null',
+            'dnf repoquery -C --available --qf=%{name} 2>/dev/null',
+        ],
+        'Ubuntu' => [
+            'apt list --installed 2>/dev/null | grep -Po ".*?(?=\/)"',
+            'apt list --installed 2>/dev/null | grep -v "automatic" | grep -Po ".*?(?=\/)"',
+            'apt list 2>/dev/null | grep -Po ".*?(?=\/)"',
+        ],
+    );
+
+    die "Not found fetcher for: $os_name\n" unless exists $commands{$os_name};
+
+    my @result = map {chomp(my @lines = qx{$_}); \@lines} $commands{$os_name}->@*;
+
+    return @result;
+}
+
+## no critic [ValuesAndExpressions::ProhibitImplicitNewlines]
+sub preview_command ($os_name) {
+    state %commands = (
+        'Arch Linux' => q{
+            if [[ {2} == "available" ]]; then
+                cat <(pacman -Si {1}) <(pacman -Fl {1} | awk '{print $2}')
+            else
+                cat <(pacman -Qi {1}) <(pacman -Ql {1} | awk '{print $2}')
+            fi
+        },
+        'CentOS Stream' => q{
+            if [[ {2} == "available" ]]; then
+                cat <(dnf -C info {1} 2>/dev/null | grep -vF 'Last metadata') <(dnf repoquery -l {1} 2>/dev/null)
+            else
+                cat <(dnf -C info {1} 2>/dev/null | grep -vF 'Last metadata') <(rpm -ql {1} 2>/dev/null)
+            fi
+        },
+        'Ubuntu' => q{
+            if [[ {2} == "available" ]]; then
+                cat <(apt show {1} 2>/dev/null) <(apt-file list {1} 2>/dev/null)
+            else
+                cat <(apt show {1} 2>/dev/null) <(dpkg -L {1} 2>/dev/null)
+            fi
+        },
+    );
+
+    die "Not found previewer for: $os_name\n" unless exists $commands{$os_name};
+
+    return $commands{$os_name};
+}
+
+sub fzf_options ($os_name) {
+    state %commands = (
+        'Arch Linux' => [
+            '--bind', 'alt-a:execute(sudo pacman -S {+1} </dev/tty >/dev/tty)+abort',
+            '--bind', 'alt-r:execute(sudo pacman -Rcs {+1} </dev/tty >/dev/tty)+abort',
+        ],
+        'CentOS Stream' => [
+            '--bind', 'alt-a:execute(sudo dnf install --disableplugin=puppet {+1} </dev/tty >/dev/tty)+abort',
+            '--bind', 'alt-r:execute(sudo dnf remove --disableplugin=puppet {+1} </dev/tty >/dev/tty)+abort',
+        ],
+        'Ubuntu' => [
+            '--bind', 'alt-a:execute(sudo apt install {+1} </dev/tty >/dev/tty)+abort',
+            '--bind', 'alt-r:execute(sudo apt remove {+1} </dev/tty >/dev/tty)+abort',
+        ],
+    );
+
+    die "Not found mutator for: $os_name\n" unless exists $commands{$os_name};
+
+    return ($commands{$os_name}->@*, '--header', 'A-a:add A-r:remove',);
+}
+
+sub main() {
+    my $os_name = detect_os();
+    my (\@installed, \@installed_explicit, \@available) = fetch_packages($os_name);
+
+    my %available = map {$_ => undef} @available;
+    my %installed = map {$_ => undef} @installed;
+    delete @available{@installed, @installed_explicit};
+    delete @installed{@installed_explicit};
+
+    my @list;
+    push @list, map {[$_, 'installed         ', $_]} keys %installed;
+    push @list, map {[$_, 'installed explicit', $_]} @installed_explicit;
+    push @list, map {[$_, 'available         ', $_]} keys %available;
+
+    @list = sort {$a->[0] cmp $b->[0]} @list;
+
+    my ($fzf_pid, $fzf_out, $fzf_in) = _start_fzf($os_name);
+
+    _spew_to_fzf($fzf_in, \@list);
+
+    my \@output = _wait_fzf($fzf_pid, $fzf_out);
+    foreach my $line (@output) {
+        my ($package) = split m/\s/, $line;
+        say _trim($package);
+    }
+
+    return 0;
+}
+
+## no critic [ValuesAndExpressions::RequireInterpolationOfMetachars, ValuesAndExpressions::ProhibitImplicitNewlines]
+sub _start_fzf ($os_name) {
+
+    #     local %ENV = %ENV;
+    #     delete $ENV{FZF_DEFAULT_OPTS};
+
+    my $preview = preview_command($os_name);
+
+    my @cmd = (
+        'fzf', '--with-nth', '2..', '--multi', '--reverse',
+
+        # tidy
+        fzf_options($os_name),
+        '--bind',           "ctrl-m:execute( ( $preview ) | $ENV{PAGER} >/dev/tty)",
+        '--bind',           'ctrl-y:execute-silent(echo -n {+1} | $HOME/.local/script/clipcopy)',
+        '--bind',           'tab:toggle-out,shift-tab:toggle-in,`:clear-selection',
+        '--preview',        $preview,
+        '--preview-window', 'right:50%:wrap:nohidden',
+    );
+
+    my $pid = open2(my $chld_out, my $chld_in, @cmd);
+    binmode($_, ':encoding(UTF-8)') foreach $chld_in, $chld_out;
+    return $pid, $chld_out, $chld_in;
+}
+
+sub _spew_to_fzf ($in, $list) {
+    foreach my $package ($list->@*) {
+        say {$in} sprintf('%s %s %s', $package->@*);
+    }
+    close $in;
+
+    return;
+}
+
+sub _wait_fzf ($pid, $out) {
+    my @output = <$out>;
+
+    waitpid($pid, 0)
+        or die "Unable to wait for fzf to finish: $!\n";
+
+    @output = map _trim($_), @output;
+
+    return \@output;
+}
+
+sub _trim ($str) {
+    chomp($str);
+    return $str =~ s{\A\s+|\s+\z}{}xgr;
+}
+
+exit main();
+
+__END__
+
+=head1 NAME
+
+pac
+
+=head1 DESCRIPTION
+
+A simple wrapper around Linux package manager empowered by fzf.
+Allows to quickly install/uninstall packages and get information.
+
+=head1 SYNOPSIS
+
+pac
+
+=cut

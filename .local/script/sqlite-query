@@ -1,0 +1,24 @@
+#!/usr/bin/env perl
+
+use v5.40;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(class declared_refs defer refaliasing);
+
+use Mojo::SQLite qw();
+use YAML::XS     qw();
+
+my $database = $ARGV[0];
+my $sql      = Mojo::SQLite->new("sqlite:$database");
+my $rows     = do {
+    if (-t STDIN) {
+        $sql->db->select($ARGV[1]);
+    } else {
+        my $query = do {local $/ = undef; <STDIN>};
+        $sql->db->query($query);
+    }
+};
+
+print YAML::XS::Dump($rows->hashes->to_array);

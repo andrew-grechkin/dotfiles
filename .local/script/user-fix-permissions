@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+
+set -eEuo pipefail
+
+# restore file ownership and permission according to passed user and their umask
+# some known dirs are excluded from processing
+
+renice -n 5 "$$" > /dev/null
+
+USR="${1:-$USER}"
+GRP="$(id -ng "$USR")"
+
+if [[ "$USER" == "$USR" ]]; then
+	USR_HOME="$HOME"
+	USR_UMASK=$(umask)
+else
+	USR_HOME="$(eval echo ~"$USR")"
+	USR_UMASK=$(umask)
+	# TODO detect umask printf "%-10s" "$USR"; sudo su -c 'umask' -l "$USR" 2>/dev/null
+fi
+
+echo "Processing for owner $USR:$GRP umask: $USR_UMASK home: $USR_HOME"
+
+function recursively_remove_write_permission() {
+	REAL_PATH="$1"
+	while [[ "$REAL_PATH" != "$USR_HOME" ]] && [[ "$REAL_PATH" != "/home/$USR" ]] && [[ "$REAL_PATH" != "/" ]]; do
+		REAL_PATH="$(dirname "$REAL_PATH")"
+		[[ "$(basename "$REAL_PATH")" == "$USR" ]] && break
+		sudo chmod -c 'go-w' "$REAL_PATH"
+	done
+}
+
+IGNORE_FILE=$(mktemp -u)
+
+function finish {
+	rm -f "$IGNORE_FILE"
+}
+trap finish EXIT
+
+cat > "$IGNORE_FILE" <<END
+**/.cache/google-chrome/
+**/.config/google-chrome/
+**/.git/objects/
+**/.gnupg-work/
+**/.gnupg/
+**/.local/share/containers/
+**/.local/share/lilipod/containers/
+**/.ssh/
+**/@eaDir/
+END
+
+# umask is supported by chmod: https://teaching.idallen.com/cst8207/13w/notes/510_umask.html
+sudo bash -ec "
+	umask '$USR_UMASK'
+	echo '$(tput setaf 3)Checking owner/group$(tput sgr0)'
+	fd      -Lapu --ignore-file='$IGNORE_FILE' --search-path='$PWD' --exec-batch chown -c -h '${USR}:${GRP}' -- {}
+
+	echo '$(tput setaf 3)Checking dir mode$(tput sgr0)'
+	fd -t d -Lapu --ignore-file='$IGNORE_FILE' --search-path='$PWD' --exec-batch chmod -c 'go-rwx,+rwX,g+s'  -- {}
+
+	echo '$(tput setaf 3)Checking file mode$(tput sgr0)'
+	fd -t f -Lapu --ignore-file='$IGNORE_FILE' --search-path='$PWD' --exec-batch chmod -c 'go-rw,+rw'        -- {}
+"
+
+if [[ -e ".gnupg" ]]; then
+	echo "$(tput setaf 3)Correcting .gnupg mode$(tput sgr0)"
+	REAL_PATH="$(realpath .gnupg)"
+	sudo chmod -c -R 'u=rwX,go-rwx,g-s' "$REAL_PATH"
+	recursively_remove_write_permission "$REAL_PATH"
+fi
+
+if [[ -e ".ssh" ]]; then
+	echo "$(tput setaf 3)Correcting .ssh mode$(tput sgr0)"
+	REAL_PATH="$(realpath .ssh)"
+	sudo chmod -c -R 'u=rwX,go-rwx,g-s' "$REAL_PATH"
+	recursively_remove_write_permission "$REAL_PATH"
+fi

@@ -1,0 +1,4 @@
+[BatteryManagement]
+BatteryCriticalLevel=10
+BatteryLowLevel=15
+PeripheralBatteryLowLevel=15

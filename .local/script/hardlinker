@@ -1,0 +1,259 @@
+#!/usr/bin/env perl
+
+# 🄯 2024 Andrew Grechkin
+# LICENSE: Artistic-2.0
+#          GPL-2.0-or-later
+
+use v5.38;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin class declared_refs defer for_list refaliasing try);
+
+class Processor 3.01 {
+    use Digest::SHA  qw(sha256_hex);
+    use Encode       qw(decode);
+    use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+    use List::Util   qw(min);
+    use Pod::Usage   qw(pod2usage);
+
+    use File::Map               qw(map_file);
+    use Log::Any                qw($log);
+    use Log::Any::Adapter       qw(Syslog), ('options' => 'pid,ndelay');
+    use Log::Any::Adapter::Util qw(INFO TRACE);
+    use Path::Tiny              qw(path);
+
+    use constant {
+        'PARTIAL_CHECKSUM_SIZE' => 1 * 1024 * 1024,
+        'FS_ENCODING'           => 'UTF-8',
+        'MIN_SIZE'              => 1024,
+    };
+
+    field $apply    = 0;
+    field $follow   = 0;
+    field $min_size = MIN_SIZE();
+    field $recurse  = 0;
+    field $verbose  = 0;
+
+    field %stats;
+
+    ADJUST {
+        GetOptions(
+            'apply|a'    => \$apply,
+            'help|h'     => sub {pod2usage('-verbose' => 99, 'exitval' => 0)},
+            'min|m=i'    => \$min_size,
+            'follow|f'   => \$follow,
+            'recurse|r'  => \$recurse,
+            'verbose|v+' => \$verbose,
+        ) or die $log->fatal('Unable to process command line options') . "\n";
+
+        Log::Any::Adapter->set(
+            'Multiplex',
+            'adapters' => {
+                'Syslog' => ['log_level' => 'warning', 'options' => 'pid,ndelay'],
+                'Stderr' => ['log_level' => min(TRACE(), INFO() + $verbose)],
+            },
+        );
+
+        $log->tracef('apply: %d', $apply);
+
+        return $self;
+    }
+
+    method execute() {
+        ### Regroup files by dev + size
+        my \%by_dev_size = _regroup_arrays(
+            $self->_gather(),
+            'key' => sub ($, $value) {
+                return sprintf('d(%d)s(%d)', $value->{'stat'}->dev, $value->{'stat'}->size);
+            },
+        );
+
+        ### Prepare order by dev and file size
+        my @order = map {$_->[0]}
+            sort {$a->[1]->dev <=> $b->[1]->dev or $a->[1]->size <=> $b->[1]->size}
+            map {[$_, $by_dev_size{$_}[0]{'stat'}]} keys %by_dev_size;
+
+        ### Process every size group
+        my $counter = 0;
+        my $amount  = scalar @order;
+        foreach my $key (@order) {
+            $counter++;
+            my \@items = $by_dev_size{$key};
+            my $size = $items[0]{'stat'}->size;
+
+            $log->debugf('Processing bucket    (%d/%d/%d) %s', $counter, $amount, scalar @items, $key);
+
+            my $group = {%by_dev_size{$key}};
+            if (PARTIAL_CHECKSUM_SIZE() < $size) {
+                $group = _regroup_arrays(
+                    $group,
+                    'filter' => sub ($,    $value) {$value->@* > 1},
+                    'key'    => sub ($key, $value) {
+                        $value->{'partial_checksum'} //= do {
+                            map_file(my $map, $value->{'paths'}[0]);
+                            sha256_hex(substr($map, 0, PARTIAL_CHECKSUM_SIZE()));
+                        };
+                        return sprintf('%sp(%s)', $key, $value->{'partial_checksum'});
+                    },
+                );
+            }
+
+            $group = _regroup_arrays(
+                $group,
+                'filter' => sub ($,    $value) {$value->@* > 1},
+                'key'    => sub ($key, $value) {
+                    $value->{'checksum'} //= do {
+                        map_file(my $map, $value->{'paths'}[0]);
+                        sha256_hex($map);
+                    };
+                    return sprintf('%sc(%s)', $key, $value->{'checksum'});
+                },
+            );
+
+            foreach my $key (keys $group->%*) {
+                $log->tracef('Checksum subbucket  (%d/%d/%d) %s', $counter, $amount, scalar @items, $key);
+                $self->_process_identical_checksums($key, $group->{$key}->@*);
+            }
+        }
+
+        return 0;
+    }
+
+    method _gather() {
+        my %by_dev_ino;
+
+        $log->trace('Gathering files started');
+        defer {$log->debugf('Gathering files finished: %d', $stats{'files_count'})};
+
+        foreach my $dir (@ARGV ? @ARGV : ('.')) {
+            path($dir)->visit(
+                sub ($path, @) {
+                    $self->_is_valid_path($path)
+                        or return;
+
+                    my $stat = $path->stat;
+                    $self->_is_valid_file($path, $stat)
+                        or return;
+
+                    $log->tracef('found: %s', $path);
+                    ++$stats{'files_count'};
+                    my \%it = $by_dev_ino{sprintf('d(%d)i(%d)', $stat->dev, $stat->ino)}[0] //= {'stat' => $stat};
+                    push($it{'paths'}->@*, decode('UTF-8', $path->stringify, Encode::FB_CROAK));
+                },
+                {
+                    'follow_symlinks' => $follow,
+                    'recurse'         => $recurse,
+                },
+            );
+        }
+
+        return \%by_dev_ino;
+    }
+
+    method _is_valid_path ($path) {
+        return
+               $path !~ m/\@eaDir/
+            && $path->is_file
+            && !-l $path;
+    }
+
+    method _is_valid_file ($path, $stat) {
+        return $stat->size >= $min_size;
+    }
+
+    method _process_identical_checksums ($checksum, @inodes) {
+        @inodes > 1 or do {
+            $log->debugf('Skipping subbucket: %s', $checksum);
+            return;
+        };
+
+        @inodes = sort { ## no critic [BuiltinFunctions::ProhibitReverseSortBlock]
+                   $a->{'stat'}->mtime <=> $b->{'stat'}->mtime
+                or $b->{'paths'}->@*   <=> $a->{'paths'}->@*
+        } @inodes;
+
+        my $main_inode = shift @inodes;
+        my $main_path  = $main_inode->{'paths'}[0];
+        foreach my $inode (@inodes) {
+            $self->_do_hardlink($main_path, path($_)) foreach $inode->{'paths'}->@*;
+        }
+
+        return;
+    }
+
+    method _do_hardlink ($path, $new_path) {
+        my $message = join(' <- ', $path, $new_path);
+        $log->infof('Hardlinking: %s', $message);
+
+        if ($apply) {
+            my $backup = path($new_path . '.hardlinker');
+
+            try {
+                $new_path->move($backup);
+                link($path, $new_path);
+                $backup->remove;
+            } catch ($error) {
+                die $log->fatal("Unable to hardlink files $message: $error") . "\n";
+            };
+        }
+
+        return;
+    }
+
+    sub _regroup_arrays ($current_href, %params) {
+        my \%current = $current_href;
+
+        my %result;
+        while (my ($key, $items) = each %current) {
+            next if $params{'filter'} && !$params{'filter'}->($key, $items);
+
+            push($result{$params{'key'}->($key, $_)}->@*, $_) foreach $items->@*;
+        }
+
+        return \%result;
+    } ## no critic [CodeLayout::RequireFinalSemicolon]
+}
+
+exit Processor->new->execute();
+
+__END__
+
+=encoding UTF-8
+
+=head1 NAME
+
+hardlinker
+
+=head1 DESCRIPTION
+
+Detect and hardlink all identical files in given directories.
+
+=head1 SYNOPSIS
+
+hardlinker [options] [dir ...]
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--apply>
+
+Do real changes on file system
+
+=item B<--recurse>
+
+Process subdirs
+
+=item B<--verbose>
+
+Increase verbosity
+
+=item B<--min>
+
+Minimum size of file to process (default: 1024 bytes)
+
+=back
+
+=cut

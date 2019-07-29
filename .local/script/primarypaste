@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+# primarypaste - Paste data from PRIMARY buffer to stdout
+#
+# Usage:
+#   primarypaste                - writes primary buffer's contents to stdout
+#   primarypaste | <command>    - pastes contents and pipes it to another process
+#   primarypaste > <file>       - paste contents to a file
+
+case "$OSTYPE" in
+	cygwin* | msys*)
+		cat /dev/primary
+		;;
+	*)
+		if [[ -n "$(command -v xsel)" ]]; then
+			xsel --primary --output 2>/dev/null
+		elif [[ -n "$(command -v xclip)" ]]; then
+			xclip -o -sel p 2>/dev/null
+		else
+			echo "primarypaste: Platform $OSTYPE not supported or xclip/xsel not installed" >&2
+			exit 1
+		fi
+		;;
+esac

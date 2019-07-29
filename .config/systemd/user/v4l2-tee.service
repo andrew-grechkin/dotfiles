@@ -1,0 +1,11 @@
+[Unit]
+Description=v4l2 tee
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=30
+ExecStart=/usr/bin/bash -c "%h/git/private/dotfiles/submodules/private/.local/script-private/v4l2-tee"
+
+[Install]
+WantedBy=default.target

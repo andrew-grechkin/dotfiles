@@ -1,0 +1,27 @@
+#!/usr/bin/env perl
+
+# man: PerlIO
+
+use v5.36;
+use autodie;
+
+@ARGV
+    or push(@ARGV, '-');
+
+while (my $ARGV = shift) {
+    my $fh = *STDIN;
+
+    open($fh, '<', $ARGV) if $ARGV ne '-';
+
+    binmode($fh, ':raw :crlf');
+
+    while (<$fh>) {
+        chomp;
+    } continue {
+        say;
+    }
+
+    close($fh) if $ARGV ne '-';
+}
+
+__END__

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+command kubectl get pods 2>/dev/null \
+	| grep -v '^NAME'

@@ -1,0 +1,562 @@
+snippet marker
+	# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+# => Conditionals ------------------------------------------------------------------------------------------------- {{{1
+
+snippet ter "Conditional: ternary"
+	${1:condition} ? ${2:expression} : ${3:expression};
+
+snippet if "Conditional: if"
+	if (${1}) {
+		${0:...}
+	}
+
+snippet else "Conditional: else"
+	else {
+		${0:...}
+	}
+
+snippet elsif "Conditional: elsif"
+	elsif (${1}) {
+		${0:...}
+	}
+
+snippet ife "Conditional: if..else"
+	if (${1}) {
+		${2:...}
+	}
+	else {
+		${0:...}
+	}
+
+snippet ifee "Conditional: if..elsif..else"
+	if (${1}) {
+		${3:...}
+	}
+	elsif (${2}) {
+		${4:...}
+	}
+	else {
+		${0:...}
+	}
+
+# => One line conditionals ---------------------------------------------------------------------------------------- {{{1
+
+snippet xif "Conditional one-line: if"
+	${1:expression} if ${2:condition};
+	${0}
+
+snippet xunl "Conditional one-line: unless"
+	${1:expression} unless ${2:condition};
+	${0}
+
+# => Loops -------------------------------------------------------------------------------------------------------- {{{1
+
+snippet sort "Loop: numeric sort (block)"
+	sort {${0:\$a <=> \$b}} ${1:@array}
+
+snippet map "Loop: map (block)"
+	map {${0}} ${1:@array}
+
+snippet mapx "Loop: map"
+	map ${0}, ${1:@array}
+
+snippet grep "Loop: grep (block)"
+	grep {${0}} ${1:@array}
+
+snippet grepx "Loop: grep"
+	grep ${0}, ${1:@array}
+
+snippet for "Loop: foreach"
+	foreach my ${1:\$x} (${2:@array}) {
+		${3:...}
+	}
+	${0}
+
+snippet for_ "Loop: for $_"
+	for (${1:@array}) {
+		${2:...}
+	}
+	${0}
+
+snippet forc "Loop: for C-style"
+	for (my $${1:i} = 0; $${1} < ${2:\$size}; ++$${1}) {
+		${3:...}
+	}
+	${0}
+
+snippet fori "Loop: foreach indexed"
+	foreach my (${1:\$index}, ${2:\$value}) (${3:indexed(@array)}) {
+		${4:...}
+	}
+	${0}
+
+snippet forkv "Loop: foreach key, value"
+	foreach my (${1:\$key}, ${2:\$value}) (${3:%hash}) {
+		${4:...}
+	}
+	${0}
+
+snippet while "Loop: while"
+	while (${1}) {
+		${2:...}
+	}
+	${0}
+
+# => One line loops ----------------------------------------------------------------------------------------------- {{{1
+
+snippet xfor "Loop one-line: foreach"
+	${2:expression} foreach ${1:@array};
+	${0}
+
+snippet xwhi "Loop one-line: while"
+	${2:expression} while ${1:condition};
+	${0}
+
+# => Error checking ----------------------------------------------------------------------------------------------- {{{1
+
+snippet try "Error checking: try"
+	try {
+		${1:...}
+	} catch (\$err) {
+		${2:warn} ${3:"error occured: \$err"};
+	}
+	${0}
+
+snippet tryf "Error checking: try finally"
+	try {
+		${1:...}
+	} catch (\$err) {
+		${2:warn} ${3:"error occured: \$err"};
+	} finally {
+		${4:...}
+	}
+	${0}
+
+snippet eval "Error checking: eval"
+	eval {
+		${1:...}
+		1;
+	}
+	or do {
+		chomp(my \$err = \$@ || 'zombie error');
+		${2:warn} ${3:"eval finished with: \$err"};
+	};
+	${0}
+
+snippet ordo "Error checking: or do"
+	or do {
+		chomp(my \$err = \$@ || 'zombie error');
+		${1:warn} ${2:"eval finished with: \$err"};
+	};
+	${0}
+
+# => Functions ---------------------------------------------------------------------------------------------------- {{{1
+
+snippet sub "Function: named"
+	sub ${1:name} (${2:\$self}) {
+		${3:...}
+		return;
+	}
+	${0}
+
+snippet suba "Function: anonymous"
+	sub (${1:@params}) {
+		${0:...}
+	}
+
+snippet begin "Function: compiletime prologue" b
+	BEGIN {
+		${1:...}
+	}
+	${0}
+
+snippet end "Function: epilogue" b
+	END {
+		${0:...}
+	}
+
+# => Regex -------------------------------------------------------------------------------------------------------- {{{1
+
+snippet m/ "Regex: match with /"
+	m/${1:regex}/x
+
+snippet m{ "Regex: match with {"
+	m{${1:regex}}x
+
+snippet s/ "Regex: substitute with /"
+	s/${1:regex}/${2:substitute}/xgr
+
+snippet s{ "Regex: substitute with {"
+	s{${1:regex}}{${2:substitute}}xgr
+
+snippet qr{ "Regex: simple"
+	qr{${1:regex}}x
+
+snippet qrr{ "Regex: complex"
+	qr{
+		\A
+		${1:regex}
+		\z
+	}${0:x}
+
+# => Helpers ------------------------------------------------------------------------------------------------------ {{{1
+
+snippet #! "Helper: shebang" b
+	#!/usr/bin/env perl
+
+	${0}
+
+	__END__
+
+snippet bp "Helper: debug break here" b
+	\$DB::single=1;
+	${0}
+
+snippet . "Helper: fat comma"
+	=> ${1:value},
+	${0}
+
+snippet slurp "Helper: slurp" b
+	my $${1:var} = do { local \$/ = undef; open my \$fh, '<', ${2:\$file}; <\$fh> };
+	${0}
+
+snippet slurpd "Helper: slurp data" b
+	my (\$data, \$input, \$expected) = YAML::XS::Load(do {local \$/ = undef; <DATA>})->@{qw(data input expected)};
+	${0}
+
+snippet notimp "Helper: not implemented" b
+	croak((caller (0))[3], ': not implemented yet');
+	${0}
+
+snippet pvisit "Helper: path visit" b
+	$${1:path}->visit(
+		sub (\$path, \$state) {
+			\$path->is_file && !-l \$path
+				or return;
+			${0}
+		},
+		{
+			'follow_symlinks' => 0,
+			'recurse'         => 1,
+		},
+	);
+
+# => Headers ------------------------------------------------------------------------------------------------------ {{{1
+
+snippet head "Header: pragmas" b
+	use v5.40;
+	use autodie;
+	use open ':locale';
+	use utf8;
+	use warnings     qw(FATAL utf8);
+	use experimental qw(class declared_refs defer refaliasing);
+
+	${0}
+
+snippet head38 "Header: pragmas" b
+	use v5.38;
+	use autodie;
+	use open ':locale';
+	use utf8;
+	use warnings     qw(FATAL utf8);
+	use experimental qw(builtin class declared_refs defer for_list refaliasing try);
+
+	${0}
+
+snippet useau "Header: use autoclean" b
+	use namespace::autoclean qw(-except import);
+
+snippet usecarp "Header: use Carp" b
+	use Carp qw(croak);
+
+snippet usecon "Header: use constant" b
+	use constant {
+		'${1:constant_name}' => ${2:'value'},
+	};
+
+snippet usedd "Header: use Data::Dump" b
+	use Data::Dump qw(dd ddx);
+
+snippet usedump "Header: use Data::Dumper" b
+	use Data::Dumper qw(Dumper);
+
+snippet usedp "Header: use Data::Printer" b
+	use Data::Printer;
+
+snippet usedt "Header: use DateTime" b
+	use DateTime                   qw();
+	use DateTime::Format::Strptime qw();
+	use DateTime::Locale           qw();
+	use DateTime::TimeZone         qw();
+
+	state %datetime_defaults = (
+		'locale'    => DateTime::Locale->load('nl_NL'),
+		'time_zone' => DateTime::TimeZone->new(name => 'UTC'),
+	);
+	state \$datetime_formatter = DateTime::Format::Strptime->new(
+		'pattern' => '%F %T',
+		'strict'  => 1,
+		%datetime_defaults,
+	);
+
+snippet useeng "Header: use English" b
+	use English qw(-no_match_vars);
+
+snippet useerrno "Header: use Errno" b
+	use Errno qw(:POSIX);
+
+snippet useexpe "Header: use Experimental" b
+	use experimental qw(builtin class declared_refs defer for_list refaliasing try);
+
+snippet useexpo "Header: use Exporter" b
+	use Exporter qw(import);
+	our @EXPORT_OK = qw(
+	);
+
+snippet usejson "Header: use JSON" b
+	use JSON::PP qw();
+
+snippet usejsonx "Header: use JSON::MaybeXS" b
+	use JSON::MaybeXS qw();
+
+snippet uselu "Header: use List::Util" b
+	use List::Util qw(any);
+
+snippet usesu "Header: use Sub::Util" b
+	use Sub::Util qw(set_subname);
+
+snippet uselog "Header: use Log::Any" b
+	use Log::Any          qw(\$log);
+	use Log::Any::Adapter qw(Stderr), ('log_level' => 'notice');
+
+snippet usematch "Header: use match keyword" b
+	use Syntax::Keyword::Match;
+	use Syntax::Operator::Equ;
+	use Syntax::Operator::Eqr;
+
+snippet usemod "Header: use Module::Runtime" b
+	use Module::Runtime qw(use_module);
+
+snippet useover "Header: use overload" b
+    use overload
+        'bool'     => sub {return true},
+        'fallback' => true;
+
+snippet usepath "Header: use Path::Tiny" b
+	use Path::Tiny qw(path);
+
+snippet userefu "Header: use Ref::Util" b
+	use Ref::Util qw(is_arrayref is_hashref);
+
+snippet usesys "Header: use System::Command" b
+	use System::Command qw();
+
+snippet usetest "Header: use Test2::V0" b
+	use Test2::V0;
+	use Test2::Tools::Spec;
+
+snippet usetestbas "Header: use Test2::Tools::Basic" b
+	use Test2::Tools::Basic qw(todo);
+
+snippet usetime "Header: use Time::Moment" b
+	use DateTime::TimeZone qw();
+	use Time::Moment       qw();
+
+snippet usetimehr "Header: use Time::HiRes" b
+	use Time::HiRes qw(gettimeofday usleep);
+
+snippet useua "Header: use Mojo UserAgent" b
+	use Mojo::URL       qw();
+	use Mojo::UserAgent qw();
+
+	use constant {
+		'UA'  => Mojo::UserAgent->new->max_redirects(2)->request_timeout(10)->tap(sub {\$_->proxy->detect}),
+		'URL' => Mojo::URL->new('https://'),
+	};
+
+snippet useyam "Header: use YAML" b
+	use YAML::XS qw();
+
+# => Packages ----------------------------------------------------------------------------------------------------- {{{1
+
+snippet package "Package: new" b
+	package ${1:PackageName};
+
+	# ABSTRACT: Package ${1}
+
+	${0}
+
+	__END__
+
+snippet pkgm "Package: method call"
+	__PACKAGE__->${1:package_method}(${0:@params})
+
+# => Classes (Mojo) ----------------------------------------------------------------------------------------------- {{{1
+
+snippet base "Class: Mojo::Base base class" b
+	use v5.40;
+	use Mojo::Base           qw(-base);
+	use namespace::autoclean qw();
+
+	${0}
+
+snippet basea "Class: Mojo::Base base class with async_await" b
+	use v5.40;
+	use Mojo::Base           qw(-base -async_await);
+	use namespace::autoclean qw();
+
+	${0}
+
+snippet der "Class: Mojo::Base derived class" b
+	use v5.40;
+	use Mojo::Base           qw(${1:Name});
+	use namespace::autoclean qw();
+
+	${0}
+
+snippet dera "Class: Mojo::Base derived class with async_await" b
+	use v5.40;
+	use Mojo::Base           qw(${1:Name} -async_await);
+	use namespace::autoclean qw();
+
+	${0}
+
+snippet role "Class: Mojo::Base role" b
+	use v5.40;
+	use Mojo::Base           qw(-role);
+	use namespace::autoclean qw();
+
+	${0}
+
+snippet has "Class: Mojo attribute" b
+	has '${1:name}' => sub (\$self) {${2}};
+	${0}
+
+# => Classes (Moo/Moose) ------------------------------------------------------------------------------------------ {{{1
+
+snippet moo "Class: Moo/Moose" b
+	use ${1:Moo};
+	use namespace::autoclean qw();
+
+	${0}
+
+	__PACKAGE__->meta->make_immutable;
+
+snippet mhas "Class: attribute" b
+	has '${1:name}' => (
+		'is' => '${2:ro|rw}',
+	);
+	${0}
+
+snippet mhasbuild "Class: attribute with builder" b
+	has '${1:name}' => (
+		'is'      => '${2:ro|rw}',
+		'lazy'    => 1,
+		'builder' => '_build_${1}',
+	);
+	${0}
+
+	sub _build_${1} (\$self) {
+		${3:...}
+	}
+
+snippet mhasdefault "Class: attribute with defauld" b
+	has '${1:name}' => (
+		'is'      => '${2:ro|rw}',
+		'isa'     => '${3:Str|Int|HashRef|ArrayRef|etc}',
+		'lazy'    => 1,
+		'default' => sub {${4:default_value}},
+	);
+	${0}
+
+snippet moverride "Class: override" b
+	override ${1:name} => sub (${2:\$self}) {
+		${0}
+	};
+
+# => Tests -------------------------------------------------------------------------------------------------------- {{{1
+
+snippet testh "Header: test pragmas" b
+	use Test2::V0;
+	use Test2::Tools::Spec;
+
+	use YAML::XS qw();
+
+	my (\$data, \$input, \$expected) = YAML::XS::Load(do {local \$/ = undef; <DATA>})->@{qw(data input expected)};
+
+	${0}
+
+	done_testing();
+
+	__DATA__
+
+	---
+	data: null
+	expected: null
+	input: null
+
+snippet testm "Test: new module" b
+	#!/usr/bin/env perl
+
+	use v5.40;
+
+	# core
+	use lib '.';
+
+	# non core
+	use Test2::V0;
+	use Test2::Tools::Spec;
+
+	# local
+	use t::lib::Utils qw();
+	use ${1:ModuleName};
+
+	describe '${2:block name}' => sub {
+		tests '${3:test name}' => sub {
+			${0}
+		};
+	};
+
+	done_testing();
+
+	__END__
+
+snippet descr "Test: describe block" b
+	describe '${1:block name}' => sub {
+		tests '${2:test name}' => sub {
+			${0}
+		};
+	};
+
+snippet tests "Test: block" b
+	tests '${1:test name}' => sub {
+		${0}
+	};
+
+# => Pod ---------------------------------------------------------------------------------------------------------- {{{1
+
+snippet pod "POD: block"
+	__END__
+
+	=encoding UTF-8
+
+	=head1 NAME
+
+	${1:`(ps/current-package-name)`} -- ${0}
+
+	=head1 DESCRIPTION
+
+	=head1 SYNOPSIS
+
+	=cut
+
+snippet poda "POD: attributes"
+	=head1 ATTRIBUTES
+	${0}
+	=cut
+
+snippet podm "POD: methods"
+	=head1 METHODS
+	${0}
+	=cut

@@ -1,0 +1,9 @@
+#!/usr/bin/env zsh
+
+set -Euo pipefail
+
+tr -dc '[:alnum:]!@#$%^&*' </dev/urandom \
+	| dd count=24 bs=1 2>/dev/null \
+	| clipcopy
+
+notify-send -i dialog-password 'Password' 'Generated and copied to the clipboard'

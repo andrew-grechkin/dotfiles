@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+if ! command git rev-parse HEAD &>/dev/null; then
+	echo 'Please run this command in a git repo' > /dev/stderr
+	exit 1
+fi
+
+if (( $# < 1 )); then
+	echo 'Please pass 1 or 2 parameters'
+	exit 1
+elif (( $# < 2 )); then
+	WHERE="HEAD"
+else
+	WHERE="$1"
+	shift
+fi
+
+WHAT="$1"
+
+git rev-parse "$WHERE" 1>/dev/null
+git rev-parse "$WHAT" 1>/dev/null
+
+# if WHAT is not an ancestor for WHERE there is nothing to check further
+# it's definite that the changes in WHAT are not available in WHERE
+if ! git merge-base --is-ancestor "$WHAT" "$WHERE"; then
+	echo "Changes in $WHAT are not available in $WHERE"
+	exit 0
+fi
+
+echo "The reference $WHAT is reachable from $WHERE" >/dev/stderr
+CURRENT_REF="$(git name-rev --name-only --no-undefined HEAD)"
+TMP_STR="$(tr -dc A-Za-z0-9 </dev/urandom | head -c 8; echo)"
+TMP_BRANCH="check-changes/$TMP_STR"
+
+function cleanup {
+	git switch "$CURRENT_REF" &>/dev/null || git switch -d "$CURRENT_REF" &>/dev/null
+	git branch -D "$TMP_BRANCH" &>/dev/null
+}
+
+{
+	# if WHAT is an ancestor for WHERE we need to check if the changes done in
+	# WHAT are still available in WHERE or were overwritten for example
+	git switch -c "$TMP_BRANCH" "$WHERE"
+	trap cleanup EXIT
+
+	# cherry-pick the WHAT changes onto WHERE will allow to understand which part of changes
+	# are still available (those changes will be empty after cherry-pick) and which part was overwritten
+	# (those will be in a diff)
+	if [[ -n "$(git rev-parse --verify "$WHAT^2" 2>/dev/null)" ]]; then
+		WWW="$WHAT^1..$WHAT^2"
+	else
+		WWW="$WHAT"
+	fi
+
+	if ! git cherry-pick --empty=drop --no-rerere-autoupdate -Xtheirs -Xignore-all-space "$WWW"; then
+		# when file is deleted the conflict is guarantied, need a way to unfold it
+		git status --porcelain | awk '{if ($1=="DU") print $2}' | xargs git checkout --theirs
+		git status --porcelain | awk '{if ($1=="DU") print $2}' | xargs git add
+		git commit --no-verify -m'fixed'
+	fi
+
+	# for the utter failure finalize cherry-pick
+	git cherry-pick --skip 2>/dev/null || true
+} &>/dev/null
+
+if [[ -t 1 ]]; then
+	DIFF_OPTS+=(--color=always)
+fi
+
+DIFF="$(git diff "${DIFF_OPTS[@]}" --patch "$TMP_BRANCH" "$WHERE")"
+if [[ -n "$DIFF" ]]; then
+	echo "But not all changes made in $WHAT are available in $WHERE now" >/dev/stderr
+	echo >/dev/stderr
+	echo "The following changes are overwritten:" >/dev/stderr
+	echo "$DIFF"
+	exit 2
+else
+	echo "And all the changes made in $WHAT are available in $WHERE" >/dev/stderr
+	set -x
+fi

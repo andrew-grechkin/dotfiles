@@ -1,0 +1,90 @@
+#!/usr/bin/env perl
+
+# ABSTRACT: Detect all extra files in Arch linux system folders
+
+use v5.36;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
+
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+use Pod::Usage   qw(pod2usage);
+
+use YAML::XS qw();
+
+use constant {'FOLDERS' => [qw(/boot /etc /opt /srv /usr /var)]};
+
+our $VERSION = 1.2;
+
+my %options = ('VERBOSE' => 0);
+
+GetOptions(
+    'help|h'     => sub {pod2usage('-verbose' => 99, 'exitval' => 0)},
+    'verbose|v+' => \$options{'VERBOSE'},
+) or die('Unable to process command line options');
+
+sub main() {
+    _print(_altered_files());
+
+    return 0;
+}
+
+sub _altered_files() {
+    my %files;
+    foreach my $file (`pacman -Qkk 2>/dev/null`) {
+        chomp $file;
+        my ($type, $package, $path, $issue) = $file =~ m{([^:]+): ([^:]+): ([[:print:]]+) ([(] .+ [)]) \z}x;
+        $package && $path
+            or next;
+
+        # say $package, ' ', $type;
+        my \@issues = $files{_trim($package)}{_trim($path)} //= [];
+        push(@issues, _trim_par(_trim($issue)));
+    }
+    return \%files;
+}
+
+sub _print ($data_ref) {
+    print YAML::XS::Dump($data_ref);
+    return;
+}
+
+sub _trim ($str) {
+    return $str =~ s{^\s+|\s+$}{}gr;
+}
+
+sub _trim_par ($str) {
+    return $str =~ s{^[(]|[)]$}{}grx;
+}
+
+exit main();
+
+__END__
+
+=head1 NAME
+
+arch-detect-extra-files
+
+=head1 DESCRIPTION
+
+Detect all extra files in Arch linux system folders.
+This can help to find and backup manual configuration or remove undesired changes made on system.
+Increasing verbosity level allows to unfold well known categories.
+
+=head1 SYNOPSIS
+
+arch-detect-extra-files [options]
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--verbose>
+
+Increase verbosity
+
+=back
+
+=cut

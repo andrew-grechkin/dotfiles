@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -Euo pipefail
+
+bspc subscribe node_add | while read -r LINE; do
+	echo "$LINE"
+	read -r -a IDS <<<"$LINE"
+	bspc query --tree --node "${IDS[3]}" | jq -S
+done

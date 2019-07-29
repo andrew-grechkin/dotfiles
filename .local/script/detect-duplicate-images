@@ -1,0 +1,235 @@
+#!/usr/bin/env perl
+
+use v5.36;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
+
+use Encode       qw(decode);
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+use Pod::Usage   qw(pod2usage);
+
+use File::Map         qw(map_file);
+use Image::Hash       qw();
+use Log::Any          qw($log);
+use Log::Any::Adapter qw(Stderr), (log_level => 'notice');
+use Path::Tiny        qw(path);
+use YAML::XS          qw();
+
+our $VERSION = 1.00;
+
+use constant {'FS_ENCODING' => 'UTF-8'};
+
+my %options = (
+    'APPLY'   => 0,
+    'FOLLOW'  => 0,
+    'MOVE'    => 0,
+    'RECURSE' => 0,
+    'VERBOSE' => 0,
+);
+
+my %result_accumulator;
+
+local $SIG{'INT'} = \&show_result;
+
+sub show_result(@) {
+    print decode(FS_ENCODING(), YAML::XS::Dump(\%result_accumulator), Encode::FB_CROAK);
+    exit 128 + 2;
+}
+
+sub main {
+    GetOptions(
+        'apply|a'    => \$options{'APPLY'},
+        'help|h'     => sub {pod2usage('-verbose' => 99, 'exitval' => 0)},
+        'follow|f'   => \$options{'FOLLOW'},
+        'move|m'     => \$options{'MOVE'},
+        'recurse|r'  => \$options{'RECURSE'},
+        'verbose|v+' => \$options{'VERBOSE'},
+    ) or die "Unable to process command line options\n";
+
+    $log->{'adapter'}{'log_level'} += $options{'VERBOSE'};
+
+    @ARGV
+        or push(@ARGV, '.');
+
+    process();
+
+    if ($options{'MOVE'}) {
+        $log->info('moving duplicate files to own folders');
+        foreach my $checksum (keys %result_accumulator) {
+            my $dest = path($checksum);
+            foreach ($result_accumulator{$checksum}->@*) {
+                my $file = path($_);
+                next unless $file->exists;
+                $dest->mkpath;
+                path($file)->move($dest->child($file->basename));
+            }
+        }
+    }
+
+    show_result();
+
+    return 0;
+}
+
+sub log10 ($num) {
+    return log($num) / log(10);
+}
+
+sub decode_path ($path) {
+    return decode(FS_ENCODING(), $path->stringify, Encode::FB_CROAK);
+}
+
+sub gather_files() {
+    $log->info('Gathering files and grouping by dev & inode');
+
+    my %by_dev_ino;
+    my $counter = 0;
+    foreach my $folder (@ARGV) {
+        path($folder)->visit(
+            sub ($path, @) {
+                _is_valid_path($path)
+                    or return;
+
+                _is_valid_file($path, my $stat = $path->stat)
+                    or return;
+
+                ++$counter;
+                my \%it = $by_dev_ino{sprintf('d(%d)i(%d)', $stat->dev, $stat->ino)}[0] //= {'stat' => $stat};
+                push($it{'paths'}->@*, $path);
+                $log->tracef('found file: %s', decode_path($path));
+            },
+            {
+                'follow_symlinks' => $options{'FOLLOW'},
+                'recurse'         => $options{'RECURSE'},
+            },
+        );
+    }
+    $log->infof('Gathered files: %d, groups: %d', $counter, scalar %by_dev_ino);
+
+    return \%by_dev_ino;
+}
+
+sub process() {
+    my \%grouped = gather_files();
+
+    return unless %grouped;
+
+    my $amount  = %grouped;
+    my $width   = int(log10($amount)) + 1;
+    my $counter = 0;
+
+    $log->infof('Processing inode groups: %d', $amount);
+    \%grouped = _regroup_arrays(
+        \%grouped,
+        'key' => sub ($key, $value) {
+            my $path = $value->{'paths'}[0];
+            $log->debugf("Processing item: %${width}d/%d %s '%s'", ++$counter, $amount, $key, decode_path($path));
+
+            try {
+                map_file(my $map, $value->{'paths'}[0]);
+                my $processor = Image::Hash->new($map);
+                $value->{'ahash'} //= scalar $processor->ahash();
+                $value->{'phash'} //= scalar $processor->phash();
+                $log->tracef('  ahash: %s, phash: %s', $value->@{'ahash', 'phash'});
+                return +(sprintf('a(%s)', $value->@{'ahash'}), sprintf('p(%s)', $value->@{'phash'}));
+            } catch ($err) {
+                $log->warn('Error occured: ', $err);
+                return;
+            };
+        },
+    );
+
+    $amount  = %grouped;
+    $width   = int(log10($amount)) + 1;
+    $counter = 0;
+    $log->infof('Processing ahash & phash groups: %d', $amount);
+    foreach my $key (keys %grouped) {
+        _process_identical_checksums(++$counter, $amount, $width, $key, $grouped{$key}->@*);
+    }
+
+    return;
+}
+
+sub _is_valid_path ($path) {
+    return $path->is_file && !-l $path && $path !~ m/\@eaDir/ && $path =~ m/[.]jpe?g/ix;
+}
+
+sub _is_valid_file ($path, $stat) {
+    return 1;
+}
+
+sub _regroup_arrays ($current, %params) {
+    my %result;
+
+    while (my ($key, $items) = each($current->%*)) {
+        next if $params{'selector'} && !$params{'selector'}->($key, $items);
+
+        foreach my $item ($items->@*) {
+            my @new_keys = $params{'key'}->($key, $item);
+            push($result{$_}->@*, $item) foreach @new_keys;
+        }
+    }
+
+    return \%result;
+}
+
+sub _process_identical_checksums ($counter, $amount, $width, $checksum, @inodes) {
+    @inodes > 1 or do {
+        $log->tracef("[%${width}d/%d] skipping subbucket: %s", $counter, $amount, $checksum);
+        return;
+    };
+
+    $log->tracef("[%${width}d/%d] duplicates detected in %s: %d", $counter, $amount, $checksum, scalar @inodes);
+
+    @inodes = sort { ## no critic [BuiltinFunctions::ProhibitReverseSortBlock]
+               $a->{'stat'}->mtime <=> $b->{'stat'}->mtime
+            or $b->{'paths'}->@*   <=> $a->{'paths'}->@*
+    } @inodes;
+
+    foreach my $inode (@inodes) {
+        push($result_accumulator{$checksum}->@*, map {decode_path($_->absolute)} $inode->{'paths'}->@*);
+    }
+
+    return;
+}
+
+exit main();
+
+__END__
+
+=encoding UTF-8
+
+=head1 NAME
+
+detect-duplicate-images
+
+=head1 DESCRIPTION
+
+Detect duplicate images in given folders.
+
+=head1 SYNOPSIS
+
+detect-duplicate-images [options] [dir ...]
+
+=head1 OPTIONS
+
+=over 3
+
+=item B<--apply>
+
+Do real changes on file system
+
+=item B<--recurse>
+
+Process subfolders
+
+=item B<--verbose>
+
+Increase verbosity
+
+=back
+
+=cut

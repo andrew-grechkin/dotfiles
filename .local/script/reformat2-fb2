@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -uo pipefail
+
+DATETIME=$(date --rfc-3339=ns)
+
+for FILE in "$@"; do
+	echo "Linting file: '$FILE'"
+
+	perl -W -nE 'chomp($_); $_ =~ s/^\s+|\s+$//g; print($_, q{ }), ' "${FILE}" >"${FILE}.${DATETIME}.linted1"
+	if xmllint --format "${FILE}.${DATETIME}.linted1" >"${FILE}.${DATETIME}.linted2" 2>/dev/null; then
+		mv -f "${FILE}.${DATETIME}.linted2" "${FILE}"
+	else
+		echo "Wrong file: '$FILE'"
+	fi
+	rm -f "${FILE}.${DATETIME}.linted"{1,2}
+done

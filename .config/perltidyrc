@@ -1,0 +1,51 @@
+# vim: filetype=conf foldmethod=marker
+# man: perltidy
+
+# -pbp should be first (-l=78 -i=4 -ci=4 -st -se -vt=2 -cti=0 -pt=1 -bt=1 -sbt=1 -bbt=1 -nsfs -nolq)
+--perl-best-practices
+
+# and some redefined
+--maximum-line-length=120
+--indent-columns=4
+--continuation-indentation=4
+--vertical-tightness=0
+# --paren-tightness=2
+# --brace-tightness=2
+# --square-bracket-tightness=2
+# --block-brace-tightness=2
+--all-containers-tightness=2
+
+--character-encoding="utf8"
+--no-standard-output
+--warning-output
+
+--vertical-tightness-closing=0
+
+--cuddled-else
+--default-tabsize=4
+--maximum-consecutive-blank-lines=2
+--no-outdent-long-comments
+--no-outdent-long-quotes
+
+## comments
+#--minimum-space-to-comment=4
+--fixed-position-side-comment=80
+--hanging-side-comments
+--ignore-side-comment-lengths
+--indent-spaced-block-comments
+--static-side-comments
+
+## block comments
+--delete-closing-side-comments
+#--closing-side-comments
+#--closing-side-comment-interval=50
+#--closing-side-comment-warnings
+
+## Whitespace Control
+#--tight-secret-operators
+--no-space-keyword-paren
+--space-prototype-paren=0
+
+--break-at-old-method-breakpoints
+--stack-opening-tokens
+--weld-nested-containers

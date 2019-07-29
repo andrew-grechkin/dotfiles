@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+HOME_MNT='/home'
+PREFIX='@home'
+ROOT="$HOME_MNT/$PREFIX/.snapshots/init/snapshot"
+
+EXISTING_SUBVOLS_CNT="$(sudo btrfs subvolume list -a "$HOME_MNT" | wc -l)"
+
+if (( EXISTING_SUBVOLS_CNT == 0 )); then
+	sudo btrfs subvolume create -p "$HOME_MNT/$PREFIX"
+	sudo btrfs subvolume create -p "$HOME_MNT/$PREFIX/.snapshots"
+	sudo btrfs subvolume create -p "$ROOT"
+
+	sudo mkdir -p "$ROOT/.snapshots"
+	for DIR in "$HOME_MNT"/*; do
+		[[ "$DIR" == "$HOME_MNT/$PREFIX" ]] && continue
+		sudo cp -a --reflink=auto "$DIR" "$ROOT"/
+	done
+
+	echo "Setting default subvolume: $ROOT"
+	sudo btrfs subvolume set-default "$ROOT"
+else
+	echo 'Subvols already exist, aborting...'
+	sudo btrfs subvolume list -a "$HOME_MNT"
+	echo -n 'Default: '
+	sudo btrfs subvolume get-default "$HOME_MNT"
+	exit 1
+fi
