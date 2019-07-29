@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -eEuo pipefail
+
+renice -n 5 "$$" > /dev/null
+
+sudo fd --one-file-system --follow -us --prune -t d -g '@eaDir' -x rm -rf --

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+RECIPIENTS=(
+	27DAEE512BCA39EB
+	CDBA7E3E844B6508
+)
+
+for FILE in "$@"; do
+	FILENAMEFULL=$(basename "$FILE")
+	command gpg --armor --encrypt "${RECIPIENTS[@]/#/'--recipient='}" --output "./${FILENAMEFULL}.gpg" "$FILE"
+done

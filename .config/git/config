@@ -1,0 +1,228 @@
+[alias]
+	aa           = add --all
+	b            = branch -vv
+	behind       = !"MUB=\"$(git gmu)\"; echo \"Behind $MUB:\" &>/dev/stderr; git log --oneline HEAD..$MUB | wc -l"
+	bleach       = !"f(){ git fall; git b | perl -alE 'm/: gone]/ && $F[0] ne q(*) && system(qq(git branch -D $F[0]))'; }; f"
+	bname        = branch --show-current
+	brname       = !"f(){ git name-rev --name-only --no-undefined --refs=\"refs/remotes/*\" --exclude=HEAD \"${@:-HEAD}\" 2>/dev/null | grep -Po \"(?<=\\bremotes/).+$\"; }; f"
+	branches     = !"git branch --list --no-column --format='%(refname:lstrip=2)' \"$@\""
+	browse       = !"git-browse \"$@\""
+	bush         = !"f(){ while true; do git push && break; git pull --no-tags --rebase || break; done }; f"
+	cl           = clone --filter=blob:none
+	co           = !"f(){ echo 'Learn to use switch/restore commands instead'; }; f"
+	commit-again = !"git commit -eF \"$(git root)/.git/COMMIT_EDITMSG\" \"$@\""
+	compress     = !"git-compress"
+	compress-a   = !"git-compress-aggressive"
+	d            = -c delta.side-by-side=true diff -b
+	dc           = -c delta.side-by-side=true diff -b --cached
+	dd           = -c delta.side-by-side=true diff
+	ddc          = -c delta.side-by-side=true diff --cached
+	df           = !"git-diff-full -b"
+	ds           = diff -b --submodule=diff
+	dt           = difftool
+	dtg          = difftool --gui
+	dtw          = !"git difftool -b -t vimdiff $(git gmb)..HEAD"
+	dw           = !"git diff -b --color=always $(git gmb)..HEAD"
+	f            = !"fzf-git-log-branch"
+	fa           = !"fzf-git-log-all"
+	fag          = !"fzf-git-log-all-graph"
+	fam          = !"fzf-git-log-all-merges"
+	fall         = fetch --all --force
+	fg           = !"fzf-git-log-branch-graph"
+	fh           = !"f(){ cd -- \"${GIT_PREFIX:-.}\"; fzf-git-file-show-history \"$@\"; }; f"
+	fr           = !"fzf-git-log-reflog"
+	fw           = !"fzf-git-log-branch $(git gmu)..HEAD"
+	ha           = !"git --no-pager log --abbrev-commit --all --color=always --graph --pretty=oneline --topo-order"
+	l            = !"git-log-branch"
+	la           = !"git-log-all"
+	lag          = !"git-log-all-graph"
+	lam          = !"git-log-all-merges"
+	lg           = !"git-log-branch-graph"
+	lr           = !"git-log-reflog"
+	lw           = !"git-log-branch $(git gmrh)..HEAD"
+	m            = !"git checkout $(git gmb)"
+	m-base       = !"f(){ git merge-base ${1:-$(git gmb)} HEAD; }; f"
+	m-diff       = !"f(){ git diff     -b  --color=always `git m-span .. $@`; }; f"
+	m-dt         = !"f(){ git difftool -b -t vimdiff      `git m-span .. $@`; }; f"
+	m-log        = !"f(){ git log          --color=always `git m-span .. $@`; }; f"
+	m-span       = !"git-merge-span"
+	mt           = mergetool
+	mt4          = mergetool --tool=nvimdiff4
+	mtg          = mergetool --gui
+	p            = push --force-with-lease
+	pall         = !"git-push-all"
+	pdesc        = !"f(){ git describe --always \"${@:-HEAD}\"; }; f"
+	pub          = !"git push -u origin $(git bname) -o merge_request.create -o merge_request.remove_source_branch"
+	puba         = !"git push -u origin $(git bname) -o merge_request.create -o merge_request.remove_source_branch -o merge_request.merge_when_pipeline_succeeds"
+	redow        = !"f(){ git rebase -i --autosquash --keep-base --committer-date-is-author-date --update-refs `git gmb` \"$@\"; }; f"
+	root         = !"f(){ git rev-parse --show-superproject-working-tree --show-toplevel | head -1; }; f"
+	s            = !"menu-git-search"
+	sh           = show --show-signature
+	shd          = -c delta.side-by-side=true show --show-signature  --ignore-space-change
+	sm           = !"menu-git-search-message"
+	st           = status -b
+	unpub        = !"f(){ git push origin :$(git bname); }; f"
+	untag        = !"f(){ git push origin :$(git describe --exact-match --tags); }; f"
+	up           = pull
+	what         = whatchanged --show-signature
+
+	### helper ---------------------------------------------------------------------------------------------------------
+	# detect main remote branch
+	gmb          = !"f(){ R=\"$(git gmr \"${@:-HEAD}\")\"; [[ -n \"$R\" ]] && { git gmu \"${@:-HEAD}\" | grep -Po \"(?<=\\b$R/)\\w+$\"; } || git rev-parse --abbrev-ref --symbolic-full-name HEAD; }; f"
+	# detect main remote name by .git/config branch or refs/remotes/.../HEAD
+	gmr          = !"f(){ git config --local --get \"branch.$(git pbranch \"${@:-HEAD}\").remote\" 2>/dev/null || git show-ref 2>/dev/null | grep -Po '(?<=\\brefs/remotes/)[^\\/]+(?=/HEAD\\b)' | head -1; }; f"
+	# detect main remote/HEAD ref name by refs/remotes/.../HEAD
+	gmrh         = !"f(){ git show-ref  2>/dev/null | grep -Po '(?<=\\brefs/remotes/)[^\\/]+/HEAD\\b' | head -1; }; f"
+	# detect main upstream branch
+	gmu          = !"f(){ git pbranch $(git gmrh); }; f"
+	# print upstream
+	gu           = rev-parse --abbrev-ref --symbolic-full-name @{upstream}
+	# print branch name
+	pbranch      = !"f(){ git rev-parse --verify --abbrev-ref \"${@:-HEAD}\" 2>/dev/null; }; f"
+	# print commit
+	pcommit      = !"f(){ git rev-parse --verify              \"${@:-HEAD}\" 2>/dev/null; }; f"
+
+	### care taking ----------------------------------------------------------------------------------------------------
+	# restore-origin-head = symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/master
+	remove-origin-head = !"f(){ git remote set-head -d \"${@:-origin}\"; }; f"
+	restore-origin-head = !"f(){ git remote set-head --auto \"${@:-origin}\"; }; f"
+
+	### experimental ---------------------------------------------------------------------------------------------------
+
+	add-mr-refs  = config --local --add remote.origin.fetch '+refs/merge-requests/*/head:refs/remotes/origin/merge-requests/*/head'
+	make-shallow = !"f(){ git fetch --prune-tags --prune; git tag -d $(git tag -l); git reflog expire --expire=all --all; git gc --prune=all; }; f"
+
+[apply]
+	whitespace = fix
+
+[blame]
+	ignoreRevsFile      = ~/.config/git/global-blame-ignore-revs
+	markUnblamableLines = true
+	; ignoreRevsFile = .git-blame-ignore-revs
+
+[clone]
+	rejectShallow = true
+
+[core]
+	autocrlf       = false
+	editor         = vi
+	fsmonitor      = true
+	longpaths      = true
+	pager          = less
+	preloadindex   = true
+	quotepath      = false
+	tabwidth       = 4
+	untrackedcache = true
+	whitespace     = trailing-space,space-before-tab,blank-at-eol,blank-at-eof,cr-at-eol
+
+[diff]
+	algorithm       = minimal
+	colorMoved      = true
+	colorMovedWS    = ignore-all-space
+	guitool         = meld
+	indentHeuristic = true
+	submodule       = diff
+	tool            = fugitive
+
+[difftool]
+	prompt        = false
+	trustExitCode = true                                                       # be able to abort all diffs with ':cq' or ':cquit'
+
+[difftool "fugitive"]
+	cmd = vi -f -c "Gdiffsplit!" "$MERGED"
+
+[difftool "vimdiff"]
+	cmd = vimdiff "$LOCAL" "$REMOTE"
+
+[difftool "meld"]
+	cmd = meld "$LOCAL" "$REMOTE"
+
+[fetch]
+	parallel         = 0
+	prune            = true
+	pruneTags        = false
+	writeCommitGraph = true
+
+[format]
+	pretty = commit %H%d %(describe:tags) %nAuthor: [%ai] %aN <%aE>%nCommit: [%ci] %cN <%cE>%n%n%B
+
+[gc]
+	auto = 0
+
+[grep]
+	extendedRegexp = true
+	lineNumber     = true
+	patternType    = perl
+
+[gpg "ssh"]
+	allowedSignersFile = ~/.config/git/allowed_signers
+
+[gui]
+	encoding = utf-8
+
+[init]
+	defaultBranch = main
+	templatedir = ~/.config/git/init-template
+
+[help]
+	autocorrect = 1
+
+[http]
+	sslVerify = true
+
+[log]
+	color    = auto
+	date     = iso8601
+	decorate = short
+	follow   = true
+
+[merge]
+	conflictstyle = zdiff3
+	guitool       = meld
+	tool          = fugitive
+
+[mergetool]
+	keepBackup    = false
+	prompt        = false
+	trustExitCode = true
+
+[mergetool "fugitive"]
+	cmd = vi -f -c "Gdiffsplit!" "$MERGED"
+
+[mergetool "meld"]
+	cmd = meld "$LOCAL" "$BASE" "$REMOTE" --output "$MERGED"
+
+[mergetool "nvimdiff4"]
+	cmd = nvim -d "$LOCAL" "$BASE" "$REMOTE" "$MERGED" -c 'windo setlocal nomodifiable' -c '$wincmd w' -c 'setlocal modifiable' -c 'wincmd J'
+
+[pager]
+	branch = false
+
+[pull]
+	rebase = true
+
+[push]
+	autoSetupRemote = true
+	followTags      = false
+
+[rebase]
+	abbreviateCommands  = true
+	autoSquash          = true
+	autoStash           = true
+	missingCommitsCheck = warn
+	stat                = true
+	updateRefs          = true
+
+[rerere]
+	autoUpdate = true
+	enabled    = true
+
+[status]
+	showStash = true
+
+[tag]
+	sort               = version:refname
+
+[include]
+	path = ~/.config/gitconfig.overrides
+	path = ~/.config/gitconfig.delta

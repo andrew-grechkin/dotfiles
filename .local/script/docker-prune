@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+command docker volume prune -f
+command docker system prune -a -f

@@ -1,0 +1,55 @@
+#!/usr/bin/env perl
+
+use v5.36;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
+
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+use Pod::Usage   qw(pod2usage);
+
+use Path::Tiny qw(path);
+
+use AnyArchive::Create  qw();
+use AnyArchive::Extract qw();
+
+our $VERSION = 1.000;
+
+my %options = ('GZ' => 0);
+
+sub main() {
+    GetOptions(
+        'gz'     => \$options{'GZ'},
+        'help|h' => sub {pod2usage(-verbose => 99, exitval => 0)},
+    ) or die "Unable to process command line options\n";
+
+    my $suffix     = $options{'GZ'} ? '.tgz' : '.tzst';
+    my $error_code = 0;
+    foreach my $archive (map {path($_)} @ARGV) {
+        $archive->exists
+            or die "Archive $archive doesn't exist\n";
+
+        try {
+            my $basename    = AnyArchive::Extract::basename($archive);
+            my $destination = Path::Tiny->tempdir('archive-convert-XXXXXXXXXX', 'CLEANUP' => 1);
+            my $new_archive = Path::Tiny->cwd->child($basename . $suffix);
+
+            $new_archive->exists
+                and die "File already exists: $new_archive\n";
+
+            AnyArchive::Extract::execute($archive, $destination);
+            AnyArchive::Create::execute($new_archive, [$destination->children], $destination);
+        } catch ($error) {
+            warn $error;
+            $error_code = 1;
+        } ## no critic [CodeLayout::RequireFinalSemicolon]
+    }
+
+    return $error_code;
+}
+
+exit main();
+
+__END__

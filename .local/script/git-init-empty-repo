@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+git-in-repo || {
+	git init .
+	git commit --allow-empty -m 'init: empty commit'
+}

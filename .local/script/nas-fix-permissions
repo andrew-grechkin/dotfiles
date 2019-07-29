@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+set -eEuo pipefail
+
+renice -n 5 "$$" > /dev/null
+
+USR="${1:-$USER}"
+GRP="$(id -ng "$USR")"
+USR_HOME="$(eval echo ~"$USR")"
+echo "$USR_HOME"
+
+function recursively_remove_write_permission() {
+	REAL_PATH="$1"
+	while [[ "$REAL_PATH" != "$USR_HOME" ]] && [[ "$REAL_PATH" != "/home/$USR" ]] && [[ "$REAL_PATH" != "/" ]]; do
+		REAL_PATH="$(dirname "$REAL_PATH")"
+		[[ "$(basename "$REAL_PATH")" == "$USR" ]] && break
+		sudo chmod -c 'go-w' "$REAL_PATH"
+	done
+}
+
+shopt -s dotglob
+
+sudo chown -c -R "${USR}:${GRP}" -- *
+sudo chmod -c -R 'a+rX,ug+w,o-w' -- *
+sudo fd -u -E "@eaDir" -t d -x chmod -c g+s --
+
+if [[ -e ".gnupg" ]]; then
+	echo "$(tput setaf 3)Correcting .gnupg mode$(tput sgr0)"
+	REAL_PATH="$(realpath .gnupg)"
+	sudo chmod -c -R 'u=rwX,go-rwx,g-s' "$REAL_PATH"
+	recursively_remove_write_permission "$REAL_PATH"
+fi
+
+if [[ -e ".ssh" ]]; then
+	echo "$(tput setaf 3)Correcting .ssh mode$(tput sgr0)"
+	REAL_PATH="$(realpath .ssh)"
+	sudo chmod -c -R 'u=rwX,go-rwx,g-s' "$REAL_PATH"
+	recursively_remove_write_permission "$REAL_PATH"
+fi

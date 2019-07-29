@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+command docker images -a \
+	| perl -nlE 'BEGIN {$re = shift} m/$re/ or next; say $_; @c = split m/\s+/; print `docker rmi --force $c[2]`' "$1"

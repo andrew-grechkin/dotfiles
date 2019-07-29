@@ -1,0 +1,63 @@
+#!/usr/bin/env perl
+
+use v5.40;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(class declared_refs defer refaliasing);
+
+use English      qw(-no_match_vars);
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+
+use Mojo::Server::Daemon qw();
+use Mojo::JSON           qw(encode_json);
+
+local $ENV{MOJO_LOG_LEVEL} = 'error';
+local $OUTPUT_AUTOFLUSH = 1;
+
+my $repeat = 0;
+
+GetOptions('repeat|r' => \$repeat)
+    or die "Unable to process command line options\n";
+
+my $daemon = Mojo::Server::Daemon->new(listen => ['http://*:3000'], silent => 1);
+
+$daemon->unsubscribe('request')->on(
+    request => sub ($daemon, $tx) {
+        $tx->on(
+            finish => sub ($tx) {
+                unless ($repeat) {
+                    $daemon->stop;
+                    $daemon->ioloop->stop;
+                }
+            },
+        );
+
+        my $req = $tx->req;
+
+        my $data = {
+            body    => $req->json || $req->body_params->to_hash,
+            headers => $req->headers->to_hash,
+            method  => $req->method,
+            path    => $req->url->path->to_string,
+            query   => $req->url->query->to_hash,
+        };
+
+        my $body = encode_json($data);
+
+        say {*STDOUT} $body;
+
+        # Response
+        $tx->res->code(200);
+        $tx->res->headers->content_type('application/json');
+        $tx->res->body($body);
+
+        # Resume transaction
+        $tx->resume;
+    },
+);
+
+$daemon->run;
+
+__END__

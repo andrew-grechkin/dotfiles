@@ -1,0 +1,66 @@
+[Action_0]
+Automatic=true
+Description=Youtube links handeling
+Number of commands=8
+Regexp=([^"\\s]+youtube.*watch\\?[^"\\s]+)|([^"\\s]+youtu.be[^"\\s]+)
+
+[Action_0/Command_0]
+Commandline[$e]=mpv --quiet --ytdl-raw-options='format="b[height<=1080]",sub-langs="en,nl,ru,fr,de,it,pt"' -- '%0'
+Description=Play youtube video with mpv
+Enabled=true
+Icon=mpv
+Output=0
+
+[Action_0/Command_1]
+Commandline[$e]=mpv --quiet --ytdl-raw-options='format="bv*[ext=webm][height<=720]+ba/bv*[ext=mp4][height<=720]+ba/b",sub-langs="en,nl,ru,fr,de,it,pt"' -- '%0'
+Description=Play youtube video with mpv (720p)
+Enabled=true
+Icon=mpv
+Output=0
+
+[Action_0/Command_2]
+Commandline[$e]=mpv --quiet --ytdl-raw-options='format="bv*[ext=webm][height<=1080]+ba/bv*[ext=mp4][height<=1080]+ba/b",sub-langs="en,nl,ru,fr,de,it,pt"' -- '%0'
+Description=Play youtube video with mpv (1080p)
+Enabled=true
+Icon=mpv
+Output=0
+
+[Action_0/Command_3]
+Commandline[$e]=mpv --quiet --ytdl-raw-options='format="ba/b"' --vid=no -- '%0'
+Description=Play youtube audio
+Enabled=true
+Icon=audio-ogg
+Output=0
+
+[Action_0/Command_4]
+Commandline[$e]=---
+Description=—
+Enabled=false
+Output=0
+
+[Action_0/Command_5]
+Commandline[$e]=tsp ~/.local/script/video-download -h 1080 -- -P '~/videos' '%0'
+Description=Download youtube video (1080p)
+Enabled=true
+Icon=video-webm
+Output=0
+
+[Action_0/Command_6]
+Commandline[$e]=tsp ~/.local/script/video-download -h 1440 -- -P '~/videos' '%0'
+Description=Download youtube video (1440p)
+Enabled=true
+Icon=video-webm
+Output=0
+
+[Action_0/Command_7]
+Commandline[$e]=tsp ~/.local/script/audio-download -- -P '~/music' '%0'
+Description=Download youtube audio
+Enabled=true
+Icon=audio-flac
+Output=0
+
+[General]
+Number of Actions=1
+
+[Notification Messages]
+klipperClearHistoryAskAgain=false

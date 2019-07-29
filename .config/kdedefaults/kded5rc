@@ -1,0 +1,8 @@
+[Module-baloosearchmodule]
+autoload=false
+
+[Module-browserintegrationreminder]
+autoload=false
+
+[Module-device_automounter]
+autoload=false

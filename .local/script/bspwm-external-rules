@@ -1,0 +1,61 @@
+#!/usr/bin/env perl
+
+use v5.34;
+use autodie;
+use warnings qw(FATAL utf8);
+
+open(my $log, '>>', '/tmp/bspwm-external-rule.log')
+    or warn "open failed: $!";
+
+say {$log} '################################################################################################';
+say {$log} "args: @ARGV";
+
+my ($window_id, $class_name, $instance_name, $params) = @ARGV;
+my $output = '';
+
+if ($params !~ m/\brectangle=\d/) {
+    my $xprop = `xprop -id "$window_id"`;
+    say {$log} "xprop: $xprop";
+
+    my $xprop_hints
+        = `xprop -id "$window_id" -f WM_NORMAL_HINTS 0bi ' \$0 \$1 \$2 \$3 \$4 \$5 \$6 \$7 \$8 \$9' WM_NORMAL_HINTS`;
+    say {$log} "hints: $xprop_hints";
+
+    my @data = split m/ /, $xprop_hints;
+    my (undef, undef, $loc_x, $loc_y, $size_w, $size_h, $min_size_w, $min_size_h, $max_size_w, $max_size_h) = @data;
+
+    if ($xprop =~ m/_KDE_NET_WM_WINDOW_TYPE_ON_SCREEN_DISPLAY/xms) {
+        $output = 'layer=above center=on manage=on focus=off';
+    } elsif (defined $loc_x && defined $loc_y && defined $size_w && defined $size_h && ($size_h || $size_w)) {
+        $output = "center=off rectangle=${size_w}x${size_h}+${loc_x}+${loc_y}";
+    }
+
+    if ($xprop =~ m/GlobalProtect/ms) {
+        $output .= ' state=floating focus=off';
+    } else {
+        if ($xprop =~ m/_NET_WM_STATE_ABOVE/xms) {
+            $output .= ' state=floating';
+        } else {
+            if (   $xprop =~ m/_NET_WM_WINDOW_TYPE_NORMAL/ms
+                || $xprop =~ m/"Zoom Meeting"/ms
+                || $xprop =~ m/"Zoom Workplace - Licensed account"/ms)
+            {
+                ## nothing to do
+            } elsif ($xprop =~ m/zoom_linux_float_video_window/ixms) {
+                $output .= ' state=floating sticky=on';
+            } elsif ($xprop =~ m/\Ajoin[?]action=join/xms) {
+                $output .= ' state=floating focus=off';
+            } elsif ($xprop =~ m/"zoom/xms) {
+                $output .= ' state=floating';
+            }
+        }
+    }
+}
+
+# _KDE_NET_WM_WINDOW_TYPE_ON_SCREEN_DISPLAY, _NET_WM_WINDOW_TYPE_NOTIFICATION
+# _NET_WM_WINDOW_TYPE_DIALOG, _KDE_NET_WM_WINDOW_TYPE_OVERRIDE, _NET_WM_WINDOW_TYPE_NORMAL
+
+print {*STDOUT} $output if $output;
+say   {$log} "output: $output";
+
+__END__

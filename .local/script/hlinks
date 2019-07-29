@@ -1,0 +1,29 @@
+#!/usr/bin/env perl
+
+use v5.38;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin class declared_refs defer for_list refaliasing try);
+
+use English qw(-no_match_vars);
+
+use Mojo::File qw(path);
+
+my $path   = path($ARGV[0]);
+my $parent = $path->dirname->to_abs;
+my $inode  = $path->stat->ino;
+
+my $mnt_target = '/';
+if ($parent =~ m{/volume\d/.+}) {
+    ($mnt_target) = $parent =~ m{(/volume\d/[^/]+)/}x;
+} else {
+    chomp($mnt_target = `findmnt -n --raw --output=target -T '$parent'`);
+}
+
+my @cmd = (qw(sudo btrfs inspect-internal inode-resolve), $inode, $mnt_target);
+system(@cmd) == 0
+    or die("Unable to run comand '@cmd': $CHILD_ERROR\n");
+
+__END__

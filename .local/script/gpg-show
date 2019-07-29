@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+gpg --import --import-options=show-only --with-fingerprint --with-subkey-fingerprint "$@"

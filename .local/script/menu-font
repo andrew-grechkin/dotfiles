@@ -1,0 +1,142 @@
+#!/usr/bin/env perl
+
+use v5.36;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
+
+use Carp         qw(carp);
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+use IPC::Open2   qw(open2);
+use List::Util   qw(max);
+use Pod::Usage   qw(pod2usage);
+use builtin      qw(trim);
+
+our $VERSION = 1;
+
+my @additional_properties;
+GetOptions(
+    'property|p=s' => \@additional_properties,
+    'help|h'       => \(my $help),
+) or die('Unable to process command line options');
+
+if ($help) {
+    pod2usage(
+        -verbose => 99,
+        exitval  => 0,
+    );
+}
+
+my @properties = (qw(file family style), @additional_properties);
+
+sub main() {
+    my \@fonts = _fetch_fonts();
+    my ($fzf_pid, $fzf_out, $fzf_in) = _start_fzf();
+
+    _spew_to_fzf($fzf_in, \@fonts);
+
+    my \@output = _wait_fzf($fzf_pid, $fzf_out);
+
+    if (@output) {
+        my ($file) = split(m/ /, $output[0]);
+        say trim($file);
+    }
+
+    return 0;
+}
+
+sub _fetch_fonts() {
+    my %defaults = map {$_ => ''} @properties;
+    my $format   = join ':', map {"%{$_\[0]}"} @properties;
+    chomp(my @fonts = `fc-list --format='${format}\n'`);
+    @fonts = map {
+        my %r;
+        @r{@properties} = split m/:/;
+        @r{@properties} = map {$_ // ''} @r{@properties};
+        \%r
+    } @fonts;
+
+    return \@fonts;
+}
+
+sub _start_fzf() {
+    local %ENV = %ENV;
+    delete $ENV{FZF_DEFAULT_OPTS};
+
+    my @cmd = (
+        'fzf',
+        '--bind',     'tab:accept',
+        '--bind',     'home:top',
+        '--with-nth', '2..', '--preview-window', 'right:86:wrap', '--preview',
+        q{fc-scan $(perl -lE '@F = split m/ /, $ARGV[0]; say $F[0]; exit' {})}, ## no critic [ValuesAndExpressions::RequireInterpolationOfMetachars]
+    );
+
+    my $pid = open2(my $chld_out, my $chld_in, @cmd);
+    binmode($_, ':encoding(UTF-8)') foreach $chld_in, $chld_out;
+    return $pid, $chld_out, $chld_in;
+}
+
+sub _spew_to_fzf ($in, $fonts) {
+    my %c        = _column_sizes($fonts);
+    my $template = join(' ', map {"%-$c{$_}s"} @properties);
+
+    foreach my $font (sort {$a->{'family'} cmp $b->{'family'} or $a->{'style'} cmp $b->{'style'}} $fonts->@*) {
+        say {$in} sprintf($template, $font->@{@properties});
+    }
+    close $in;
+
+    return;
+}
+
+sub _wait_fzf ($pid, $out) {
+    my @output = <$out>;
+
+    waitpid($pid, 0)
+        or carp "Unable to wait for fzf to finish: $!";
+
+    @output = map trim($_), @output;
+
+    return \@output;
+}
+
+sub _column_sizes ($fonts) {
+    my $cols = scalar($fonts->[0]->%*);
+    my %result;
+    foreach my $field (@properties) {
+        $result{$field} = 1 + max map length, map {$_->{$field}} $fonts->@*;
+    }
+
+    return %result;
+}
+
+exit main();
+
+__END__
+
+=head1 NAME
+
+fonts
+
+=head1 DESCRIPTION
+
+Find a font by any font property with a full font information preview.
+The search is provided by fzf application.
+By default the search properties are family and style.
+
+=head1 SYNOPSIS
+
+fonts [options]
+
+=head1 OPTIONS
+
+=over 1
+
+=item B<--property>
+
+Add a property to search by
+
+=back
+
+=cut

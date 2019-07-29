@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+for FILE in "$@"; do
+	command gpg --detach-sign "$FILE"
+done

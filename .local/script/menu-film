@@ -1,0 +1,16 @@
+#!/usr/bin/env zsh
+
+set -Eeuo pipefail
+
+FOLDER="${1:-/media/nfs/home/video}"
+
+function list_files() {
+	(
+		cd "$FOLDER"
+		while read -r LINE; do
+			echo "$LINE	mpv --quiet -- \"${FOLDER}/$LINE\""
+		done < <(fd --no-ignore -t file -e webm -e mkv -e avi -e mp4 -e ts --relative-path)
+	) | sort
+}
+
+list_files | fzf-execute

@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+set -eEeuo pipefail
+
+command git rev-parse HEAD &>/dev/null || {
+    echo "Unsafe to run outside of a git repo" >/dev/stderr
+    exit 1
+}
+
+if [[ "$#" -lt 1 ]]; then
+    echo "Please pass a substitute regex s/// or s{}{}" >/dev/stderr
+    exit 1
+fi
+
+ARGV=("$@")
+REGEX="${ARGV[-1]}"
+unset "ARGV[-1]"
+
+if [[ "$REGEX" =~ ^s/ ]]; then
+    SEARCH=$(echo "$REGEX" | grep -o -P '(?<=s/)(.*?)(?=/)')
+elif [[ "$REGEX" =~ ^s\{ ]]; then
+    SEARCH=$(echo "$REGEX" | grep -o -P '(?<=s{)(.*?)(?=}{)')
+else
+    echo "Invalid regex: '$REGEX'" >/dev/stderr
+    exit 1
+fi
+
+mapfile -t FILES < <(rg "${ARGV[@]}" -L -l "$SEARCH")
+
+if [[ "${FILES[*]}" == "" ]]; then
+    exit
+else
+    perl -pi -E "BEGIN {@ARGV = grep {! -l} @ARGV} $REGEX" "${FILES[@]}"
+fi

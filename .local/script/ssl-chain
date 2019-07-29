@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+SERVER=$1
+PORT=${2:-443}
+
+echo 'quit' | openssl s_client -showcerts -servername "${SERVER}" -connect "${SERVER}:${PORT}"

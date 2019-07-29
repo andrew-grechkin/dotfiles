@@ -1,0 +1,22 @@
+#!/usr/bin/env perl
+
+use v5.36;
+
+@ARGV
+    or push @ARGV, 'HEAD';
+
+my $cmd = 'git rev-parse --verify ' . join( ' ', @ARGV );
+
+chomp( my $git_remote_url = `git remote get-url origin` );
+chomp( my $ref            = qx{$cmd} );
+
+my $final_url = 'unknown';
+if ( $git_remote_url =~ m/^git@/ && $git_remote_url =~ m/gitlab[.]boo/x ) {
+    my $gitlab_remote_url = $git_remote_url =~ s/^git@ | [.]git$//grx;
+    $gitlab_remote_url =~ s{:}{/}gx;
+    $final_url = sprintf 'https://%s/-/commits/%s', $gitlab_remote_url, $ref;
+}
+
+say $final_url;
+
+__END__

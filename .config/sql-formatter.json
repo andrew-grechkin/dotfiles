@@ -1,0 +1,9 @@
+{
+  "expressionWidth": 120,
+  "keywordCase": "upper",
+  "language": "spark",
+  "linesBetweenQueries": 2,
+  "tabWidth": 4,
+  "tabulateAlias": true,
+  "useTabs": false
+}

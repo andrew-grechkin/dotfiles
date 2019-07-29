@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+command kubectl --help 2>/dev/null \
+	| grep --color=never '^\s\{2\}\w' \
+	| grep -v 'kubectl'

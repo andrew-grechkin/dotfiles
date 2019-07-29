@@ -1,0 +1,5 @@
+[Layout]
+LayoutList=us,ru
+Options=grp:lctrl_lshift_toggle
+ResetOldOptions=true
+SwitchMode=Window

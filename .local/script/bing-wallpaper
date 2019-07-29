@@ -1,0 +1,194 @@
+#!/usr/bin/env perl
+
+# ABSTRACT: Download latest available Bing photo of the day and set it as a wallpaper
+
+use v5.36;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
+
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+use List::Util   qw(shuffle uniq);
+use Pod::Usage   qw(pod2usage);
+
+use Log::Any          qw($log);
+use Log::Any::Adapter qw(Stderr), ('log_level' => 'info');
+use Mojo::File        qw(path);
+use Mojo::URL         qw();
+use Mojo::UserAgent   qw();
+
+our $VERSION = 3.0;
+
+use constant {
+    'PREFERRED_FONTS' => {map {$_ => undef} 'DejaVu Serif', 'DejaVu Sans', 'Noto Sans CJK JP', 'Source Han Sans'},
+    'UA'              => Mojo::UserAgent->new->max_redirects(2)->request_timeout(10)->tap(sub {$_->proxy->detect}),
+    'URL'             => Mojo::URL->new('http://www.bing.com'),
+};
+
+my %options = (
+    'HELP'       => 0,
+    'MARKET'     => 'de-DE,en-AU,en-CA,en-IN,en-NZ,en-UK,en-US,es-ES,fr-FR,ja-JP,zh-CN',
+    'OUTPUT_DIR' => '/var/tmp/bing-wallpaper',
+    'SET'        => 0,
+    'VERBOSE'    => 0,
+);
+
+sub main() {
+    GetOptions(
+        'directory|d=s' => \$options{'OUTPUT_DIR'},
+        'help|h'        => sub {pod2usage('-verbose' => 99, 'exitval' => 0)},
+        'market|m=s'    => \$options{'MARKET'},
+        'set|s'         => \$options{'SET'},
+        'verbose|v+'    => \$options{'VERBOSE'},
+    ) or die $log->fatal('Unable to process command line options');
+    $options{'OUTPUT_DIR'} = path($options{'OUTPUT_DIR'});
+
+    my $market = (shuffle split(m/,/, $options{'MARKET'}))[0];
+    my $info   = _fetch_info($market);
+    my $path   = _fetch_image($market, $info->{'images'}[0]);
+
+    if ($options{'SET'}) {
+        if ($ENV{'XDG_CURRENT_DESKTOP'}) {
+            _set_wallpaper($path);
+        } else {
+            die $log->fatal('Unable to determine current desktop session');
+        }
+    }
+
+    return 0;
+}
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+sub _fetch_info ($market, $limit = 1, $skip = 0) {
+    my $url = URL()->clone->path('HPImageArchive.aspx')->query(
+        'format' => 'js',
+        'idx'    => $skip,
+        'n'      => $limit,
+        'mkt'    => $market,
+    );
+    $log->infof('Archive url: %s', $url);
+
+    my $response = UA()->get($url)->result;
+    $response->is_success
+        or croak("Failed to retrieve '$url': ", join(' ', $response->code, $response->message));
+
+    return $response->json
+        || croak("Failed to decode json: $! $@");
+}
+
+sub _fetch_image ($market, $descriptor) {
+    $options{'OUTPUT_DIR'}->make_path;
+    my $jpg_path = $options{'OUTPUT_DIR'}->child("image-of-the-day-$market.jpg");
+
+    my $url = URL()->clone->path_query($descriptor->{'url'});
+    $log->infof('Fetching:    %s', $url);
+    $log->infof('To:          %s', $jpg_path);
+
+    my $response = UA()->get($url)->result;
+    $response->is_success
+        or croak("Failed to retrieve '$url': ", join(' ', $response->code, $response->message));
+
+    $response->save_to($jpg_path);
+
+    _process_image($jpg_path, $descriptor);
+
+    return $jpg_path;
+}
+
+sub _process_image ($path, $descriptor) {
+    my $family = _find_font_family($descriptor->{'copyright'});
+    $log->infof('Applying:    %s', $descriptor->{'copyright'});
+    $log->infof('Font family: %s', $family);
+    $descriptor->{'copyright'} =~ s{'}{"}g;
+    my @cmd = (
+        qw(convert -fill white -pointsize 28 -gravity NorthWest -draw),
+        "text 150,0 '$descriptor->{'copyright'}'",
+        '-family', $family, $path, $path,
+    );
+    system(@cmd) == 0
+        or die $log->fatal('Unable to process image');
+    return;
+}
+
+sub _find_font_family ($text) {
+    my $charcodes = $text =~ s/(.)/sprintf '%04X ', ord $1/gre;
+    chomp(my @families = `fc-list --format '%{family[0]}\n' ':style=Regular:charset=$charcodes'`);
+    @families = sort {-exists(PREFERRED_FONTS()->{$a}) + exists(PREFERRED_FONTS()->{$b}) or $a cmp $b} uniq @families;
+
+    return $families[0];
+}
+
+sub _set_wallpaper ($path) {
+    if (lc $ENV{'XDG_CURRENT_DESKTOP'} eq 'kde') {
+        my $script = <<~"END_KDE_SCRIPT";
+        var Desktops = desktops();
+        for (i = 0; i < Desktops.length; ++i) {
+                d = Desktops[i];
+                d.wallpaperPlugin = "org.kde.image";
+                d.currentConfigGroup = Array("Wallpaper", "org.kde.image", "General");
+                d.writeConfig("Image", "file://$path");
+        }
+        END_KDE_SCRIPT
+
+        # d.writeConfig("FillMode", 1);
+
+        my @cmd = (
+            qw(dbus-send --session --dest=org.kde.plasmashell --type=method_call /PlasmaShell),
+            'org.kde.PlasmaShell.evaluateScript',
+            "string: $script",
+        );
+
+        system(@cmd) == 0
+            or die $log->fatal('Unable to set KDE wallpaper');
+
+        return;
+    }
+
+    system(qw(feh --no-fehbg --bg-scale), $path) == 0
+        or croak('Unable to set wallpaper: ', $path);
+
+    return;
+}
+
+exit main();
+
+__END__
+
+=head1 NAME
+
+bing-wallpaper
+
+=head1 DESCRIPTION
+
+Download latest available Bing photo of the day and set it as a wallpaper
+
+=head1 SYNOPSIS
+
+bing-wallpaper [options]
+
+=head1 OPTIONS
+
+=over 3
+
+=item B<--directory>
+
+Directory for images
+
+=item B<--market>
+
+Fetch only images for specific countries (de-DE,en-AU,en-CA,en-IN,en-NZ,en-UK,en-US,es-ES,fr-FR,ja-JP,zh-CN)
+
+=item B<--set>
+
+Set fetched image as background
+
+=back
+
+=head1 PREREQS
+
+Arch: pacman -S feh perl-libwww noto-fonts-cjk
+
+=cut

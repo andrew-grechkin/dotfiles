@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+if [[ -x "$(command -v nvim)" ]]; then
+	nvim -d "$@"
+else
+	COMMAND=$(PATH=${PATH//"$(dirname "$0")"/} command -v vimdiff)
+	"$COMMAND" "$@"
+fi

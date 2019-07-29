@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+TMP_FILE="$(mktemp -u)"
+
+tmux-pane > "$TMP_FILE"
+
+tmux new-window -n pane-history "$(dirname "$0")/vi -c 'set nowrap' $TMP_FILE; rm -f $TMP_FILE"

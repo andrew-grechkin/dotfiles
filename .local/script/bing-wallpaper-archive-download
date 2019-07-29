@@ -1,0 +1,93 @@
+#!/usr/bin/env perl
+
+# ABSTRACT: download latest available Bing photo of the day
+
+use v5.36;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
+
+use Mojo::File      qw(path);
+use Mojo::Util      qw(encode);
+use Mojo::URL       qw();
+use Mojo::UserAgent qw();
+use YAML::XS        qw(DumpFile);
+
+our $VERSION = 2.0;
+
+use constant {
+    'MARKETS'      => {map {$_ => undef} qw(de-DE en-AU en-CA en-IN en-NZ en-UK en-US es-ES fr-FR ja-JP zh-CN)},
+    'OUTPUT_DIR'   => path('.'),
+    'PARAM_FORMAT' => 'format=js',
+    'PARAM_LIMIT'  => 'n=',
+    'PARAM_MARKET' => 'mkt=',
+    'PARAM_SKIP'   => 'idx=',
+    'UA'           => Mojo::UserAgent->new->max_redirects(2)->request_timeout(10)->tap(sub {$_->proxy->detect}),
+    'URL'          => Mojo::URL->new('http://www.bing.com'),
+};
+
+sub main() {
+    foreach my $market (sort keys MARKETS()->%*) {
+        for (my ($skip, $limit) = (0, 5); $skip <= 10; $skip += $limit) {
+            say 'Skip: ', $skip;
+            my $info = _fetch_info($market, $limit, $skip);
+
+            _fetch_images($market, $info->{'images'}->@*);
+        }
+    }
+
+    return 0;
+}
+
+sub _fetch_info ($market, $limit, $skip) {
+    my $url = URL()->clone->path('HPImageArchive.aspx')->query(
+        'format' => 'js',
+        'idx'    => $skip,
+        'n'      => $limit,
+        'mkt'    => $market,
+    );
+    say 'Archive url: ', $url;
+
+    my $response = UA()->get($url)->result;
+    $response->is_success
+        or croak("Failed to retrieve '$url': ", join(' ', $response->code, $response->message));
+
+    return $response->json
+        || croak("Failed to decode json: $! $@");
+}
+
+sub _fetch_images ($market, @descriptors) {
+    foreach my $descriptor (@descriptors) {
+        delete $descriptor->{'wp'};
+
+        my $dir = OUTPUT_DIR()->child($market);
+        $dir->make_path;
+        my $title        = $descriptor->{'copyright'}            =~ s{\s+[(] © .* [)]}{}xmsgr || $descriptor->{'title'};
+        my $name         = "[$descriptor->{'startdate'}] $title" =~ s{/}{-}xgr;
+        my $jpg_filename = $dir->child($name . '.jpg');
+        my $yml_filename = $dir->child($name . '.yml');
+        -e $jpg_filename
+            and next;
+
+        my $image_url = URL()->clone->path_query($descriptor->{'url'});
+        say 'Fetching: ', $image_url;
+        say 'To:       ', $jpg_filename;
+
+        my $response = UA()->get($image_url)->result;
+        $response->is_success
+            or croak("Failed to retrieve '$image_url': ", join(' ', $response->code, $response->message));
+
+        DumpFile($yml_filename, $descriptor);
+        $response->save_to($jpg_filename);
+
+        sleep 1;
+    }
+
+    return;
+}
+
+exit main();
+
+__END__

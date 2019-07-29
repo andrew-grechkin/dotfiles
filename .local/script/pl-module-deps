@@ -1,0 +1,74 @@
+#!/usr/bin/env perl
+
+use v5.40;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(class declared_refs defer refaliasing);
+
+class Deps {
+    use Module::CoreList qw();
+
+    use List::Util qw(uniqstr);
+    use MetaCPAN::Client;
+    use YAML::XS qw();
+
+    field $distributons : reader = {};
+    field $client = MetaCPAN::Client->new();
+
+    method process_modules($modules_aref) {
+        my @dists = map {$client->module($_)->distribution} $modules_aref->@*;
+        $self->process_distributions(\@dists);
+        return;
+    }
+
+    method process_distributions($distributions_aref, $parents = []) {
+        foreach my $dist (sort $distributions_aref->@*) {
+            if (exists $distributons->{$dist}{deps}) {
+                next;
+            }
+            if ($parents->@*) {
+                my $shift = '  ' x scalar $parents->@*;
+                say {*STDERR} "${shift}dep dist: $dist";
+            } else {
+                say {*STDERR} "dist: $dist";
+            }
+
+            my $release = $client->release($dist);
+
+            my \@deps = $release->dependency;
+            @deps = uniqstr sort map {
+                my $module = $client->module($_->{module});
+                $module->distribution;
+            } grep {
+                       $_->{module} ne 'perl'
+                    && $_->{relationship} eq 'requires'
+                    && $_->{phase} eq 'runtime'
+                    && !Module::CoreList::is_core($_->{module})
+            } @deps;
+
+            push($distributons->{$_}{reverse}->@*, $dist) foreach @deps;
+
+            $distributons->{$dist}{deps} //= \@deps;
+
+            $self->process_distributions(\@deps, [$parents->@*, $dist]);
+        }
+
+        return;
+    }
+
+    method print {
+        print YAML::XS::Dump($distributons);
+        return;
+    }
+}
+
+@ARGV
+    or exit(1);
+
+my $deps = Deps->new;
+$deps->process_modules(\@ARGV);
+$deps->print;
+
+__END__

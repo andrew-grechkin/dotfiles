@@ -1,0 +1,274 @@
+#!/usr/bin/env perl
+
+# ABSTRACT: Detect all extra files in Arch linux system folders
+
+use v5.36;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
+
+use Encode       qw(decode);
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+use List::Util   qw(first max);
+use Pod::Usage   qw(pod2usage);
+
+eval {
+    require Path::Tiny;
+    1;
+} or do {
+    die 'Please install Path::Tiny (pacman -S perl-path-tiny)', "\n";
+};
+
+use constant {
+    'FOLDERS'  => [qw(/boot /etc /opt /srv /usr /var)],
+    'CATEGORY' => {
+        'AccountsService cache' => {
+            'level' => 2,
+            'match' => qr{\A /var/lib/AccountsService/}x,
+        },
+        'Bluetooth paired devices' => {
+            'level' => 2,
+            'match' => qr{\A /var/lib/bluetooth/}x,
+        },
+        'Cache' => {
+            'level' => 2,
+            'match' => qr{\A /var/cache/}x,
+        },
+        'Certificates' => {
+            'level' => 2,
+            'match' => qr{\A (/etc/ca-certificates/|/etc/ssl/certs/)}x,
+        },
+        'Cups config' => {
+            'level' => 1,
+            'match' => qr{\A /etc/cups/}x,
+        },
+        'EFI files' => {
+            'level' => 2,
+            'match' => qr{\A /boot/efi/}xi,
+        },
+        'Fontconfig cache' => {
+            'level' => 2,
+            'match' => qr{\A /var/cache/fontconfig/|/etc/fonts/conf[.]d/}x,
+        },
+        'Flatpack' => {
+            'level' => 2,
+            'match' => qr{\A /var/lib/flatpak/}x,
+        },
+        'Local' => {
+            'level' => 2,
+            'match' => qr{\A /usr/local/}x,
+        },
+        'Fwupd' => {
+            'level' => 2,
+            'match' => qr{\A /var/lib/fwupd/}x,
+        },
+        'Haskel modules config' => {
+            'level' => 2,
+            'match' => qr{\A /usr/lib/ghc-\d+[.]\d+[.]\d+/package[.]conf[.]d/}xi,
+        },
+        'Icons cache' => {
+            'level' => 2,
+            'match' => qr{\A /usr/share/icons/}x,
+        },
+        'Kernel (boot)' => {
+            'level' => 2,
+            'match' => qr{\A /boot/.*-linux}x,
+        },
+        'Kernel modules' => {
+            'level' => 2,
+            'match' => qr{\A /usr/lib/modules/}x,
+        },
+        'Lightdm' => {
+            'level' => 2,
+            'match' => qr{\A /var/lib/lightdm/}x,
+        },
+        'Logs' => {
+            'level' => 2,
+            'match' => qr{\A /var/log/}x,
+        },
+        'Man cache' => {
+            'level' => 2,
+            'match' => qr{\A /var/cache/man/}x,
+        },
+        'MIME share cache' => {
+            'level' => 2,
+            'match' => qr{\A /usr/share/mime/}x,
+        },
+        'Mono certs' => {
+            'level' => 2,
+            'match' => qr{\A /usr/share/.mono/(?:new-)?certs/}x,
+        },
+        'NetworkManager' => {
+            'level' => 2,
+            'match' => qr{\A /var/lib/NetworkManager/}x,
+        },
+        'PackageKit' => {
+            'level' => 2,
+            'match' => qr{\A /var/lib/PackageKit/alpm/}x,
+        },
+        'Pacman cache' => {
+            'level' => 2,
+            'match' => qr{\A /var/cache/pacman/}x,
+        },
+        'Pacman config, keyring' => {
+            'level' => 2,
+            'match' => qr{\A /etc/pacman.d/}x,
+        },
+        'Pacman local database' => {
+            'level' => 2,
+            'match' => qr{\A (/usr)?/var/lib/pacman/(local|sync)/}x,
+        },
+        'Python crap' => {
+            'level' => 2,
+            'match' => qr{\A /usr/lib/python .* pyc}x,
+        },
+        'SDDM cache' => {
+            'level' => 2,
+            'match' => qr{\A /var/lib/sddm/[.]cache/}x,
+        },
+        'Skel' => {
+            'level' => 1,
+            'match' => qr{\A /etc/skel/}x,
+        },
+        'SSH config' => {
+            'level' => 2,
+            'match' => qr{\A /etc/ssh/}x,
+        },
+        'Systemd config' => {
+            'level' => 2,
+            'match' => qr{\A (/etc|/var/lib)/systemd/}x,
+        },
+        'Texmf crap' => {
+            'level' => 1,
+            'match' => qr{\A /var/lib/texmf/}x,
+        },
+        'Upower history' => {
+            'level' => 2,
+            'match' => qr{\A /var/lib/upower/history-}x,
+        },
+        'Wallpapers (dynamic)' => {
+            'level' => 2,
+            'match' => qr{\A /var/tmp/ [\w-]* wallpaper [\w-]* /}x,
+        },
+        'colord' => {
+            'level' => 2,
+            'match' => qr{\A /var/lib/colord/}x,
+        },
+        'undefined' => {
+            'level' => 0,
+            'match' => qr{.*},
+        },
+    },
+};
+
+our $VERSION = 1;
+
+my %options = ('VERBOSE' => 0,);
+
+GetOptions(
+    'help|h'     => \(my $help),
+    'verbose|v+' => \$options{'VERBOSE'},
+) or die('Unable to process command line options');
+
+if ($help) {
+    pod2usage(
+        -verbose => 99,
+        exitval  => 0,
+    );
+}
+
+my \%system_files = _system_files(map {$_ => 1} _pacman_files()->@*);
+my \%by_category  = _group_by_category(\%system_files);
+
+_print(\%by_category);
+
+sub _pacman_files() {
+    chomp(my @files = `pacman -Qlq`);
+    return \@files;
+}
+
+sub _system_files (%pacman_files) {
+    my %files;
+    foreach my $folder (FOLDERS()->@*) {
+        Path::Tiny::path($folder)->visit(
+            sub ($path, $) {
+                $path->is_file
+                    or return;
+
+                $path = decode('UTF-8', $path->absolute, Encode::FB_CROAK);
+                $pacman_files{$path}
+                    or $files{$path} = 1;
+            },
+            {
+                'follow_symlinks' => 0,
+                'recurse'         => 1,
+            },
+        );
+    }
+    return \%files;
+}
+
+sub _group_by_category ($files_ref) {
+    my \%files = $files_ref;
+    my %by_category;
+    foreach my $file (sort keys %files) {
+        push($by_category{_get_category($file)}->@*, $file);
+    }
+
+    return \%by_category;
+}
+
+sub _get_category ($file) {
+    state $categories = [sort keys CATEGORY()->%*];
+    return first {$file =~ CATEGORY()->{$_}{'match'}} $categories->@*;
+}
+
+sub _print ($by_category_ref) {
+    my \%by_category = $by_category_ref;
+
+    my $category_length = 1 + max map length, keys %by_category;
+    foreach my $category (sort keys %by_category) {
+        my \%it = CATEGORY()->{$category};
+        if (0 <= $options{'VERBOSE'} - $it{'level'}) {
+            say {*STDOUT} $category, " ($it{'match'}):";
+            say {*STDOUT} "\t",      $_ foreach $by_category{$category}->@*;
+        } else {
+            say {*STDOUT} sprintf(
+                "%-${category_length}s %-5d files (%s)",
+                "$category:", scalar $by_category{$category}->@*,
+                $it{'match'},
+            );
+        }
+    }
+    return;
+}
+
+__END__
+
+=head1 NAME
+
+arch-detect-extra-files
+
+=head1 DESCRIPTION
+
+Detect all extra files in Arch linux system folders.
+This can help to find and backup manual configuration or remove undesired changes made on system.
+Increasing verbosity level allows to unfold well known categories.
+
+=head1 SYNOPSIS
+
+arch-detect-extra-files [options]
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--verbose>
+
+Increase verbosity
+
+=back
+
+=cut

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+set -uo pipefail
+
+xmllint --format 2>/dev/null

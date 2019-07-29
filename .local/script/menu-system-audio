@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+cat << "EOF" | fzf-execute-no-abort
+Play/Pause			xdotool key XF86AudioPlay
+Next				xdotool key XF86AudioNext
+Prev				xdotool key XF86AudioPrev
+Volume Raise		xdotool key XF86AudioRaiseVolume
+Volume Lower		xdotool key XF86AudioLowerVolume
+Mute				xdotool key XF86AudioMute
+EOF

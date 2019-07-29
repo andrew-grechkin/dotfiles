@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+PATH=${PATH//"$(dirname "$0"):"/}
+
+if [[ -x "$(command -v bat)" ]]; then
+	exec bat "$@"
+else
+	exec cat "$@"
+fi

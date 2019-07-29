@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+git-in-repo || exit 95
+
+PTH=$(realpath "${*: -1}")
+ROOT=$(git root)
+PTH_REL_ROOT=$(realpath -s --relative-to="$ROOT" "$PTH")
+
+ARGV=("$@")
+ARGV=("${ARGV[@]:0:${#ARGV[@]}-1}" "$PTH_REL_ROOT")
+
+cd "$ROOT"
+
+COMMAND_EXTRACT_COMMIT="echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | tr -d '\n'"
+
+HEADER=$(
+	cat <<- EOF_HEADER
+	History of a file: '${PTH_REL_ROOT}'
+	Press A-b: browse, A-d: diff, A-p: preview, C-b: blame, C-m/enter: view
+	EOF_HEADER
+)
+
+if [[ -t 1 ]]; then
+	CMD=(
+		fzf
+		--ansi
+		--no-multi
+		--no-sort
+		--reverse
+		--scheme=history
+		--scroll-off=8
+		--track
+		--bind="ctrl-y:execute-silent(${COMMAND_EXTRACT_COMMIT} | clipcopy)"
+		--header-first
+		--header="$HEADER"
+	)
+
+	CMD+=(
+		--bind="alt-b:execute-silent(git browse \"\$($COMMAND_EXTRACT_COMMIT)\")"
+		--bind="alt-d:execute(git diff \"\$($COMMAND_EXTRACT_COMMIT)\" HEAD -- \"$PTH_REL_ROOT\" | delta --paging=always)"
+		--bind="ctrl-b:execute(git blame -M -w \"\$(${COMMAND_EXTRACT_COMMIT})\" \"$PTH_REL_ROOT\" | delta --paging=always)"
+		--bind="ctrl-m:execute(git show \"\$(${COMMAND_EXTRACT_COMMIT}):$PTH_REL_ROOT\" | bat --color=always --paging=always --file-name=$PTH_REL_ROOT)"
+		--preview="git show \"\$(${COMMAND_EXTRACT_COMMIT}):$PTH_REL_ROOT\" | bat --color=always --paging=never --file-name=$PTH_REL_ROOT"
+		# --bind="ctrl-r:reload($0 ${ARGV[@]})"
+	)
+
+	"$0" "${ARGV[@]}" | "${CMD[@]}"
+else
+	git-log-branch "${ARGV[@]}"
+fi

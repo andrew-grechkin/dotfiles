@@ -1,0 +1,33 @@
+" vim: filetype=vim
+
+highlight clear
+
+highlight TopLine        cterm=none              ctermfg=white        ctermbg=23
+highlight TopLineSel     cterm=bold              ctermfg=white        ctermbg=36
+highlight StatusLine     cterm=bold              ctermfg=white        ctermbg=23
+if $USER == 'root'
+	highlight TopLine    cterm=none              ctermfg=white        ctermbg=red
+	highlight TopLineSel cterm=bold              ctermfg=white        ctermbg=9
+	highlight StatusLine cterm=bold              ctermfg=white        ctermbg=red
+endif
+
+highlight Border         cterm=bold              ctermfg=white        ctermbg=none
+highlight CmdLine        cterm=bold              ctermfg=white        ctermbg=none
+highlight Win            cterm=none              ctermfg=white        ctermbg=none
+highlight SuggestBox     cterm=none              ctermfg=white        ctermbg=none
+
+highlight CurrLine       cterm=bold              ctermfg=none         ctermbg=23
+highlight OtherLine      cterm=bold              ctermfg=none         ctermbg=235
+highlight Selected       cterm=bold              ctermfg=yellow       ctermbg=none
+highlight JobLine        cterm=none,reverse      ctermfg=black        ctermbg=white
+
+highlight WildMenu       cterm=underline,reverse ctermfg=white        ctermbg=none
+highlight ErrorMsg       cterm=none              ctermfg=red          ctermbg=none
+
+highlight BrokenLink     cterm=bold              ctermfg=red          ctermbg=none
+highlight Device         cterm=bold              ctermfg=yellow       ctermbg=none
+highlight Directory      cterm=bold              ctermfg=blue         ctermbg=none
+highlight Executable     cterm=bold              ctermfg=green        ctermbg=none
+highlight Fifo           cterm=bold              ctermfg=yellow       ctermbg=none
+highlight Link           cterm=bold              ctermfg=cyan         ctermbg=none
+highlight Socket         cterm=bold              ctermfg=magenta      ctermbg=none

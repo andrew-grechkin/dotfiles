@@ -1,0 +1,284 @@
+# vim: filetype=sxhkdrc
+
+# => control windows ---------------------------------------------------------------------------------------------- {{{1
+
+super + ctrl + alt + x
+	xkill
+
+super + alt + x
+	xprop > /tmp/xprop.log
+
+# => sxhkd hotkeys ------------------------------------------------------------------------------------------------ {{{1
+
+# reload
+super + ctrl + Escape
+	pkill --signal USR1 -x sxhkd
+
+# => bspwm hotkeys ------------------------------------------------------------------------------------------------ {{{1
+
+# quit/restart bspwm
+super + ctrl + {q,r}
+	bspc {quit,wm -r}
+
+#close and kill
+super + {_,shift + }q
+	bspc node -{c,k}
+
+alt + F4
+	bspc node -c
+
+# send the newest marked node to the newest preselected node
+# super + y
+#	bspc node newest.marked.local -n newest.!automatic.local
+
+# swap the current node and the biggest window
+# super + g
+#	bspc node -s biggest.window
+
+# alternate between the tiled and monocle layout
+#super + m
+#	bspc desktop -l next
+
+# toggle state
+super + f
+	bspc node -t "~floating"
+super + F
+	bspc node -t "~tiled"
+super + z
+	bspc node -t "~fullscreen"
+
+# set the node flags
+super + b
+	bspc node -g sticky
+
+super + ctrl + {x,z}
+	bspc node -g {locked,private}
+
+# set the window state
+super + ctrl + {t,shift + t}
+	bspc node -t {tiled,pseudo_tiled}
+
+# focus or send to the given desktop
+super + {_,ctrl + }{1-9,0}
+	bspc {desktop -f,node -d} '{1-9,0}'
+
+# focus the node in the given direction
+super + {_,ctrl + }{h,j,k,l}
+	bspc node -{f,s} {west,south,north,east}
+
+# focus the node for the given path jump
+# super + {p,b,comma,period}
+#	bspc node -f @{parent,brother,first,second}
+
+# focus the next/previous window in the current desktop
+# super + {_,shift + }c
+#	bspc node -f {next,prev}.local.!hidden.window
+
+# focus the next/previous desktop in the current monitor
+# super + bracket{left,right}
+#	bspc desktop -f {prev,next}.local
+
+# focus the last node/desktop
+super + {Tab,grave}
+	bspc {node,desktop} -f last
+
+# focus the older or newer node in the focus history
+# super + {o,i}
+alt + {_,shift + }Tab
+	bspc wm -h off; \
+	bspc node {prev,next} -f; \
+	bspc wm -h on
+
+# preselect
+
+# preselect the direction
+# super + ctrl + {h,j,k,l}
+#	bspc node -p {west,south,north,east}
+
+# preselect the ratio
+# super + ctrl + {1-9}
+#	bspc node -o 0.{1-9}
+
+# cancel the preselection for the focused node
+# super + ctrl + space
+#	bspc node -p cancel
+
+# cancel the preselection for the focused desktop
+# super + ctrl + shift + space
+#	bspc query -N -d | xargs -I id -n 1 bspc node id -p cancel
+
+# move/resize
+
+# # expand a window by moving one of its side outward
+# super + alt + {h,j,k,l}
+#	bspc node -z {left -50 0,bottom 0 50,top 0 -50,right 50 0}
+
+# # contract a window by moving one of its side inward
+# super + alt + shift + {h,j,k,l}
+#	bspc node -z {right -50 0,top 0 50,bottom 0 -50,left 50 0}
+
+super + {Left,Down,Up,Right}
+	bspc node -z {right -50 0,bottom 0 50,bottom 0 -50,right 50 0}
+
+# move a floating window
+super + alt + {Left,Down,Up,Right}
+	bspc node -v {-20 0,0 20,0 -20,20 0}
+
+# => kde + bspwm -------------------------------------------------------------------------------------------------- {{{1
+
+# super
+#	  qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.activateLauncherMenu
+
+# => applications ------------------------------------------------------------------------------------------------- {{{1
+
+super + BackSpace
+	wezterm start --always-new-process --class 'TermFloatingSmall' "$HOME/.local/script/menu-system-exit"
+super + Return
+	wezterm start --always-new-process /usr/bin/zsh
+super + equal
+	wezterm start --always-new-process --class 'TermFloatingSmall' "$HOME/.local/script/menu-system-audio"
+super + minus
+	wezterm start --always-new-process --class 'TermFloatingSmall' "$HOME/.local/script/menu-system-misc"
+
+# super + b
+#	exo-open --launch WebBrowser
+super + c
+	qalculate-gtk
+super + d
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-app"
+super + o
+	opera
+super + s
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pass"
+# super + r
+#	exo-open --launch FileManager
+super + r
+	wezterm start --always-new-process --class 'Main-Tmux' distrobox enter -n arch -- tmux -L arch
+super + t
+	wezterm start --always-new-process --class 'Main-Tmux' tmux
+super + u
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/fzf-select" unicode
+super + y
+#	wezterm start --always-new-process zellij
+	wezterm start --always-new-process bash
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+super + shift + Return
+	wezterm --config="enable_csi_u_key_encoding=false" start --always-new-process /usr/bin/zsh
+
+super + shift + y
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/fzf-select" nerd
+super + shift + u
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/fzf-select" emoji
+super + shift + p
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pacman"
+super + shift + braceleft
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pkg-search"
+
+super + shift + a
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-audio"
+super + shift + f
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-film"
+super + shift + h
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-mpv-history"
+super + shift + k
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-man-keyword"
+super + shift + l
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "/media/nfs/home/doc/@fiction"
+super + shift + colon
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "/media/nfs/home/doc/@technical"
+super + shift + quotedbl
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "/media/nfs/home/doc/@study"
+
+
+super + shift + n
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/open-vim-wiki"
+super + shift + m
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-man-name"
+super + shift + less
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-docs" "$HOME/.local/share/wiki"
+super + shift + greater
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-docs"
+super + shift + question
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "${XDG_DATA_HOME}/cheatsheet"
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+super + F9
+	$HOME/.local/script/touchpad-toggle
+# super + F10
+#	$HOME/.local/script/cliptrans
+super + F12
+	$HOME/.local/script/passgen
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+super + control + F5
+	$HOME/.local/script/bing-wallpaper -s
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+XF86AudioMedia
+	audacious
+# XF86AudioNext
+#	cmus-remote
+# XF86AudioPlay
+#	cmus-remote --pause
+# XF86AudioPrev
+#	cmus-remote
+# XF86Battery
+#	xfce4-power-manager-settings
+XF86Calculator
+	qalculate-gtk
+# XF86Display
+#	xfce4-display-settings
+# XF86Favorites
+#	exo-open --launch TerminalEmulator "$HOME/.local/script/tmux-default-session"
+# XF86HomePage
+#	exo-open --launch FileManager
+# XF86Launch5
+#	google-chrome-stable
+# XF86Launch6
+#	opera
+# XF86Launch7
+#	code
+# XF86Launch8
+#	code
+# XF86Launch9
+#	exo-open --launch TerminalEmulator
+# XF86Mail
+#	exo-open --launch MailReader
+# XF86Search
+#	catfish
+#XF86WWW
+#	exo-open --launch WebBrowser
+# XF86Back
+#	cmus-remote --prev
+# XF86Forward
+#	cmus-remote --next
+
+# => mouse -------------------------------------------------------------------------------------------------------- {{{1
+
+#button8
+#	cmus-remote --prev
+#	xte "keydown Alt_R" "keydown F1" "keyup Alt_R" "keyup F1"
+#button9
+#	cmus-remote --next
+#	xte "keydown Alt_R" "keydown F2" "keyup Alt_R" "keyup F2"
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+#super + @x
+#	xdotool key --clearmodifiers ctrl+shift+v
+#super + @c
+#	xdotool key --clearmodifiers ctrl+c
+#super + @v
+#	xdotool key --clearmodifiers ctrl+shift+v
+
+# paste primary buffer
+alt + shift + @p
+	$HOME/.local/script/primarypaste | xdotool type --clearmodifiers --delay 5 --file -
+# paste secondary buffer
+alt + shift + @s
+	$HOME/.local/script/secondarypaste | xdotool type --clearmodifiers --delay 5 --file -
