@@ -1,0 +1,11 @@
+#!/usr/bin/env -S perl -gn
+
+use v5.36;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin);
+
+print builtin::trim($_);
+
+__END__

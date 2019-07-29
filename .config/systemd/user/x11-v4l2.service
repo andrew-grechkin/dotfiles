@@ -1,0 +1,11 @@
+[Unit]
+Description=X11 v4l2
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=30
+ExecStart=/usr/bin/bash -c "%h/git/private/dotfiles/submodules/private/.local/script-private/x11-v4l2"
+
+[Install]
+WantedBy=default.target

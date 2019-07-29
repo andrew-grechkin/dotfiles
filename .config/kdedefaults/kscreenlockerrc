@@ -1,0 +1,7 @@
+[Daemon]
+Autolock=true
+LockGrace=10
+Timeout=15
+
+[Greeter]
+Theme=org.kde.breeze.desktop

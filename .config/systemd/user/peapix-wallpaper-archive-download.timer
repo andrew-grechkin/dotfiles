@@ -1,0 +1,11 @@
+[Unit]
+Description=Fetch Bing picture archive
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+AccuracySec=1s
+RandomizedDelaySec=300s
+
+[Install]
+WantedBy=timers.target

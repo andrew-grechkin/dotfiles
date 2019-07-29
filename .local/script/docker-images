@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+if [[ -t 1 ]]; then
+	OPTIONS=(
+		# --format='table {{.Repository}}:{{.Tag}}\t{{.ID}}\t{{.Size}}\t{{.CreatedSince}}'
+	)
+else
+	OPTIONS=(
+		--no-trunc
+		--filter='readonly=false'
+		--format='table {{.Repository}}:{{.Tag}}'
+	)
+fi
+
+command docker images \
+	--noheading       \
+	--sort=repository \
+	"${OPTIONS[@]}" "$@" 2>/dev/null

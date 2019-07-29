@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+CMD=(
+	fzf
+	--tac
+	"${FZF_DEFAULT_BINDS[@]}"
+)
+
+"${CMD[@]}"

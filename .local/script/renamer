@@ -1,0 +1,92 @@
+#!/usr/bin/env perl
+
+use v5.36;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
+
+use Encode       qw(decode);
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+
+use Path::Tiny qw(path);
+
+our $VERSION = 1;
+
+my %options = (
+    'APPLY'   => 0,
+    'MATCH'   => undef,
+    'NAME'    => 0,
+    'VERBOSE' => 0,
+);
+
+GetOptions(
+    'apply|a'    => \$options{'APPLY'},
+    'match|m=s'  => \$options{'MATCH'},
+    'name|n'     => \$options{'NAME'},
+    'verbose|v+' => \$options{'VERBOSE'},
+) or die "Unable to process command line options\n";
+
+defined $options{'MATCH'}
+    or die "Please provide --codepage option\n";
+
+foreach my $path (map {path($_)} @ARGV) {
+    $options{'NAME'} == 0 && !$path->is_file
+        and return;
+
+    $path = path(decode('UTF-8', $path->stringify, Encode::FB_CROAK));
+    $options{'VERBOSE'}
+        and say 'Checking: ', $path;
+    my ($need_rename, $new_path) = $options{'NAME'} ? by_name($path) : by_content($path);
+    if ($need_rename) {
+        $path->basename eq $new_path->basename
+            and next;
+        if ($new_path->exists) {
+            say 'Already exists: ', $new_path;
+        } else {
+            say 'Renaming: ', $path, ' -> ', $new_path;
+            $options{'APPLY'}
+                and $path->move($new_path);
+        }
+    }
+}
+
+sub by_content ($path) {
+    my $fh = $path->openr_utf8;
+    while (my $line = <$fh>) {
+        chomp($line);
+        if ($line =~ qr/$options{'MATCH'}/) {
+            return 1, $path->sibling($1 . extension($path));
+        }
+    }
+
+    return 0, undef;
+}
+
+sub by_name ($path) {
+    my $extension = extension($path);
+    my $name      = $path->basename($extension);
+    if ($name =~ qr/$options{'MATCH'}/) {
+        return 1, $path->sibling($1 . $extension);
+    }
+
+    return 0, undef;
+}
+
+sub extension ($path) {
+    my ($ext) = $path->basename =~ m{.*((?=[.]tar)?[.][^.]*)}x;
+    return $ext // '';
+}
+
+__END__
+
+=head1 NAME
+
+renamer
+
+=SINOPSIS
+
+    renamer --match='<book-title>(.*)</book-title>' **/*.fb2 -a
+
+=cut

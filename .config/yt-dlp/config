@@ -1,0 +1,11 @@
+# vim: filetype=conf
+
+--embed-chapters
+--embed-metadata
+--embed-subs
+--format="bv*[ext=webm][height<=1080]+ba/bv*[ext=mp4][height<=1080]+ba/b"
+--prefer-free-formats
+--sub-langs='en,nl,ru,de,it,fr'
+# --write-auto-subs
+# --write-subs
+-o '%(fulltitle)s {id=%(id)s,up=%(uploader)s}.%(ext)s'

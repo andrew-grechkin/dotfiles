@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+# gpg --card-status
+
+for FILE in "$@"; do
+	FILENAMEFULL=$(basename "$FILE")
+	command gpg --decrypt --output "./${FILENAMEFULL/.gpg/}" "$FILE"
+done

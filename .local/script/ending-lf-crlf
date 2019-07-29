@@ -1,0 +1,14 @@
+#!/usr/bin/env perl
+
+# man: PerlIO
+
+use v5.36;
+use open ':std', 'OUT' => ':crlf';
+
+while (<<>>) {
+    chomp;
+} continue {
+    say;
+}
+
+__END__

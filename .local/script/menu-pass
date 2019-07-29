@@ -1,0 +1,19 @@
+#!/usr/bin/env zsh
+
+set -Eeuo pipefail
+
+FOLDER=${PASSWORD_STORE_DIR:-${XDG_DATA_HOME}/password-store}
+
+function list_files() {
+	# shopt -s nullglob globstar
+	setopt NULLGLOB
+
+	password_files=("$FOLDER"/**/*.gpg)
+	password_files=("${password_files[@]#*"$FOLDER/"}")
+	password_files=("${password_files[@]%".gpg"*}")
+	for FILE in "${password_files[@]}"; do
+		printf "%s	pass-to-clipboard \"$FOLDER/%s\" &>/dev/null\n" "$FILE" "$FILE"
+	done
+}
+
+list_files | sort | fzf-execute

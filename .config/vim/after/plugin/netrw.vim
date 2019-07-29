@@ -1,0 +1,1 @@
+../../../nvim/after/plugin/netrw.vim

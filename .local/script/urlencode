@@ -1,0 +1,12 @@
+#!/usr/bin/env -S perl -n
+
+use v5.36;
+use open ':locale';
+use warnings qw(FATAL utf8);
+
+use Mojo::Util qw(url_escape);
+
+my $removed = chomp;
+print url_escape($_), "\n" x $removed;
+
+__END__

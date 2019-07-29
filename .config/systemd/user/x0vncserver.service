@@ -1,0 +1,11 @@
+[Unit]
+Description=Remote desktop service (VNC) for existing X11 session
+
+[Service]
+Type=simple
+ExecStart=/bin/zsh -c '/usr/bin/x0vncserver -rfbport="59${$(id -u):2}" -UseIPv6=0 -PAMService=login -PlainUsers="%u" -SecurityTypes=TLSPlain'
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=default.target

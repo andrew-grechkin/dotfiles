@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+perldoc -T -X "$@" 2>/dev/null \
+	|| perldoc -T -f "$@" 2>/dev/null \
+	|| perldoc -T -v "$@" 2>/dev/null \
+	|| perldoc -T -a "$@" 2>/dev/null \
+	|| perldoc -T -q "$@" 2>/dev/null \
+	|| man "$@" 2>/dev/null \
+	|| echo "Nothing found for: $*"

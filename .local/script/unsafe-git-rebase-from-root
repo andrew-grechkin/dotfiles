@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+git-in-repo && {
+	MAIN_BRANCH="$(git gmb)"
+	git checkout --orphan new-root
+	git rm -rf .
+	git commit --allow-empty -m 'init: empty commit'
+	git rebase --committer-date-is-author-date -i new-root "$MAIN_BRANCH" --no-gpg-sign
+	git branch -d new-root
+}

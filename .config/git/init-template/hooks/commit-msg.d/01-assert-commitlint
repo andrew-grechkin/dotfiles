@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+if [[ -x "$(command -v commitlint)" ]]; then
+	commitlint --strict --edit "$1"
+	commitlint --format --edit "$1"
+fi

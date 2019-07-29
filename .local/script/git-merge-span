@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+git-in-repo && {
+	SPAN_TYPE=${1:-..}
+	REF=${2:-"$(git bname)"}
+	FIRST_MERGE_PARENTS=$(git log -1 "$REF" --merges --pretty="format:%p")
+	echo "${FIRST_MERGE_PARENTS/ /$SPAN_TYPE}"
+}

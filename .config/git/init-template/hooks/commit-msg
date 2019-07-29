@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+GIT_DIR="$(git rev-parse --git-dir)"
+GIT_URL="$(git config --get remote.origin.url)"
+GIT_WORK_TREE="$(git rev-parse --show-toplevel)"
+
+export GIT_DIR GIT_URL GIT_WORK_TREE
+
+if test -d "$GIT_DIR/hooks/commit-msg.d"; then
+	for hook in "$GIT_DIR/hooks/commit-msg.d"/*; do
+		if [[ -x "$hook" ]]; then
+			echo "executing commit-msg hook: $hook" >/dev/stderr
+			"$hook" "$1"
+		fi
+	done
+fi
+
+exit 0

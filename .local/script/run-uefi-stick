@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+VENDOR="0x090c"
+PRODUCT="0x1000"
+
+CMD=(
+	-audiodev "pa,id=snd0"
+	-bios /usr/share/ovmf/x64/OVMF.fd
+	-cpu host
+	-device ich9-intel-hda
+	-device "hda-output,audiodev=snd0"
+	-device "qemu-xhci,id=xhci"
+	-device "usb-host,vendorid=$VENDOR,productid=$PRODUCT"
+	-enable-kvm
+	-k en-us
+	-m 4G
+	-nic "user,model=virtio-net-pci"
+	-no-reboot
+	-smp 2
+	-vga virtio
+)
+
+nohup qemu-system-x86_64 "${CMD[@]}" </dev/null &>/dev/null & disown

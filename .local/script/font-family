@@ -1,0 +1,36 @@
+#!/usr/bin/env perl
+
+use v5.36;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
+
+use Encode     qw(decode);
+use List::Util qw(uniq);
+
+our $VERSION = 1;
+
+sub main() {
+    my @params = map {decode('UTF-8', $_, Encode::FB_CROAK)} @ARGV;
+
+    foreach my $family (_find_font_families(join(' ', @params))->@*) {
+        say $family;
+    }
+
+    return 0;
+}
+
+sub _find_font_families ($text) {
+    my $charcodes = $text =~ s/(.)/sprintf '%04X ', ord $1/gre;
+
+    chomp(my @families = `fc-list --format '%{family[0]}\n' ':charset=$charcodes'`);
+    @families = uniq sort @families;
+
+    return \@families;
+}
+
+exit main();
+
+__END__

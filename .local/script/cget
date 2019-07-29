@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -Eeo pipefail
+
+[[ -n "$1" ]] || exit 1
+
+command curl -LO -C - -- "$1"

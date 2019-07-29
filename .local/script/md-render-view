@@ -1,0 +1,119 @@
+#!/usr/bin/env perl
+
+use v5.36;
+use autodie;
+use open 'IO' => ':raw';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
+
+use Env          qw($PODMAN_USERNS);
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+
+use Path::Tiny qw(path);
+
+$PODMAN_USERNS = 'keep-id';
+
+my $extension = qr/[.](?:mkd|mdwiki|R?md|)\z/x;
+my %options   = (
+    'KEEP'    => 0,
+    'VERBOSE' => 0,
+);
+
+sub main() {
+    GetOptions(
+        'keep|k'     => \$options{'KEEP'},
+        'verbose|v+' => \$options{'VERBOSE'},
+    ) or die "Unable to process command line options\n";
+
+    @ARGV == 1 && $ARGV[0] =~ $extension
+        or die "Provide one markdown file\n";
+
+    my $markdown_path = path($ARGV[0]);
+    my $markdown_name = $markdown_path->basename($extension) . '.md';
+
+    my $payload = $markdown_path->slurp_utf8;
+    my \%types = detect_fenced_code($payload);
+
+    my $workdir = Path::Tiny->tempdir('CLEANUP' => !$options{'KEEP'}, 'TEMPLATE' => 'md-render-view-XXXXX')->absolute;
+    $workdir->chmod('a+rw');
+    $markdown_path->copy($workdir->child($markdown_name));
+
+    if ($types{'knit'}) {
+        my $temp_path = $workdir->child("$markdown_name.01.Rmd");
+        my $temp_name = $temp_path->basename;
+        $workdir->child($markdown_name)->move($temp_path);
+        my @cmd = (
+            'docker', qw(run --rm), '-v', "$workdir:/data", '-w', '/data', 'docker.io/rocker/verse',
+            '/usr/local/lib/R/site-library/knitr/bin/knit',
+            '-n', "/data/$temp_name", '-o', "/data/$markdown_name",
+        );
+        say "@cmd";
+        system(@cmd) == 0
+            or die "Unable to run: @cmd\n";
+        $temp_path->remove;
+        $workdir->child('.cache')->remove_tree;
+    }
+
+    if ($types{'mermaid'}) {
+        my $temp_path = $workdir->child("$markdown_name.02.md");
+        my $temp_name = $temp_path->basename;
+        $workdir->child($markdown_name)->move($temp_path);
+        chomp(my $uid = `id -u`);
+        chomp(my $gid = `id -g`);
+        my @cmd = (
+            'docker', qw(run --rm), '-v', "$workdir:/data", '-u', "$uid:$gid",
+            'docker.io/minlag/mermaid-cli',
+            qw(-q -b transparent -i),
+            "/data/$temp_name", '-o', "/data/$markdown_name",
+        );
+        say "@cmd";
+        system(@cmd) == 0
+            or die "Unable to run: @cmd\n";
+        $temp_path->remove;
+    }
+
+    if ($types{'presentation'}) {
+        my @cmd = (
+            'docker', qw(run --rm), '-v', "$workdir:/data",
+            'docker.io/pandoc/latex:latest-ubuntu',
+            qw(-f markdown+smart -t beamer),
+            '-o', "/data/$markdown_name.pdf", "/data/$markdown_name",
+        );
+        say "@cmd";
+        system(@cmd) == 0
+            or die "Unable to run: @cmd\n";
+        system("zathura --mode=presentation - <'$workdir/$markdown_name.pdf' &>/dev/null &") == 0
+            or die "Unable to zathura\n";
+    } else {
+        my @cmd = (
+            'docker', qw(run --rm), '-v', "$workdir:/data",
+            'docker.io/pandoc/latex:latest-ubuntu',
+            qw(-f markdown+smart -t pdf),
+            '-o', "/data/$markdown_name.pdf", "/data/$markdown_name",
+        );
+        say "@cmd";
+        system(@cmd) == 0
+            or die "Unable to run: @cmd\n";
+        system("zathura - <'$workdir/$markdown_name.pdf' &>/dev/null &") == 0
+            or die "Unable to zathura\n";
+    }
+
+    sleep 1;
+
+    return 0;
+}
+
+sub detect_fenced_code ($payload) {
+    my %result;
+
+    $result{'knit'}         = $payload =~ m/```[{]r/x;
+    $result{'mermaid'}      = $payload =~ m/```mermaid/x;
+    $result{'presentation'} = $payload =~ m/output:\s+beamer_presentation/x;
+
+    return \%result;
+}
+
+exit main();
+
+__END__

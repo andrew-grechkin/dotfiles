@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+[[ -x "$(command -v jq)" ]] || {
+	echo "jq is not installed. Please install from 'https://jqlang.github.io/jq/download/'"
+	exit 1
+}
+
+FORMATTER='jq -S'
+if [[ -x "$(command -v json2yaml)" ]]; then
+	FORMATTER="json2yaml"
+	LANGUAGE="yaml"
+elif [[ -x "$(command -v yq)" ]]; then
+	FORMATTER="yq -P -o yaml"
+	LANGUAGE="yaml"
+fi
+
+[[ -x "$(command -v bat)" ]] && {
+	COLORIZER="| bat -l ${LANGUAGE:-json} --color=always --style=header --file-name='$*'"
+}
+
+bash -c "$FORMATTER ${COLORIZER:-}"

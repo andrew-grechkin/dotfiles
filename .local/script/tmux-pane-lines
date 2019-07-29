@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+TERM_LINES=$(tput lines)
+GRAB_LINES=$1
+
+tmux capture-pane -pJS $((TERM_LINES - GRAB_LINES)) | trim-right

@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+RECIPIENTS=(
+	27DAEE512BCA39EB
+	CDBA7E3E844B6508
+)
+
+CTR=0
+for FILE in "$@"; do
+	CTR=$((CTR + 1))
+	echo "Processing ($CTR/$#): $FILE"
+	FILENAMEFULL=$(basename "$FILE")
+	command gpg --quiet --decrypt "$FILE" | command gpg --encrypt "${RECIPIENTS[@]/#/'--recipient='}" --output "/tmp/${FILENAMEFULL}.gpg" \
+		&& mv "/tmp/${FILENAMEFULL}.gpg" "${FILE}"
+done

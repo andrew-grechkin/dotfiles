@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+# pastebin - Copy data to termbin/pastebin service
+#
+# Usage:
+#  <command> | pastebin      - copies stdin to termbin/pastebin
+#  pastebin <file> <file>... - copies file's contents to termbin/pastebin
+
+if [[ -n "$(command -v pastebin-work)" ]] && [[ -n "$(command -v is-work-network)" ]] && is-work-network; then
+	cat "${@}" | pastebin-work
+else
+	if [[ -n "$(command -v socat)" ]]; then
+		URL=$(tr -d '\0' < <(cat "${@}" | socat - TCP4:termbin.com:9999))
+	elif [[ -n "$(command -v nc)" ]]; then
+		URL=$(tr -d '\0' < <(cat "${@}" | nc termbin.com 9999))
+	else
+		print "pastebin: socat/netcat command not found" >&2
+		return 1
+	fi
+	[[ -n "$URL" ]] && {
+		echo "Paste is saved to: $URL"
+		echo -n "$URL" | clipcopy
+	}
+fi

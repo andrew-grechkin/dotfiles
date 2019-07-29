@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+REGEX="$1"
+INPUT="${2:-}"
+
+TMP_FILE=$(mktemp -u)
+function finish {
+	rm -f "$TMP_FILE"
+}
+
+cat <<- EO_TMP_FILE > "$TMP_FILE"
+use v5.38;
+
+my \$str = '$INPUT';
+\$str =~ m/$REGEX/;
+
+__END__
+EO_TMP_FILE
+
+perl -MRegexp::Debugger -E 'Regexp::Debugger::rxrx(@ARGV)' "$TMP_FILE"

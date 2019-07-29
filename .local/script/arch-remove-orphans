@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -Euo pipefail
+
+if ORPHAN_PACKAGES="$(pacman -Qqtd)"; then
+	mapfile -t ORPHAN_PACKAGES_ARRAY <<< "$ORPHAN_PACKAGES"
+	set -e
+	sudo pacman -Rns "${ORPHAN_PACKAGES_ARRAY[@]}"
+fi
+
+exit 0

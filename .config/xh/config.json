@@ -1,0 +1,7 @@
+{
+  "default_options": [
+    "--follow",
+    "--max-redirects=4",
+    "--format-options=json.format:true,json.indent:2,headers.sort:true"
+  ]
+}

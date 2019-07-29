@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+if [[ "$#" -lt 2 ]]; then
+    echo "pass at least 2 arguments: <mount_point_root> <archive> [<archive>...]"
+    exit 1
+fi
+
+TARGET="${1}"
+shift
+
+for ARCHIVE in "$@"; do
+    MOUNT_POINT="$TARGET/$(basename "$ARCHIVE")"
+    mkdir -p "$MOUNT_POINT"
+    echo "mounting to '$MOUNT_POINT' '$ARCHIVE'"
+    fuse3-p7zip "$ARCHIVE" "$MOUNT_POINT"
+done

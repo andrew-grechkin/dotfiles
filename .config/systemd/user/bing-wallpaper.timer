@@ -1,0 +1,11 @@
+[Unit]
+Description=Fetch Bing picture of the day
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+AccuracySec=1s
+RandomizedDelaySec=30s
+
+[Install]
+WantedBy=timers.target

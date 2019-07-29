@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+CURRENT_SCRIPT="$(basename "$0")"
+export FETCHER="${CURRENT_SCRIPT#fzf-}"
+
+"$FETCHER" "$@" \
+	| fzf-git-log --reload-command="$FETCHER"
