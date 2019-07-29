@@ -1,0 +1,23 @@
+# vim: syntax=zsh foldmethod=marker
+
+export       XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
+export        XDG_CACHE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}
+export         XDG_DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}
+export         DOCKER_CONFIG="$XDG_CONFIG_HOME/docker"
+export            TIGRC_USER="$XDG_CONFIG_HOME/tigrc"
+export         PERLBREW_HOME="$XDG_CONFIG_HOME/perlbrew"
+export NPM_CONFIG_USERCONFIG="$XDG_CONFIG_HOME/npm/npmrc"
+export         PERLBREW_ROOT="$XDG_CACHE_HOME/perlbrew"
+export        MYSQL_HISTFILE="$XDG_CACHE_HOME/mysql_history"
+export       HOMEBREW_PREFIX="$XDG_CACHE_HOME/linuxbrew"
+export                GOPATH="$XDG_CACHE_HOME/go"
+export       PERL_CPANM_HOME="$XDG_CACHE_HOME/cpanm"
+export            PYLINTHOME="$XDG_CACHE_HOME/pylint.d"
+export           TMUX_TMPDIR="$XDG_RUNTIME_DIR"
+
+
+[[ -e "$XDG_CONFIG_HOME" ]] || mkdir -p "$XDG_CONFIG_HOME"
+[[ -e "$XDG_CACHE_HOME"  ]] || mkdir -p "$XDG_CACHE_HOME"
+[[ -e "$XDG_DATA_HOME"   ]] || mkdir -p "$XDG_DATA_HOME"
+
+source-file "$XDG_CONFIG_HOME/my/functions"

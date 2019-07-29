@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+function list-gopass-files() {
+	shopt -s nullglob globstar
+
+	path_config=$(gopass config | grep 'path:')
+	path=${path_config#*"file://"}
+
+	password_files=("$path"/**/*.gpg)
+	password_files=("${password_files[@]#*"$path/"}")
+	password_files=("${password_files[@]%".gpg"*}")
+
+	# password=$(printf '%s\n' "${password_files[@]}" | rofi -dmenu -i -p gopass: "$@")
+	printf '%s\n' "${password_files[@]}"
+}
+
+if [[ $# -lt 1 ]]; then
+	rofi -modi "Password:${0} --pass,OTP:${0} --otp,Name:${0} --name" -show Password -normal-window
+elif [[ $# -lt 2 ]]; then
+	list-gopass-files
+else
+	if [[ "$1" == "--pass" ]]; then
+		gopass --clip "$2" | while read -r MESSAGE; do notify-send "$MESSAGE" -i dialog-password; done
+	elif [[ "$1" == "--otp" ]]; then
+		gopass otp --clip "$2" | while read -r MESSAGE; do notify-send "$MESSAGE" -i dialog-password; done
+	elif [[ "$1" == "--name" ]]; then
+		USERNAME=$(basename "$2")
+		echo -n "$USERNAME" | xclip -i -sel p -f | xclip -i -sel c &>/dev/null && notify-send "Username '$USERNAME' is copied into the clipboard" -i dialog-password
+	fi
+fi

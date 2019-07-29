@@ -1,0 +1,75 @@
+super + Return
+	exo-open --launch TerminalEmulator
+super + shift + Return
+	exo-open --launch TerminalEmulator "$HOME/.local/bin/tmux-default-session"
+
+super + control + v
+	$HOME/.local/bin/play-clipboard-url
+super + BackSpace
+	$HOME/.local/bin/i3exit.rofi
+super + control + l
+	$HOME/.local/bin/i3exit.rofi lock
+super + shift + s
+	$HOME/.local/bin/gopass.rofi
+super + c
+	rofi -show calc -modi "calc:qalc +u8" -no-show-match -no-sort
+super + d
+	rofi -show run
+
+super + b
+	exo-open --launch WebBrowser
+super + o
+	opera
+super + c
+	google-chrome-stable
+/* super + p */
+   /* exo-open --launch TerminalEmulator "profanity" */
+super + q
+	exo-open --launch TerminalEmulator "ranger"
+super + r
+	exo-open --launch FileManager
+super + s
+	catfish
+super + w
+	exo-open --launch TerminalEmulator "htop"
+
+XF86AudioPlay
+	cmus-remote --pause
+XF86Battery
+	xfce4-power-manager-settings
+XF86Calculator
+	qalculate-gtk
+XF86Display
+	xfce4-display-settings
+XF86Favorites
+	exo-open --launch TerminalEmulator "$HOME/.local/bin/tmux-default-session"
+XF86HomePage
+	exo-open --launch FileManager
+XF86Launch5
+	google-chrome-stable
+XF86Launch6
+	opera
+XF86Launch7
+	code
+XF86Launch8
+	code
+XF86Launch9
+	exo-open --launch TerminalEmulator
+XF86Mail
+	exo-open --launch MailReader
+XF86Search
+	catfish
+/* XF86WWW */
+   /* exo-open --launch WebBrowser */
+
+XF86Back
+	cmus-remote --prev
+XF86Forward
+	cmus-remote --next
+
+/* super + @x */
+	/* xdotool key --clearmodifiers ctrl+shift+v */
+/* super + @c */
+	/* xdotool key --clearmodifiers ctrl+c */
+/* super + @v */
+	/* xdotool key --clearmodifiers ctrl+shift+v */

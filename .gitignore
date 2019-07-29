@@ -1,0 +1,10 @@
+*.antigen-compat
+*.zwc
+.config/mpv/watch_later
+.config/systemd/user/chromoting.service
+.config/systemd/user/default.target.wants
+.config/systemd/user/sockets.target.wants
+.config/vifm/scripts/README
+.config/vifm/vifm-help.txt
+.config/vifm/vifminfo
+!.local/bin

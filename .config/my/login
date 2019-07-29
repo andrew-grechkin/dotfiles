@@ -1,0 +1,14 @@
+# vim: syntax=zsh foldmethod=marker
+
+# => Automatically start tmux on ssh connection. Logout on detach ------------------------------------------------ {{{1
+
+if [[ -z "$TMUX" ]]; then
+	command tmux has-session &> /dev/null
+	if [[ $? -eq 1 ]]; then
+		tmux new
+		exit
+	else
+		tmux attach
+		exit
+	fi
+fi

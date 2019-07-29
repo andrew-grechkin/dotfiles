@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [[ -x "$(command -v nvim)" ]]; then
+	nvim -d "$@"
+else
+	PATH=${PATH//"$(dirname "$0")"/}
+	vimdiff "$@"
+fi

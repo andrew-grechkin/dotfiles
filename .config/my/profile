@@ -1,0 +1,26 @@
+# vim: syntax=zsh foldmethod=marker
+
+if [[ -n "$SSH_CLIENT" ]] || [[ -n "$SSH_TTY" ]] || [[ -n "$SSH_CONNECTION" ]]; then
+### for remote sessions
+else
+### for local sessions
+	### start ssh-agent if it's not runnig
+	_check_auth_sock || _check_gpg_agent || _check_ssh_agent || _start_ssh_agent
+
+	### SSH make common link to auth socket link
+	#if [[ -z "$TMUX" ]]; then
+	#	if [[ -n "$SSH_AUTH_SOCK" ]]; then
+	#		ln -sf "$SSH_AUTH_SOCK" "$HOME/.cache/SSH_AUTH_SOCK"
+	##		export SSH_AUTH_SOCK_ORIG=$SSH_AUTH_SOCK
+	#	fi
+	#else
+	#	export SSH_AUTH_SOCK="$HOME/.cache/SSH_AUTH_SOCK"
+	#fi
+fi
+
+#if [[ "$HOSTNAME" = "hp-9470m-an" ]]; then
+#	export DOCKER_HOST=tcp://192.168.99.100:2376
+#	export DOCKER_MACHINE_NAME=default
+#	export DOCKER_TLS_VERIFY=1
+#	export DOCKER_CERT_PATH=C:/Users/andrew/.docker/machine/machines/default
+#fi

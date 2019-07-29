@@ -1,0 +1,15 @@
+# vim: syntax=zsh foldmethod=marker
+
+# => correct ssh auth for tmux sessions -------------------------------------------------------------------------- {{{1
+
+function fix_ssh_agent() {
+	if [[ -n "$TMUX" ]]; then
+		eval $(tmux showenv -s SSH_AUTH_SOCK)
+	fi
+}
+
+# => Fix ssh agent path on remote servers automatically ---------------------------------------------------------- {{{1
+
+if [[ -n "$TMUX" ]]; then
+	add-zsh-hook preexec fix_ssh_agent
+fi

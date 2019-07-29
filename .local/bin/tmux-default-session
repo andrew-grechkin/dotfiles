@@ -1,0 +1,3 @@
+#!/bin/sh
+
+tmux new-session \; split-window \; split-window \; split-window \; select-layout main-vertical \; swap-pane -d -t \{left\}

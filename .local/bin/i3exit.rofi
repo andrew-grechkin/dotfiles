@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+
+function _i3lock() {
+	TMP_FILE=${XDG_RUNTIME_DIR}/screen-lock-tmp.png
+	DST_FILE=${XDG_RUNTIME_DIR}/screen-lock.png
+	import -window root "$TMP_FILE" || scrot "$TMP_FILE"
+#	convert $TMP_FILE -scale 10% -scale 1000% $DST_FILE
+#	convert $TMP_FILE -paint 3 -modulate 80 $DST_FILE
+	[[ -f "$TMP_FILE" ]]           && convert "$TMP_FILE" -paint 3 "$DST_FILE"
+	[[ -f ~/.config/i3/lock.png ]] && convert "$DST_FILE" ~/.config/i3/lock.png -gravity center -composite -matte "$DST_FILE"
+	i3lock --color=000000 --ignore-empty-password --show-failed-attempts --image="$DST_FILE"
+}
+
+function _lock() {
+	# try light-locker first
+	light-locker-command -l && return
+
+	# try i3lock
+	_i3lock
+}
+
+function list-options() {
+	options=("lock" "i3-lock" "logout" "suspend" "hibernate" "hybrid" "reboot" "systemctl-reboot" "poweroff" "systemctl-poweroff")
+
+	printf '%s\n' "${options[@]}"
+}
+
+function action() {
+	case "$1" in
+		lock)
+			_lock
+			;;
+		i3-lock)
+			_i3lock
+			;;
+		logout)
+			xfce4-session-logout --logout || i3-msg exit
+			;;
+		suspend)
+			_lock && systemctl suspend
+			;;
+		hibernate)
+			_lock && systemctl hibernate
+			;;
+		hybrid)
+			_lock && systemctl hybrid-sleep
+			;;
+		reboot)
+			xfce4-session-logout -f --reboot || systemctl reboot
+			;;
+		systemctl-reboot)
+			systemctl reboot
+			;;
+		poweroff)
+			xfce4-session-logout -f --halt   || systemctl poweroff
+			;;
+		systemctl-poweroff)
+			systemctl poweroff
+			;;
+		*help)
+			echo "Usage: $0 {lock|logout|suspend|hibernate|hybrid|reboot|poweroff}"
+			exit 2
+			;;
+	esac
+}
+
+if [[ $# -lt 1 ]]; then
+	action "$(list-options | rofi -dmenu -i -p Power)"
+elif [[ $# -lt 2 ]]; then
+	action "$1"
+fi

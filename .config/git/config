@@ -1,0 +1,138 @@
+[alias]
+	br = !git --no-pager branch -vv
+	bush = !"f(){ while true; do git push && break; git pull --no-tags --rebase || break; done };f"
+	co = checkout
+	compress = !"f(){ git reflog expire --all --expire=now && nice git gc --prune=now --aggressive; };f"
+	di = diff --submodule=diff -b
+	d = difftool
+	dg = difftool --gui
+	fall = fetch --all -p
+	loglive = !git --no-pager log --abbrev-commit --all --graph --pretty=oneline --decorate
+	m = mergetool
+	mg = mergetool --gui
+	pall = !git remote | xargs -L1 git push --all
+	pushallf = "!f(){ for i in `git remote`; do git push -f $i; done; };f"
+	sh = show --show-signature
+	st = status -b
+	t =  log --abbrev-commit --all   --color --graph --full-history --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'
+	tt = log --show-signature -n 300 --color --graph --pretty=format:'%Cred%H%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'
+	up = pull -v --no-tags
+	w = whatchanged --show-signature
+
+[apply]
+	whitespace = fix
+
+[color]
+	branch = auto
+	diff = auto
+	grep = auto
+	interactive = auto
+	showbranch = auto
+	status = auto
+	ui = auto
+
+[commit]
+	gpgsign = true
+	verbose = true
+
+[core]
+	autocrlf = false
+	editor = vim
+	longpaths = true
+	pager = less -x4 -i
+	preloadindex = true
+	quotepath = false
+	tabwidth = 4
+	whitespace = trailing-space,space-before-tab,blank-at-eol,blank-at-eof,cr-at-eol
+
+;[credential]
+;    helper = /usr/lib/git-core/git-credential-libsecret
+
+[fetch]
+	prune = true
+
+[grep]
+	extendedRegexp = true
+	lineNumber = true
+
+[gui]
+	encoding = utf-8
+
+[help]
+	autocorrect = 1
+
+[http]
+	sslVerify = true
+
+[log]
+	abbrevCommit = true
+	date = iso
+	decorate = short
+	showSignature = true
+
+[pull]
+	rebase = true
+
+[push]
+	default = simple
+
+[rebase]
+	autosquash = true
+	autostash = true
+
+[tag]
+	sort = version:refname
+
+;[url "https://"]
+;    insteadOf = git://
+
+[user]
+	name = Andrew Grechkin
+	email = andrew.grechkin@gmail.com
+	signingkey = 826C20896C89E775A45632CCD2AC885A92F8931C
+
+[diff]
+	tool = vimdiff
+	guitool = meld
+	algorithm = patience
+	colorMoved = plain
+	colorMovedWS = ignore-space-change
+	indentHeuristic = true
+
+[difftool]
+	prompt = false
+	trustExitCode = true                                                       # Be able to abort all diffs with `:cq` or `:cquit`
+
+[difftool "nvimdiff"]
+	cmd = nvim -d "$LOCAL" "$REMOTE"
+
+[difftool "meld"]
+	cmd = meld "$LOCAL" "$REMOTE"
+
+[difftool "winmeld"]
+	cmd = "C:/Program Files (x86)/Meld/meld.exe" "$LOCAL" "$REMOTE"
+
+[difftool "winp4"]
+	cmd = "C:/Program Files/Perforce/p4merge.exe" "$LOCAL" "$REMOTE"
+
+[difftool "winmerge"]
+	cmd = "C:/Program Files (x86)/WinMerge/WinMergeU.exe" -u -e -s -maximize -wl -dl "Local" "$LOCAL" "$REMOTE"
+
+[merge]
+	tool = vimdiff
+	guitool = nfugitive
+	conflictstyle = diff3
+
+[mergetool]
+	keepBackup = false
+	prompt = false
+	trustExitCode = true
+
+[mergetool "meld"]
+	cmd = meld "$LOCAL" "$BASE" "$REMOTE" --output "$MERGED"
+
+[mergetool "nfugitive"]
+	cmd = nvim -f -c "Gdiff" "$MERGED"
+
+[mergetool "nvimdiff4"]
+	cmd = nvim -d "$LOCAL" "$BASE" "$REMOTE" "$MERGED" -c '$wincmd w' -c 'wincmd J'

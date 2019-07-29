@@ -1,0 +1,207 @@
+# vim: nowrap foldmethod=marker
+
+set  -g default-terminal "screen-256color"                                     # support 256 colors and HOME, END ...
+set  -gs escape-time 0                                                         # Lower escape timing for quicker response to scroll-buffer/vim access
+
+set  -g base-index 1                                                           # Start numbering windows at 1
+setw -g pane-base-index 0                                                      # Start numbering panes at 0
+set  -g renumber-windows on                                                    # Renumber windows on close
+
+set  -g history-limit 50000
+set  -g set-titles on
+
+set  -g status-keys vi
+#set  -g xterm-keys on
+
+setw -g mode-keys vi
+setw -g automatic-rename on                                                    # Automatically set window title
+
+setw -g monitor-activity on                                                    # Set window notifications
+set  -g visual-activity on
+set  -g focus-events on                                                        # focus events enabled for terminals that support them
+set  -g other-pane-width 70
+
+# => mouse support ----------------------------------------------------------------------------------------------- {{{1
+
+set  -g mouse on
+set  -g @scroll-speed-num-lines-per-scroll            10                       # tmux-better-mouse-mode plugin (scroll faster)
+set  -g @emulate-scroll-for-no-mouse-alternate-buffer 'on'                     # tmux-better-mouse-mode plugin (enables mouse scroll in less and some other)
+
+# => key bindings ------------------------------------------------------------------------------------------------ {{{1
+###
+set  -g prefix '`'                                                             # Setting the prefix from C-b to `
+unbind    'C-b'                                                                # Free the original Ctrl-b prefix keybinding
+bind      '`'   send-prefix                                                    # Ensure that we can send prefix to other apps
+
+# => xmonad-like panes, create new window with prepared layout (1 main and 3 sattelites) ------------------------- {{{1
+
+bind      'M-BSpace' neww \; split-window -v \; split-window -v \; split-window -v \; select-layout main-vertical \; swap-pane -d -t {left}
+bind   -n 'M-m' select-layout main-vertical \; move-pane -b -t 0 \; swap-pane -d -t 0 \; select-layout main-vertical      # make current pane the main one
+bind   -n 'M-q' select-layout main-vertical \; move-pane -b -s 1 -t 0 \; swap-pane -d -t 0 \; select-layout main-vertical # make the first satellite pane the main one
+bind   -n 'M-w' select-layout main-vertical \; move-pane -b -s 2 -t 0 \; swap-pane -d -t 0 \; select-layout main-vertical
+bind   -n 'M-e' select-layout main-vertical \; move-pane -b -s 3 -t 0 \; swap-pane -d -t 0 \; select-layout main-vertical
+bind   -n 'M-r' select-layout main-vertical \; move-pane -b -s 4 -t 0 \; swap-pane -d -t 0 \; select-layout main-vertical
+
+# => edit configuration and reload ------------------------------------------------------------------------------- {{{1
+
+bind      'M-e' new-window -n 'tmux.conf' "sh -c '\${EDITOR:-vim} ~/.config/tmux/config && tmux source ~/.config/tmux/config && tmux display \"Config reloaded\"'"
+bind      'M-r' source-file ~/.config/tmux/config \; display 'Config reloaded' # reload tmux configuration
+bind      'C-l' send-keys 'C-l' \; run 'sleep 0.1' \; clear-history            # clear shell screen and tmux history buffer
+bind      'C-a' setw synchronize-panes \; display "synchronize-panes is now #{?pane_synchronized,on,off}"
+
+# => window splitting -------------------------------------------------------------------------------------------- {{{1
+
+unbind    '%'                                                                  # Remove default binding since we’re replacing
+unbind    '"'
+bind      "'"   split-window -h -c "#{pane_current_path}"
+bind      '"'   split-window -v -c "#{pane_current_path}"
+bind   -n "M-'" split-window -h -c "#{pane_current_path}"
+bind   -n 'M-"' split-window -v -c "#{pane_current_path}"
+bind      'M-b' break-pane
+
+# => smart pane switching with awareness of vim splits See: https://github.com/christoomey/vim-tmux-navigator ---- {{{1
+
+TMUX_IS_VIM="ps -o state= -o comm= -t '#{pane_tty}' | grep -iqE '^[^TXZ ]+ +(\\S+\\/)?g?(view|n?vim?x?)(diff)?$'"
+bind      'h'   if "$TMUX_IS_VIM" 'send-keys C-h' 'select-pane -L'
+bind      'j'   if "$TMUX_IS_VIM" 'send-keys C-j' 'select-pane -D'
+bind      'k'   if "$TMUX_IS_VIM" 'send-keys C-k' 'select-pane -U'
+bind      'l'   if "$TMUX_IS_VIM" 'send-keys C-l' 'select-pane -R'
+bind      '\'   if "$TMUX_IS_VIM" 'send-keys C-\' 'select-pane -l'
+bind   -n 'M-h' if "$TMUX_IS_VIM" 'send-keys C-h' 'select-pane -L'
+bind   -n 'M-j' if "$TMUX_IS_VIM" 'send-keys C-j' 'select-pane -D'
+bind   -n 'M-k' if "$TMUX_IS_VIM" 'send-keys C-k' 'select-pane -U'
+bind   -n 'M-l' if "$TMUX_IS_VIM" 'send-keys C-l' 'select-pane -R'
+bind   -n 'M-\' if "$TMUX_IS_VIM" 'send-keys C-\' 'select-pane -l'
+bind   -T copy-mode-vi 'M-h' select-pane -L
+bind   -T copy-mode-vi 'M-j' select-pane -D
+bind   -T copy-mode-vi 'M-k' select-pane -U
+bind   -T copy-mode-vi 'M-l' select-pane -R
+bind   -T copy-mode-vi 'M-\' select-pane -l
+
+# => windows ----------------------------------------------------------------------------------------------------- {{{1
+
+bind   -n 'M-1' select-window -t :=1
+bind   -n 'M-2' select-window -t :=2
+bind   -n 'M-3' select-window -t :=3
+bind   -n 'M-4' select-window -t :=4
+bind   -n 'M-5' select-window -t :=5
+bind   -n 'M-6' select-window -t :=6
+bind   -n 'M-7' select-window -t :=7
+bind   -n 'M-8' select-window -t :=8
+bind   -n 'M-9' select-window -t :=9
+bind   -n 'M-N' swap-window   -t -1                                            # move window one position to the left
+bind   -n 'M-?' swap-window   -t +1                                            # move window one position to the right
+bind   -n 'M-n' previous-window
+bind   -n 'M-.' next-window
+
+# => mouse bindings ---------------------------------------------------------------------------------------------- {{{1
+
+bind   -n MouseDown2Status  kill-window                                        # middle click on a window name in status bar to kill it
+bind   -n MouseDown2Pane    select-pane \; paste-buffer
+bind   -n DoubleClick1Pane  select-pane \; select-layout main-vertical \; swap-pane -d -t {left}
+
+# => copy mode key bindings -------------------------------------------------------------------------------------- {{{1
+
+#unbind                 '['
+bind                   'Escape'          copy-mode
+#unbind                 'p'
+#bind                   'p'               paste-buffer
+bind                   'u'               copy-mode \; send-keys -X page-up
+bind   -n              'M-u'             copy-mode \; send-keys -X page-up
+bind   -T copy-mode-vi 'u'               send-keys -X page-up
+bind   -T copy-mode-vi 'M-u'             send-keys -X page-up
+bind   -T copy-mode-vi 'M-d'             send-keys -X page-down
+bind   -T copy-mode-vi 'v'               send-keys -X begin-selection
+bind   -T copy-mode-vi 'y'               send-keys -X copy-pipe-and-cancel 'xclip -i -sel p -f | xclip -i -sel c'
+bind   -T copy-mode-vi 'Enter'           send-keys -X copy-pipe-and-cancel 'xclip -i -sel p -f | xclip -i -sel c'
+bind   -T copy-mode-vi 'Escape'          send-keys -X cancel
+
+# => copy mode mouse bindings ------------------------------------------------------------------------------------ {{{1
+
+unbind -T copy-mode-vi MouseDragEnd1Pane                                       # don't exit copy mode on mouse selection
+bind   -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe            'xclip -i -sel p -f | xclip -i -sel c'
+bind   -T copy-mode-vi MouseDown2Pane    send-keys -X copy-selection-and-cancel \; paste-buffer
+bind   -T copy-mode-vi MouseDown3Pane    send-keys -X copy-pipe-and-cancel 'xclip -i -sel p -f | xclip -i -sel c'
+
+# => nested sessions support, disables prefix in outer session and send everything to inner ---------------------- {{{1
+
+bind -n 'M-F12' \
+	set prefix None \;\
+	set key-table off \;\
+	if -F "#{pane_in_mode}" 'send-keys -X cancel' \;\
+	refresh-client -S \;\
+
+bind -T off 'M-F12' \
+	set -u prefix \;\
+	set -u key-table \;\
+	set -u status-style \;\
+	set -u window-status-current-style \;\
+	set -u window-status-current-format \;\
+	refresh-client -S
+
+# => different colours for remote and local sessions (not using %else because it is not supported by old tmux) --- {{{1
+
+%if #{!=:#{SSH_CLIENT},}
+	TMUX_COLOR_FG_LIGHT='colour49'
+	TMUX_COLOR_FG_BRIGHT='colour231'
+	TMUX_COLOR_BG_DARK='colour23'
+	TMUX_COLOR_BG_MEDIUM='colour29'
+	TMUX_COLOR_BG_LIGHT='colour35'
+	set  -g status-position              'bottom'
+%endif
+%if #{==:#{SSH_CLIENT},}
+	TMUX_COLOR_FG_LIGHT='colour50'
+	TMUX_COLOR_FG_BRIGHT='colour231'
+	TMUX_COLOR_BG_DARK='colour24'
+	TMUX_COLOR_BG_MEDIUM='colour30'
+	TMUX_COLOR_BG_LIGHT='colour36'
+	set  -g status-position              'top'
+%endif
+
+# => status bar -------------------------------------------------------------------------------------------------- {{{1
+
+TMUX_ST_IS_KEYS_OFF="#[fg=$TMUX_COLOR_FG_LIGHT]#([ $(tmux show-option -qv key-table) = 'off' ] && echo '[OFF] ')"
+TMUX_ST_DATE="#[bg=$TMUX_COLOR_BG_DARK,fg=$TMUX_COLOR_BG_MEDIUM]#[bg=$TMUX_COLOR_BG_MEDIUM,fg=$TMUX_COLOR_FG_BRIGHT] %Y-%m-%d "
+TMUX_ST_TIME="#[fg=$TMUX_COLOR_BG_LIGHT]#[bg=$TMUX_COLOR_BG_LIGHT,fg=$TMUX_COLOR_FG_BRIGHT] %H:%M %Z"
+
+set  -g @prefix_highlight_output_prefix  '['                                   # tmux-prefix-highlight plugin
+set  -g @prefix_highlight_output_suffix  ']'
+set  -g @prefix_highlight_fg             "$TMUX_COLOR_FG_LIGHT"
+set  -g @prefix_highlight_bg             "$TMUX_COLOR_BG_DARK"
+set  -g @prefix_highlight_show_copy_mode 'on'
+set  -g @prefix_highlight_copy_mode_attr "bg=$TMUX_COLOR_BG_DARK,fg=$TMUX_COLOR_FG_LIGHT"
+
+set  -g status                           'on'
+set  -g status-justify                   'left'
+set  -g status-style                     "bg=$TMUX_COLOR_BG_DARK,fg=$TMUX_COLOR_FG_BRIGHT"
+set  -g status-left                      "#[bg=$TMUX_COLOR_BG_LIGHT,fg=$TMUX_COLOR_FG_BRIGHT] #H #[bg=$TMUX_COLOR_BG_DARK,fg=$TMUX_COLOR_BG_LIGHT]"
+set  -g status-right                     "#{prefix_highlight} ${TMUX_ST_IS_KEYS_OFF}${TMUX_ST_DATE}${TMUX_ST_TIME}"
+set  -g status-left-length               '100'
+set  -g status-right-length              '100'
+
+set  -g message-style                    "bg=$TMUX_COLOR_BG_MEDIUM,fg=$TMUX_COLOR_FG_BRIGHT"
+set  -g message-command-style            "bg=$TMUX_COLOR_BG_MEDIUM,fg=$TMUX_COLOR_FG_BRIGHT"
+
+set  -g pane-border-style                "fg=$TMUX_COLOR_BG_DARK"
+set  -g pane-active-border-style         "fg=$TMUX_COLOR_FG_LIGHT"
+
+setw -g window-status-style              "bg=$TMUX_COLOR_BG_DARK,fg=$TMUX_COLOR_FG_BRIGHT"
+setw -g window-status-activity-style     "bg=$TMUX_COLOR_BG_DARK,fg=$TMUX_COLOR_BG_LIGHT"
+setw -g window-status-current-format     "#[bg=$TMUX_COLOR_BG_MEDIUM,fg=$TMUX_COLOR_BG_DARK]#[fg=$TMUX_COLOR_FG_BRIGHT] #I  #W #[bg=$TMUX_COLOR_BG_DARK,fg=$TMUX_COLOR_BG_MEDIUM]"
+setw -g window-status-format             "#[bg=$TMUX_COLOR_BG_DARK,fg=$TMUX_COLOR_FG_BRIGHT] #I  #W "
+setw -g window-status-separator          ''
+
+# => initialize tmux plugin manager (keep these lines at the very bottom of .tmux.conf) -------------------------- {{{1
+
+set -g @tpm_plugins '\
+	tmux-plugins/tpm \
+	tmux-plugins/tmux-prefix-highlight \
+	tmux-plugins/tmux-copycat \
+	nhdaly/tmux-better-mouse-mode \
+'
+
+#set  -g @plugin 'tmux-plugins/tmux-resurrect'
+#set  -g @plugin 'tmux-plugins/tmux-sessionist'
+
+if-shell 'test -x ~/.cache/tmux/plugins/tpm/tpm' 'run ~/.cache/tmux/plugins/tpm/tpm'
+if-shell 'test -x ~/.tmux/plugins/tpm/tpm'       'run ~/.tmux/plugins/tpm/tpm'
