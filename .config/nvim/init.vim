@@ -572,25 +572,21 @@ xmap ga <Plug>(EasyAlign)
 
 " => Plugin: vim-grepper ----------------------------------------------------------------------------------------- {{{1
 
-let g:grepper            = {}
-let g:grepper.highlight  = 1
-let g:grepper.jump       = 0
-let g:grepper.quickfix   = 1
-let g:grepper.dir        = 'repo,cwd'
-let g:grepper.repo       = ['.git', '.hg', '.svn', '.cache']
-let g:grepper.stop       = 100
-let g:grepper.tools      = ['git', 'ag', 'grep', 'rg', 'ack', 'ack-grep']
-
-runtime plugin/grepper.vim
-let g:grepper.ag.grepprg .= ' --hidden'
-let g:grepper.rg.grepprg .= ' --hidden --smart-case'
+silent! runtime plugin/grepper.vim                                             " initialize g:grepper with default values
+silent! let g:grepper.highlight   = 1
+silent! let g:grepper.jump        = 0
+silent! let g:grepper.quickfix    = 1
+silent! let g:grepper.dir         = 'repo,cwd'
+silent! let g:grepper.repo        = ['.git', '.hg', '.svn', '.cache']
+silent! let g:grepper.stop        = 100
+silent! let g:grepper.tools       = ['git', 'ag', 'grep', 'rg', 'ack', 'ack-grep']
+silent! let g:grepper.ag.grepprg .= ' --hidden'
+silent! let g:grepper.rg.grepprg .= ' --hidden --smart-case'
 
 " Start Grepper prompt
 nnoremap <Leader><Leader>g :Grepper<CR>
 " Search for the current word
-
 nnoremap <Leader>* :Grepper -cword -noprompt<CR>
-
 " Search for the current selection or {motion} (See text-objects)
 nmap gs <Plug>(GrepperOperator)
 xmap gs <Plug>(GrepperOperator)
