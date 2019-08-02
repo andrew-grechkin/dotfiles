@@ -80,6 +80,7 @@ let mapleader = "\<Space>"                                                     "
 " Set to auto read when a file is changed from the outside
 set autoread | autocmd CursorHold,CursorHoldI,FocusGained,BufEnter * silent! checktime
 
+set autochdir
 set autowrite                                                                  " Write the content of the file automatically if you call :make
 set encoding=utf8                                                              " Set utf8 as standard encoding and en_US as the standard language
 set ffs=unix,dos,mac                                                           " Use Unix as the standard file type
