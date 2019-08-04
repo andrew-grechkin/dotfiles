@@ -395,10 +395,10 @@ augroup qf
 	autocmd FileType qf set nobuflisted
 augroup END
 
-augroup save_restore_position
+"augroup save_restore_position
 "	autocmd!
 "	autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | execute "normal! g'\"" | endif
-augroup END
+"augroup END
 
 augroup settings_by_filetype
 	autocmd!
@@ -413,6 +413,7 @@ augroup pre_post_process
 	autocmd!
 	" Regenerate tags when saving Python files
 	autocmd BufWritePost *.py silent! !ctags -R &
+	" Remove all trailing whitespaces
 "	autocmd BufWritePre * :%s/\s\+$//e                                                                                 " Remove trailing spaces on save
 augroup END
 
@@ -464,6 +465,12 @@ let g:ale_cpp_gcc_options       = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib
 
 " => Plugin: NERDTree -------------------------------------------------------------------------------------------- {{{1
 
+" Enable NERDTree on Vim startup
+"autocmd VimEnter * NERDTree
+
+" Autoclose NERDTree if it's the only open window left
+autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+
 let NERDTreeShowHidden        = 1
 let NERDTreeCaseSensitiveSort = 1
 let NERDTreeShowBookmarks     = 1                                              " Display bookmarks by default
@@ -471,11 +478,6 @@ let NERDTreeHijackNetrw       = 0
 let NERDTreeQuitOnOpen        = 1
 
 noremap <leader>n :NERDTreeToggle<CR>
-
-"autocmd VimEnter * NERDTree                                                    " Enable NERDTree on Vim startup
-
-" Autoclose NERDTree if it's the only open window left
-autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 
 " => Plugin: vim-nerdtree-syntax-highlight ----------------------------------------------------------------------- {{{1
 
@@ -711,6 +713,7 @@ if !empty(glob(NVIM_CONFIG_HOME . '/booking.vim'))
 endif
 
 " => Know-How ---------------------------------------------------------------------------------------------------- {{{1
+
 ":verbose set tw? wm?
 ":verbose set formatoptions?
 ":scriptnames

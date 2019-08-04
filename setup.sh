@@ -4,6 +4,7 @@ mkdir -p ~/.cache
 mkdir -p ~/.cache/bin
 mkdir -p ~/.config
 mkdir -p ~/.config/nvim
+mkdir -p ~/.config/xfce4
 mkdir -p ~/.local
 
 SCRIPT=$(realpath -s "$0")
@@ -37,6 +38,8 @@ ln -sf "$WORKDIR/.config/zathura"                                      ~/.config
 ln -sf "$WORKDIR/.config/zsh"                                          ~/.config/
 
 chmod -R u=rwX,go-rwx "$WORKDIR/.ssh"
+
+[ -d "$HOME/.config/xfce4/terminal" ] || cp -r "$WORKDIR/.config/xfce4/terminal" ~/.config/xfce4/
 
 [ -x "submodules/private/setup.sh" ] && echo "Execution private/setup" && (exec "submodules/private/setup.sh")
 [ -x "submodules/secret/setup.sh" ]  && echo "Execution secret/setup"  && (exec "submodules/secret/setup.sh")
