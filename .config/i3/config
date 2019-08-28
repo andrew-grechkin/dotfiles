@@ -148,7 +148,7 @@ assign [class="Atom"]                 $ws8
 #assign [class="Pamac-manager"]        $ws8
 #assign [class="Pamac-updater"]        $ws8
 #assign [class="crx_nckgahadagoaajjgafhacjanaoiihapd"] $ws0
-assign [class="VirtualBox Manager"]   $ws5
+#assign [class="VirtualBox Manager"]   $ws5
 
 # => force floating windows -------------------------------------------------------------------------------------- {{{1
 
