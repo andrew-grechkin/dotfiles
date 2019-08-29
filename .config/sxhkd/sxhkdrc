@@ -19,7 +19,7 @@ super + d
 super + b
 	exo-open --launch WebBrowser
 super + o
-	opera
+	opera --password-store=gnome
 super + c
 	google-chrome-stable
 /* super + p */
@@ -48,7 +48,7 @@ XF86HomePage
 XF86Launch5
 	google-chrome-stable
 XF86Launch6
-	opera
+	opera --password-store=gnome
 XF86Launch7
 	code
 XF86Launch8
