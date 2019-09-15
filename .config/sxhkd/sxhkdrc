@@ -15,6 +15,8 @@ super + c
 	rofi -show calc -modi "calc:qalc +u8" -no-show-match -no-sort
 super + d
 	rofi -show run
+super + control + F12
+	xkill
 
 super + b
 	exo-open --launch WebBrowser

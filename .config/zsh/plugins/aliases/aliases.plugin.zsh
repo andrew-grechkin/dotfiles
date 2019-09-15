@@ -74,8 +74,7 @@ fi
 
 # => pacman ------------------------------------------------------------------------------------------------------ {{{1
 
-alias list-altered-files='sudo pacman -Qkkq'
-alias list-additional-files='sudo lostfiles | grep -v /usr/share'
+alias arch-list-altered-files='sudo pacman -Qkkq'
 alias mirrors-update='sudo reflector --country Netherlands --latest 8 --protocol http --protocol https --sort rate --save /etc/pacman.d/mirrorlist'
 
 # => flibusta library -------------------------------------------------------------------------------------------- {{{1

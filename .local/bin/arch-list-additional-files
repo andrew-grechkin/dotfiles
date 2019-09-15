@@ -1,0 +1,217 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+if [ $UID != '0' ]; then
+	echo 'You must run this script as root' 1>&2
+	exit 1
+fi
+
+usage() {
+	echo "Usage: $0 [-s] [-z] [-h]"
+	echo "    -h  -  display this help"
+	echo "    -s  -  strict mode"
+	echo "    -z  -  sort results by size"
+	exit 0
+}
+
+# setup defaults which user can override with switches
+use_filter=filter
+# 0 = relaxed (default)
+# 1 = strict
+MODE=0
+
+while getopts 'sz' OPTION; do
+	case "$OPTION" in
+		z)
+			use_filter=filter_sort
+			;;
+		s)
+			MODE=1
+			;;
+		*)
+			usage
+			;;
+	esac
+done
+shift $((OPTIND -1))
+
+filter() {
+	# just filter
+	sed -e 's|^\t||;' | sort
+}
+
+filter_sort() {
+	sed -e '1d' | tr '\n' '\0' | xargs -0 -n1 du -s | sort -rn -k1
+}
+
+# get current kernel version for excluding current dkms module folder in /usr/lib/modules
+CURRENTKERNEL="$(uname -r)"
+LIST_ALL_PACMAN_FILES="pacman -Qlq | sed -e 's|/$||' | sort -u"
+strict() {
+	export LC_ALL=C
+	LIST_ALL_FILES="find /boot /etc /opt /srv /usr /var  | sort -u"
+
+	comm -13 \
+		<( eval $LIST_ALL_PACMAN_FILES ) \
+		<( eval $LIST_ALL_FILES )
+}
+
+# relaxed mode is more forgiving about hits
+relaxed() {
+	export LC_ALL=C
+	SKIP_RECURSIVE=(
+		"/usr/lib/modules/$CURRENTKERNEL"
+		#'/etc/.etckeeper'
+		#'/etc/NetworkManager/system-connections'
+		#'/etc/blkid.tab'
+		#'/etc/conf.d'
+		#'/etc/dfs'
+		#'/etc/dhcpcd.duid'
+		#'/etc/digitalocean'
+		#'/etc/easy-rsa'
+		#'/etc/fancontrol'
+		#'/etc/network.d/ethernet-static'
+		#'/etc/openvpn'
+		#'/etc/systemd/network'
+		#'/etc/systemd/system'
+		#'/etc/udev/hwdb.bin'
+		#'/etc/xml/catalog'
+		#'/etc/zfs/zpool.cache'
+		#'/opt/google-appengine-go/appengine/api/*.pyc'
+		#'/usr/bin/__pycache__'
+		#'/usr/lib/locale/locale-archive'
+		#'/usr/lib/virtualbox/ExtensionPacks/Oracle_VM_VirtualBox_Extension_Pack'
+		#'/usr/local'
+		#'/usr/share/applications/mimeinfo.cache'
+		#'/usr/share/backintime'
+		#'/usr/share/dict/words'
+		#'/usr/share/fonts/TTF/fonts.dir'
+		#'/usr/share/fonts/TTF/fonts.scale'
+		#'/usr/share/fonts/misc/fonts.dir'
+		#'/usr/share/fonts/misc/fonts.scale'
+		#'/usr/share/info/dir'
+		#'/usr/share/webapps/owncloud/data'
+		#'/usr/var/cache'
+		#'/usr/var/run'
+		#'/var/.updated'
+		#'/var/abs'
+		#'/var/cache'
+		#'/var/db/sudo'
+		#'/var/lib'
+		#'/var/lock'
+		#'/var/run'
+		#'/var/spool'
+		'/boot/EFI'
+		'/boot/grub'
+		'/boot/loader'
+		'/boot/lost+found'
+		'/boot/syslinux'
+		'/etc/ca-certificates'
+		'/etc/ld.so.cache'
+		'/etc/pacman.d/gnupg'
+		'/etc/ssl'
+		'/etc/systemd/system/*.target.wants'
+		'/etc/systemd/user/default.target.wants'
+		'/etc/systemd/user/sockets.target.wants'
+		'/usr/share/.mono/certs/Trust'
+		'/usr/share/fonts'
+		'/usr/share/icons'
+		'/usr/share/mime'
+		'/var/cache/fontconfig'
+		'/var/cache/man'
+		'/var/cache/pacman'
+		'/var/lib/bluetooth'
+		'/var/lib/colord'
+		'/var/lib/lightdm/.cache'
+		'/var/lib/pacman/local'
+		'/var/lib/pacman/sync'
+		'/var/lib/systemd/rfkill'
+		'/var/lib/systemd/timers'
+		'/var/log'
+		'/var/tmp'
+	)
+	SKIP=(
+		'/boot/initramfs*'
+		'/boot/refind_linux.conf'
+		'/etc/docker'
+		'/etc/motion/conf.d'
+		'/etc/ssh/ssh_host*'
+		'/etc/systemd/system/docker.service.d'
+		'/etc/systemd/system/systemd-journald.service.d'
+		'/etc/systemd/timesyncd.conf.d'
+		'/opt/containerd'
+		'/opt/containerd/bin'
+		'/opt/containerd/lib'
+		'/usr/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache'
+		'/usr/lib/gio/modules/giomodule.cache'
+		'/usr/lib/graphviz/config6'
+		'/usr/lib/gtk-2.0/2.10.0/immodules.cache'
+		'/usr/lib/gtk-3.0/3.0.0/immodules.cache'
+		'/usr/lib/udev/hwdb.bin'
+		'/usr/lib32/gdk-pixbuf-2.0/2.10.0/loaders.cache'
+		'/usr/lib32/gio/modules/giomodule.cache'
+		'/usr/lib32/gtk-2.0/2.10.0/immodules.cache'
+		'/usr/lib32/gtk-3.0/3.0.0/immodules.cache'
+		'/usr/share/applications/mimeinfo.cache'
+		'/usr/share/glib-2.0/schemas/gschemas.compiled'
+		'/usr/share/info/dir'
+		'/var/.updated'
+		'/var/cache/ldconfig'
+		'/var/cache/ldconfig/aux-cache'
+		'/var/cache/lightdm'
+		'/var/cache/lightdm/dmrc'
+		'/var/lib/docker'
+		'/var/lib/geoclue'
+		'/var/lib/libvirt'
+		'/var/lib/libvirt/images'
+		'/var/lib/lightdm'
+		'/var/lib/lightdm-data'
+		'/var/lib/lightdm-data/lightdm'
+		'/var/lib/lightdm/.Xauthority'
+		'/var/lib/lightdm/.config'
+		'/var/lib/lightdm/.config/user-dirs.dirs'
+		'/var/lib/lightdm/.config/user-dirs.locale'
+		'/var/lib/lightdm/Desktop'
+		'/var/lib/lightdm/Documents'
+		'/var/lib/lightdm/Downloads'
+		'/var/lib/lightdm/Music'
+		'/var/lib/lightdm/Pictures'
+		'/var/lib/lightdm/Public'
+		'/var/lib/lightdm/Templates'
+		'/var/lib/lightdm/Videos'
+		'/var/lib/machines'
+		'/var/lib/mailman'
+		'/var/lib/mlocate/mlocate.db'
+		'/var/lib/mpd'
+		'/var/lib/mpd/playlists'
+		'/var/lib/mysql'
+		'/var/lib/named'
+		'/var/lib/pgsql'
+		'/var/lib/portables'
+		'/var/lib/private'
+		'/var/lib/rpcbind'
+		'/var/lib/systemd/backlight'
+		'/var/lib/systemd/catalog'
+		'/var/lib/systemd/catalog/database'
+		'/var/lib/systemd/coredump'
+		'/var/lib/systemd/linger'
+		'/var/lib/upower/history-*'
+	)
+
+	SKIP_REC_STR=$(printf " -wholename %s -prune -o" ${SKIP_RECURSIVE[@]})
+	SKIP_STR=$(printf " -wholename %s -o" ${SKIP[@]})
+	comm -13 \
+		<( eval $LIST_ALL_PACMAN_FILES ) \
+		<(find /boot /etc /opt /usr /var -not \( \
+			${SKIP_REC_STR} \
+			${SKIP_STR} \
+			\( -wholename '/usr/lib/node_modules*' -and -not -wholename '/usr/lib/node_modules/npm/*' \) \
+		\) | sort -u)
+}
+
+if [[ $MODE -eq 0 ]]; then
+	relaxed | $use_filter
+else
+	strict | $use_filter
+fi
