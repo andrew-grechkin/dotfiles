@@ -40,8 +40,8 @@ alias gcc-all-defines='gcc -dM -E - < /dev/null | sort'
 # => journal ----------------------------------------------------------------------------------------------------- {{{1
 
 alias j='journalctl -b'
-alias j-e='journalctl -b -p 4'
-alias j-t='journalctl -fb'
+alias j-err='journalctl -b -p 4'
+alias j-tail='journalctl -fb'
 alias j-rotate='sudo journalctl --rotate; sudo journalctl --vacuum-size=1'
 
 # => yum --------------------------------------------------------------------------------------------------------- {{{1
