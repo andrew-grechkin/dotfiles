@@ -37,6 +37,9 @@ call plug#begin()
 "	Plug 'samoshkin/vim-mergetool'
 "	Plug 'chrisbra/csv.vim'
 	Plug 'fatih/vim-go', {'for': 'go'}
+	Plug 'rodjek/vim-puppet'                                                   " For Puppet syntax highlighting
+"	Plug 'vim-ruby/vim-ruby'                                                   " For Facts, Ruby functions, and custom providers
+"	Plug 'neoclide/coc.nvim', {'do': { -> coc#util#install()}}                 " Language Server support
 	if v:version >= 800 || has('nvim')
 		Plug 'dyng/ctrlsf.vim', {'on': ['CtrlSF','<Plug>CtrlSFCwordPath','<Plug>CtrlSFVwordExec']} " Global search and replace
 		Plug 'lambdalisue/suda.vim'                                            " run sudo from vim

@@ -1,0 +1,13 @@
+#!/usr/bin/env zsh
+
+set -eo pipefail
+
+GROUP_BASE=(${(@f)$(pacman -Sgq base)})
+GROUP_BASEDEVEL=(${(@f)$(pacman -Sgq base-devel)})
+GROUP_XORG=(${(@f)$(pacman -Sgq xorg)})
+INSTALLED=(${(@f)$(pacman -Qqent)})
+INSTALLED=(${INSTALLED:|GROUP_BASE})
+INSTALLED=(${INSTALLED:|GROUP_BASEDEVEL})
+INSTALLED=(${INSTALLED:|GROUP_XORG})
+
+printf '%s\n' "${INSTALLED[@]}"

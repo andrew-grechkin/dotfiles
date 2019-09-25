@@ -31,6 +31,7 @@ else
 fi
 
 [[ -n "$GOPATH"                ]] && _appendvar_head PATH "$GOPATH/bin"
+[[ -n "$GEM_HOME"              ]] && _appendvar_head PATH "$GEM_HOME/bin"
 [[ -n "$PERLBREW_PATH"         ]] && _appendvar_head PATH "$PERLBREW_PATH"
 [[ -d "$HOME/.local/bin"       ]] && _appendvar_head PATH "$HOME/.local/bin"
 [[ -d "$HOME/.local/scripts"   ]] && _appendvar_head PATH "$HOME/.local/scripts"
