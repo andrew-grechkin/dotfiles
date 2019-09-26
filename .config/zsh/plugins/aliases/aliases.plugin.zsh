@@ -75,7 +75,7 @@ fi
 # => pacman ------------------------------------------------------------------------------------------------------ {{{1
 
 alias arch-list-altered-files='sudo pacman -Qkkq'
-alias arch-remove-orphans='pacman -Rns $(pacman -Qtdq)'
+alias arch-remove-orphans='sudo pacman -Rns $(pacman -Qtdq)'
 alias mirrors-update='sudo reflector --country Netherlands --latest 8 --protocol http --protocol https --sort rate --save /etc/pacman.d/mirrorlist'
 
 # => flibusta library -------------------------------------------------------------------------------------------- {{{1

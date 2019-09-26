@@ -1,0 +1,5 @@
+# This is a simple of a .perltidyrc configuration file
+# This implements a highly spaced style
+-l=120
+#-st -cab=1 -mft=1 -vt=1 -boc
+#-bl    # braces on new lines

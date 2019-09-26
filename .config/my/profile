@@ -1,11 +1,42 @@
 # vim: syntax=zsh foldmethod=marker
 
+if [[ -z "$TMUX" ]]; then
+	export DOTPROFILE_EXECUTED="login"
+else
+	export DOTPROFILE_EXECUTED="tmux"
+fi
+
+# => gnupg ------------------------------------------------------------------------------------------------------- {{{1
+
+#if [[ -e "$HOME/.gnupg" ]]; then
+#	export   GNUPGHOME=$XDG_CONFIG_HOME/gnupg
+#fi
+
+# => keyring-ssh-agent ------------------------------------------------------------------------------------------- {{{1
+
+#SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/keyring/ssh"
+
+# => openssh-agent ----------------------------------------------------------------------------------------------- {{{1
+
+#SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/S.ssh-agent"
+
+# => gpg-agent-ssh ----------------------------------------------------------------------------------------------- {{{1
+
+#SSH_AGENT_PID=
+#SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.ssh"
+
+# => SSH agent --------------------------------------------------------------------------------------------------- {{{1
+
 if [[ -n "$SSH_CLIENT" ]] || [[ -n "$SSH_TTY" ]] || [[ -n "$SSH_CONNECTION" ]]; then
 ### for remote sessions
+	_is_ssh_auth_sock_ok || _try_existing_ssh_auth_sock_term || echo 'No SSH_AUTH_SOCK found'
 else
 ### for local sessions
+	### check and reuse existing running ssh agent
+	_is_ssh_auth_sock_ok || _try_existing_ssh_auth_sock
+
 	### start ssh-agent if it's not runnig
-	_check_auth_sock || _check_gpg_agent || _check_ssh_agent || _start_ssh_agent
+	#_check_auth_sock || _check_gpg_agent || _check_ssh_agent || _start_ssh_agent
 
 	### SSH make common link to auth socket link
 	#if [[ -z "$TMUX" ]]; then
@@ -17,6 +48,8 @@ else
 	#	export SSH_AUTH_SOCK="$HOME/.cache/SSH_AUTH_SOCK"
 	#fi
 fi
+
+# => docker env -------------------------------------------------------------------------------------------------- {{{1
 
 #if [[ "$HOSTNAME" = "hp-9470m-an" ]]; then
 #	export DOCKER_HOST=tcp://192.168.99.100:2376

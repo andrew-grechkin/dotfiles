@@ -17,6 +17,7 @@ ln -sf "$WORKDIR/.config/tmux/config"                                  ~/.tmux.c
 ln -sf "$WORKDIR/.pam_environment"                                     ~/
 ln -s  "$WORKDIR/.ssh"                                                 ~/
 #ln -sf "$WORKDIR/.zshenv"                                              ~/
+ln -sf "$WORKDIR/.xprofile"                                            ~/
 
 ln -sf "$WORKDIR/.config/compton.conf"                                 ~/.config/
 ln -sf "$WORKDIR/.config/git"                                          ~/.config/

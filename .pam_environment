@@ -19,11 +19,11 @@ WINEARCH            DEFAULT=win32
 
 ZDOTDIR             DEFAULT="${XDG_CONFIG_HOME}/zsh"
 
-# => ssh-agent --------------------------------------------------------------------------------------------------- {{{1
+# => X11 settings ------------------------------------------------------------------------------------------------ {{{1
 
-#SSH_AUTH_SOCK       DEFAULT="${XDG_RUNTIME_DIR}/S.ssh-agent"
-
-# => gpg-agent-ssh ----------------------------------------------------------------------------------------------- {{{1
-
-#SSH_AGENT_PID       DEFAULT=
-#SSH_AUTH_SOCK       DEFAULT="${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.ssh"
+GTK_RC_FILES        DEFAULT="@{HOME}/.config/x11/gtk1rc"
+GTK2_RC_FILES       DEFAULT="@{HOME}/.config/x11/gtk2rc"
+#XINITRC             DEFAULT="@{HOME}/.config/x11/xinitrc"
+#XSERVERRC           DEFAULT="@{HOME}/.config/x11/xserverrc"
+#XAUTHORITY          DEFAULT="${XDG_RUNTIME_DIR}/Xauthority"
+#ICEAUTHORITY        DEFAULT="${XDG_RUNTIME_DIR}/ICEauthority"

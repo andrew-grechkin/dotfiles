@@ -10,6 +10,6 @@ function fix_ssh_agent() {
 
 # => Fix ssh agent path on remote servers automatically ---------------------------------------------------------- {{{1
 
-if [[ -n "$TMUX" ]]; then
+if [[ -n "$SSH_CLIENT" ]] || [[ -n "$SSH_TTY" ]] || [[ -n "$SSH_CONNECTION" ]]; then
 	add-zsh-hook preexec fix_ssh_agent
 fi
