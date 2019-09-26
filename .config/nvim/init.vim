@@ -464,6 +464,7 @@ let g:ale_list_window_size      = 5
 let g:ale_cpp_gcc_options       = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
 let g:ale_cpp_clang_options     = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
 let g:ale_cpp_clangd_options    = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
+let g:ale_perl_perlcritic_showrules = 1
 
 "let g:ale_linters               = {
 "\   'cpp': ['ccls', 'clang', 'clangcheck', 'clangd', 'clangtidy', 'clazy', 'cppcheck', 'cpplint', 'cquery', 'flawfinder', 'gcc'],

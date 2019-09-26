@@ -1,5 +1,37 @@
-# This is a simple of a .perltidyrc configuration file
-# This implements a highly spaced style
--l=120
-#-st -cab=1 -mft=1 -vt=1 -boc
-#-bl    # braces on new lines
+# vim: syntax=conf foldmethod=marker
+# man: perltidy
+
+# Good base-line
+# an alias for this:
+# -l=78 -i=4 -ci=4 -st -se -vt=2 -cti=0 -pt=1 -bt=1 -sbt=1 -bbt=1 -nsfs -nolq
+# -wbb="% + - * / x != == >= <= =~ !~ < > | & =
+#       **= += *= &= <<= &&= -= /= |= >>= ||= //= .= %= ^= x="
+
+--maximum-line-length=120
+
+# -pbp
+--perl-best-practices
+# -nst
+--nostandard-output
+
+# overriding some stuff there
+--continuation-indentation=4
+
+--brace-tightness=2
+--paren-tightness=2
+--square-bracket-tightness=2
+--block-brace-tightness=0
+
+--tight-secret-operators
+
+# -vt
+--vertical-tightness=0
+# -vtc
+--vertical-tightness-closing=0
+# --outdent-long-quotes # ??
+
+# more stuff
+#--cuddled-else
+--minimum-space-to-comment=1
+--nooutdent-long-comments
+--warning-output
