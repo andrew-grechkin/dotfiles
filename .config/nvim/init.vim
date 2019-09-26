@@ -436,6 +436,7 @@ augroup END
 
 augroup perl_filetype_settings
 	autocmd!
+	autocmd FileType perl set keywordprg=perldoc
 	autocmd FileType perl nnoremap <silent> tt :%!perltidy -q<CR>
 	autocmd FileType perl vnoremap <silent> tt :!perltidy -q<CR>
 augroup END

@@ -1,15 +1,15 @@
 # vim: syntax=conf foldmethod=marker
 # man: perlcritic
 
-color    = 1
 severity = 1
-verbose  = [%p] %m at %f line %l, near '%r'\n
+top      = 8
+verbose  = [%s %p] %m at %f:%l:%c, near '%r'\n
 
-color-severity-high    = yellow
-color-severity-highest = bold red
-color-severity-low     = blue
-color-severity-lowest  = magenta
-color-severity-medium  = bold blue
+color                  = 1
+color-severity-highest = bold white on_red
+color-severity-high    = bold white on_yellow
+color-severity-medium  = bold yellow
+color-severity-low     = bold cyan
 
 # => disabled 5 -------------------------------------------------------------------------------------------------- {{{1
 
