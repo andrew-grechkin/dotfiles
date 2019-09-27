@@ -1,37 +1,28 @@
 # vim: syntax=conf foldmethod=marker
 # man: perltidy
 
-# Good base-line
-# an alias for this:
-# -l=78 -i=4 -ci=4 -st -se -vt=2 -cti=0 -pt=1 -bt=1 -sbt=1 -bbt=1 -nsfs -nolq
-# -wbb="% + - * / x != == >= <= =~ !~ < > | & =
-#       **= += *= &= <<= &&= -= /= |= >>= ||= //= .= %= ^= x="
-
---maximum-line-length=120
-
-# -pbp
+# -pbp should be first
 --perl-best-practices
-# -nst
---nostandard-output
 
-# overriding some stuff there
---continuation-indentation=4
-
---brace-tightness=2
---paren-tightness=2
---square-bracket-tightness=2
+--all-containers-tightness=2
 --block-brace-tightness=0
-
 --tight-secret-operators
-
-# -vt
 --vertical-tightness=0
-# -vtc
 --vertical-tightness-closing=0
-# --outdent-long-quotes # ??
 
-# more stuff
-#--cuddled-else
---minimum-space-to-comment=1
+--continuation-indentation=4
+--cuddled-else
+--maximum-line-length=120
+--minimum-space-to-comment=4
 --nooutdent-long-comments
+--nooutdent-long-quotes
+--nostandard-output
 --warning-output
+
+--space-keyword-paren
+--nospace-for-semicolon
+
+--stack-opening-tokens
+--nostack-opening-block-brace
+--stack-closing-tokens
+--nostack-closing-block-brace
