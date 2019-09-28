@@ -1,0 +1,41 @@
+# vim: syntax=conf foldmethod=marker
+# man: perltidy
+
+# -pbp should be first
+--perl-best-practices
+
+--character-encoding="utf8"
+
+--all-containers-tightness=2
+#--block-brace-tightness=0
+--tight-secret-operators
+--vertical-tightness=0
+--vertical-tightness-closing=0
+
+--continuation-indentation=4
+#--cuddled-else
+--default-tabsize=4
+--maximum-line-length=120
+--no-outdent-long-comments
+--no-outdent-long-quotes
+--no-standard-output
+--warning-output
+
+#--minimum-space-to-comment=4
+--fixed-position-side-comment=80
+--ignore-side-comment-lengths
+--hanging-side-comments
+--static-side-comments
+
+--closing-side-comments
+--closing-side-comment-interval=40
+--closing-side-comment-warnings
+
+--space-keyword-paren
+--no-space-for-semicolon
+#--break-at-old-comma-breakpoints
+
+--stack-opening-tokens
+--no-stack-opening-block-brace
+--no-stack-closing-tokens
+--no-stack-closing-block-brace

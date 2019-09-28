@@ -30,6 +30,7 @@ ln -sf "$WORKDIR/.config/my"                                           ~/.config
 ln -sf "$WORKDIR/.config/npm"                                          ~/.config/
 ln -sf "$WORKDIR/.config/nvim/init.vim"                                ~/.config/nvim
 ln -sf "$WORKDIR/.config/nvim/plugins.vim"                             ~/.config/nvim
+ln -sf "$WORKDIR/.config/perltidyrc"                                   ~/.config/
 ln -sf "$WORKDIR/.config/rofi"                                         ~/.config/
 ln -sf "$WORKDIR/.config/sxhkd"                                        ~/.config/
 ln -sf "$WORKDIR/.config/systemd"                                      ~/.config/

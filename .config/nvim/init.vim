@@ -437,7 +437,8 @@ augroup END
 augroup perl_filetype_settings
 	autocmd!
 	autocmd FileType perl set keywordprg=perldoc
-	autocmd FileType perl nnoremap <silent> tt :%!perltidy -q<CR>
+	autocmd FileType perl nmap     <silent> tt <Plug>(ale_fix)
+	"autocmd FileType perl nnoremap <silent> tt :%!perltidy -q<CR>
 	autocmd FileType perl vnoremap <silent> tt :!perltidy -q<CR>
 augroup END
 
@@ -451,9 +452,12 @@ let g:airline_theme                      = "luna"
 " => Plugin: ale ------------------------------------------------------------------------------------------------- {{{1
 
 let g:ale_fix_on_save           = 1                                            " fix files when you save them
+let g:ale_fix_on_save_ignore    = {
+\   'perl': ['perltidy'],
+\}
 let g:ale_fixers                = {
-\   '*': ['remove_trailing_lines', 'trim_whitespace'],
-\   'javascript': ['eslint'],
+\   '*':    ['remove_trailing_lines', 'trim_whitespace'],
+\   'perl': ['remove_trailing_lines', 'trim_whitespace', 'perltidy'],
 \}
 let g:ale_sign_error            = '✘'
 let g:ale_sign_warning          = '❇'
@@ -462,9 +466,11 @@ let g:ale_set_quickfix          = 0
 let g:ale_open_list             = 1
 let g:ale_keep_list_window_open = 0
 let g:ale_list_window_size      = 5
+" ale_cpp
 let g:ale_cpp_gcc_options       = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
 let g:ale_cpp_clang_options     = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
 let g:ale_cpp_clangd_options    = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
+" ale_perl
 let g:ale_perl_perlcritic_showrules = 1
 
 "let g:ale_linters               = {
