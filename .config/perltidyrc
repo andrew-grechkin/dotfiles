@@ -13,7 +13,7 @@
 --vertical-tightness-closing=0
 
 --continuation-indentation=4
-#--cuddled-else
+--cuddled-else
 --default-tabsize=4
 --maximum-line-length=120
 --no-outdent-long-comments

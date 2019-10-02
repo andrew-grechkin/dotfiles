@@ -1,8 +1,9 @@
-# vim: syntax=conf foldmethod=marker
+# vim: syntax=dosini foldmethod=marker
 # man: perlcritic
 
 severity = 1
-top      = 8
+#only     = 1
+#top      = 8
 verbose  = [%s %p] %m at %f:%l:%c, near '%r'\n
 
 color                  = 1
@@ -51,8 +52,9 @@ color-severity-low     = bold cyan
 
 # => disabled 3 -------------------------------------------------------------------------------------------------- {{{1
 
-# This is not flexible enoug. I want to call my vars like $something_sha1 and similar
+# This is not flexible enough. I want to call my vars like $something_sha1 and similar
 [-Bangs::ProhibitNumberedNames]
+[-Bangs::ProhibitVagueNames]
 
 # This is helpful for scripts, not for everyone
 [-Modules::ProhibitExcessMainComplexity]
@@ -85,6 +87,9 @@ color-severity-low     = bold cyan
 # However, the error was not fixed
 # RT #57512
 [-InputOutput::RequireCheckedClose]
+
+[-Lax::ProhibitEmptyQuotes::ExceptAsFallback]
+[-Lax::RequireConstantOnLeftSideOfEquality::ExceptEq]
 
 # It does not work for some Dist::Zilla modules
 [-Modules::RequireVersionVar]
@@ -436,7 +441,7 @@ allow = for
 equivalent_modules = Moo Moo::Role
 
 [ValuesAndExpressions::ProhibitMagicNumbers]
-allowed_values = 0 1 2 -1 200
+allowed_values = 0 1 2 3 4 5 -1 200 400 404
 # Kind of literals to allow.
 # Valid values: Binary, Exp, Float, Hex, Octal.
 # allowed_types = Float
