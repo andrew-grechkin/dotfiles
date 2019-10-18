@@ -33,7 +33,10 @@
 
 --space-keyword-paren
 --no-space-for-semicolon
+
 #--break-at-old-comma-breakpoints
+--comma-arrow-breakpoints=0
+#--maximum-fields-per-table=2
 
 --stack-opening-tokens
 --no-stack-opening-block-brace

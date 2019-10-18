@@ -1,2 +1,4 @@
+# vim: syntax=conf foldmethod=marker
+
 # when lightdm runs this script the ssh agent is not yet started, but we expect it will be started later and created the socket
 export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/keyring/ssh"

@@ -1,3 +1,4 @@
+!.local/bin
 *.antigen-compat
 *.zwc
 .config/mpv/watch_later
@@ -8,4 +9,3 @@
 .config/vifm/scripts/README
 .config/vifm/vifm-help.txt
 .config/vifm/vifminfo
-!.local/bin

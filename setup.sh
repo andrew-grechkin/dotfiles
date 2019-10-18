@@ -10,16 +10,13 @@ mkdir -p ~/.local
 SCRIPT=$(realpath -s "$0")
 WORKDIR=$(dirname "$SCRIPT")
 
-ln -sf "$WORKDIR/.local/bin"                                           ~/.local/
-
 ln -sf "$WORKDIR/.config/nvim/init.vim"                                ~/.vimrc
 ln -sf "$WORKDIR/.config/tmux/config"                                  ~/.tmux.conf
 ln -sf "$WORKDIR/.pam_environment"                                     ~/
 ln -s  "$WORKDIR/.ssh"                                                 ~/
-#ln -sf "$WORKDIR/.zshenv"                                              ~/
 ln -sf "$WORKDIR/.perlcriticrc"                                        ~/
-ln -sf "$WORKDIR/.perltidyrc"                                          ~/
 ln -sf "$WORKDIR/.xprofile"                                            ~/
+#ln -sf "$WORKDIR/.zshenv"                                              ~/
 
 ln -sf "$WORKDIR/.config/compton.conf"                                 ~/.config/
 ln -sf "$WORKDIR/.config/git"                                          ~/.config/
@@ -39,6 +36,8 @@ ln -sf "$WORKDIR/.config/tmux"                                         ~/.config
 ln -sf "$WORKDIR/.config/vifm"                                         ~/.config/
 ln -sf "$WORKDIR/.config/zathura"                                      ~/.config/
 ln -sf "$WORKDIR/.config/zsh"                                          ~/.config/
+
+ln -sf "$WORKDIR/.local/bin"                                           ~/.local/
 
 chmod -R u=rwX,go-rwx "$WORKDIR/.ssh"
 
