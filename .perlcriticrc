@@ -18,6 +18,8 @@ color-severity-low     = bold cyan
 # Different one available below
 [-Subroutines::ProhibitSubroutinePrototypes]
 
+[-TryTiny::RequireUse]
+
 # => disabled 4 -------------------------------------------------------------------------------------------------- {{{1
 
 # expression-based "map"/"grep" are faster
