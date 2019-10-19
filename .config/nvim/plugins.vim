@@ -5,8 +5,6 @@ call plug#begin()
 	Plug 'junegunn/vim-easy-align'
 	Plug 'junegunn/vim-peekaboo'                                               " Preview registers
 	Plug 'easymotion/vim-easymotion'                                           " Better move commands
-"	Plug 'ervandew/supertab'                                                   " More powerful <tab>
-"	Plug 'justinmk/vim-dirvish'                                                " Less buggy netrw alternative
 	Plug 'mhinz/vim-grepper'                                                   " Grep integration
 "	Plug 'mhinz/vim-grepper', { 'on': ['Grepper', '<Plug>(GrepperOperator)'] } " Grep integration
 	Plug 'airblade/vim-gitgutter'                                              " Git status/modifications of the file
@@ -20,7 +18,6 @@ call plug#begin()
 	Plug 'scrooloose/nerdcommenter', {'on': '<Plug>NERDCommenterToggle'}       " Commenting helpers
 	Plug 'tmux-plugins/vim-tmux', {'for': 'tmux'}                              " Vim plugin for .tmux.conf
 	Plug 'christoomey/vim-tmux-navigator'                                      " Better tmux integration
-"	Plug 'ctrlpvim/ctrlp.vim'                                                  " Ctrl+p to fuzzy search
 	Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
 "	Plug 'vim-scripts/Gundo', {'on': 'GundoToggle'}                            " Visualize the undo tree
 "	Plug 'Valloric/YouCompleteMe', { 'do': './install.py --clang-completer --system-libclang' }
@@ -36,7 +33,7 @@ call plug#begin()
 "	Plug 'vim-vdebug/vdebug'
 "	Plug 'samoshkin/vim-mergetool'
 "	Plug 'chrisbra/csv.vim'
-	Plug 'fatih/vim-go', {'for': 'go'}
+"	Plug 'fatih/vim-go', {'for': 'go'}
 	Plug 'rodjek/vim-puppet'                                                   " For Puppet syntax highlighting
 "	Plug 'vim-ruby/vim-ruby'                                                   " For Facts, Ruby functions, and custom providers
 "	Plug 'neoclide/coc.nvim', {'do': { -> coc#util#install()}}                 " Language Server support

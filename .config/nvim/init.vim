@@ -1,6 +1,6 @@
 " Personal .vimrc file
 " Compatible with vim and veovim
-" Authour: Andrew Grechkin
+" Author: Andrew Grechkin
 "
 " => Cheat sheet ------------------------------------------------------------------------------------------------- {{{1
 
@@ -153,7 +153,7 @@ filetype plugin indent on                                                      "
 
 set foldmethod=syntax
 set foldnestmax=1
-set list                                                                       " Show pecial characters
+set list                                                                       " Show special characters
 set listchars=tab:↹\ ,trail:␣,extends:>,precedes:<,nbsp:+                      " Visual form of special characters
 "set listchars+=eol:↵                                                          " Visible end of line
 
@@ -404,7 +404,7 @@ augroup settings_by_filetype
 	autocmd!
 	autocmd FileType *      setlocal textwidth=120 wrapmargin=0
 	autocmd Filetype json   setlocal foldmethod=syntax foldnestmax=30
-	autocmd Filetype perl   setlocal                   expandtab tabstop=4 shiftwidth=4 softtabstop=4 smarttab
+	autocmd Filetype perl   setlocal foldmethod=syntax expandtab tabstop=4 shiftwidth=4 softtabstop=4 smarttab
 	autocmd Filetype python setlocal foldmethod=indent expandtab tabstop=4 shiftwidth=4 softtabstop=4 smarttab
 	autocmd Filetype vim    setlocal foldmethod=marker                                                                 " Fold using {{{n, where n is fold level
 augroup END
@@ -413,7 +413,7 @@ augroup pre_post_process
 	autocmd!
 	" Regenerate tags when saving Python files
 	autocmd BufWritePost *.py silent! !ctags -R &
-	" Remove all trailing whitespaces
+	" Remove all trailing whitespaces (ALE does this better)
 "	autocmd BufWritePre * :%s/\s\+$//e                                                                                 " Remove trailing spaces on save
 augroup END
 
@@ -441,6 +441,8 @@ augroup perl_filetype_settings
 	"autocmd FileType perl nnoremap <silent> tt :%!perltidy -q<CR>
 	autocmd FileType perl vnoremap <silent> tt :!perltidy -q<CR>
 augroup END
+
+let perl_fold = 1
 
 " => Plugin: airline --------------------------------------------------------------------------------------------- {{{1
 
@@ -561,24 +563,6 @@ let g:ctrlsf_extra_backend_args = {
 	\ 'ag': '--hidden',
 	\ 'rg': '--hidden',
 	\ }
-
-" => Plugin: CtrlP ----------------------------------------------------------------------------------------------- {{{1
-
-"let g:ctrlp_working_path_mode   = 'ra'                                         " Set CtrlP workdir to a repo root (with a fallback to current directory)
-"let g:ctrlp_root_markers        = ['.ctrlp']
-"let g:ctrlp_show_hidden         = 1
-"let g:ctrlp_follow_symlinks     = 1
-"let g:ctrlp_clear_cache_on_exit = 1
-"
-"let g:ctrlp_custom_ignore       = {
-"    \ 'dir':  '\v[\/]\.(git|hg|svn|cache|vim)$',
-"    \ 'file': '\v\.(exe|so|dll)$',
-"    \ }
-""	\ 'link': 'some_bad_symbolic_links',
-"
-"noremap <leader>p :CtrlP<CR>
-"noremap <leader>b :CtrlPBuffer<CR>
-"noremap <leader>m :CtrlPMRU<CR>
 
 " => Plugin: vim-easy-align -------------------------------------------------------------------------------------- {{{1
 
