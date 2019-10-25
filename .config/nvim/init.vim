@@ -442,7 +442,10 @@ augroup perl_filetype_settings
 	autocmd FileType perl vnoremap <silent> tt :!perltidy -q<CR>
 augroup END
 
-let perl_fold = 1
+" man: ft-perl-syntax
+let perl_include_pod     = 0
+let perl_fold            = 1
+let perl_nofold_packages = 1
 
 " => Plugin: airline --------------------------------------------------------------------------------------------- {{{1
 
