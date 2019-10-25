@@ -22,6 +22,8 @@ color-severity-low     = bold cyan
 
 # => disabled 4 -------------------------------------------------------------------------------------------------- {{{1
 
+[-Bangs::ProhibitDebuggingModules]
+
 # expression-based "map"/"grep" are faster
 [-BuiltinFunctions::RequireBlockGrep]
 [-BuiltinFunctions::RequireBlockMap]
@@ -38,12 +40,6 @@ color-severity-low     = bold cyan
 # Already available in core policy
 [-Freenode::StrictWarnings]
 
-# constant.pm > Const::Fast > Readonly
-[-ValuesAndExpressions::ProhibitConstantPragma]
-
-# something && something or something || something is useful
-[-ValuesAndExpressions::ProhibitMixedBooleanOperators]
-
 # Can't find how to mark DSL keywords
 # (Moo{,se} provides has/with/extends/etc., Dancer{,2} provides more)
 # This is problematic
@@ -51,6 +47,12 @@ color-severity-low     = bold cyan
 
 # Calls to full-path subroutines is a clean practice, IMHO
 [-Subroutines::ProhibitCallsToUnexportedSubs]
+
+# constant.pm > Const::Fast > Readonly
+[-ValuesAndExpressions::ProhibitConstantPragma]
+
+# something && something or something || something is useful
+[-ValuesAndExpressions::ProhibitMixedBooleanOperators]
 
 # => disabled 3 -------------------------------------------------------------------------------------------------- {{{1
 
@@ -71,6 +73,8 @@ color-severity-low     = bold cyan
 [-ValuesAndExpressions::ProhibitVersionStrings]
 
 # => disabled 2 -------------------------------------------------------------------------------------------------- {{{1
+
+[-Bangs::ProhibitCommentedOutCode]
 
 # Specific projects should override this
 [-Documentation::RequirePodSections]
@@ -99,6 +103,8 @@ color-severity-low     = bold cyan
 
 # It does not work for some Dist::Zilla modules
 [-Modules::RequireVersionVar]
+
+[-References::ProhibitDoubleSigils]
 
 [-RegularExpressions::RequireDotMatchAnything]
 [-RegularExpressions::RequireLineBoundaryMatching]
@@ -235,6 +241,9 @@ strict = 0
 # 4 Variables::RequireLocalizedPunctuationVars [bugs certrec core pbp]
 # 4 Variables::RequireNegativeIndices [core maintenance pbp]
 
+[InputOutput::RequireBriefOpen]
+lines = 20
+
 [Freenode::DollarAB]
 extra_pair_functions = reduce
 
@@ -247,6 +256,9 @@ equivalent_modules = Moo Moo::Role
 
 [Moose::ProhibitNewMethod]
 equivalent_modules = Moo Moo::Role
+
+[TestingAndDebugging::ProhibitNoWarnings]
+allow = experimental
 
 # This does not like single line subroutines, and also: http://stackoverflow.com/questions/2275317/why-does-perlcritic-dislike-using-shift-to-populate-subroutine-variables
 [Subroutines::RequireArgUnpacking]
