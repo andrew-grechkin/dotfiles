@@ -5,7 +5,7 @@ mkdir -p ~/.cache/bin
 mkdir -p ~/.config
 mkdir -p ~/.config/nvim
 mkdir -p ~/.config/xfce4
-mkdir -p ~/.local
+mkdir -p ~/.local/share
 
 SCRIPT=$(realpath -s "$0")
 WORKDIR=$(dirname "$SCRIPT")
@@ -38,6 +38,7 @@ ln -sf "$WORKDIR/.config/zathura"                                      ~/.config
 ln -sf "$WORKDIR/.config/zsh"                                          ~/.config/
 
 ln -sf "$WORKDIR/.local/bin"                                           ~/.local/
+ln -sf "$WORKDIR/.local/share/emoji.txt"                               ~/.local/share/
 
 chmod -R u=rwX,go-rwx "$WORKDIR/.ssh"
 

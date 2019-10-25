@@ -9,6 +9,8 @@ super + BackSpace
 	$HOME/.local/bin/i3exit.rofi
 super + control + l
 	$HOME/.local/bin/i3exit.rofi lock
+super + shift + e
+	$HOME/.local/bin/emoji.rofi
 super + shift + s
 	$HOME/.local/bin/gopass.rofi
 super + c

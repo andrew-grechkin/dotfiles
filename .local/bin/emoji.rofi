@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+chosen="$(perl ${HOME}/.local/bin/grep-emoji | LC_ALL=en_US.utf8 rofi -dmenu -i -p Emoji)"
+
+[ "$chosen" != "" ] || exit
+
+emoji=$(echo "$chosen" | sed "s/ > .*//")
+
+echo -n "$emoji" | xclip -i -sel p -f | xclip -i -sel c &>/dev/null && notify-send "$emoji copied to clipboard"

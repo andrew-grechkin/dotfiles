@@ -1,0 +1,22 @@
+#!/usr/bin/env perl
+
+use v5.30;
+use strict;
+use warnings;
+use utf8;
+use open ':std', ':encoding(UTF-8)';
+
+my $filename = "$ENV{HOME}/.local/share/emoji.txt";
+open (my $fh, '<:encoding(UTF-8)', $filename)
+    or die "Could not open file '$filename' $!";
+
+while (my $line = <$fh>) {
+    chomp $line;
+    $line or next;
+    substr($line, 0, 1) eq '#' and next;
+    if ($line =~ m/[#]\s (\S+) \sE\d+ [.] \d+\s (.*)/xms) {
+        say $1, ' > ', $2;
+    }
+}
+
+close ($fh);
