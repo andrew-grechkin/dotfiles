@@ -197,10 +197,11 @@ filextype *.djvu
 	\ {View in apvlv}
 	\ apvlv,
 
+"	\ mpv --no-osc --term-osd=force --no-audio-display,
 " Audio
 filetype *.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,*.cue,*.wv
 	\ {Play using mpv}
-	\ mpv --no-osc --term-osd=force --no-audio-display,
+	\ mpv --no-osc --term-osd=force,
 	\ {Play using ffplay}
 	\ ffplay -nodisp -autoexit,
 	\ {Play using MPlayer}
@@ -215,11 +216,14 @@ filetype *.ape
 	\ {Decode}
 	\ mac %c %c:r.wav -d,
 filetype *.wav
-	\ {Convert to FLAC}
+	\ {Transcode to FLAC}
 	\ flac -8 %f,
+filetype *.flac
+	\ {Decode}
+	\ flac -d %f,
 filetype *.wv
 	\ {Decode}
-	\ wvunpack %c,
+	\ wvunpack %f,
 filetype *.ogg
 	\ {Transcode to FLAC}
 	\ ffmpeg -i %c %c:r.flac,
