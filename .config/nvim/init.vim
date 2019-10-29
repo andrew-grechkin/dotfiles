@@ -1,4 +1,4 @@
-" Personal .vimrc file
+﻿" Personal .vimrc file
 " Compatible with vim and veovim
 " Author: Andrew Grechkin
 "
@@ -82,7 +82,6 @@ set autoread | autocmd CursorHold,CursorHoldI,FocusGained,BufEnter * silent! che
 
 "set autochdir
 set autowrite                                                                  " Write the content of the file automatically if you call :make
-set encoding=utf8                                                              " Set utf8 as standard encoding and en_US as the standard language
 set ffs=unix,dos,mac                                                           " Use Unix as the standard file type
 set history=10000                                                              " Longest possible command history
 set magic
@@ -91,8 +90,23 @@ set noswapfile
 set nowritebackup
 set path=.,**,/usr/include/**
 set tags+=tags;                                                                " Look for a tags file recursively in parent directories
-set undofile                                                                   " Enable persistent undo
 set pumheight=8                                                                " Maximum height of autocomplete popup window
+
+if has('persistent_undo')
+	set undodir=$HOME/.cache/.VIM_UNDO_FILES                                   " Save all undo files in a single location (less messy, more risky)...
+	set undofile                                                               " Enable persistent undo
+endif
+
+" => Encodings --------------------------------------------------------------------------------------------------- {{{1
+
+setglobal fileencodings=ucs-bom,utf-8,default,cp1251
+set encoding=utf-8                                                             " Set utf8 as standard encoding
+set bomb                                                                       " Set BOM
+scriptencoding utf-8
+
+autocmd BufNewFile,BufRead  *   try
+autocmd BufNewFile,BufRead  *       set encoding=utf-8
+autocmd BufNewFile,BufRead  *   endtry
 
 " => vim-plug plugins -------------------------------------------------------------------------------------------- {{{1
 
@@ -125,7 +139,7 @@ set hidden                                                                     "
 
 set ignorecase                                                                 " Ignore case when searching
 set smartcase                                                                  " When searching try to be smart about cases
-set infercase
+set infercase                                                                  " Adjust completions to match case
 set hlsearch                                                                   " Highlight search results
 set incsearch                                                                  " Move cursor as you type when searching
 
@@ -135,6 +149,7 @@ set noerrorbells                                                               "
 set visualbell
 
 set laststatus=2                                                               " Always show the status line
+set nomore                                                                     " Don't page long listings
 
 " => Colors and Fonts -------------------------------------------------------------------------------------------- {{{1
 
@@ -156,12 +171,15 @@ set foldnestmax=1
 set list                                                                       " Show special characters
 set listchars=tab:↹\ ,trail:␣,extends:>,precedes:<,nbsp:+                      " Visual form of special characters
 "set listchars+=eol:↵                                                          " Visible end of line
+set matchpairs+=<:>,«:»
 
 set showmatch                                                                  " Show matching brackets when text indicator is over them
 
 set whichwrap+=<,>,h,l
 
 set display+=lastline                                                          " Prettier display of long lines of text
+
+set virtualedit=block
 
 " => Text, tab and indent related -------------------------------------------------------------------------------- {{{1
 
@@ -436,6 +454,9 @@ augroup END
 
 augroup perl_filetype_settings
 	autocmd!
+    autocmd BufNewFile,BufRead  *.t      setfiletype perl
+    autocmd BufNewFile,BufRead  *.pod    setfiletype pod
+    autocmd BufNewFile,BufRead  *.itn    setfiletype itn
 	autocmd FileType perl set keywordprg=perldoc
 	autocmd FileType perl nmap     <silent> tt <Plug>(ale_fix)
 	"autocmd FileType perl nnoremap <silent> tt :%!perltidy -q<CR>
@@ -476,11 +497,17 @@ let g:ale_cpp_gcc_options       = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib
 let g:ale_cpp_clang_options     = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
 let g:ale_cpp_clangd_options    = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
 " ale_perl
+let g:ale_perl_perl_executable  = 'perl'
+let g:ale_perl_perl_options     = '-cw -Ilib'
 let g:ale_perl_perlcritic_showrules = 1
 
-"let g:ale_linters               = {
+let g:ale_lint_on_enter         = 0
+let g:ale_lint_on_text_changed  = 'never'
+let g:ale_linters               = {
+\   'perl': ['perl'],
+\}
 "\   'cpp': ['ccls', 'clang', 'clangcheck', 'clangd', 'clangtidy', 'clazy', 'cppcheck', 'cpplint', 'cquery', 'flawfinder', 'gcc'],
-"\}
+
 "let g:ale_linters_explicit      = 1
 
 " => Plugin: NERDTree -------------------------------------------------------------------------------------------- {{{1
@@ -672,6 +699,14 @@ let g:ycm_goto_buffer_command = 'new-or-existing-tab' "[ 'same-buffer', 'horizon
 nnoremap <leader>g :YcmCompleter GoTo<CR>
 "nnoremap <F9>      :YcmDiags <CR>
 "nnoremap <F11>     :YcmForceCompileAndDiagnostics <CR>
+
+" => Plugin: root.vim -------------------------------------------------------------------------------------------- {{{1
+
+let g:root#auto                                         = 1
+
+" => Plugin: startify -------------------------------------------------------------------------------------------- {{{1
+
+let g:startify_change_to_dir                            = 0
 
 " => Plugin: vdebug ---------------------------------------------------------------------------------------------- {{{1
 
