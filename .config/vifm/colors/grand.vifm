@@ -55,6 +55,7 @@ highlight /.*\.7z$|
 	\.*\.xz$|
 	\.*\.zip$/I          cterm=bold              ctermfg=red          ctermbg=none
 highlight /.*\.avi$|
+	\.*\.lrv$|
 	\.*\.m4v$|
 	\.*\.mkv$|
 	\.*\.mp4$|
