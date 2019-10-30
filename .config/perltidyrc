@@ -8,7 +8,7 @@
 
 --all-containers-tightness=2
 #--block-brace-tightness=0
---tight-secret-operators
+#--tight-secret-operators
 --vertical-tightness=0
 --vertical-tightness-closing=0
 
