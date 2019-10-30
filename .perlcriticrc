@@ -106,6 +106,7 @@ color-severity-low     = bold cyan
 
 [-References::ProhibitDoubleSigils]
 
+# do not require m//ms in regexps
 [-RegularExpressions::RequireDotMatchAnything]
 [-RegularExpressions::RequireLineBoundaryMatching]
 
