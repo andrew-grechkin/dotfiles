@@ -149,7 +149,6 @@ set noerrorbells                                                               "
 set visualbell
 
 set laststatus=2                                                               " Always show the status line
-set nomore                                                                     " Don't page long listings
 
 " => Colors and Fonts -------------------------------------------------------------------------------------------- {{{1
 
@@ -477,38 +476,36 @@ let g:airline_theme                      = "luna"
 
 " => Plugin: ale ------------------------------------------------------------------------------------------------- {{{1
 
-let g:ale_fix_on_save           = 1                                            " fix files when you save them
-let g:ale_fix_on_save_ignore    = {
+let g:ale_fix_on_save               = 1                                        " fix files when you save them
+let g:ale_fix_on_save_ignore        = {
 \   'perl': ['perltidy'],
 \}
-let g:ale_fixers                = {
+let g:ale_fixers                    = {
 \   '*':    ['remove_trailing_lines', 'trim_whitespace'],
 \   'perl': ['remove_trailing_lines', 'trim_whitespace', 'perltidy'],
 \}
-let g:ale_sign_error            = '✘'
-let g:ale_sign_warning          = '❇'
-let g:ale_set_loclist           = 1
-let g:ale_set_quickfix          = 0
-let g:ale_open_list             = 1
-let g:ale_keep_list_window_open = 0
-let g:ale_list_window_size      = 5
-" ale_cpp
-let g:ale_cpp_gcc_options       = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
-let g:ale_cpp_clang_options     = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
-let g:ale_cpp_clangd_options    = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
-" ale_perl
-let g:ale_perl_perl_executable  = 'perl'
-let g:ale_perl_perl_options     = '-cw -Ilib'
-let g:ale_perl_perlcritic_showrules = 1
-
-let g:ale_lint_on_enter         = 0
-let g:ale_lint_on_text_changed  = 'never'
-let g:ale_linters               = {
-\   'perl': ['perl'],
+let g:ale_lint_on_enter             = 0
+let g:ale_lint_on_text_changed      = 'never'
+"let g:ale_linters_explicit          = 1
+let g:ale_linters                   = {
+\   'perl': ['perl', 'perlcritic'],
 \}
 "\   'cpp': ['ccls', 'clang', 'clangcheck', 'clangd', 'clangtidy', 'clazy', 'cppcheck', 'cpplint', 'cquery', 'flawfinder', 'gcc'],
-
-"let g:ale_linters_explicit      = 1
+let g:ale_sign_error                = '✘'
+let g:ale_sign_warning              = '❇'
+let g:ale_set_loclist               = 1
+let g:ale_set_quickfix              = 0
+let g:ale_open_list                 = 1
+let g:ale_keep_list_window_open     = 0
+let g:ale_list_window_size          = 5
+" ale_cpp
+let g:ale_cpp_gcc_options           = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
+let g:ale_cpp_clang_options         = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
+let g:ale_cpp_clangd_options        = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
+" ale_perl
+let g:ale_perl_perl_executable      = 'perl'
+let g:ale_perl_perl_options         = '-cw -Ilib'
+let g:ale_perl_perlcritic_showrules = 1
 
 " => Plugin: NERDTree -------------------------------------------------------------------------------------------- {{{1
 

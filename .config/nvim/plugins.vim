@@ -42,5 +42,6 @@ call plug#begin()
 		Plug 'dyng/ctrlsf.vim', {'on': ['CtrlSF','<Plug>CtrlSFCwordPath','<Plug>CtrlSFVwordExec']} " Global search and replace
 		Plug 'lambdalisue/suda.vim'                                            " run sudo from vim
 		Plug 'w0rp/ale'                                                        " Async syntax checker
+"		Plug 'jceb/vim-hier'
 	endif
 call plug#end()
