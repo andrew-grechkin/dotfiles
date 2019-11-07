@@ -152,6 +152,8 @@ set laststatus=2                                                               "
 
 " => Colors and Fonts -------------------------------------------------------------------------------------------- {{{1
 
+set re=1                                                                       " Use old verion of syntax highlight regexp which look like working much faster (to check use syntime on -> syntime report)
+
 syntax enable                                                                  " Enable syntax highlighting
 
 ":silent! colorscheme last256

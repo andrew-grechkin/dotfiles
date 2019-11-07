@@ -43,5 +43,6 @@ call plug#begin()
 		Plug 'lambdalisue/suda.vim'                                            " run sudo from vim
 		Plug 'w0rp/ale'                                                        " Async syntax checker
 "		Plug 'jceb/vim-hier'
+		Plug 'majutsushi/tagbar'
 	endif
 call plug#end()
