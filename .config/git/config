@@ -1,23 +1,25 @@
 [alias]
-	br = !git --no-pager branch -vv
-	bush = !"f(){ while true; do git push && break; git pull --no-tags --rebase || break; done };f"
-	co = checkout
+	br       = branch -vv
+	bush     = !"f(){ while true; do git push && break; git pull --no-tags --rebase || break; done };f"
+	co       = checkout
 	compress = !"f(){ git reflog expire --all --expire=now && nice git gc --prune=now --aggressive; };f"
-	di = diff --submodule=diff -b
-	d = difftool
-	dg = difftool --gui
-	fall = fetch --all -p
-	loglive = !git --no-pager log --abbrev-commit --all --graph --pretty=oneline --decorate
-	m = mergetool
-	mg = mergetool --gui
-	pall = !git remote | xargs -L1 git push --all
+	d        = difftool
+	dg       = difftool --gui
+	di       = diff -b
+	fall     = fetch --all -p
+	h        =                 log                       --graph -n 100
+	ha       =                 log                 --all --graph -n 100 --show-signature
+	haa      = !git --no-pager log                 --all --graph                         --pretty=oneline
+	ho       =                 log --abbrev-commit --all --graph        --full-history   --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'
+	m        = mergetool
+	mg       = mergetool --gui
+	pall     = !git remote | xargs -L1 git push --all
 	pushallf = "!f(){ for i in `git remote`; do git push -f $i; done; };f"
-	sh = show --show-signature
-	st = status -b
-	t =  log --abbrev-commit --all   --color --graph --full-history --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'
-	tt = log --show-signature -n 300 --color --graph --pretty=format:'%Cred%H%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'
-	up = pull -v --no-tags
-	w = whatchanged --show-signature
+	sh       = show --show-signature
+	st       = status -b
+;	tt       = log --show-signature -n 300 --graph --pretty=format:'%Cred%H%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'
+	up       = pull -v --no-tags
+	w        = whatchanged --show-signature
 
 [apply]
 	whitespace = fix
@@ -46,7 +48,11 @@
 	whitespace = trailing-space,space-before-tab,blank-at-eol,blank-at-eof,cr-at-eol
 
 ;[credential]
-;    helper = /usr/lib/git-core/git-credential-libsecret
+;	helper = /usr/lib/git-core/git-credential-libsecret
+
+[diff]
+	diff-algorithm = patience
+	submodule = diff
 
 [fetch]
 	prune = true
@@ -65,10 +71,12 @@
 	sslVerify = true
 
 [log]
-	abbrevCommit = true
+	color = auto
 	date = iso
 	decorate = short
-	showSignature = true
+
+[pager]
+	branch = false
 
 [pull]
 	rebase = true
@@ -84,7 +92,7 @@
 	sort = version:refname
 
 ;[url "https://"]
-;    insteadOf = git://
+;	insteadOf = git://
 
 [user]
 	name = Andrew Grechkin

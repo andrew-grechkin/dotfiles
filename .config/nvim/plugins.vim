@@ -9,7 +9,7 @@ call plug#begin()
 "	Plug 'mhinz/vim-grepper', { 'on': ['Grepper', '<Plug>(GrepperOperator)'] } " Grep integration
 	Plug 'airblade/vim-gitgutter'                                              " Git status/modifications of the file
 	Plug 'tpope/vim-fugitive'                                                  " Git support
-	Plug 'dylanaraps/root.vim'                                                 " Cwd if file is in git repo should be repo root
+	Plug 'airblade/vim-rooter'                                                 " Cwd if file is in git repo should be repo root
 "	Plug 'tpope/vim-repeat'                                                    " Repeat everything
 	Plug 'tpope/vim-surround'                                                  " Better surround commands
 "	Plug 'tpope/vim-unimpaired'                                                " Pairs of helpful commands
