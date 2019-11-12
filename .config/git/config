@@ -7,9 +7,9 @@
 	dg       = difftool --gui
 	di       = diff -b
 	fall     = fetch --all -p
-	h        =                 log                       --graph -n 100
-	ha       =                 log                 --all --graph -n 100 --show-signature
-	haa      = !git --no-pager log                 --all --graph                         --pretty=oneline
+	h        =                 log --abbrev-commit       --graph -n 300                  --pretty=oneline
+	hh       =                 log                 --all --graph -n 300
+	ha       = !git --no-pager log                 --all --graph                         --pretty=oneline
 	ho       =                 log --abbrev-commit --all --graph        --full-history   --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'
 	m        = mergetool
 	mg       = mergetool --gui
@@ -17,7 +17,6 @@
 	pushallf = "!f(){ for i in `git remote`; do git push -f $i; done; };f"
 	sh       = show --show-signature
 	st       = status -b
-;	tt       = log --show-signature -n 300 --graph --pretty=format:'%Cred%H%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'
 	up       = pull -v --no-tags
 	w        = whatchanged --show-signature
 
