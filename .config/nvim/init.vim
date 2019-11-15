@@ -1,5 +1,5 @@
 ﻿" Personal .vimrc file
-" Compatible with vim and veovim
+" Compatible with vim and neovim
 " Author: Andrew Grechkin
 "
 " => Cheat sheet ------------------------------------------------------------------------------------------------- {{{1

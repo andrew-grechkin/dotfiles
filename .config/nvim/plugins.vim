@@ -20,7 +20,6 @@ call plug#begin()
 	Plug 'tmux-plugins/vim-tmux', {'for': 'tmux'}                              " Vim plugin for .tmux.conf
 	Plug 'christoomey/vim-tmux-navigator'                                      " Better tmux integration
 	Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
-"	Plug 'vim-scripts/Gundo', {'on': 'GundoToggle'}                            " Visualize the undo tree
 "	Plug 'Valloric/YouCompleteMe', { 'do': './install.py --clang-completer --system-libclang' }
 "	Plug 'vim-syntastic/syntastic'
 	Plug 'flazz/vim-colorschemes'                                              " Huge set of color schemes
@@ -44,5 +43,6 @@ call plug#begin()
 		Plug 'w0rp/ale'                                                        " Async syntax checker
 "		Plug 'jceb/vim-hier'
 		Plug 'majutsushi/tagbar'
+		Plug 'simnalamburt/vim-mundo', {'on': 'MundoToggle'}                   " Visualize the undo tree
 	endif
 call plug#end()
