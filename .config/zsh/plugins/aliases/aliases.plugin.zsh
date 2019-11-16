@@ -37,6 +37,16 @@ alias mv='mv -i'
 alias cmake-msys='cmake -G"MSYS Makefiles"'
 alias gcc-all-defines='gcc -dM -E - < /dev/null | sort'
 
+# => gpg --------------------------------------------------------------------------------------------------------- {{{1
+
+alias gpg-edit-card='gpg --edit-card'
+alias gpg-edit='gpg --expert --edit-key andrew.grechkin'
+alias gpg-export-public='gpg --export --armor andrew.grechkin'
+alias gpg-list-public='gpg --list-keys --with-subkey-fingerprints'
+alias gpg-list-secret='gpg --list-secret-keys --keyid-format LONG'
+alias gpg-list-signatures='gpg --list-signatures'
+alias gpg-refresh='gpg --refresh-keys --verbose'
+
 # => journal ----------------------------------------------------------------------------------------------------- {{{1
 
 alias j='journalctl -b'

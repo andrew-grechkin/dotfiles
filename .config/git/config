@@ -96,7 +96,7 @@
 [user]
 	name = Andrew Grechkin
 	email = andrew.grechkin@gmail.com
-	signingkey = 826C20896C89E775A45632CCD2AC885A92F8931C
+	signingkey = 826C20896C89E775A45632CCD2AC885A92F8931C!
 
 [diff]
 	tool = vimdiff
