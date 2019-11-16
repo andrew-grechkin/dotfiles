@@ -699,12 +699,6 @@ nnoremap <leader>g :YcmCompleter GoTo<CR>
 "nnoremap <F9>      :YcmDiags <CR>
 "nnoremap <F11>     :YcmForceCompileAndDiagnostics <CR>
 
-" => Plugin: root.vim -------------------------------------------------------------------------------------------- {{{1
-
-"let g:root#auto                                         = 1
-let g:root#echo                                         = 0
-
-
 " => Plugin: startify -------------------------------------------------------------------------------------------- {{{1
 
 let g:startify_change_to_dir                            = 0
