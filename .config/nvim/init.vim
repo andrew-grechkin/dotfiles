@@ -455,9 +455,9 @@ augroup END
 
 augroup perl_filetype_settings
 	autocmd!
-    autocmd BufNewFile,BufRead  *.t      setfiletype perl
-    autocmd BufNewFile,BufRead  *.pod    setfiletype pod
-    autocmd BufNewFile,BufRead  *.itn    setfiletype itn
+	autocmd BufNewFile,BufRead  *.t      setfiletype perl
+	autocmd BufNewFile,BufRead  *.pod    setfiletype pod
+	autocmd BufNewFile,BufRead  *.itn    setfiletype itn
 	autocmd FileType perl set keywordprg=perldoc
 	autocmd FileType perl nmap     <silent> tt <Plug>(ale_fix)
 	"autocmd FileType perl nnoremap <silent> tt :%!perltidy -q<CR>

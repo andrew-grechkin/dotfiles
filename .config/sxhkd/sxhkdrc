@@ -29,7 +29,7 @@ super + c
 /* super + p */
    /* exo-open --launch TerminalEmulator "profanity" */
 super + q
-	exo-open --launch TerminalEmulator "ranger"
+	exo-open --launch TerminalEmulator "vifm $HOME $HOME"
 super + r
 	exo-open --launch FileManager
 super + s

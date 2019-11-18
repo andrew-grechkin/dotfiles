@@ -2,6 +2,7 @@ call plug#begin()
 	Plug 'junegunn/vim-plug'
 "	Plug 'junegunn/fzf', { 'dir': '~/.cache/fzf', 'do': './install --bin' }
 	Plug 'junegunn/fzf.vim'                                                    " Fuzzy search
+	Plug 'vifm/vifm.vim'
 	Plug 'junegunn/vim-easy-align'
 	Plug 'junegunn/vim-peekaboo'                                               " Preview registers
 	Plug 'easymotion/vim-easymotion'                                           " Better move commands
