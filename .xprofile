@@ -1,4 +1,16 @@
 # vim: syntax=conf foldmethod=marker
 
 # when lightdm runs this script the ssh agent is not yet started, but we expect it will be started later and created the socket
-export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/keyring/ssh"
+
+# => keyring-ssh-agent ------------------------------------------------------------------------------------------- {{{1
+
+#export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/keyring/ssh"
+
+# => gpg-agent-ssh ----------------------------------------------------------------------------------------------- {{{1
+
+#export SSH_AGENT_PID=
+export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.ssh"
+
+# => openssh-agent ----------------------------------------------------------------------------------------------- {{{1
+
+#export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/S.ssh-agent"

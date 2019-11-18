@@ -12,19 +12,6 @@ fi
 #	export   GNUPGHOME=$XDG_CONFIG_HOME/gnupg
 #fi
 
-# => keyring-ssh-agent ------------------------------------------------------------------------------------------- {{{1
-
-#SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/keyring/ssh"
-
-# => openssh-agent ----------------------------------------------------------------------------------------------- {{{1
-
-#SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/S.ssh-agent"
-
-# => gpg-agent-ssh ----------------------------------------------------------------------------------------------- {{{1
-
-#SSH_AGENT_PID=
-#SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.ssh"
-
 # => SSH agent --------------------------------------------------------------------------------------------------- {{{1
 
 if [[ -n "$SSH_CLIENT" ]] || [[ -n "$SSH_TTY" ]] || [[ -n "$SSH_CONNECTION" ]]; then
