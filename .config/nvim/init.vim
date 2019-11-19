@@ -152,8 +152,6 @@ set laststatus=2                                                               "
 
 " => Colors and Fonts -------------------------------------------------------------------------------------------- {{{1
 
-set re=1                                                                       " Use old verion of syntax highlight regexp which look like working much faster (to check use syntime on -> syntime report)
-
 syntax enable                                                                  " Enable syntax highlighting
 
 ":silent! colorscheme last256
@@ -426,6 +424,7 @@ augroup settings_by_filetype
 	autocmd Filetype perl   setlocal foldmethod=syntax expandtab tabstop=4 shiftwidth=4 softtabstop=4 smarttab
 	autocmd Filetype python setlocal foldmethod=indent expandtab tabstop=4 shiftwidth=4 softtabstop=4 smarttab
 	autocmd Filetype vim    setlocal foldmethod=marker                                                                 " Fold using {{{n, where n is fold level
+	autocmd Filetype perl   setlocal re=1                                                                              " Use old verion of syntax highlight regexp which look like working much faster (to check use syntime on -> syntime report)
 augroup END
 
 augroup pre_post_process
