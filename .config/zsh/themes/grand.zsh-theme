@@ -16,7 +16,7 @@ setopt PROMPT_SUBST
 	ZSH_THEME_GIT_PROMPT_AHEAD="%B%F{cyan}↑"
 	ZSH_THEME_GIT_PROMPT_BEHIND="%B%F{cyan}↓"
 
-	# Format for git_prompt_status()
+	# Format for git-prompt-status()
 	ZSH_THEME_GIT_PROMPT_ADDED="%B%F{green}+"
 	ZSH_THEME_GIT_PROMPT_MODIFIED="%B%F{yellow}*"
 	ZSH_THEME_GIT_PROMPT_DELETED="%B%F{red}-"
@@ -28,7 +28,7 @@ setopt PROMPT_SUBST
 	ZSH_THEME_GIT_PROMPT_SHA_BEFORE="%F{231}%B"
 	ZSH_THEME_GIT_PROMPT_SHA_AFTER="%b%K{black}%F{36}"
 
-	local git_branch=' $(git_prompt_info)$(git_prompt_short_sha)$(git_prompt_status)%b%f%k'
+	local git_branch=' $(git_prompt_info)$(git_prompt_short_sha)$(git-prompt-status)%b%f%k'
 
 	MODE_INDICATOR="%F{yellow}%B➤%b%F{yellow}➤➤%f"
 
