@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-chosen="$(perl ${HOME}/.local/bin/grep-emoji | LC_ALL=en_US.utf8 rofi -dmenu -i -p Emoji)"
+chosen="$(perl "${HOME}/.local/bin/grep-emoji" | LC_ALL=en_US.utf8 rofi -dmenu -i -p Emoji)"
 
 [ "$chosen" != "" ] || exit
 

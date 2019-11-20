@@ -9,7 +9,6 @@ antigen use oh-my-zsh
 antigen bundle vi-mode
 antigen bundle cpanm
 antigen bundle dirpersist
-antigen bundle emoji
 antigen bundle encode64
 antigen bundle fzf
 antigen bundle gnupg
