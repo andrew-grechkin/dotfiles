@@ -159,7 +159,8 @@ function git-prompt-status() {
 
 	local INDEX=$(command git status --porcelain $PARAM -b 2> /dev/null)
 	local STATUS=""
-	$(echo "$INDEX" | grep -E '^(\?\?|A |M |MM)\ '    &> /dev/null) && STATUS="${STATUS}${ZSH_THEME_GIT_PROMPT_ADDED}"
+	$(echo "$INDEX" | grep -E '^(\?\?)\ '             &> /dev/null) && STATUS="${STATUS}${ZSH_THEME_GIT_PROMPT_UNTRACKED}"
+	$(echo "$INDEX" | grep -E '^(A |M |MM)\ '         &> /dev/null) && STATUS="${STATUS}${ZSH_THEME_GIT_PROMPT_ADDED}"
 	$(echo "$INDEX" | grep -E '^(\ M|AM|MM|\ T)\ '    &> /dev/null) && STATUS="${STATUS}${ZSH_THEME_GIT_PROMPT_MODIFIED}"
 	$(echo "$INDEX" | grep -E '^(\ D|D |AD)\ '        &> /dev/null) && STATUS="${STATUS}${ZSH_THEME_GIT_PROMPT_DELETED}"
 	$(echo "$INDEX" | grep    '^R  '                  &> /dev/null) && STATUS="${STATUS}${ZSH_THEME_GIT_PROMPT_RENAMED}"
