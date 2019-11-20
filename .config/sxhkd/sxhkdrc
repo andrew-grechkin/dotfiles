@@ -6,9 +6,9 @@ super + shift + Return
 super + control + v
 	$HOME/.local/bin/play-clipboard-url
 super + BackSpace
-	$HOME/.local/bin/i3exit.rofi
+	$HOME/.local/bin/exit.rofi
 super + control + l
-	$HOME/.local/bin/i3exit.rofi lock
+	$HOME/.local/bin/exit.rofi lock
 super + shift + e
 	$HOME/.local/bin/emoji.rofi
 super + shift + s

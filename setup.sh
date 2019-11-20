@@ -42,5 +42,5 @@ ln -sf "$WORKDIR/.local/share/emoji.txt"                               ~/.local/
 
 chmod -R u=rwX,go-rwx "$WORKDIR/.ssh"
 
-[ -x "submodules/private/setup.sh" ] && echo "Execution private/setup" && (exec "submodules/private/setup.sh")
-[ -x "submodules/secret/setup.sh" ]  && echo "Execution secret/setup"  && (exec "submodules/secret/setup.sh")
+[ -x 'submodules/private/setup.sh' ] && echo 'Execution private/setup' && (exec 'submodules/private/setup.sh')
+[ -x 'submodules/secret/setup.sh' ]  && echo 'Execution secret/setup'  && (exec 'submodules/secret/setup.sh')
