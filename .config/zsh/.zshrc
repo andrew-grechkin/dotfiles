@@ -37,4 +37,4 @@ fi
 [[ -d "$HOME/.cache/bin"       ]] && _appendvar_head PATH "$HOME/.cache/bin"
 export PATH
 
-source-file "$XDG_CONFIG_HOME/my/rc.booking"
+source-file "$XDG_CONFIG_HOME/my/rc.booking" || true
