@@ -1,7 +1,6 @@
 # vim: syntax=zsh foldmethod=marker
 
 source-file "$XDG_CONFIG_HOME/my/rc"
-source-file "$XDG_CONFIG_HOME/my/rc.booking"
 
 # => Install antigen --------------------------------------------------------------------------------------------- {{{1
 
@@ -37,3 +36,5 @@ fi
 [[ -d "$HOME/.local/scripts"   ]] && _appendvar_head PATH "$HOME/.local/scripts"
 [[ -d "$HOME/.cache/bin"       ]] && _appendvar_head PATH "$HOME/.cache/bin"
 export PATH
+
+source-file "$XDG_CONFIG_HOME/my/rc.booking"

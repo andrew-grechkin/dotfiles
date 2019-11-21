@@ -100,3 +100,7 @@ alias fix-agent='eval $(tmux showenv -s SSH_AUTH_SOCK)'
 alias dd='dd oflag=sync status=progress'
 alias :q='exit'
 alias grab-cd='abcde -1 -o flac -a default,cue'
+
+# => kubectl ----------------------------------------------------------------------------------------------------- {{{1
+
+alias k='kubectl'
