@@ -104,3 +104,5 @@ alias grab-cd='abcde -1 -o flac -a default,cue'
 # => kubectl ----------------------------------------------------------------------------------------------------- {{{1
 
 alias k='kubectl'
+alias kga='kubectl get all'
+alias kaf='kubectl apply -f'

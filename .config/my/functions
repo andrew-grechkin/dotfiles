@@ -27,7 +27,7 @@ function _is_ssh_auth_sock_ok() {
 }
 
 function _try_existing_ssh_auth_sock_term() {
-	test -S "$AGENT" && export SSH_AUTH_SOCK="$AGENTS[1]" && return 0
+	test -S "$AGENT" && export SSH_AUTH_SOCK="${AGENTS[1]}" && return 0
 	return 2
 }
 function _try_existing_ssh_auth_sock() {
@@ -38,7 +38,7 @@ function _try_existing_ssh_auth_sock() {
 }
 
 function _check_gpg_agent() {
-	[[ -n "$WINDIR" ]] && return -1
+	[[ -n "$WINDIR" ]] && return 42
 	source-file "$XDG_CACHE_HOME/gpg-agent.rc" && _check_auth_sock
 }
 
@@ -62,4 +62,18 @@ function _start_ssh_agent() {
 #	if [[ "0" = "${#RESULT}" ]]; then
 #		ssh-add
 #	fi
+}
+
+# => docker ------------------------------------------------------------------------------------------------------ {{{1
+
+function docker-remove() {
+	perl -E 'do {$ARGV[0] and m/$ARGV[0]/ or next; say $_; my @c = split m/\s+/; print `docker rmi --force $c[2]`} foreach `docker images -a`' "$1"
+}
+
+# => openssl ----------------------------------------------------------------------------------------------------- {{{1
+
+function ssl-chain() {
+	local SERVER=$1
+	local PORT=${2:-443}
+	echo quit | openssl s_client -showcerts -servername "${SERVER}" -connect "${SERVER}:${PORT}"
 }
