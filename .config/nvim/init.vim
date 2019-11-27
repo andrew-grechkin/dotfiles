@@ -101,7 +101,7 @@ endif
 
 setglobal fileencodings=ucs-bom,utf-8,default,cp1251
 set encoding=utf-8                                                             " Set utf8 as standard encoding
-set bomb                                                                       " Set BOM
+"set bomb                                                                       " Set BOM
 scriptencoding utf-8
 
 autocmd BufNewFile,BufRead  *   try
@@ -167,12 +167,13 @@ filetype plugin indent on                                                      "
 
 set foldmethod=syntax
 set foldnestmax=1
+
 set list                                                                       " Show special characters
 set listchars=tab:↹\ ,trail:␣,extends:>,precedes:<,nbsp:+                      " Visual form of special characters
 "set listchars+=eol:↵                                                          " Visible end of line
-set matchpairs+=<:>,«:»
 
 set showmatch                                                                  " Show matching brackets when text indicator is over them
+set matchpairs+=<:>,«:»
 
 set whichwrap+=<,>,h,l
 
@@ -203,11 +204,11 @@ set tabstop=4
 
 set clipboard=unnamed,unnamedplus                                              " Copy into system clipboard (*, +) registers
 
-"vnoremap <C-c> "*y :let @+=@*<CR>
-vmap <C-c> y
-vmap <C-x> c<ESC>
-vmap <C-v> "0c<ESC>p
-"imap <C-v> <C-r><C-o>+
+"vnoremap <C-c>                         "*y :let @+=@*<CR>
+vmap <C-c>                             y
+vmap <C-x>                             c<ESC>
+vmap <C-v>                             "0c<ESC>p
+"imap <C-v>                             <C-r><C-o>+
 
 " disable indent while inserting from buffer
 let &t_SI .= "\<Esc>[?2004h"
@@ -234,10 +235,6 @@ endfunction
 " Fast split navigation
 silent! nnoremap <leader>'             :belowright vsplit<CR>
 silent! nnoremap <leader>"             :belowright split<CR>
-silent! nnoremap <leader>sj            :belowright split<CR>
-silent! nnoremap <leader>sk            :topleft    split<CR>
-silent! nnoremap <leader>sh            :topleft    vsplit<CR>
-silent! nnoremap <leader>sl            :belowright vsplit<CR>
 silent! tnoremap <leader>'             :belowright vsplit<CR>
 silent! tnoremap <leader>"             :belowright split<CR>
 
@@ -294,8 +291,8 @@ silent! tnoremap <C-l>                 <C-\><C-N><C-w><Right>
 		nnoremap <leader>8             :tabnext 8<CR>
 		nnoremap <leader>9             :tabnext 9<CR>
 
-		nnoremap <c-PageDown>          :tabnext<CR>
-		nnoremap <c-PageUp>            :tabprevious<CR>
+		nnoremap <C-PageDown>          :tabnext<CR>
+		nnoremap <C-PageUp>            :tabprevious<CR>
 
 " move current buffer to a new tab
 		nnoremap <leader>tb            :tabedit %<CR>
@@ -398,10 +395,6 @@ silent! packadd termdebug
 
 " => Automatization ---------------------------------------------------------------------------------------------- {{{1
 
-augroup auto_source_vimrc
-	autocmd! BufWritePost ~/.vimrc source %
-augroup END
-
 augroup autoclose_quickfix_if_last
 	autocmd!
 	autocmd BufEnter * if (winnr('$') == 1 && (&buftype ==# 'quickfix' || &buftype ==# 'loclist')) | bd | endif
@@ -421,18 +414,17 @@ augroup settings_by_filetype
 	autocmd!
 	autocmd FileType *      setlocal textwidth=120 wrapmargin=0
 	autocmd Filetype json   setlocal foldmethod=syntax foldnestmax=30
-	autocmd Filetype perl   setlocal foldmethod=syntax expandtab tabstop=4 shiftwidth=4 softtabstop=4 smarttab
-	autocmd Filetype python setlocal foldmethod=indent expandtab tabstop=4 shiftwidth=4 softtabstop=4 smarttab
+	autocmd Filetype python setlocal foldmethod=indent expandtab smarttab tabstop=4 shiftwidth=4 softtabstop=4
 	autocmd Filetype vim    setlocal foldmethod=marker                                                                 " Fold using {{{n, where n is fold level
-	autocmd Filetype perl   setlocal re=1                                                                              " Use old verion of syntax highlight regexp which look like working much faster (to check use syntime on -> syntime report)
 augroup END
 
 augroup pre_post_process
 	autocmd!
+	autocmd BufWritePost ~/.vimrc source %
 	" Regenerate tags when saving Python files
-	autocmd BufWritePost *.py silent! !ctags -R &
+	autocmd BufWritePost *.py     silent! !ctags -R &
 	" Remove all trailing whitespaces (ALE does this better)
-"	autocmd BufWritePre * :%s/\s\+$//e                                                                                 " Remove trailing spaces on save
+"	autocmd BufWritePre  *        :%s/\s\+$//e                                                                         " Remove trailing spaces on save
 augroup END
 
 "let ssh_client=$SSH_CLIENT
@@ -454,10 +446,12 @@ augroup END
 
 augroup perl_filetype_settings
 	autocmd!
-	autocmd BufNewFile,BufRead  *.t      setfiletype perl
-	autocmd BufNewFile,BufRead  *.pod    setfiletype pod
-	autocmd BufNewFile,BufRead  *.itn    setfiletype itn
-	autocmd FileType perl set keywordprg=perldoc
+	autocmd BufNewFile,BufRead *.t   setfiletype perl
+	autocmd BufNewFile,BufRead *.pod setfiletype pod
+	autocmd BufNewFile,BufRead *.itn setfiletype itn
+	autocmd Filetype perl setlocal foldmethod=syntax expandtab smarttab tabstop=4 shiftwidth=4 softtabstop=4
+	autocmd FileType perl setlocal keywordprg=perldoc
+	autocmd Filetype perl setlocal re=1                                                                                " Use old verion of syntax highlight regexp which look like working much faster (to check use syntime on -> syntime report)
 	autocmd FileType perl nmap     <silent> tt <Plug>(ale_fix)
 	"autocmd FileType perl nnoremap <silent> tt :%!perltidy -q<CR>
 	autocmd FileType perl vnoremap <silent> tt :!perltidy -q<CR>
@@ -514,7 +508,7 @@ let g:ale_perl_perlcritic_showrules = 1
 "autocmd VimEnter * NERDTree
 
 " Autoclose NERDTree if it's the only open window left
-autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+autocmd BufEnter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 
 let NERDTreeShowHidden        = 1
 let NERDTreeCaseSensitiveSort = 1
@@ -522,16 +516,16 @@ let NERDTreeShowBookmarks     = 1                                              "
 let NERDTreeHijackNetrw       = 0
 let NERDTreeQuitOnOpen        = 1
 
-noremap <leader>n :NERDTreeToggle<CR>
+noremap <leader>n                      :NERDTreeToggle<CR>
 
 " => Plugin: vim-nerdtree-syntax-highlight ----------------------------------------------------------------------- {{{1
 
-let g:NERDTreeHighlightCursorline            = 0
-let g:NERDTreeLimitedSyntax                  = 1
-let g:NERDTreeSyntaxDisableDefaultExtensions = 1
-let g:NERDTreeDisableExactMatchHighlight     = 1
-let g:NERDTreeDisablePatternMatchHighlight   = 1
-let g:NERDTreeSyntaxEnabledExtensions        = ['c', 'h', 'c++', 'hpp', 'go', 'pm', 'pl']
+"let g:NERDTreeHighlightCursorline            = 0
+"let g:NERDTreeLimitedSyntax                  = 1
+"let g:NERDTreeSyntaxDisableDefaultExtensions = 1
+"let g:NERDTreeDisableExactMatchHighlight     = 1
+"let g:NERDTreeDisablePatternMatchHighlight   = 1
+"let g:NERDTreeSyntaxEnabledExtensions        = ['c', 'h', 'c++', 'hpp', 'go', 'pm', 'pl']
 
 " => Plugin: NERDComment ----------------------------------------------------------------------------------------- {{{1
 
@@ -544,7 +538,7 @@ let g:NERDToggleCheckAllLines    = 1                                           "
 let g:NERDTrimTrailingWhitespace = 1                                           " Enable trimming of trailing whitespace when uncommenting
 
 " map comment to ctrl-/
-map <C-_>                  <Plug>NERDCommenterToggle
+map <C-_>                              <Plug>NERDCommenterToggle
 
 " => Plugin: netrw ----------------------------------------------------------------------------------------------- {{{1
 
@@ -559,7 +553,7 @@ let g:netrw_winsize   = 25
 
 "noremap <leader>n :Lexplore<CR>
 
-"autocmd bufenter * if winnr('$') == 1 && getbufvar(winbufnr(winnr()), "&filetype") == "netrw" | q | endif
+"autocmd BufEnter * if winnr('$') == 1 && getbufvar(winbufnr(winnr()), "&filetype") == "netrw" | q | endif
 
 " => Plugin: fzf ------------------------------------------------------------------------------------------------- {{{1
 
@@ -567,38 +561,43 @@ function! s:find_git_root()
 	return system('git rev-parse --show-toplevel 2> /dev/null')[:-2]
 endfunction
 
-command! ProjectFiles execute 'Files' s:find_git_root()
+function! s:find_current_dir()
+	return expand('%:p:h')
+endfunction
 
-noremap <C-p>              :ProjectFiles<CR>
-noremap <C-t>              :Files<CR>
-noremap <leader><leader>b  :Buffers<CR>
-noremap <leader><leader>l  :Lines<CR>
-noremap <leader><leader>c  :Commits<CR>
-noremap <leader><leader>cc :BCommits<CR>
+command! FilesProject    execute 'Files' s:find_git_root()
+command! FilesCurrentDir execute 'Files' s:find_current_dir()
+
+noremap <C-p>                          :FilesProject<CR>
+noremap <C-t>                          :FilesCurrentDir<CR>
+noremap <leader><leader>b              :Buffers<CR>
 
 " => Plugin: CtrlSF ---------------------------------------------------------------------------------------------- {{{1
 
-nmap <leader><C-f>         <Plug>CtrlSFCwordPath
-vmap <leader><C-f>         <Plug>CtrlSFVwordExec
-
+let g:ctrlsf_auto_focus = {
+	\ "at" : "done",
+	\ "duration_less_than": 2000
+	\ }
 "let g:ctrlsf_debug_mode         = 1
 let g:ctrlsf_default_root       = 'project+fw'
 "let g:ctrlsf_default_view_mode  = 'compact'
-let g:ctrlsf_extra_root_markers = ['.git', '.hg', '.svn', '.cache']
-let g:ctrlsf_ignore_dir         = ['.git', 'bower_components', 'node_modules']
-let g:ctrlsf_position           = 'bottom'
 let g:ctrlsf_extra_backend_args = {
 	\ 'ag': '--hidden',
 	\ 'rg': '--hidden',
 	\ }
+let g:ctrlsf_extra_root_markers = ['.git', '.hg', '.svn', '.cache']
+let g:ctrlsf_ignore_dir         = ['.git', 'bower_components', 'node_modules']
+let g:ctrlsf_position           = 'bottom'
+
+nmap <leader>f                         <Plug>CtrlSFCwordPath
+vmap <leader>f                         <Plug>CtrlSFVwordExec
 
 " => Plugin: vim-easy-align -------------------------------------------------------------------------------------- {{{1
 
 " Start interactive EasyAlign for a motion/text object (e.g. gaip)
-nmap ga <Plug>(EasyAlign)
-
+nmap ga                                <Plug>(EasyAlign)
 " Start interactive EasyAlign in visual mode (e.g. vipga)
-xmap ga <Plug>(EasyAlign)
+xmap ga                                <Plug>(EasyAlign)
 
 " => Plugin: vim-grepper ----------------------------------------------------------------------------------------- {{{1
 
@@ -609,98 +608,98 @@ silent! let g:grepper.quickfix    = 1
 silent! let g:grepper.dir         = 'repo,cwd'
 silent! let g:grepper.repo        = ['.git', '.hg', '.svn', '.cache']
 silent! let g:grepper.stop        = 100
-silent! let g:grepper.tools       = ['git', 'ag', 'grep', 'rg', 'ack', 'ack-grep']
+silent! let g:grepper.tools       = ['git', 'ag', 'rg', 'grep', 'ack', 'ack-grep']
 silent! let g:grepper.ag.grepprg .= ' --hidden'
 silent! let g:grepper.rg.grepprg .= ' --hidden --smart-case'
 
 " Start Grepper prompt
-nnoremap <Leader><Leader>g :Grepper<CR>
+nnoremap <Leader>g                     :Grepper<CR>
 " Search for the current word
-nnoremap <Leader>* :Grepper -cword -noprompt<CR>
-" Search for the current selection or {motion} (See text-objects)
-nmap gs <Plug>(GrepperOperator)
-xmap gs <Plug>(GrepperOperator)
+nnoremap <Leader>*                     :Grepper -cword -noprompt<CR>
+" Search for the current selection or {motion} (see text-objects)
+nmap gs                                <Plug>(GrepperOperator)
+xmap gs                                <Plug>(GrepperOperator)
 
 " => Plugin: vim-go ---------------------------------------------------------------------------------------------- {{{1
 
-" first setup steps:
-"	:GoInstallBinaries
-
-" run :GoBuild or :GoTestCompile based on the go file
-function! s:build_go_files()
-	let l:file = expand('%')
-	if l:file =~# '^\f\+_test\.go$'
-		call go#test#Test(0, 1)
-	elseif l:file =~# '^\f\+\.go$'
-		call go#cmd#Build(0)
-	endif
-endfunction
-
-augroup go_filetype_settings
-	autocmd!
-	autocmd BufNewFile,BufRead *.go setlocal noexpandtab tabstop=4 shiftwidth=4
-"	autocmd BufWritePost       *.go normal! zv
-	autocmd FileType go nnoremap <leader>b :<C-u>call <SID>build_go_files()<CR>
-	autocmd FileType go nnoremap <Leader>e :GoRename<CR>
-	autocmd FileType go nmap     <leader>r <Plug>(go-run)
-	autocmd FileType go nmap     <Leader>c <Plug>(go-coverage-toggle)
-	autocmd FileType go nmap     <Leader>i <Plug>(go-info)
-augroup END
-
-let g:go_fmt_command                 = "goimports"
-let g:go_fmt_fail_silently           = 1
-let g:go_fmt_autosave                = 1
-let g:go_fmt_experimental            = 1
-let g:go_highlight_types             = 1
-let g:go_highlight_fields            = 1
-let g:go_highlight_functions         = 1
-let g:go_highlight_function_calls    = 1
-let g:go_highlight_operators         = 1
-let g:go_highlight_extra_types       = 1
-let g:go_highlight_build_constraints = 1
-let g:go_highlight_structs           = 1
-let g:go_highlight_methods           = 1
-
-"let g:go_play_open_browser           = 0
-"let g:loaded_syntastic_go_gofmt_checker = 0
+"" first setup steps:
+""	:GoInstallBinaries
+"
+"" run :GoBuild or :GoTestCompile based on the go file
+"function! s:build_go_files()
+"	let l:file = expand('%')
+"	if l:file =~# '^\f\+_test\.go$'
+"		call go#test#Test(0, 1)
+"	elseif l:file =~# '^\f\+\.go$'
+"		call go#cmd#Build(0)
+"	endif
+"endfunction
+"
+"augroup go_filetype_settings
+"	autocmd!
+"	autocmd BufNewFile,BufRead *.go setlocal noexpandtab tabstop=4 shiftwidth=4
+""	autocmd BufWritePost       *.go normal! zv
+"	autocmd FileType go nnoremap <leader>b :<C-u>call <SID>build_go_files()<CR>
+"	autocmd FileType go nnoremap <Leader>e :GoRename<CR>
+"	autocmd FileType go nmap     <leader>r <Plug>(go-run)
+"	autocmd FileType go nmap     <Leader>c <Plug>(go-coverage-toggle)
+"	autocmd FileType go nmap     <Leader>i <Plug>(go-info)
+"augroup END
+"
+"let g:go_fmt_command                 = "goimports"
+"let g:go_fmt_fail_silently           = 1
+"let g:go_fmt_autosave                = 1
+"let g:go_fmt_experimental            = 1
+"let g:go_highlight_types             = 1
+"let g:go_highlight_fields            = 1
+"let g:go_highlight_functions         = 1
+"let g:go_highlight_function_calls    = 1
+"let g:go_highlight_operators         = 1
+"let g:go_highlight_extra_types       = 1
+"let g:go_highlight_build_constraints = 1
+"let g:go_highlight_structs           = 1
+"let g:go_highlight_methods           = 1
+"
+""let g:go_play_open_browser           = 0
+""let g:loaded_syntastic_go_gofmt_checker = 0
 
 " => Plugin: vim-mergetool --------------------------------------------------------------------------------------- {{{1
 
-let g:mergetool_layout = 'mr'
-let g:mergetool_prefer_revision = 'local'
+"let g:mergetool_layout = 'mr'
+"let g:mergetool_prefer_revision = 'local'
 
 " => Plugin: vim-plug -------------------------------------------------------------------------------------------- {{{1
 
 let g:plug_timeout = 300                                                       " Increase vim-plug timeout for YouCompleteMe
 
-nnoremap <leader><leader>u :PlugUpdate<CR>
+nnoremap <leader><leader>u             :PlugUpdate<CR>
 
 " => Plugin: YouCompleteMe --------------------------------------------------------------------------------------- {{{1
 
-let g:ycm_global_ycm_extra_conf = '~/.config/my/ycm_extra_conf.py'             " Where to search for .ycm_extra_conf.py if not found
-let g:ycm_confirm_extra_conf                            = 0
-
-let g:ycm_show_diagnostics_ui                           = 0 " default 1
-let g:ycm_register_as_syntastic_checker                 = 0 " default 1
-
-let g:ycm_error_symbol                                  = '✘'
-let g:ycm_warning_symbol                                = '❇'
-let g:ycm_always_populate_location_list                 = 1 "default 0
-
-let g:ycm_complete_in_comments                          = 1
-let g:ycm_collect_identifiers_from_comments_and_strings = 1
-let g:ycm_collect_identifiers_from_tags_files           = 1 "default 0
-let g:ycm_seed_identifiers_with_syntax                  = 1
-
-let g:ycm_goto_buffer_command = 'new-or-existing-tab' "[ 'same-buffer', 'horizontal-split', 'vertical-split', 'new-tab' ]
-
-nnoremap <leader>g :YcmCompleter GoTo<CR>
-"nnoremap <F9>      :YcmDiags <CR>
-"nnoremap <F11>     :YcmForceCompileAndDiagnostics <CR>
+"let g:ycm_global_ycm_extra_conf = '~/.config/my/ycm_extra_conf.py'             " Where to search for .ycm_extra_conf.py if not found
+"let g:ycm_confirm_extra_conf                            = 0
+"
+"let g:ycm_show_diagnostics_ui                           = 0 " default 1
+"let g:ycm_register_as_syntastic_checker                 = 0 " default 1
+"
+"let g:ycm_error_symbol                                  = '✘'
+"let g:ycm_warning_symbol                                = '❇'
+"let g:ycm_always_populate_location_list                 = 1 "default 0
+"
+"let g:ycm_complete_in_comments                          = 1
+"let g:ycm_collect_identifiers_from_comments_and_strings = 1
+"let g:ycm_collect_identifiers_from_tags_files           = 1 "default 0
+"let g:ycm_seed_identifiers_with_syntax                  = 1
+"
+"let g:ycm_goto_buffer_command = 'new-or-existing-tab' "[ 'same-buffer', 'horizontal-split', 'vertical-split', 'new-tab' ]
+"
+"nnoremap <leader>g :YcmCompleter GoTo<CR>
+""nnoremap <F9>      :YcmDiags <CR>
+""nnoremap <F11>     :YcmForceCompileAndDiagnostics <CR>
 
 " => Plugin: startify -------------------------------------------------------------------------------------------- {{{1
 
-let g:startify_change_to_dir                            = 0
+let g:startify_change_to_dir = 0
 
 " => Plugin: vdebug ---------------------------------------------------------------------------------------------- {{{1
 
