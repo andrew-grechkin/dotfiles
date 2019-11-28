@@ -1,0 +1,13 @@
+#!/bin/bash
+
+for FILE in "$@"; do
+	echo "Linting $FILE"
+
+	if xmllint --format "$FILE" &>/dev/null; then
+		mv "$FILE" "${FILE}.back" \
+			&& xmllint --format "${FILE}.back" > "$FILE" \
+			&& rm -f "${FILE}.back"
+	else
+		echo "Wrong xml: $FILE"
+	fi
+done

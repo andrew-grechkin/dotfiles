@@ -77,3 +77,88 @@ function ssl-chain() {
 	local PORT=${2:-443}
 	echo quit | openssl s_client -showcerts -servername "${SERVER}" -connect "${SERVER}:${PORT}"
 }
+
+# => fzf --------------------------------------------------------------------------------------------------------- {{{1
+
+function _fzf_compgen_helper() {
+	local EXCLUDE_FOLDERS_FD=(".cache" ".git" ".m2" ".vim" "git" "tmp")
+	local EXCLUDE_FOLDERS_FD_STR=$(printf ' --exclude=%s' "${EXCLUDE_FOLDERS_FD[@]}")
+	local CMD1=(fd -HL --type "$2" "$1" "${EXCLUDE_FOLDERS_FD_STR[@]}")
+	local CMD2=(find "$1" -type "$2")
+	local FILT=(grep -v -F '/.git')
+
+	($CMD1 || $CMD2 | $FILT) 2>/dev/null
+}
+
+function _fzf_command_helper() {
+	local GIT_LIST=(git ls-files -co --exclude-standard)
+#	local GIT_LIST="git ls-tree -r --name-only HEAD"
+	local RG__LIST=(rg --hidden --files)
+	($GIT_LIST || $RG__LIST || _fzf_compgen_helper "$(pwd)" 'f') 2>/dev/null
+}
+
+# => git: improved logging --------------------------------------------------------------------------------------- {{{1
+# man: git-log
+
+function fzf-git-log() {
+	local CMD=(fzf
+		--ansi
+		--reverse
+		--tiebreak=index
+		--preview-window=right:40%:wrap:hidden
+		--preview "echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | xargs git show --color=always $@"
+		--bind "ctrl-m:execute:
+			(echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | xargs git show --color=always --show-signature $@ | less -R)"
+	)
+	$CMD
+}
+
+function git-log {
+	git log -n 1 &> /dev/null || return
+
+	local CMD=(git log
+		--color=always
+		--abbrev=7 --format='%C(yellow)%h %C(bold blue)%an%C(reset) %s (%C(green)%cr) %C(auto)%d'
+		--max-count=9999
+		$@
+	)
+	$CMD
+}
+
+function glo() {
+	git-log --single-worktree --no-merges $@ | fzf-git-log $@
+#	--topo-order
+#	--since="12 weeks ago"
+}
+
+function glog() {
+	git-log --single-worktree --graph $@ | fzf-git-log $@
+}
+
+function glor() {
+	git-log --all --graph --reflog $@ | fzf-git-log $@
+}
+
+function gla() {
+	git-log --all --no-merges $@ | fzf-git-log $@
+}
+
+function glag() {
+	git-log --all --graph $@ | fzf-git-log $@
+}
+
+# => git: misc --------------------------------------------------------------------------------------------------- {{{1
+
+function gcompress() {
+	git reflog expire --all --expire=now && nice git gc --prune=now --aggressive
+}
+
+function gpall() {
+	git remote | xargs -L1 git push --all
+}
+
+function gpushallf() {
+	for REMOTE in `git remote`; do
+		git push -f $REMOTE
+	done
+}

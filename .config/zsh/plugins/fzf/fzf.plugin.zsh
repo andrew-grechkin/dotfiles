@@ -1,6 +1,6 @@
 # vim: syntax=zsh foldmethod=marker
 
-# => Load fzf ---------------------------------------------------------------------------------------------------- {{{1
+# => Load fzf (key bindings, completion) ------------------------------------------------------------------------- {{{1
 
 for F in '/usr/share/fzf/key-bindings.zsh' "$XDG_CONFIG_HOME/fzf/key-bindings.zsh"
 do
@@ -12,25 +12,6 @@ do
 	source-file "$F" && break
 done
 
-local EXCLUDE_FOLDERS_FD=(".cache" ".git" ".m2" ".vim" "git" "tmp")
-local EXCLUDE_FOLDERS_FD_STR=$(printf ' --exclude=%s' "${EXCLUDE_FOLDERS_FD[@]}")
-
-# local  GIT_LIST_FILES="git ls-files -co --recurse-submodules --exclude-standard"
-local  GIT_LIST_FILES="git ls-files -co --exclude-standard"
-local         FD_LIST="fd -HL $EXCLUDE_FOLDERS_FD_STR"
-local FIND_LIST_FILES="find -type f | grep -v '/\.git'"
-
-export FZF_DEFAULT_COMMAND="(${GIT_LIST_FILES} || ${FD_LIST} --type f || ${FIND_LIST_FILES}) 2>/dev/null"
-#export FZF_DEFAULT_COMMAND="(git ls-tree -r --name-only HEAD) 2> /dev/null"
-#export FZF_DEFAULT_OPTS="--preview '(bat --style=numbers --color=always {} || cat {}) 2> /dev/null | head -40'"
-
-export FZF_CTRL_T_COMMAND="${FZF_DEFAULT_COMMAND}"
-export FZF_CTRL_T_OPTS="--bind 'f4:execute(vim {} < /dev/tty > /dev/tty 2>&1)' \
-	--bind 'ctrl-y:execute-silent(echo {} | xclip -i -sel p -f | xclip -i -sel c)+abort'"
-#	--preview '(bat --style=numbers --color=always {} || cat {}) 2> /dev/null | head -40'"
-
-export FZF_ALT_C_COMMAND="(${FD_LIST} --type d || find -type d | grep -v '/\.git') 2>/dev/null"
-
 # => Settings ---------------------------------------------------------------------------------------------------- {{{1
 
 # Use ~~ as the trigger sequence instead of the default **
@@ -39,21 +20,40 @@ export FZF_ALT_C_COMMAND="(${FD_LIST} --type d || find -type d | grep -v '/\.git
 # Options to fzf command
 #export FZF_COMPLETION_OPTS='+c -x'
 
-# Use fd (https://github.com/sharkdp/fd) instead of the default find
-# command for listing path candidates.
-# - The first argument to the function ($1) is the base path to start traversal
-# - See the source code (completion.{bash,zsh}) for the details.
 function _fzf_compgen_path() {
-	(\
-		fd -HL --exclude=.git --type f "$1" || \
-		find "$1" -type f | grep -v '/\.git' \
-	) 2>/dev/null
+	_fzf_compgen_helper "$1" 'f'
 }
 
-# Use fd to generate the list for directory completion
 function _fzf_compgen_dir() {
-	(\
-		fd -HL --exclude=.git --type d "$1" || \
-		find "$1" -type d | grep -v '/\.git' \
-	) 2>/dev/null
+	_fzf_compgen_helper "$1" 'd'
 }
+
+# => Setup commands ---------------------------------------------------------------------------------------------- {{{1
+
+export FZF_DEFAULT_COMMAND='_fzf_command_helper'
+export FZF_CTRL_T_COMMAND="_fzf_command_helper"
+export FZF_ALT_C_COMMAND='_fzf_compgen_helper $(pwd) d'
+
+# => Setup options ----------------------------------------------------------------------------------------------- {{{1
+
+PREVIEW='
+	b() {(file -bi "$1" | grep "charset=binary") &>/dev/null && (hexdump -C "$1" || true)};
+	t() {pygmentize -O style=monokai -f console256 -g "$1" || bat --style=numbers --color=always "$1" || cat "$1"};
+	f() {b "$1" || t "$1"}
+	d() {[[ -d "$1" ]] && (tree -C "$1" || true)};
+	p() {stat "$1"; echo -n "  Type: "; file -b "$1"; echo; (d "$1" || f "$1") 2>&1};
+	p {} | head -n 100
+'
+export FZF_DEFAULT_OPTS=" \
+	--bind 'f1:toggle-preview' --bind 'f2:toggle-preview-wrap' --bind 'home:top' \
+	--bind 'ctrl-y:execute-silent(echo {} | xclip -i -sel p -f | xclip -i -sel c)+abort' \
+	--bind 'f4:execute:(\$EDITOR   {} < /dev/tty > /dev/tty 2>&1)' \
+	--bind 'f3:execute:(\$PAGER    {} > /dev/tty 2>&1)' \
+	--bind 'ctrl-h:execute:(hexdump -C {} | \$PAGER > /dev/tty 2>&1)' \
+	--bind 'ctrl-b:execute:(binwalk    {} | \$PAGER > /dev/tty 2>&1)' \
+	--bind 'ctrl-t:execute:(sha1sum    {} | \$PAGER > /dev/tty 2>&1)' \
+	--bind 'ctrl-g:execute:(md5sum     {} | \$PAGER > /dev/tty 2>&1)' \
+	--preview-window=right:78:hidden --preview '${PREVIEW}' \
+"
+export FZF_CTRL_T_OPTS="$FZF_DEFAULT_OPTS"
+export FZF_TMUX=1

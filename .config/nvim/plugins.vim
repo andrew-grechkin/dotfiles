@@ -13,7 +13,8 @@ call plug#begin()
 	Plug 'tpope/vim-rhubarb'                                                   " Github module
 	Plug 'shumphrey/fugitive-gitlab.vim'                                       " Gitlab module
 	Plug 'airblade/vim-rooter'                                                 " Cwd if file is in git repo should be repo root
-"	Plug 'tpope/vim-repeat'                                                    " Repeat everything
+	Plug 'tpope/vim-abolish'
+	Plug 'tpope/vim-repeat'                                                    " Repeat everything
 	Plug 'tpope/vim-surround'                                                  " Better surround commands
 	Plug 'tpope/vim-unimpaired'                                                " Pairs of helpful commands
 "	Plug 'tpope/vim-vinegar'

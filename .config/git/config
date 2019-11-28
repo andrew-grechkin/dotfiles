@@ -1,21 +1,23 @@
 [alias]
 	br       = branch -vv
-	bush     = !"f(){ while true; do git push && break; git pull --no-tags --rebase || break; done };f"
+	bush     = !"f(){while true; do git push && break; git pull --no-tags --rebase || break; done}; f"
 	co       = checkout
-	compress = !"f(){ git reflog expire --all --expire=now && nice git gc --prune=now --aggressive; };f"
-	d        = difftool
+	compress = !"zsh -c 'gcompress'"
+	d        = diff -b --submodule=diff
 	dg       = difftool --gui
-	di       = diff -b --submodule=diff
-	fall     = fetch --all -p
-	h        =                 log --abbrev-commit       --graph -n 300                  --pretty=oneline
-	hh       =                 log                 --all --graph -n 300 --show-signature
-	ha       = !git --no-pager log                 --all --graph                         --pretty=oneline
-	ho       =                 log --abbrev-commit --all --graph        --full-history   --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'
-	m        = mergetool
+	dt       = difftool
+	fall     = fetch --all --prune --prune-tags
+	ha       = !git --no-pager log --all --graph --pretty=oneline
+	l        = !"zsh -c 'glo'"
+	lr       = !"zsh -c 'glor'"
+	lg       = !"zsh -c 'glog'"
+	la       = !"zsh -c 'gla'"
+	lag      = !"zsh -c 'glag'"
 	mg       = mergetool --gui
-	pall     = !git remote | xargs -L1 git push --all
-	pushallf = "!f(){ for i in `git remote`; do git push -f $i; done; };f"
-	sh       = show --show-signature
+	mt       = mergetool
+	pall     = !"zsh -c 'gpall'"
+	pushallf = !"zsh -c 'gpushallf'"
+	sh       = show --show-signature -b
 	st       = status -b
 	up       = pull -v --no-tags
 	w        = whatchanged --show-signature
@@ -24,37 +26,56 @@
 	whitespace = fix
 
 [color]
-	branch = auto
-	diff = auto
-	grep = auto
+	branch      = auto
+	diff        = auto
+	grep        = auto
 	interactive = auto
-	showbranch = auto
-	status = auto
-	ui = auto
+	showbranch  = auto
+	status      = auto
+	ui          = auto
 
 [commit]
-	gpgsign = false
 	verbose = true
 
 [core]
-	autocrlf = false
-	editor = vim
-	longpaths = true
-	pager = less -x4 -i
+	autocrlf     = false
+	editor       = vim
+	longpaths    = true
+	pager        = less -x4 -i
 	preloadindex = true
-	quotepath = false
-	tabwidth = 4
-	whitespace = trailing-space,space-before-tab,blank-at-eol,blank-at-eof,cr-at-eol
+	quotepath    = false
+	tabwidth     = 4
+	whitespace   = trailing-space,space-before-tab,blank-at-eol,blank-at-eof,cr-at-eol
 
 ;[credential]
 ;	helper = /usr/lib/git-core/git-credential-libsecret
+
+[diff]
+	tool            = fugitive
+	guitool         = meld
+	algorithm       = patience
+	colorMoved      = plain
+	colorMovedWS    = ignore-space-change
+	indentHeuristic = true
+;	diff-algorithm  = patience
+;	submodule       = diff
+
+[difftool]
+	prompt        = false
+	trustExitCode = true                                                       # Be able to abort all diffs with ':cq' or ':cquit'
+
+[difftool "fugitive"]
+	cmd = vim -f -c "Gdiffsplit!" "$MERGED"
+
+[difftool "meld"]
+	cmd = meld "$LOCAL" "$REMOTE"
 
 [fetch]
 	prune = true
 
 [grep]
 	extendedRegexp = true
-	lineNumber = true
+	lineNumber     = true
 
 [gui]
 	encoding = utf-8
@@ -66,9 +87,28 @@
 	sslVerify = true
 
 [log]
-	color = auto
-	date = iso
+	color    = auto
+	date     = iso
 	decorate = short
+
+[merge]
+	tool          = fugitive
+	guitool       = meld
+	conflictstyle = diff3
+
+[mergetool]
+	keepBackup    = false
+	prompt        = false
+	trustExitCode = true
+
+[mergetool "fugitive"]
+	cmd = vim -f -c "Gdiffsplit!" "$MERGED"
+
+[mergetool "meld"]
+	cmd = meld "$LOCAL" "$BASE" "$REMOTE" --output "$MERGED"
+
+[mergetool "nvimdiff4"]
+	cmd = nvim -d "$LOCAL" "$BASE" "$REMOTE" "$MERGED" -c '$wincmd w' -c 'wincmd J'
 
 [pager]
 	branch = false
@@ -81,61 +121,13 @@
 
 [rebase]
 	autosquash = true
-	autostash = true
+	autostash  = true
 
 [tag]
 	sort = version:refname
 
 ;[url "https://"]
 ;	insteadOf = git://
-
-[diff]
-	tool = vimdiff
-	guitool = meld
-	algorithm = patience
-	colorMoved = plain
-	colorMovedWS = ignore-space-change
-	indentHeuristic = true
-;	diff-algorithm = patience
-;	submodule = diff
-
-[difftool]
-	prompt = false
-	trustExitCode = true                                                       # Be able to abort all diffs with `:cq` or `:cquit`
-
-[difftool "nvimdiff"]
-	cmd = nvim -d "$LOCAL" "$REMOTE"
-
-[difftool "meld"]
-	cmd = meld "$LOCAL" "$REMOTE"
-
-[difftool "winmeld"]
-	cmd = "C:/Program Files (x86)/Meld/meld.exe" "$LOCAL" "$REMOTE"
-
-[difftool "winp4"]
-	cmd = "C:/Program Files/Perforce/p4merge.exe" "$LOCAL" "$REMOTE"
-
-[difftool "winmerge"]
-	cmd = "C:/Program Files (x86)/WinMerge/WinMergeU.exe" -u -e -s -maximize -wl -dl "Local" "$LOCAL" "$REMOTE"
-
-[merge]
-	tool = vimdiff
-	guitool = nfugitive
-	conflictstyle = diff3
-
-[mergetool]
-	keepBackup = false
-	prompt = false
-	trustExitCode = true
-
-[mergetool "meld"]
-	cmd = meld "$LOCAL" "$BASE" "$REMOTE" --output "$MERGED"
-
-[mergetool "nfugitive"]
-	cmd = nvim -f -c "Gdiff" "$MERGED"
-
-[mergetool "nvimdiff4"]
-	cmd = nvim -d "$LOCAL" "$BASE" "$REMOTE" "$MERGED" -c '$wincmd w' -c 'wincmd J'
 
 [include]
 	path = ~/.config/gitconfig.overrides

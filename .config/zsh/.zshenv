@@ -1,9 +1,13 @@
 # vim: syntax=zsh foldmethod=marker
 
+# => enable profiler --------------------------------------------------------------------------------------------- {{{1
+
+#zmodload zsh/zprof
+
 # => zsh init helprer functions ---------------------------------------------------------------------------------- {{{1
 
 function source-file() {
-#    echo "source: '$1'"
+#	echo "source: $(date) '$1'"
 	[[ -r "$1" ]] && source "$1"
 }
 
