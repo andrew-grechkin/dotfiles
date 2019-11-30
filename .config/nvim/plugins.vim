@@ -10,10 +10,12 @@ call plug#begin()
 "	Plug 'mhinz/vim-grepper', { 'on': ['Grepper', '<Plug>(GrepperOperator)'] } " Grep integration
 	Plug 'airblade/vim-gitgutter'                                              " Git status/modifications of the file
 	Plug 'tpope/vim-fugitive'                                                  " Git support
+	Plug 'tpope/vim-rhubarb'                                                   " Github module
+	Plug 'shumphrey/fugitive-gitlab.vim'                                       " Gitlab module
 	Plug 'airblade/vim-rooter'                                                 " Cwd if file is in git repo should be repo root
 "	Plug 'tpope/vim-repeat'                                                    " Repeat everything
 	Plug 'tpope/vim-surround'                                                  " Better surround commands
-"	Plug 'tpope/vim-unimpaired'                                                " Pairs of helpful commands
+	Plug 'tpope/vim-unimpaired'                                                " Pairs of helpful commands
 "	Plug 'tpope/vim-vinegar'
 "	Plug 'vim-scripts/vimwiki'                                                 " Personal wiki
 "	Plug 'MarcWeber/vim-addon-local-vimrc'
@@ -45,5 +47,6 @@ call plug#begin()
 "		Plug 'jceb/vim-hier'
 		Plug 'majutsushi/tagbar'
 		Plug 'simnalamburt/vim-mundo', {'on': 'MundoToggle'}                   " Visualize the undo tree
+		Plug 'masukomi/vim-markdown-folding'
 	endif
 call plug#end()

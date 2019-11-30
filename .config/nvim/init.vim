@@ -18,10 +18,10 @@
 "                  /
 "                  G
 "
-"h: navigation
-"h: operator
-"h: text-objexts
-"h: word-motions
+"man: navigation
+"man: operator
+"man: text-objects
+"man: word-motions
 
 " => Variables --------------------------------------------------------------------------------------------------- {{{1
 
@@ -65,6 +65,7 @@ else
 	command! W :execute ':silent w !sudo tee % > /dev/null' | :edit!           " Save file with root privileges
 endif
 
+
 " => Pre-load ---------------------------------------------------------------------------------------------------- {{{1
 
 if empty(glob(VIM_CONFIG_HOME . '/autoload/plug.vim'))                         " Download and install vim-plug
@@ -104,9 +105,9 @@ set encoding=utf-8                                                             "
 "set bomb                                                                       " Set BOM
 scriptencoding utf-8
 
-autocmd BufNewFile,BufRead  *   try
-autocmd BufNewFile,BufRead  *       set encoding=utf-8
-autocmd BufNewFile,BufRead  *   endtry
+autocmd BufNewFile,BufRead  * try
+autocmd BufNewFile,BufRead  *     set encoding=utf-8
+autocmd BufNewFile,BufRead  * endtry
 
 " => vim-plug plugins -------------------------------------------------------------------------------------------- {{{1
 
@@ -118,7 +119,7 @@ else
 endif
 
 "packloadall                                                                    " Load all plugins
-silent! helptags ALL                                                           " Load help files for all plugins
+"silent! helptags ALL                                                           " Load help files for all plugins
 
 " => UI ---------------------------------------------------------------------------------------------------------- {{{1
 
@@ -165,8 +166,9 @@ set cursorline
 
 filetype plugin indent on                                                      " Mandatory for modern plugins
 
+set foldcolumn=2
 set foldmethod=syntax
-set foldnestmax=1
+set foldnestmax=2
 
 set list                                                                       " Show special characters
 set listchars=tab:↹\ ,trail:␣,extends:>,precedes:<,nbsp:+                      " Visual form of special characters
@@ -181,11 +183,16 @@ set display+=lastline                                                          "
 
 set virtualedit=block
 
+" => Spell ------------------------------------------------------------------------------------------------------- {{{1
+" man: spell
+
+set spelllang=en,nl,ru
+
 " => Text, tab and indent related -------------------------------------------------------------------------------- {{{1
 
 silent! set breakindent
 set colorcolumn=120                                                            " Linebreak on 120 characters
-let &showbreak = '↳⋙⋙⋙⋙⋙'                                                      " Pretty soft break character
+let &showbreak = '↳⋙⋙⋙'                                                        " Pretty soft break character
 
 set autoindent                                                                 " Copy indent from the previous line
 set smartindent
@@ -274,7 +281,6 @@ silent! tnoremap <C-l>                 <C-\><C-N><C-w><Right>
 		nnoremap <leader>b9            :b9<CR>
 
 " fast tabs
-		nnoremap <leader>tt            :tabnew<CR>
 		nnoremap <leader>t             :tab split<CR>
 		nnoremap <leader>h             :tabfirst<CR>
 		nnoremap <leader>j             :tabprevious<CR>
@@ -294,9 +300,6 @@ silent! tnoremap <C-l>                 <C-\><C-N><C-w><Right>
 		nnoremap <C-PageDown>          :tabnext<CR>
 		nnoremap <C-PageUp>            :tabprevious<CR>
 
-" move current buffer to a new tab
-		nnoremap <leader>tb            :tabedit %<CR>
-
 " Black hole deletes
 		nnoremap <leader><leader>d     "_d
 
@@ -310,13 +313,10 @@ silent! tnoremap <C-l>                 <C-\><C-N><C-w><Right>
 " Open terminal
 		nnoremap <leader>m             :belowright 10split term://zsh<CR>
 
-" Remap VIM 0 to first non-blank character
-"		nnoremap 0                     ^
-
 " => Bookmarks --------------------------------------------------------------------------------------------------- {{{1
 
-		nnoremap <leader>V             :e ~/.vimrc<CR>
-		nnoremap <leader>Z             :e ~/.zshenv<CR>
+		nnoremap <leader>V             :tabedit $MYVIMRC<CR>
+		nnoremap <leader>Z             :tabedit ~/.zshenv<CR>
 
 " => Mouse settings ---------------------------------------------------------------------------------------------- {{{1
 
@@ -338,7 +338,6 @@ if &diff
 		let s:is_started_as_vim_diff = 1
 		setlocal nospell
 		setlocal cmdheight=2                                                   " Increase lower status bar height in diff mode
-"		set cursorline
 		nnoremap <leader>n             ]c
 		nnoremap <leader>p             [c
 		nnoremap <leader>u             :diffupdate<CR>
@@ -381,8 +380,7 @@ if &diff
 		endfunction
 	augroup END
 else
-" save and restore folds only in non-diff mode
-	augroup save_restore_folds
+	augroup save_restore_folds                                                 " save and restore folds only in non-diff mode
 		autocmd!
 		autocmd BufWinEnter * silent! loadview
 		autocmd BufWinLeave * silent! mkview
@@ -398,6 +396,7 @@ silent! packadd termdebug
 augroup autoclose_quickfix_if_last
 	autocmd!
 	autocmd BufEnter * if (winnr('$') == 1 && (&buftype ==# 'quickfix' || &buftype ==# 'loclist')) | bd | endif
+
 augroup END
 
 augroup qf
@@ -410,21 +409,14 @@ augroup END
 "	autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | execute "normal! g'\"" | endif
 "augroup END
 
-augroup settings_by_filetype
-	autocmd!
-	autocmd FileType *      setlocal textwidth=120 wrapmargin=0
-	autocmd Filetype json   setlocal foldmethod=syntax foldnestmax=30
-	autocmd Filetype python setlocal foldmethod=indent expandtab smarttab tabstop=4 shiftwidth=4 softtabstop=4
-	autocmd Filetype vim    setlocal foldmethod=marker                                                                 " Fold using {{{n, where n is fold level
-augroup END
-
 augroup pre_post_process
 	autocmd!
-	autocmd BufWritePost ~/.vimrc source %
+	autocmd BufWritePost $MYVIMRC source $MYVIMRC
 	" Regenerate tags when saving Python files
 	autocmd BufWritePost *.py     silent! !ctags -R &
 	" Remove all trailing whitespaces (ALE does this better)
 "	autocmd BufWritePre  *        :%s/\s\+$//e                                                                         " Remove trailing spaces on save
+	autocmd BufReadPost fugitive://* set bufhidden=delete
 augroup END
 
 "let ssh_client=$SSH_CLIENT
@@ -444,6 +436,21 @@ augroup END
 "	augroup END
 "endif
 
+augroup settings_by_filetype
+	autocmd!
+	autocmd FileType *      setlocal textwidth=120 wrapmargin=0
+	autocmd Filetype json   setlocal foldmethod=syntax foldnestmax=30
+	autocmd Filetype python setlocal foldmethod=indent expandtab smarttab tabstop=4 shiftwidth=4 softtabstop=4
+	autocmd Filetype vim    setlocal foldmethod=marker
+augroup END
+
+" => Filetype: perl ---------------------------------------------------------------------------------------------- {{{1
+" man: ft-perl-syntax
+
+let perl_include_pod                     = 0
+let perl_fold                            = 1
+let perl_nofold_packages                 = 1
+
 augroup perl_filetype_settings
 	autocmd!
 	autocmd BufNewFile,BufRead *.t   setfiletype perl
@@ -451,16 +458,12 @@ augroup perl_filetype_settings
 	autocmd BufNewFile,BufRead *.itn setfiletype itn
 	autocmd Filetype perl setlocal foldmethod=syntax expandtab smarttab tabstop=4 shiftwidth=4 softtabstop=4
 	autocmd FileType perl setlocal keywordprg=perldoc
+	autocmd FileType perl set formatprg=perltidy
 	autocmd Filetype perl setlocal re=1                                                                                " Use old verion of syntax highlight regexp which look like working much faster (to check use syntime on -> syntime report)
 	autocmd FileType perl nmap     <silent> tt <Plug>(ale_fix)
-	"autocmd FileType perl nnoremap <silent> tt :%!perltidy -q<CR>
+"	autocmd FileType perl nnoremap <silent> tt :%!perltidy -q<CR>
 	autocmd FileType perl vnoremap <silent> tt :!perltidy -q<CR>
 augroup END
-
-" man: ft-perl-syntax
-let perl_include_pod     = 0
-let perl_fold            = 1
-let perl_nofold_packages = 1
 
 " => Plugin: airline --------------------------------------------------------------------------------------------- {{{1
 
@@ -542,14 +545,15 @@ map <C-_>                              <Plug>NERDCommenterToggle
 
 " => Plugin: netrw ----------------------------------------------------------------------------------------------- {{{1
 
-let g:netrw_banner    = 1
-"let g:netrw_cursor    = 1
-let g:netrw_liststyle = 3
-"let g:netrw_list_hide = netrw_gitignore#Hide().'.*\.swp$'
-"let g:netrw_preview   = 1
-"let g:netrw_sizestyle = 'H'
-"let g:netrw_usetab    = 1
-let g:netrw_winsize   = 25
+let g:loaded_netrwPlugin = 1                                                   " Prevent netrw from loading
+let g:netrw_banner       = 1
+"let g:netrw_cursor       = 1
+let g:netrw_liststyle    = 3
+"let g:netrw_list_hide    = netrw_gitignore#Hide().'.*\.swp$'
+"let g:netrw_preview      = 1
+"let g:netrw_sizestyle    = 'H'
+"let g:netrw_usetab       = 1
+let g:netrw_winsize      = 25
 
 "noremap <leader>n :Lexplore<CR>
 
@@ -748,6 +752,6 @@ endif
 ":verbose set formatoptions?
 ":scriptnames
 ":help -V                                                                      " Trace all vim open files
-":set filetype?
 ":help filetype-overrule
 "vim --startuptime vim.log
+"vim --cmd 'profile start vimrc.profile' --cmd 'profile! file /home/agrechkin/.config/nvim/init.vim'
