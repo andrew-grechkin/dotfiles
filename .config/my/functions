@@ -81,9 +81,9 @@ function ssl-chain() {
 # => fzf --------------------------------------------------------------------------------------------------------- {{{1
 
 function _fzf_compgen_helper() {
-	local EXCLUDE_FOLDERS_FD=(".cache" ".git" ".m2" ".vim" "git" "tmp")
-	local EXCLUDE_FOLDERS_FD_STR=$(printf ' --exclude=%s' "${EXCLUDE_FOLDERS_FD[@]}")
-	local CMD1=(fd -HL --type "$2" "$1" "${EXCLUDE_FOLDERS_FD_STR[@]}")
+
+	local EXCLUDE_FOLDERS_FD=('.cache' '.git' '.m2' '.snapshots' '.steam' '.vim' 'Steam' 'dosdevices' 'git' '/media/nfs/' '/proc/' '/sys/' 'tmp')
+	local CMD1=(fd -HL --type "$2" . "$1" "${EXCLUDE_FOLDERS_FD[@]/#/-E=}")
 	local CMD2=(find "$1" -type "$2")
 	local FILT=(grep -v -F '/.git')
 
