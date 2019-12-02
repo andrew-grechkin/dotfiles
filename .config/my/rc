@@ -1,7 +1,6 @@
 # vim: syntax=zsh foldmethod=marker
 
 export                 LANG=${LANG:-en_US.utf8}
-export                 LESS='-x4 -iRSw'
 export         LESSHISTFILE=-
 
 # => set PATH ---------------------------------------------------------------------------------------------------- {{{1

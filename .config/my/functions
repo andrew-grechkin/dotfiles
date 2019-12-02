@@ -106,9 +106,9 @@ function fzf-git-log() {
 		--reverse
 		--tiebreak=index
 		--preview-window=right:40%:wrap:hidden
-		--preview "echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | xargs git show --color=always $@"
-		--bind "ctrl-m:execute:
-			(echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | xargs git show --color=always --show-signature $@ | less -R)"
+		--preview="echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | xargs git show --color=always $@"
+		--bind="ctrl-m:execute(echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | xargs git show --color=always --show-signature $@ | $PAGER)"
+		--bind="ctrl-o:execute-silent(echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | xargs git checkout)+abort"
 	)
 	$CMD
 }
@@ -118,33 +118,34 @@ function git-log {
 
 	local CMD=(git log
 		--color=always
-		--abbrev=7 --format='%C(yellow)%h %C(bold blue)%an%C(reset) %s (%C(green)%cr) %C(auto)%d'
+		--abbrev=7
+		--format='%C(yellow)%h %C(bold blue)%an%C(reset) %s (%C(green)%cr) %C(auto)%d'
 		--max-count=9999
-		$@
+		"$@"
 	)
 	$CMD
 }
 
 function glo() {
-	git-log --single-worktree --no-merges $@ | fzf-git-log $@
+	git-log --single-worktree --no-merges "$@" | fzf-git-log "$@"
 #	--topo-order
 #	--since="12 weeks ago"
 }
 
 function glog() {
-	git-log --single-worktree --graph $@ | fzf-git-log $@
+	git-log --single-worktree --graph "$@" | fzf-git-log "$@"
 }
 
 function glor() {
-	git-log --all --graph --reflog $@ | fzf-git-log $@
+	git-log --all --graph --reflog "$@" | fzf-git-log "$@"
 }
 
 function gla() {
-	git-log --all --no-merges $@ | fzf-git-log $@
+	git-log --all --no-merges "$@" | fzf-git-log "$@"
 }
 
 function glag() {
-	git-log --all --graph $@ | fzf-git-log $@
+	git-log --all --graph "$@" | fzf-git-log "$@"
 }
 
 # => git: misc --------------------------------------------------------------------------------------------------- {{{1
@@ -158,7 +159,55 @@ function gpall() {
 }
 
 function gpushallf() {
-	for REMOTE in `git remote`; do
-		git push -f $REMOTE
+	for REMOTE in $(git remote); do
+		git push -f "$REMOTE"
 	done
+}
+
+# => journal ----------------------------------------------------------------------------------------------------- {{{1
+
+function fzf-journal() {
+	local CMD=(
+		fzf
+		--tac
+		"${FZF_DEFAULT_BINDS[@]}"
+	)
+	FZF_DEFAULT_OPTS= $CMD
+}
+
+function jb() {
+	journalctl -b | fzf-journal
+}
+
+function jbe() {
+	journalctl -b -p 4 | fzf-journal
+}
+
+function rl() {
+	## rl: read log
+	## journalctl wrapper with nice output format and colors based on log event severity.
+	## The order is for human consumption only so they are just based on RFC 5424 (without being compliant) and the default journalctl short-iso format.
+	## The syslog severity is added. This one is missing in all common log formats or not human readable (RFC 5424).
+	## The time format is based on systemd.time(7) and RFC 3339.
+	## The colors are made up by ypid because I could not find a proper standard.
+	## Ref: https://serverfault.com/questions/59262/bash-print-stderr-in-red-color/502019#502019
+	## Ref: https://serverfault.com/questions/801514/systemd-default-log-output-format
+
+	# shellcheck disable=SC2016
+	command journalctl "$@" -o json \
+		| jq --unbuffered --raw-output '"echo \(.PRIORITY|tonumber|@sh) \"$(date --date @\((._SOURCE_REALTIME_TIMESTAMP // .__REALTIME_TIMESTAMP) |tonumber | ./ 1000000 | tostring) '\''+%F %T %Z'\'')\" \(._HOSTNAME|@sh) \(.SYSLOG_IDENTIFIER|@sh): \(.MESSAGE | gsub("\n"; "\n    ") | @sh) "' \
+		| sh \
+		| perl -e 'my $c_to_sev = {0 => "48;5;9", 1 => "48;5;5", 2 => "38;5;9", 3 => "38;5;1", 4 => "38;5;5", 5 => "38;5;2", 6 => "38;5;2"}; while (<>) { s#^(([0-6])(?: [^ ]+){5})(.*)#\e[$c_to_sev->{$2}m$1\e[m$3#; print; }'
+}
+
+# => misc -------------------------------------------------------------------------------------------------------- {{{1
+
+function show-dir() {
+	[[ -d "$1" ]] &&
+		(tree -Chp "$1" || ls -la --color=always)
+}
+
+function show-file() {
+	[[ -f "$1" ]] &&
+		(pygmentize -O style=monokai -f console256 -g "$1" || bat --style=numbers --color=always "$1" || cat "$1")
 }

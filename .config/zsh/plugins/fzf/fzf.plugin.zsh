@@ -38,22 +38,31 @@ export FZF_ALT_C_COMMAND='_fzf_compgen_helper $(pwd) d'
 
 PREVIEW='
 	b() {(file -bi "$1" | grep "charset=binary") &>/dev/null && (hexdump -C "$1" || true)};
-	t() {pygmentize -O style=monokai -f console256 -g "$1" || bat --style=numbers --color=always "$1" || cat "$1"};
-	f() {b "$1" || t "$1"}
+	f() {b "$1" || show-file "$1"}
 	d() {[[ -d "$1" ]] && (tree -C "$1" || true)};
 	p() {stat "$1"; echo -n "  Type: "; file -b "$1"; echo; (d "$1" || f "$1") 2>&1};
 	p {} | head -n 100
 '
-export FZF_DEFAULT_OPTS=" \
-	--bind 'f1:toggle-preview' --bind 'f2:toggle-preview-wrap' --bind 'home:top' \
-	--bind 'ctrl-y:execute-silent(echo {} | xclip -i -sel p -f | xclip -i -sel c)+abort' \
-	--bind 'f4:execute:(\$EDITOR   {} < /dev/tty > /dev/tty 2>&1)' \
-	--bind 'f3:execute:(\$PAGER    {} > /dev/tty 2>&1)' \
-	--bind 'ctrl-h:execute:(hexdump -C {} | \$PAGER > /dev/tty 2>&1)' \
-	--bind 'ctrl-b:execute:(binwalk    {} | \$PAGER > /dev/tty 2>&1)' \
-	--bind 'ctrl-t:execute:(sha1sum    {} | \$PAGER > /dev/tty 2>&1)' \
-	--bind 'ctrl-g:execute:(md5sum     {} | \$PAGER > /dev/tty 2>&1)' \
-	--preview-window=right:78:hidden --preview '${PREVIEW}' \
-"
+export FZF_DEFAULT_BINDS=(
+	--bind 'ctrl-d:page-down'
+	--bind 'ctrl-u:page-up'
+	--bind 'f1:toggle-preview'
+	--bind 'f2:toggle-preview-wrap'
+	--bind 'home:top'
+	--bind 'ctrl-y:execute-silent(echo {} | xclip -i -sel p -f | xclip -i -sel c)+abort'
+)
+export FZF_FILE_BINDS=(
+	--bind 'f3:execute((show-dir {} || show-file {} ) | $PAGER > /dev/tty 2>&1)'
+	--bind 'f4:execute($EDITOR {} < /dev/tty > /dev/tty 2>&1)'
+	--bind 'ctrl-h:execute((show-dir {} || hexdump -C {}) | $PAGER > /dev/tty 2>&1)'
+	--bind 'ctrl-b:execute((show-dir {} || binwalk {}) | $PAGER > /dev/tty 2>&1)'
+	--bind 'ctrl-t:execute((show-dir {} || sha1sum {}) | $PAGER > /dev/tty 2>&1)'
+	--bind 'ctrl-g:execute((show-dir {} || md5sum {}) | $PAGER > /dev/tty 2>&1)'
+)
+export FZF_FILE_PREVIEW=(
+	--preview-window=right:78:hidden
+	--preview="${PREVIEW}"
+)
+export FZF_DEFAULT_OPTS=$(printf " '%s'" ${FZF_DEFAULT_BINDS[@]} ${FZF_FILE_BINDS[@]} ${FZF_FILE_PREVIEW[@]})
 export FZF_CTRL_T_OPTS="$FZF_DEFAULT_OPTS"
 export FZF_TMUX=1

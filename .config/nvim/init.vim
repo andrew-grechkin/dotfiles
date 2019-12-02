@@ -545,7 +545,7 @@ map <C-_>                              <Plug>NERDCommenterToggle
 
 " => Plugin: netrw ----------------------------------------------------------------------------------------------- {{{1
 
-let g:loaded_netrwPlugin = 1                                                   " Prevent netrw from loading
+"let g:loaded_netrwPlugin = 1                                                   " Prevent netrw from loading
 let g:netrw_banner       = 1
 "let g:netrw_cursor       = 1
 let g:netrw_liststyle    = 3
