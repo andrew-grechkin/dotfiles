@@ -97,6 +97,47 @@ function _fzf_command_helper() {
 	($GIT_LIST || $RG__LIST || _fzf_compgen_helper "$(pwd)" 'f') 2>/dev/null
 }
 
+# => fzf docker -------------------------------------------------------------------------------------------------- {{{1
+
+_fzf_complete_docker() {
+	case "$1" in
+		docker*\ rmi\ * | docker*-f* | docker*\ run\ *)
+			_fzf_complete "--reverse -m " "$@" < <(docker images --format '{{.Repository}}:{{.Tag}}')
+			;;
+		docker*start* | docker*stop* | docker*rm* | docker*exec* | docker*kill*)
+			_fzf_complete "--reverse -m" "$@" < <(docker ps -a | grep -v '^CONTAINER')
+			;;
+		docker\ )
+			#_fzf_complete "--reverse -n 1" "$@" < <(docker --help 2>/dev/null | grep --color=never '^\s\{2\}\w')
+			_fzf_complete "--reverse -n 1 --bind=tab:accept" "$@" < <(docker --help 2>/dev/null | grep --color=never '^\s\{2\}\w')
+			;;
+	esac
+}
+
+_fzf_complete_docker_post() {
+	awk '{print $1}'
+}
+
+# => fzf kubectl ------------------------------------------------------------------------------------------------- {{{1
+
+_fzf_complete_kubectl() {
+	case "$1" in
+		kubectl*\ exec\ *\ -c\ )
+			_fzf_complete "--reverse --bind=tab:accept" "$@" < <(kubectl get pods -o jsonpath="{.items[*].spec.containers[*].name}" | tr ' ' "\n")
+			;;
+		kubectl*\ exec\ *)
+			_fzf_complete "--reverse --bind=tab:accept" "$@" < <(kubectl get pods 2>/dev/null | grep -v '^NAME')
+			;;
+		*)
+			_fzf_complete "--reverse --bind=tab:accept -n 1" "$@" < <(kubectl --help 2>/dev/null | grep --color=never '^\s\{2\}\w' | grep -v 'kubectl')
+			;;
+	esac
+}
+
+_fzf_complete_kubectl_post() {
+	awk '{print $1}'
+}
+
 # => git: improved logging --------------------------------------------------------------------------------------- {{{1
 # man: git-log
 
@@ -173,14 +214,6 @@ function fzf-journal() {
 		"${FZF_DEFAULT_BINDS[@]}"
 	)
 	FZF_DEFAULT_OPTS= $CMD
-}
-
-function jb() {
-	journalctl -b | fzf-journal
-}
-
-function jbe() {
-	journalctl -b -p 4 | fzf-journal
 }
 
 function rl() {

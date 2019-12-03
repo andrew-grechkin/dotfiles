@@ -14,8 +14,8 @@ done
 
 # => Settings ---------------------------------------------------------------------------------------------------- {{{1
 
-# Use ~~ as the trigger sequence instead of the default **
-#export FZF_COMPLETION_TRIGGER='~~'
+# Use \ as the trigger sequence instead of the default **
+export FZF_COMPLETION_TRIGGER='\'
 
 # Options to fzf command
 #export FZF_COMPLETION_OPTS='+c -x'
@@ -66,3 +66,28 @@ export FZF_FILE_PREVIEW=(
 export FZF_DEFAULT_OPTS=$(printf " '%s'" ${FZF_DEFAULT_BINDS[@]} ${FZF_FILE_BINDS[@]} ${FZF_FILE_PREVIEW[@]})
 export FZF_CTRL_T_OPTS="$FZF_DEFAULT_OPTS"
 export FZF_TMUX=1
+
+# => fzf ssh (override default one) ------------------------------------------------------------------------------ {{{1
+
+function _ssh_config_parsed_hosts() {
+	local SSH_CONF=(~/.ssh/config ~/.ssh/config.d/* /etc/ssh/ssh_config)
+	command perl -mList::Util=uniq -nE 'm/[*?%#]/x and next; if (m/^.*host(?:name|\s)+(.*)/i) {push @hosts, split(m/ |,/, $1 =~ s/"//gr)}; END {say for uniq sort @hosts}' "${SSH_CONF[@]}"
+}
+
+function _ssh_known_parsed_hosts() {
+	command grep -oE '^[[a-z0-9.,:-]+' ~/.ssh/known_hosts | tr ',' '\n' | tr -d '[' | awk '{print $1 " " $1}'
+}
+
+function _ssh_hosts_parsed_hosts() {
+	command grep -v '^\s*\(#\|$\)' /etc/hosts | command grep -Fv '0.0.0.0'
+}
+
+function _fzf_complete_ssh() {
+	_fzf_complete '+m' "$@" < <(
+		command cat <(
+			_ssh_config_parsed_hosts
+			_ssh_known_parsed_hosts
+			_ssh_hosts_parsed_hosts
+		) | awk '{if (length($2) > 0) {print $2}}' | sort -u
+	)
+}
