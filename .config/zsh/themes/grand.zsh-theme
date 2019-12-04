@@ -1,68 +1,61 @@
-# grand ZSH Theme - Preview:
-# Based on gnzh theme
+# grand ZSH theme
+# vim: syntax=zsh foldmethod=marker
+# url: http://zsh.sourceforge.net/Doc/Release/User-Contributions.html#Version-Control-Information
+# url: https://github.com/zsh-users/zsh/blob/master/Misc/vcs_info-examples
+# url: https://timothybasanov.com/2016/04/23/zsh-prompt-and-vcs_info.html
+
+autoload -Uz vcs_info
 
 setopt PROMPT_SUBST
 
+function precmd() {
+	vcs_info
+}
+
 () {
-	# Format for git_prompt_info()
-	ZSH_THEME_GIT_PROMPT_PREFIX="%K{23}%F{231}%B"
-	ZSH_THEME_GIT_PROMPT_SUFFIX="%b%K{36}%F{23}"
+	typeset -AHg ZSH_THEME
+	ZSH_THEME['GIT_PROMPT_PREFIX']='%K{23}%F{231}%B'
+	ZSH_THEME['GIT_PROMPT_SUFFIX']='%b%K{36}%F{23}'
+	ZSH_THEME['GIT_PROMPT_DIRTY']=''
+	ZSH_THEME['GIT_PROMPT_CLEAN']=''
+	ZSH_THEME['GIT_PROMPT_AHEAD']='%B%F{cyan}↑'
+	ZSH_THEME['GIT_PROMPT_BEHIND']='%B%F{cyan}↓'
+	ZSH_THEME['GIT_PROMPT_ADDED']='%B%F{green}+'
+	ZSH_THEME['GIT_PROMPT_MODIFIED']='%B%F{yellow}*'
+	ZSH_THEME['GIT_PROMPT_DELETED']='%B%F{red}-'
+	ZSH_THEME['GIT_PROMPT_RENAMED']='%B%F{yellow}➜'
+	ZSH_THEME['GIT_PROMPT_UNMERGED']='%B%F{magenta}?'
+	ZSH_THEME['GIT_PROMPT_UNTRACKED']='%B%F{red}+'
+	ZSH_THEME['GIT_PROMPT_SHA_BEFORE']='%F{231}%B'
+	ZSH_THEME['GIT_PROMPT_SHA_AFTER']='%b%K{black}%F{36}'
+	ZSH_THEME['CLOCK']='%K{29}%F{231}%B%T%b%f%k'
+	ZSH_THEME['CWD']='%F{cyan}:%f%B%F{blue}%~%f%b'
 
-	# Format for parse_git_dirty()
-	ZSH_THEME_GIT_PROMPT_DIRTY=""
-	ZSH_THEME_GIT_PROMPT_CLEAN=""
-
-	# Format for git_prompt_ahead()
-	ZSH_THEME_GIT_PROMPT_AHEAD="%B%F{cyan}↑"
-	ZSH_THEME_GIT_PROMPT_BEHIND="%B%F{cyan}↓"
-
-	# Format for git-prompt-status()
-	ZSH_THEME_GIT_PROMPT_ADDED="%B%F{green}+"
-	ZSH_THEME_GIT_PROMPT_MODIFIED="%B%F{yellow}*"
-	ZSH_THEME_GIT_PROMPT_DELETED="%B%F{red}-"
-	ZSH_THEME_GIT_PROMPT_RENAMED="%B%F{yellow}➜"
-	ZSH_THEME_GIT_PROMPT_UNMERGED="%B%F{magenta}?"
-	ZSH_THEME_GIT_PROMPT_UNTRACKED="%B%F{red}+"
-
-	# Format for git_prompt_long_sha() and git_prompt_short_sha()
-	ZSH_THEME_GIT_PROMPT_SHA_BEFORE="%F{231}%B"
-	ZSH_THEME_GIT_PROMPT_SHA_AFTER="%b%K{black}%F{36}"
-
-	local git_branch=' $(git_prompt_info)$(git_prompt_short_sha)$(git-prompt-status)%b%f%k'
-
-	MODE_INDICATOR="%F{yellow}%B➤%b%F{yellow}➤➤%f"
-
-	local PR_USER PR_USER_OP PR_PROMPT PR_HOST
-
-	local clock='%K{29}%F{231}%B%T%b%f%k'
+	MODE_INDICATOR='%F{yellow}%B➤%b%F{yellow}➤➤%f'
 
 	local history='$[HISTCMD-1]'
-	local no_error="%K{black}%F{29}%f%k"
+	local no_error='%K{black}%F{29}%f%k'
 	local is_error="%K{red}%F{29}%F{231}%B${history}↵%?%b%K{black}%F{red}%f%k"
-	local return_code="%(?.${no_error}.${is_error})"
+	ZSH_THEME['RETURN']="%(?.${no_error}.${is_error})"
 
-	# Check the UID
-	if [[ $UID -ne 0 ]]; then # normal user
-		PR_USER='%F{green}%n%f'
-		PR_USER_OP='%F{green}%#%f'
-		PR_PROMPT='%f➤%f'
-	else # root
-		PR_USER='%F{red}%n%f'
-		PR_USER_OP='%F{red}%#%f'
-		PR_PROMPT='%F{red}➤%f'
-	fi
+	# Check if we are root
+	[[ $UID -ne 0 ]] && ZSH_THEME['USER']='%F{green}%n%f' || ZSH_THEME['USER']='%F{red}%n%f'
 
 	# Check if we are on SSH or not
-	if [[ -n "$SSH_CLIENT" || -n "$SSH2_CLIENT" ]]; then
-		PR_HOST='%F{red}%M%f' # SSH
-	else
-		PR_HOST='%F{green}%M%f' # no SSH
-	fi
+	[[ -n "$SSH_CLIENT" || -n "$SSH2_CLIENT" ]] && ZSH_THEME['HOST']='%F{red}%M%f' || ZSH_THEME['HOST']='%F{green}%M%f'
 
-	local user_host=" ${PR_USER}%F{cyan}@%f${PR_HOST}"
-	local current_dir="%F{cyan}:%f%B%F{blue}%~%f%b"
-
-PROMPT="╭${clock}${return_code}${user_host}${current_dir}${git_branch}
-╰%!─${PR_PROMPT}${RPS1} "
-RPROMPT=""
+	PROMPT="╭${ZSH_THEME['CLOCK']}${ZSH_THEME['RETURN']}${ZSH_THEME['USER']}%F{cyan}@%f${ZSH_THEME['HOST']}${ZSH_THEME['CWD']} "'${vcs_info_msg_0_}'"%{$reset_color%}
+╰%!─➤${RPS1}%{$reset_color%} "
+	RPROMPT=''
 }
+
+zstyle    ':vcs_info:*'                 debug                    false
+zstyle    ':vcs_info:*'                 enable                   git
+zstyle    ':vcs_info:*'                 check-for-changes        true
+zstyle    ':vcs_info:*'                 check-for-staged-changes true
+zstyle    ':vcs_info:*'                 get-revision             true
+zstyle    ':vcs_info:*'                 stagedstr                '%B%F{green}+'
+zstyle    ':vcs_info:*'                 unstagedstr              '%B%F{yellow}*'
+zstyle -e ':vcs_info:git+set-message:*' hooks                    'reply=(${${(k)functions[(I)[+]vi-git-set-message*]}#+vi-})'
+zstyle    ':vcs_info:*'                 formats                  '%K{23}%F{231}%b%K{29}%F{23}%F{233}%i%k%F{29}%u%c%m '
+zstyle    ':vcs_info:*'                 actionformats            '%K{23}%F{231}%b%K{29}%F{23}%F{233}%i%k%F{29}%a %m '

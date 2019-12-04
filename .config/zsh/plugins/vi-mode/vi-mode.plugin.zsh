@@ -20,6 +20,10 @@ zle -N edit-command-line
 
 bindkey -v
 
+# => remove Ctrl-j binding (i think it's not safe to have it, accept should be only by pressing Enter) ----------- {{{1
+
+bindkey -r '^j'
+
 # => v to edit the command line ---------------------------------------------------------------------------------- {{{1
 
 autoload -Uz edit-command-line

@@ -30,6 +30,45 @@ function git-gc-recursive() {
 	done
 }
 
+# => prompt vcs_info --------------------------------------------------------------------------------------------- {{{1
+
+function +vi-git-set-message-status() {
+	local BRANCH="${hook_com[branch]}"
+
+	local CONFIG="$(command git config --get zsh-prompt.status)"
+	[[ "$CONFIG" == "hide" ]] && return
+	[[ "$CONFIG" == "fast" ]] && local PARAM='-uno'
+
+	local INDEX=$(command git status --porcelain $PARAM -b 2> /dev/null)
+	local -a STATUS
+	$(echo "$INDEX" | grep -E '^(\?\?)\ '             &> /dev/null) && STATUS+=("${ZSH_THEME['GIT_PROMPT_UNTRACKED']}")
+	#$(echo "$INDEX" | grep -E '^(A |M |MM)\ '         &> /dev/null) && STATUS+=("${ZSH_THEME['GIT_PROMPT_ADDED']}")
+	#$(echo "$INDEX" | grep -E '^(\ M|AM|MM|\ T)\ '    &> /dev/null) && STATUS+=("${ZSH_THEME['GIT_PROMPT_MODIFIED']}")
+	$(echo "$INDEX" | grep -E '^(\ D|D |AD)\ '        &> /dev/null) && STATUS+=("${ZSH_THEME['GIT_PROMPT_DELETED']}")
+	$(echo "$INDEX" | grep    '^R  '                  &> /dev/null) && STATUS+=("${ZSH_THEME['GIT_PROMPT_RENAMED']}")
+	$(echo "$INDEX" | grep    '^UU '                  &> /dev/null) && STATUS+=("${ZSH_THEME['GIT_PROMPT_UNMERGED']}")
+	#$(echo "$INDEX" | grep    '^## [^ ]\+ .*ahead'    &> /dev/null) && STATUS+=("${ZSH_THEME['GIT_PROMPT_AHEAD']}")
+	#$(echo "$INDEX" | grep    '^## [^ ]\+ .*behind'   &> /dev/null) && STATUS+=("${ZSH_THEME['GIT_PROMPT_BEHIND']}")
+	#$(echo "$INDEX" | grep    '^## [^ ]\+ .*diverged' &> /dev/null) && STATUS+=("${ZSH_THEME['GIT_PROMPT_DIVERGED']}")
+	$(command git rev-parse --verify refs/stash >/dev/null 2>&1)    && STATUS+=("${ZSH_THEME['GIT_PROMPT_STASHED']}")
+
+	# join array without delimeter
+	#hook_com[misc]+="${STATUS[*]}"
+	hook_com[misc]+="${(j::)STATUS}"
+}
+
+function +vi-git-set-message-upstream_diverge() {
+	local BRANCH="${hook_com[branch]}"
+	local -a STATUS
+	local AHEAD="$(command git rev-list ${BRANCH}@{upstream}..HEAD 2>/dev/null | wc -l)"
+	(( $AHEAD )) && STATUS+=("${ZSH_THEME['GIT_PROMPT_AHEAD']}${AHEAD}")
+	local BEHIND="$(command git rev-list HEAD..${branch}@{upstream} 2>/dev/null | wc -l)"
+	(( $BEHIND )) && STATUS+=("${ZSH_THEME['GIT_PROMPT_BEHIND']}${BEHIND}")
+
+	# join array with delimeter
+	hook_com[misc]+="${(j:/:)STATUS}"
+}
+
 # => prompt ------------------------------------------------------------------------------------------------------ {{{1
 # Based on https://github.com/robbyrussell/oh-my-zsh
 

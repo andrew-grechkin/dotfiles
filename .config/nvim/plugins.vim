@@ -49,5 +49,7 @@ call plug#begin()
 		Plug 'majutsushi/tagbar'
 		Plug 'simnalamburt/vim-mundo', {'on': 'MundoToggle'}                   " Visualize the undo tree
 		Plug 'masukomi/vim-markdown-folding'
+		Plug 'SirVer/ultisnips'
+		Plug 'honza/vim-snippets'
 	endif
 call plug#end()

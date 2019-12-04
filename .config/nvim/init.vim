@@ -596,6 +596,16 @@ let g:ctrlsf_position           = 'bottom'
 nmap <leader>f                         <Plug>CtrlSFCwordPath
 vmap <leader>f                         <Plug>CtrlSFVwordExec
 
+" => Plugin: UltiSnips ------------------------------------------------------------------------------------------- {{{1
+
+" Trigger configuration. Do not use <tab> if you use https://github.com/Valloric/YouCompleteMe.
+let g:UltiSnipsExpandTrigger="<tab>"
+let g:UltiSnipsJumpForwardTrigger="<c-b>"
+let g:UltiSnipsJumpBackwardTrigger="<c-z>"
+
+" If you want :UltiSnipsEdit to split your window.
+let g:UltiSnipsEditSplit="vertical"
+
 " => Plugin: vim-easy-align -------------------------------------------------------------------------------------- {{{1
 
 " Start interactive EasyAlign for a motion/text object (e.g. gaip)

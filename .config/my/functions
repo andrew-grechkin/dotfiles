@@ -64,10 +64,11 @@ function _start_ssh_agent() {
 #	fi
 }
 
-# => docker ------------------------------------------------------------------------------------------------------ {{{1
+# => filesystem ------------------------------------------------------------------------------------------------------ {{{1
 
-function docker-remove() {
-	perl -E 'do {$ARGV[0] and m/$ARGV[0]/ or next; say $_; my @c = split m/\s+/; print `docker rmi --force $c[2]`} foreach `docker images -a`' "$1"
+function locate() {
+	local DIR="${1:-$(pwd)}"
+	command locate "$DIR" | fzf
 }
 
 # => openssl ----------------------------------------------------------------------------------------------------- {{{1
@@ -97,45 +98,10 @@ function _fzf_command_helper() {
 	($GIT_LIST || $RG__LIST || _fzf_compgen_helper "$(pwd)" 'f') 2>/dev/null
 }
 
-# => fzf docker -------------------------------------------------------------------------------------------------- {{{1
+# => git: misc --------------------------------------------------------------------------------------------------- {{{1
 
-_fzf_complete_docker() {
-	case "$1" in
-		docker*\ rmi\ * | docker*-f* | docker*\ run\ *)
-			_fzf_complete "--reverse -m " "$@" < <(docker images --format '{{.Repository}}:{{.Tag}}')
-			;;
-		docker*start* | docker*stop* | docker*rm* | docker*exec* | docker*kill*)
-			_fzf_complete "--reverse -m" "$@" < <(docker ps -a | grep -v '^CONTAINER')
-			;;
-		docker\ )
-			#_fzf_complete "--reverse -n 1" "$@" < <(docker --help 2>/dev/null | grep --color=never '^\s\{2\}\w')
-			_fzf_complete "--reverse -n 1 --bind=tab:accept" "$@" < <(docker --help 2>/dev/null | grep --color=never '^\s\{2\}\w')
-			;;
-	esac
-}
-
-_fzf_complete_docker_post() {
-	awk '{print $1}'
-}
-
-# => fzf kubectl ------------------------------------------------------------------------------------------------- {{{1
-
-_fzf_complete_kubectl() {
-	case "$1" in
-		kubectl*\ exec\ *\ -c\ )
-			_fzf_complete "--reverse --bind=tab:accept" "$@" < <(kubectl get pods -o jsonpath="{.items[*].spec.containers[*].name}" | tr ' ' "\n")
-			;;
-		kubectl*\ exec\ *)
-			_fzf_complete "--reverse --bind=tab:accept" "$@" < <(kubectl get pods 2>/dev/null | grep -v '^NAME')
-			;;
-		*)
-			_fzf_complete "--reverse --bind=tab:accept -n 1" "$@" < <(kubectl --help 2>/dev/null | grep --color=never '^\s\{2\}\w' | grep -v 'kubectl')
-			;;
-	esac
-}
-
-_fzf_complete_kubectl_post() {
-	awk '{print $1}'
+function in-git-repo() {
+	git rev-parse HEAD &>/dev/null
 }
 
 # => git: improved logging --------------------------------------------------------------------------------------- {{{1
@@ -149,6 +115,19 @@ function fzf-git-log() {
 		--preview-window=right:40%:wrap:hidden
 		--preview="echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | xargs git show --color=always $@"
 		--bind="ctrl-m:execute(echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | xargs git show --color=always --show-signature $@ | $PAGER)"
+		--bind="ctrl-o:execute-silent(echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | xargs git checkout)+abort"
+	)
+	$CMD
+}
+
+function fzf-git-ref() {
+	local CMD=(fzf
+		--ansi
+		--reverse
+		--tiebreak=index
+		--preview-window=right:40%:wrap:hidden
+		--preview="echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | xargs git show --color=always $@"
+		--bind="ctrl-m:execute(echo {} | grep -o '[[:xdigit:]]\{6,\}')+abort"
 		--bind="ctrl-o:execute-silent(echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | xargs git checkout)+abort"
 	)
 	$CMD
@@ -189,6 +168,26 @@ function glag() {
 	git-log --all --graph "$@" | fzf-git-log "$@"
 }
 
+function git-branches() {
+	in-git-repo && (git branch --all --no-column --sort -objectname --format='%(refname:lstrip=2)' | fzf --multi --preview 'git show --color=always {}')
+}
+
+function git-files() {
+	in-git-repo && (git ls-files -co --exclude-standard | fzf --multi)
+}
+
+function git-hashes() {
+	in-git-repo && (git-log --single-worktree --no-merges | fzf-git-ref)
+}
+
+function git-remotes() {
+	in-git-repo && (git remote | fzf --multi --preview '')
+}
+
+function git-tags() {
+	in-git-repo && (git tag --sort -version:refname | fzf --multi --preview 'git show --color=always {}')
+}
+
 # => git: misc --------------------------------------------------------------------------------------------------- {{{1
 
 function gcompress() {
@@ -203,6 +202,38 @@ function gpushallf() {
 	for REMOTE in $(git remote); do
 		git push -f "$REMOTE"
 	done
+}
+
+# => docker ------------------------------------------------------------------------------------------------------ {{{1
+
+function docker-remove() {
+	perl -E 'do {$ARGV[0] and m/$ARGV[0]/ or next; say $_; my @c = split m/\s+/; print `docker rmi --force $c[2]`} foreach `docker images -a`' "$1"
+}
+
+function docker-images() {
+	docker images --format '{{.Repository}}:{{.Tag}} \t\t{{.ID}} \t\t{{.Size}} \t\t{{.CreatedSince}}'
+}
+
+function docker-containers() {
+	docker ps -a | grep -v '^CONTAINER'
+}
+
+function docker-commands() {
+	docker --help 2>/dev/null | grep --color=never '^\s\{2\}\w'
+}
+
+# => kubernetes -------------------------------------------------------------------------------------------------- {{{1
+
+function kubectl-containers() {
+	kubectl get pods -o jsonpath="{.items[*].spec.containers[*].name}" | tr ' ' "\n"
+}
+
+function kubectl-pods() {
+	kubectl get pods 2>/dev/null | grep -v '^NAME'
+}
+
+function kubectl-commands() {
+	kubectl --help 2>/dev/null | grep --color=never '^\s\{2\}\w' | grep -v 'kubectl'
 }
 
 # => journal ----------------------------------------------------------------------------------------------------- {{{1
