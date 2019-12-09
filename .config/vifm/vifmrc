@@ -199,7 +199,7 @@ filextype *.djvu
 
 "	\ mpv --no-osc --term-osd=force --no-audio-display,
 " Audio
-filetype *.wav,*.mp3,*.flac,*.m4a,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,*.cue,*.wv
+filetype *.wav,*.mp3,*.flac,*.m4a,*.m4b,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,*.cue,*.wv
 	\ {Play using mpv}
 	\ mpv --no-osc --term-osd=force,
 	\ {Play using ffplay}
