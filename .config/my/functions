@@ -113,7 +113,7 @@ function fzf-git-log() {
 		--reverse
 		--tiebreak=index
 		--preview-window=right:40%:wrap:hidden
-		--preview="echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | xargs git show --color=always $@"
+		--preview="echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | xargs git show --show-signature --color=always $@"
 		--bind="ctrl-m:execute(echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | xargs git show --color=always --show-signature $@ | $PAGER)"
 		--bind="ctrl-o:execute-silent(echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | xargs git checkout)+abort"
 	)
