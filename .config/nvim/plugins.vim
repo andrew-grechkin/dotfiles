@@ -51,5 +51,7 @@ call plug#begin()
 		Plug 'masukomi/vim-markdown-folding'
 		Plug 'SirVer/ultisnips'
 		Plug 'honza/vim-snippets'
+		Plug 'pearofducks/ansible-vim'
+		Plug 'mgrabovsky/vim-cuesheet'
 	endif
 call plug#end()
