@@ -593,7 +593,7 @@ let g:ctrlsf_extra_root_markers = ['.git', '.hg', '.svn', '.cache']
 let g:ctrlsf_ignore_dir         = ['.git', 'bower_components', 'node_modules']
 let g:ctrlsf_position           = 'bottom'
 
-nmap <leader>f                         <Plug>CtrlSFCwordPath
+nmap <leader>f                         <Plug>CtrlSFPrompt
 vmap <leader>f                         <Plug>CtrlSFVwordExec
 
 " => Plugin: UltiSnips ------------------------------------------------------------------------------------------- {{{1
@@ -633,6 +633,9 @@ nnoremap <Leader>*                     :Grepper -cword -noprompt<CR>
 " Search for the current selection or {motion} (see text-objects)
 nmap gs                                <Plug>(GrepperOperator)
 xmap gs                                <Plug>(GrepperOperator)
+" Search current selection (alias for gs in visual mode)
+vmap <leader>g                         <Plug>(GrepperOperator)
+
 
 " => Plugin: vim-go ---------------------------------------------------------------------------------------------- {{{1
 

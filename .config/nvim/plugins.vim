@@ -42,7 +42,7 @@ call plug#begin()
 "	Plug 'vim-ruby/vim-ruby'                                                   " For Facts, Ruby functions, and custom providers
 "	Plug 'neoclide/coc.nvim', {'do': { -> coc#util#install()}}                 " Language Server support
 	if v:version >= 800 || has('nvim')
-		Plug 'dyng/ctrlsf.vim', {'on': ['CtrlSF','<Plug>CtrlSFCwordPath','<Plug>CtrlSFVwordExec']} " Global search and replace
+		Plug 'dyng/ctrlsf.vim', {'on': ['CtrlSF','<Plug>CtrlSFPrompt','<Plug>CtrlSFCwordPath','<Plug>CtrlSFVwordExec']} " Global search and replace
 		Plug 'lambdalisue/suda.vim'                                            " run sudo from vim
 		Plug 'w0rp/ale'                                                        " Async syntax checker
 "		Plug 'jceb/vim-hier'
