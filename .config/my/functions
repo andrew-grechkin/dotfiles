@@ -139,7 +139,7 @@ function git-log {
 	local CMD=(git log
 		--color=always
 		--abbrev=7
-		--format='%C(yellow)%h %C(bold blue)%an%C(reset) %s (%C(green)%cr) %C(auto)%d'
+		--format='%C(yellow)%h %C(bold blue)%an%C(reset) (%C(green)%cr%C(reset)) %s %C(auto)%d'
 		--max-count=9999
 		"$@"
 	)

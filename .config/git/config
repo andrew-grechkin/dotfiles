@@ -1,6 +1,6 @@
 [alias]
 	br       = branch -vv
-	bush     = !"f(){while true; do git push && break; git pull --no-tags --rebase || break; done}; f"
+	bush     = !"f(){ while true; do git push && break; git pull --no-tags --rebase || break; done }; f"
 	co       = checkout
 	compress = !"zsh -c 'gcompress'"
 	d        = diff -b --submodule=diff
