@@ -583,7 +583,7 @@ let g:ctrlsf_auto_focus = {
 	\ "duration_less_than": 2000
 	\ }
 "let g:ctrlsf_debug_mode         = 1
-let g:ctrlsf_default_root       = 'project+fw'
+let g:ctrlsf_default_root       = 'project+wf'
 "let g:ctrlsf_default_view_mode  = 'compact'
 let g:ctrlsf_extra_backend_args = {
 	\ 'ag': '--hidden',
@@ -619,7 +619,7 @@ silent! runtime plugin/grepper.vim                                             "
 silent! let g:grepper.highlight   = 1
 silent! let g:grepper.jump        = 0
 silent! let g:grepper.quickfix    = 1
-silent! let g:grepper.dir         = 'repo,cwd'
+silent! let g:grepper.dir         = 'cwd,repo'
 silent! let g:grepper.repo        = ['.git', '.hg', '.svn', '.cache']
 silent! let g:grepper.stop        = 100
 silent! let g:grepper.tools       = ['git', 'ag', 'rg', 'grep', 'ack', 'ack-grep']
@@ -627,9 +627,9 @@ silent! let g:grepper.ag.grepprg .= ' --hidden'
 silent! let g:grepper.rg.grepprg .= ' --hidden --smart-case'
 
 " Start Grepper prompt
-nnoremap <Leader>g                     :Grepper<CR>
+nnoremap <leader>g                     :Grepper<CR>
 " Search for the current word
-nnoremap <Leader>*                     :Grepper -cword -noprompt<CR>
+nnoremap <leader>*                     :Grepper -cword -noprompt<CR>
 " Search for the current selection or {motion} (see text-objects)
 nmap gs                                <Plug>(GrepperOperator)
 xmap gs                                <Plug>(GrepperOperator)
@@ -657,10 +657,10 @@ vmap <leader>g                         <Plug>(GrepperOperator)
 "	autocmd BufNewFile,BufRead *.go setlocal noexpandtab tabstop=4 shiftwidth=4
 ""	autocmd BufWritePost       *.go normal! zv
 "	autocmd FileType go nnoremap <leader>b :<C-u>call <SID>build_go_files()<CR>
-"	autocmd FileType go nnoremap <Leader>e :GoRename<CR>
+"	autocmd FileType go nnoremap <leader>e :GoRename<CR>
 "	autocmd FileType go nmap     <leader>r <Plug>(go-run)
-"	autocmd FileType go nmap     <Leader>c <Plug>(go-coverage-toggle)
-"	autocmd FileType go nmap     <Leader>i <Plug>(go-info)
+"	autocmd FileType go nmap     <leader>c <Plug>(go-coverage-toggle)
+"	autocmd FileType go nmap     <leader>i <Plug>(go-info)
 "augroup END
 "
 "let g:go_fmt_command                 = "goimports"
@@ -743,7 +743,7 @@ let g:vdebug_keymap = {
 \	"set_breakpoint" :    "<F10>",
 \	"get_context" :       "<F11>",
 \	"eval_under_cursor" : "<F12>",
-\	"eval_visual" :       "<Leader>e",
+\	"eval_visual" :       "<leader>e",
 \}
 
 "let g:vdebug_features = {}
