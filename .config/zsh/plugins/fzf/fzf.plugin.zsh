@@ -184,10 +184,10 @@ function fzf-detect-widget() {
 		docker*( ))
 			LBUFFER+=$(docker-commands | fzf --bind=tab:accept --reverse | awk '{print $1}' | join-lines)
 			;;
-		(kubectl|k)+( )exec\ *\ -c\ )
+		(kubectl|k)+( )(exec\ *\ -c\ |logs\ *-c\ ))
 			LBUFFER+=$(kubectl-containers | fzf --multi --reverse | awk '{print $1}' | join-lines)
 			;;
-		(kubectl|k)+( )exec\ *)
+		(kubectl|k)+( )(exec|logs)\ *)
 			LBUFFER+=$(kubectl-pods | fzf --multi --reverse | awk '{print $1}' | join-lines)
 			;;
 		(kubectl|k)*( ))
