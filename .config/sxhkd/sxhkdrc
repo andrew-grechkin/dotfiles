@@ -1,3 +1,5 @@
+# vim: syntax=conf
+
 super + Return
 	exo-open --launch TerminalEmulator
 super + shift + Return
@@ -26,8 +28,8 @@ super + o
 	opera --password-store=gnome
 super + c
 	google-chrome-stable
-/* super + p */
-   /* exo-open --launch TerminalEmulator "profanity" */
+#super + p
+#	exo-open --launch TerminalEmulator "profanity"
 super + q
 	exo-open --launch TerminalEmulator "vifm $HOME $HOME"
 super + r
@@ -63,17 +65,25 @@ XF86Mail
 	exo-open --launch MailReader
 XF86Search
 	catfish
-/* XF86WWW */
-   /* exo-open --launch WebBrowser */
+#XF86WWW
+#	exo-open --launch WebBrowser
 
 XF86Back
 	cmus-remote --prev
 XF86Forward
 	cmus-remote --next
 
-/* super + @x */
-	/* xdotool key --clearmodifiers ctrl+shift+v */
-/* super + @c */
-	/* xdotool key --clearmodifiers ctrl+c */
-/* super + @v */
-	/* xdotool key --clearmodifiers ctrl+shift+v */
+button8
+	cmus-remote --prev
+#	xte "keydown Alt_R" "keydown F1" "keyup Alt_R" "keyup F1"
+
+button9
+	cmus-remote --next
+#	xte "keydown Alt_R" "keydown F2" "keyup Alt_R" "keyup F2"
+
+#super + @x
+#	xdotool key --clearmodifiers ctrl+shift+v
+#super + @c
+#	xdotool key --clearmodifiers ctrl+c
+#super + @v
+#	xdotool key --clearmodifiers ctrl+shift+v
