@@ -20,6 +20,7 @@ setw -g monitor-activity on                                                    #
 set  -g visual-activity on
 set  -g focus-events on                                                        # focus events enabled for terminals that support them
 set  -g other-pane-width 70
+set  -g word-separators ' 	@:'
 
 # => mouse support ----------------------------------------------------------------------------------------------- {{{1
 
@@ -99,7 +100,8 @@ bind   -n 'M-Enter' new-window
 
 bind   -n MouseDown2Status  kill-window                                        # middle click on a window name in status bar to kill it
 bind   -n MouseDown2Pane    select-pane \; paste-buffer
-bind   -n DoubleClick1Pane  select-pane \; select-layout main-vertical \; swap-pane -d -t {left}
+#bind   -n DoubleClick1Pane  select-pane \; select-layout main-vertical \; swap-pane -d -t {left}
+bind   -n DoubleClick1Pane  select-pane \; copy-mode \; send-keys -X select-word \; send-keys -X copy-pipe-and-cancel 'xclip -i -sel p -f | xclip -i -sel c'
 
 # => copy mode key bindings -------------------------------------------------------------------------------------- {{{1
 
@@ -123,6 +125,7 @@ unbind -T copy-mode-vi MouseDragEnd1Pane                                       #
 bind   -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe            'xclip -i -sel p -f | xclip -i -sel c'
 bind   -T copy-mode-vi MouseDown2Pane    send-keys -X copy-selection-and-cancel \; paste-buffer
 bind   -T copy-mode-vi MouseDown3Pane    send-keys -X copy-pipe-and-cancel 'xclip -i -sel p -f | xclip -i -sel c'
+bind   -T copy-mode-vi DoubleClick1Pane  select-pane \; send-keys -X select-word
 
 # => nested sessions support, disables prefix in outer session and send everything to inner ---------------------- {{{1
 
