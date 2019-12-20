@@ -25,7 +25,7 @@ super + control + F12
 super + b
 	exo-open --launch WebBrowser
 super + o
-	opera --password-store=gnome
+	opera
 super + c
 	google-chrome-stable
 #super + p
@@ -54,7 +54,7 @@ XF86HomePage
 XF86Launch5
 	google-chrome-stable
 XF86Launch6
-	opera --password-store=gnome
+	opera
 XF86Launch7
 	code
 XF86Launch8
@@ -73,12 +73,12 @@ XF86Back
 XF86Forward
 	cmus-remote --next
 
-button8
-	cmus-remote --prev
+#button8
+#	cmus-remote --prev
 #	xte "keydown Alt_R" "keydown F1" "keyup Alt_R" "keyup F1"
 
-button9
-	cmus-remote --next
+#button9
+#	cmus-remote --next
 #	xte "keydown Alt_R" "keydown F2" "keyup Alt_R" "keyup F2"
 
 #super + @x

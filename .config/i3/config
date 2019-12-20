@@ -153,36 +153,38 @@ assign [class="Atom"]                 $ws8
 
 # => force floating windows -------------------------------------------------------------------------------------- {{{1
 
-for_window [class="Catfish"]          floating enable
-for_window [class="Gnome-calculator"] floating enable
-for_window [class="Qalculate-gtk"]    floating enable
-for_window [class="Lxappearance"]     floating enable
-for_window [class="Pavucontrol"]      floating enable
-for_window [class="Thunar"]           floating enable
-for_window [class="XCalc"]            floating enable
-for_window [class="XClock"]           floating enable
-for_window [class="Rofi"]             floating enable
-for_window [class="Deadbeef"]         floating enable
+for_window [class="Catfish"]                                floating enable
+for_window [class="Gnome-calculator"]                       floating enable
+for_window [class="Qalculate-gtk"]                          floating enable
+for_window [class="Lxappearance"]                           floating enable
+for_window [class="Pavucontrol"]                            floating enable
+for_window [class="Thunar"]                                 floating enable
+for_window [class="XCalc"]                                  floating enable
+for_window [class="XClock"]                                 floating enable
+for_window [class="Rofi"]                                   floating enable
+for_window [class="Deadbeef"]                               floating enable
+for_window [class="mpv"]                                    floating enable; border none; sticky
+for_window [class="VirtualBox Manager"]                     floating enable
 
-for_window [title="Desktop — Plasma"] kill; floating enable; border none
-for_window [class="plasmashell"]      floating enable;
-for_window [class="Plasma"]           floating enable; border none
-for_window [title="plasma-desktop"]   floating enable; border none
-for_window [title="win7"]             floating enable; border none
-for_window [class="krunner"]          floating enable; border none
-for_window [class="Klipper"]          floating enable; border none
-for_window [class="Plasmoidviewer"]   floating enable; border none
-for_window [class="(?i)*nextcloud*"]  floating disable
+for_window [title="Desktop — Plasma"]                       kill; floating enable; border none
+for_window [class="plasmashell"]                            floating enable;
+for_window [class="Plasma"]                                 floating enable; border none
+for_window [title="plasma-desktop"]                         floating enable; border none
+for_window [title="win7"]                                   floating enable; border none
+for_window [class="krunner"]                                floating enable; border none
+for_window [class="Klipper"]                                floating enable; border none
+for_window [class="Plasmoidviewer"]                         floating enable; border none
+for_window [class="(?i)*nextcloud*"]                        floating disable
 for_window [class="plasmashell" window_type="notification"] floating enable, border none, move right 450px, move down 300px, no_focus
 
 # => resize window (you can also use the mouse for that) --------------------------------------------------------- {{{1
 
 mode "resize" {
 	# These bindings trigger as soon as you enter the resize mode
-	bindsym h             resize shrink width 10 px or 10 ppt
-	bindsym j             resize grow height 10 px or 10 ppt
+	bindsym h             resize shrink width  10 px or 10 ppt
+	bindsym j             resize grow   height 10 px or 10 ppt
 	bindsym k             resize shrink height 10 px or 10 ppt
-	bindsym l             resize grow width 10 px or 10 ppt
+	bindsym l             resize grow   width  10 px or 10 ppt
 
 	# back to normal
 	bindsym Return        mode "default"
