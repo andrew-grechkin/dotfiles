@@ -14,7 +14,7 @@ fi
 
 # => SSH agent --------------------------------------------------------------------------------------------------- {{{1
 
-if [[ -n "$SSH_CLIENT" ]] || [[ -n "$SSH_TTY" ]] || [[ -n "$SSH_CONNECTION" ]]; then
+if [[ -n "$SSH_CLIENT" ]] || [[ -n "$SSH_CONNECTION" ]] || [[ -n "$SSH_TTY" ]]; then
 ### for remote sessions
 	_is_ssh_auth_sock_ok || _try_existing_ssh_auth_sock_term || echo 'No SSH_AUTH_SOCK found'
 else
