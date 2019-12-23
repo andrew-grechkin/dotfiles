@@ -15,7 +15,7 @@ mklink    "%USERPROFILE%\.minttyrc"                  "%~dp0.minttyrc"
 mklink    "%USERPROFILE%\.zshenv"                    "%~dp0.zshenv"
 
 mklink /d "%USERPROFILE%\.config\git"                "%~dp0.config\git"
-mklink /d "%USERPROFILE%\.config\my"                 "%~dp0.config\my"
+mklink /d "%USERPROFILE%\.config\shell"              "%~dp0.config\shell"
 mklink /d "%USERPROFILE%\.config\nvim\init.vim"      "%~dp0.config\nvim\init.vim"
 mklink    "%USERPROFILE%\.config\nvim\plugins.vim"   "%~dp0.config\nvim\plugins.vim"
 mklink /d "%USERPROFILE%\.config\tmux"               "%~dp0.config\tmux"

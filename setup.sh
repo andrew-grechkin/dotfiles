@@ -22,7 +22,7 @@ ln -sf "$WORKDIR/.config/compton.conf"                                 ~/.config
 ln -sf "$WORKDIR/.config/git"                                          ~/.config/
 ln -sf "$WORKDIR/.config/i3"                                           ~/.config/
 ln -sf "$WORKDIR/.config/mpv"                                          ~/.config/
-ln -sf "$WORKDIR/.config/my"                                           ~/.config/
+ln -sf "$WORKDIR/.config/shell"                                        ~/.config/
 ln -sf "$WORKDIR/.config/npm"                                          ~/.config/
 ln -sf "$WORKDIR/.config/nvim/init.vim"                                ~/.config/nvim
 ln -sf "$WORKDIR/.config/nvim/plugins.vim"                             ~/.config/nvim

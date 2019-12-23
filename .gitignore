@@ -2,7 +2,7 @@
 *.antigen-compat
 *.zwc
 .config/mpv/watch_later
-.config/my/*.booking
+.config/shell/*.work
 .config/systemd/user/chromoting.service
 .config/systemd/user/default.target.wants
 .config/systemd/user/pulseaudio.service.wants

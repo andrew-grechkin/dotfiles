@@ -24,4 +24,4 @@ export                  LESS='-x4 -iRSw'
 [[ -e "$XDG_CACHE_HOME"  ]] || mkdir -p "$XDG_CACHE_HOME"
 [[ -e "$XDG_DATA_HOME"   ]] || mkdir -p "$XDG_DATA_HOME"
 
-source-file "$XDG_CONFIG_HOME/my/functions"
+source-file "$XDG_CONFIG_HOME/shell/functions"

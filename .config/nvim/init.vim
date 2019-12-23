@@ -693,7 +693,7 @@ nnoremap <leader><leader>u             :PlugUpdate<CR>
 
 " => Plugin: YouCompleteMe --------------------------------------------------------------------------------------- {{{1
 
-"let g:ycm_global_ycm_extra_conf = '~/.config/my/ycm_extra_conf.py'             " Where to search for .ycm_extra_conf.py if not found
+"let g:ycm_global_ycm_extra_conf = '~/.config/shell/ycm_extra_conf.py'          " Where to search for .ycm_extra_conf.py if not found
 "let g:ycm_confirm_extra_conf                            = 0
 "
 "let g:ycm_show_diagnostics_ui                           = 0 " default 1
