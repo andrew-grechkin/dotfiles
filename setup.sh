@@ -21,7 +21,6 @@ ln -sf "$WORKDIR/.xprofile"                                            ~/
 ln -sf "$WORKDIR/.config/compton.conf"                                 ~/.config/
 ln -sf "$WORKDIR/.config/git"                                          ~/.config/
 ln -sf "$WORKDIR/.config/i3"                                           ~/.config/
-ln -sf "$WORKDIR/.config/mpd"                                          ~/.config/
 ln -sf "$WORKDIR/.config/mpv"                                          ~/.config/
 ln -sf "$WORKDIR/.config/my"                                           ~/.config/
 ln -sf "$WORKDIR/.config/npm"                                          ~/.config/
