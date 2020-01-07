@@ -2,7 +2,6 @@ call plug#begin()
 	Plug 'junegunn/vim-plug'
 "	Plug 'junegunn/fzf', { 'dir': '~/.cache/fzf', 'do': './install --bin' }
 	Plug 'junegunn/fzf.vim'                                                    " Fuzzy search
-	Plug 'vifm/vifm.vim'
 	Plug 'junegunn/vim-easy-align'
 	Plug 'junegunn/vim-peekaboo'                                               " Preview registers
 	Plug 'easymotion/vim-easymotion'                                           " Better move commands
@@ -10,8 +9,8 @@ call plug#begin()
 "	Plug 'mhinz/vim-grepper', { 'on': ['Grepper', '<Plug>(GrepperOperator)'] } " Grep integration
 	Plug 'airblade/vim-gitgutter'                                              " Git status/modifications of the file
 	Plug 'tpope/vim-fugitive'                                                  " Git support
-	Plug 'tpope/vim-rhubarb'                                                   " Github module
-	Plug 'shumphrey/fugitive-gitlab.vim'                                       " Gitlab module
+	Plug 'tpope/vim-rhubarb'                                                   " fugitive Github module
+	Plug 'shumphrey/fugitive-gitlab.vim'                                       " fugitive Gitlab module
 	Plug 'airblade/vim-rooter'                                                 " Cwd if file is in git repo should be repo root
 	Plug 'tpope/vim-abolish'
 	Plug 'tpope/vim-repeat'                                                    " Repeat everything
@@ -37,9 +36,9 @@ call plug#begin()
 "	Plug 'vim-vdebug/vdebug'
 "	Plug 'samoshkin/vim-mergetool'
 "	Plug 'chrisbra/csv.vim'
-"	Plug 'fatih/vim-go', {'for': 'go'}
-	Plug 'rodjek/vim-puppet'                                                   " For Puppet syntax highlighting
-"	Plug 'vim-ruby/vim-ruby'                                                   " For Facts, Ruby functions, and custom providers
+	"Plug 'rodjek/vim-puppet'                                                   " For Puppet syntax highlighting
+	Plug 'fatih/vim-go', {'for': 'go'}
+	Plug 'vim-ruby/vim-ruby', {'for': 'ruby'}                                  " For Facts, Ruby functions, and custom providers
 "	Plug 'neoclide/coc.nvim', {'do': { -> coc#util#install()}}                 " Language Server support
 	if v:version >= 800 || has('nvim')
 		Plug 'dyng/ctrlsf.vim', {'on': ['CtrlSF','<Plug>CtrlSFPrompt','<Plug>CtrlSFCwordPath','<Plug>CtrlSFVwordExec']} " Global search and replace
@@ -53,5 +52,6 @@ call plug#begin()
 		Plug 'honza/vim-snippets'
 		Plug 'pearofducks/ansible-vim'
 		Plug 'mgrabovsky/vim-cuesheet'
+		Plug 'vifm/vifm.vim'
 	endif
 call plug#end()

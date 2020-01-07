@@ -26,6 +26,7 @@
 " => Variables --------------------------------------------------------------------------------------------------- {{{1
 
 let NVIM_CONFIG_HOME = '$HOME/.config/nvim'
+let DOMAIN           = 'book' . 'ing'
 
 if has('nvim')
 	let VIM_CONFIG_HOME = NVIM_CONFIG_HOME
@@ -112,8 +113,8 @@ autocmd BufNewFile,BufRead  * endtry
 " => vim-plug plugins -------------------------------------------------------------------------------------------- {{{1
 
 " ~/.config/nvim/plugins.vim
-if !empty(glob(NVIM_CONFIG_HOME . '/plugins.booking.vim'))
-	exec 'source ' . NVIM_CONFIG_HOME . '/plugins.booking.vim'
+if !empty(glob(NVIM_CONFIG_HOME . '/plugins.' . DOMAIN . '.vim'))
+	exec 'source ' . NVIM_CONFIG_HOME . '/plugins.' . DOMAIN . '.vim'
 else
 	exec 'source ' . NVIM_CONFIG_HOME . '/plugins.vim'
 endif
@@ -505,6 +506,10 @@ let g:ale_perl_perl_executable      = 'perl'
 let g:ale_perl_perl_options         = '-cw -Ilib'
 let g:ale_perl_perlcritic_showrules = 1
 
+" => Plugin: fugitive -------------------------------------------------------------------------------------------- {{{1
+
+let g:fugitive_gitlab_domains = ['https://gitlab.' . DOMAIN . '.com']
+
 " => Plugin: NERDTree -------------------------------------------------------------------------------------------- {{{1
 
 " Enable NERDTree on Vim startup
@@ -621,7 +626,7 @@ silent! let g:grepper.jump        = 0
 silent! let g:grepper.quickfix    = 1
 silent! let g:grepper.dir         = 'cwd,repo'
 silent! let g:grepper.repo        = ['.git', '.hg', '.svn', '.cache']
-silent! let g:grepper.stop        = 100
+silent! let g:grepper.stop        = 255
 silent! let g:grepper.tools       = ['git', 'ag', 'rg', 'grep', 'ack', 'ack-grep']
 silent! let g:grepper.ag.grepprg .= ' --hidden'
 silent! let g:grepper.rg.grepprg .= ' --hidden --smart-case'
@@ -691,6 +696,10 @@ let g:plug_timeout = 300                                                       "
 
 nnoremap <leader><leader>u             :PlugUpdate<CR>
 
+" => Plugin: vim-rooter ------------------------------------------------------------------------------------------ {{{1
+
+let g:rooter_patterns = ['.calango', 'bin/', 'Rakefile', '.git/']
+
 " => Plugin: YouCompleteMe --------------------------------------------------------------------------------------- {{{1
 
 "let g:ycm_global_ycm_extra_conf = '~/.config/shell/ycm_extra_conf.py'          " Where to search for .ycm_extra_conf.py if not found
@@ -755,8 +764,8 @@ let g:vdebug_keymap = {
 
 " => Company-specific -------------------------------------------------------------------------------------------- {{{1
 
-if !empty(glob(NVIM_CONFIG_HOME . '/booking.vim'))
-	exec 'source ' . NVIM_CONFIG_HOME . '/booking.vim'
+if !empty(glob(NVIM_CONFIG_HOME . '/' . DOMAIN . '.vim'))
+	exec 'source ' . NVIM_CONFIG_HOME . '/' . DOMAIN . '.vim'
 endif
 
 " => Know-How ---------------------------------------------------------------------------------------------------- {{{1
