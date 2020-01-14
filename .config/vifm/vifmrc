@@ -172,12 +172,21 @@ command! reload :write | restart
 " program.
 
 " ebook
-filextype *.chm,*.epub,*.fb2,*.rtf,*.tcr
+filextype *.chm,*.epub,*.fb2,*.fbz,*.fb2.zip,*.mobi,*.rtf,*.tcr
+	\ cr3 %f %i &,
+	\ xdg-open %c %i &,
 	\ FBReader %c %i &,
+
+filextype *.fb2,*.xml
+	\ lint-fb2 %c %i &,
+	\ kate %c %i &,
 
 " Pdf
 filextype *.pdf
-	\ zathura %c %i &,
+	\ {View in zathura}
+	\ cat %c | zathura %i - &,
+	\ {View with xdg-open}
+	\ xdg-open %c %i &,
 	\ apvlv,
 	\ xpdf,
 fileviewer *.pdf
@@ -194,6 +203,8 @@ filextype *.ps,*.eps,*.ps.gz
 filextype *.djvu
 	\ {View in zathura}
 	\ cat %c | zathura %i - &,
+	\ {View with xdg-open}
+	\ xdg-open %c %i &,
 	\ {View in apvlv}
 	\ apvlv,
 
@@ -531,6 +542,7 @@ nnoremap ,C :!gvim --remote-tab-silent $MYVIFMRC &<cr>
 nnoremap ,w :set wrap!<cr>
 
 " Example of standard two-panel file managers mappings
+nnoremap <f2> :file<cr>
 nnoremap <f3> :!less %f<cr>
 nnoremap <f4> :edit<cr>
 nnoremap <f5> :copy<cr>

@@ -1,13 +1,14 @@
 #!/bin/bash
 
-for FILE in "$@"; do
-	echo "Linting $FILE"
+DATETIME=$(date --rfc-3339=ns)
 
-	if xmllint --format "$FILE" &>/dev/null; then
-		mv "$FILE" "${FILE}.back" \
-			&& xmllint --format "${FILE}.back" > "$FILE" \
-			&& rm -f "${FILE}.back"
+for FILE in "$@"; do
+	echo "Linting file: '$FILE'"
+
+	if xmllint --format "${FILE}" > "${FILE}.${DATETIME}.linted" 2>/dev/null; then
+		mv -f "${FILE}.${DATETIME}.linted" "${FILE}"
 	else
-		echo "Wrong xml: $FILE"
+		echo "Wrong file: '$FILE'"
+		rm -f "${FILE}.${DATETIME}.linted"
 	fi
 done
