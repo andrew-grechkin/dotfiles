@@ -698,7 +698,7 @@ nnoremap <leader><leader>u             :PlugUpdate<CR>
 
 " => Plugin: vim-rooter ------------------------------------------------------------------------------------------ {{{1
 
-let g:rooter_patterns = ['.calango', 'bin/', 'Rakefile', '.git/']
+let g:rooter_patterns = ['.config/', 'lib/', '.git', '.git/']
 
 " => Plugin: YouCompleteMe --------------------------------------------------------------------------------------- {{{1
 
