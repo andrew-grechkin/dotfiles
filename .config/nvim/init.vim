@@ -445,6 +445,19 @@ augroup settings_by_filetype
 	autocmd Filetype vim    setlocal foldmethod=marker
 augroup END
 
+augroup auto_gzip
+	autocmd!
+"	Enable editing of gzipped files.
+"	The functions are defined in autoload/gzip.vim.
+"	Set binary mode before reading the file.
+"	Use "gzip -d", gunzip isn't always available.
+	autocmd BufReadPre,FileReadPre     *.dsl.dz,*.dict.dz setlocal bin
+	autocmd BufReadPost,FileReadPost   *.dsl.dz,*.dict.dz call     gzip#read("gzip -dn -S .dz")
+	autocmd BufWritePost,FileWritePost *.dsl.dz,*.dict.dz call     gzip#write("gzip -S .dz")
+	autocmd FileAppendPre              *.dsl.dz,*.dict.dz call     gzip#appre("gzip -dn -S .dz")
+	autocmd FileAppendPost             *.dsl.dz,*.dict.dz call     gzip#write("gzip -S .dz")
+augroup END
+
 " => Filetype: perl ---------------------------------------------------------------------------------------------- {{{1
 " man: ft-perl-syntax
 
