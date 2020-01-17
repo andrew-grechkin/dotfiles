@@ -47,6 +47,8 @@ highlight /.*\.aac$|
 highlight /.*\.7z$|
 	\.*\.bz$|
 	\.*\.bz2$|
+	\.*\.dict.dz$|
+	\.*\.dsl.dz$|
 	\.*\.gz$|
 	\.*\.lz$|
 	\.*\.lz4$|
