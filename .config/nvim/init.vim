@@ -587,11 +587,13 @@ function! s:find_current_dir()
 	return expand('%:p:h')
 endfunction
 
-command! FilesProject    execute 'Files' s:find_git_root()
-command! FilesCurrentDir execute 'Files' s:find_current_dir()
+"command! FilesProject    execute 'Files' s:find_git_root()
+"command! FilesCurrentDir execute 'Files' s:find_current_dir()
+command! FilesCurrentDir  execute 'Files' getcwd()
+command! FilesProject     execute 'Files' s:find_git_root()
 
-noremap <C-p>                          :FilesProject<CR>
-noremap <C-t>                          :FilesCurrentDir<CR>
+noremap <C-p>                          :FilesCurrentDir<CR>
+noremap <C-t>                          :FilesProject<CR>
 noremap <leader><leader>b              :Buffers<CR>
 
 " => Plugin: CtrlSF ---------------------------------------------------------------------------------------------- {{{1

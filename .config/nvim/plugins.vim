@@ -4,7 +4,8 @@ call plug#begin()
 	Plug 'junegunn/vim-peekaboo'                                               " Preview registers
 	Plug 'junegunn/vim-plug'
 	Plug 'easymotion/vim-easymotion'                                           " Better move commands
-	Plug 'mhinz/vim-grepper', { 'on': ['Grepper', '<Plug>(GrepperOperator)'] } " Grep integration
+	Plug 'mhinz/vim-grepper',                                                  " Grep integration
+	"Plug 'mhinz/vim-grepper', { 'on': ['Grepper', '<Plug>(GrepperOperator)'] } " Grep integration
 	Plug 'airblade/vim-gitgutter'                                              " Git status/modifications of the file
 	Plug 'tpope/vim-abolish'
 	Plug 'tpope/vim-fugitive'                                                  " Git support
