@@ -579,11 +579,11 @@ set grepprg='ag --hidden --line-numbers %i %a %s'
 
 " => fsf integration (ctrl-t, ctrl-p) ---------------------------------------------------------------------------- {{{1
 
-command! FZFlocate :set noquickview | :execute 'goto "'.system('command locate / | fzf --border --reverse 2>/dev/tty || echo "./dummy"').'"%IU' | redraw
 command! FZFfind   :set noquickview | :execute 'goto "'.system('_fzf_compgen_helper "." f | fzf --border --reverse 2>/dev/tty || echo "./dummy"').'"%IU' | redraw
+command! FZFlocate :set noquickview | :execute 'goto "'.system('command locate / | fzf --border --reverse 2>/dev/tty || echo "./dummy"').'"%IU' | redraw
 
-nnoremap <c-p> :FZFlocate<cr>
-nnoremap <c-t> :FZFfind<cr>
+nnoremap <c-p> :FZFfind<cr>
+nnoremap <c-t> :FZFlocate<cr>
 
 " silently extract selected archives in background
 command extract aunpack %f &>/dev/null &

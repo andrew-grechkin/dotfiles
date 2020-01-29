@@ -319,6 +319,20 @@ silent! tnoremap <C-l>                 <C-\><C-N><C-w><Right>
 		nnoremap <leader>V             :tabedit $MYVIMRC<CR>
 		nnoremap <leader>Z             :tabedit ~/.zshenv<CR>
 
+" => Search for selected text, forwards or backwards ------------------------------------------------------------- {{{1
+
+vnoremap <silent> * :<C-U>
+	\let old_reg=getreg('"')<Bar>let old_regtype=getregtype('"')<CR>
+	\gvy/<C-R><C-R>=substitute(
+	\escape(@", '/\.*$^~['), '\_s\+', '\\_s\\+', 'g')<CR><CR>
+	\gV:call setreg('"', old_reg, old_regtype)<CR>
+
+vnoremap <silent> # :<C-U>
+	\let old_reg=getreg('"')<Bar>let old_regtype=getregtype('"')<CR>
+	\gvy?<C-R><C-R>=substitute(
+	\escape(@", '?\.*$^~['), '\_s\+', '\\_s\\+', 'g')<CR><CR>
+	\gV:call setreg('"', old_reg, old_regtype)<CR>
+
 " => Mouse settings ---------------------------------------------------------------------------------------------- {{{1
 
 if has('mouse')
@@ -496,8 +510,6 @@ let g:ale_fixers                    = {
 \   '*':    ['remove_trailing_lines', 'trim_whitespace'],
 \   'perl': ['remove_trailing_lines', 'trim_whitespace', 'perltidy'],
 \}
-let g:ale_lint_on_enter             = 0
-let g:ale_lint_on_text_changed      = 'never'
 "let g:ale_linters_explicit          = 1
 let g:ale_linters                   = {
 \   'perl': ['perl', 'perlcritic'],
@@ -518,6 +530,12 @@ let g:ale_cpp_clangd_options        = '-std=c++17 -Wall -I $HOME/git/private/cpp
 let g:ale_perl_perl_executable      = 'perl'
 let g:ale_perl_perl_options         = '-cw -Ilib'
 let g:ale_perl_perlcritic_showrules = 1
+
+" necessary for UltiSnips
+let g:ale_lint_on_enter             = 0
+let g:ale_lint_on_filetype_changed  = 0
+let g:ale_lint_on_text_changed      = 0
+let g:ale_lint_on_insert_leave      = 0
 
 " => Plugin: fugitive -------------------------------------------------------------------------------------------- {{{1
 
@@ -596,6 +614,24 @@ noremap <C-p>                          :FilesCurrentDir<CR>
 noremap <C-t>                          :FilesProject<CR>
 noremap <leader><leader>b              :Buffers<CR>
 
+" => Plugin: UltiSnips ------------------------------------------------------------------------------------------- {{{1
+
+" Trigger configuration. Using <tab> here together with YouCompleteMe works because of 'supertab' plugin
+let g:UltiSnipsExpandTrigger       ='<tab>'
+let g:UltiSnipsListSnippets        ='<c-tab>'
+let g:UltiSnipsJumpForwardTrigger  ='<tab>'
+let g:UltiSnipsJumpBackwardTrigger ='<s-tab>'
+
+" If you want :UltiSnipsEdit to split your window.
+let g:UltiSnipsEditSplit           ='vertical'
+
+" => Plugin: vim-easy-align -------------------------------------------------------------------------------------- {{{1
+
+" Start interactive EasyAlign for a motion/text object (e.g. gaip)
+nmap ga                                <Plug>(EasyAlign)
+" Start interactive EasyAlign in visual mode (e.g. vipga)
+xmap ga                                <Plug>(EasyAlign)
+
 " => Plugin: CtrlSF ---------------------------------------------------------------------------------------------- {{{1
 
 let g:ctrlsf_auto_focus = {
@@ -606,32 +642,17 @@ let g:ctrlsf_auto_focus = {
 let g:ctrlsf_default_root       = 'project+wf'
 "let g:ctrlsf_default_view_mode  = 'compact'
 let g:ctrlsf_extra_backend_args = {
-	\ 'ag': '--hidden',
+	\ 'ag': '--hidden --nofollow',
 	\ 'rg': '--hidden',
 	\ }
 let g:ctrlsf_extra_root_markers = ['.git', '.hg', '.svn', '.cache']
+let g:ctrlsf_follow_symlinks    = 0
 let g:ctrlsf_ignore_dir         = ['.git', 'bower_components', 'node_modules']
+let g:ctrlsf_parse_speed        = 100
 let g:ctrlsf_position           = 'bottom'
 
-nmap <leader>f                         <Plug>CtrlSFPrompt
-vmap <leader>f                         <Plug>CtrlSFVwordExec
-
-" => Plugin: UltiSnips ------------------------------------------------------------------------------------------- {{{1
-
-" Trigger configuration. Do not use <tab> if you use https://github.com/Valloric/YouCompleteMe.
-let g:UltiSnipsExpandTrigger="<tab>"
-let g:UltiSnipsJumpForwardTrigger="<c-b>"
-let g:UltiSnipsJumpBackwardTrigger="<c-z>"
-
-" If you want :UltiSnipsEdit to split your window.
-let g:UltiSnipsEditSplit="vertical"
-
-" => Plugin: vim-easy-align -------------------------------------------------------------------------------------- {{{1
-
-" Start interactive EasyAlign for a motion/text object (e.g. gaip)
-nmap ga                                <Plug>(EasyAlign)
-" Start interactive EasyAlign in visual mode (e.g. vipga)
-xmap ga                                <Plug>(EasyAlign)
+nmap     <leader>f                     <Plug>CtrlSFPrompt
+vmap     <leader>f                     <Plug>CtrlSFVwordExec
 
 " => Plugin: vim-grepper ----------------------------------------------------------------------------------------- {{{1
 
@@ -639,7 +660,7 @@ silent! runtime plugin/grepper.vim                                             "
 silent! let g:grepper.highlight   = 1
 silent! let g:grepper.jump        = 0
 silent! let g:grepper.quickfix    = 1
-silent! let g:grepper.dir         = 'cwd,repo'
+silent! let g:grepper.dir         = 'repo,cwd'
 silent! let g:grepper.repo        = ['.git', '.hg', '.svn', '.cache']
 silent! let g:grepper.stop        = 255
 silent! let g:grepper.tools       = ['git', 'ag', 'rg', 'grep', 'ack', 'ack-grep']
@@ -647,7 +668,8 @@ silent! let g:grepper.ag.grepprg .= ' --hidden'
 silent! let g:grepper.rg.grepprg .= ' --hidden --smart-case'
 
 " Start Grepper prompt
-nnoremap <leader>g                     :Grepper<CR>
+nnoremap <leader>g                     :Grepper -dir cwd<CR>
+nnoremap <leader><leader>g             :Grepper -dir repo<CR>
 " Search for the current word
 nnoremap <leader>*                     :Grepper -cword -noprompt<CR>
 " Search for the current selection or {motion} (see text-objects)
@@ -719,24 +741,31 @@ let g:rooter_patterns = ['.config/', 'lib/', '.git', '.git/']
 
 "let g:ycm_global_ycm_extra_conf = '~/.config/shell/ycm_extra_conf.py'          " Where to search for .ycm_extra_conf.py if not found
 "let g:ycm_confirm_extra_conf                            = 0
-"
+
 "let g:ycm_show_diagnostics_ui                           = 0 " default 1
 "let g:ycm_register_as_syntastic_checker                 = 0 " default 1
-"
-"let g:ycm_error_symbol                                  = '✘'
-"let g:ycm_warning_symbol                                = '❇'
-"let g:ycm_always_populate_location_list                 = 1 "default 0
-"
-"let g:ycm_complete_in_comments                          = 1
-"let g:ycm_collect_identifiers_from_comments_and_strings = 1
-"let g:ycm_collect_identifiers_from_tags_files           = 1 "default 0
+
+let g:ycm_error_symbol                                  = '✘'
+let g:ycm_warning_symbol                                = '❇'
+"let g:ycm_always_populate_location_list                 = 1 " default 0
+
+let g:ycm_complete_in_comments                          = 1
+let g:ycm_goto_buffer_command                           = 'new-or-existing-tab'
+let g:ycm_collect_identifiers_from_comments_and_strings = 1
+let g:ycm_collect_identifiers_from_tags_files           = 1 " default 0
 "let g:ycm_seed_identifiers_with_syntax                  = 1
-"
-"let g:ycm_goto_buffer_command = 'new-or-existing-tab' "[ 'same-buffer', 'horizontal-split', 'vertical-split', 'new-tab' ]
-"
+
+" necessary for UltiSnips
+let g:ycm_key_list_select_completion                    = ['<C-n>', '<Down>']
+let g:ycm_key_list_previous_completion                  = ['<C-p>', '<Up>']
+
 "nnoremap <leader>g :YcmCompleter GoTo<CR>
 ""nnoremap <F9>      :YcmDiags <CR>
 ""nnoremap <F11>     :YcmForceCompileAndDiagnostics <CR>
+
+" => Plugin: supertab -------------------------------------------------------------------------------------------- {{{1
+
+let g:SuperTabDefaultCompletionType                     = '<C-n>'
 
 " => Plugin: startify -------------------------------------------------------------------------------------------- {{{1
 
