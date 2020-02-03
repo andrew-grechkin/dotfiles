@@ -660,7 +660,7 @@ silent! runtime plugin/grepper.vim                                             "
 silent! let g:grepper.highlight   = 1
 silent! let g:grepper.jump        = 0
 silent! let g:grepper.quickfix    = 1
-silent! let g:grepper.dir         = 'repo,cwd'
+silent! let g:grepper.dir         = 'cwd'
 silent! let g:grepper.repo        = ['.git', '.hg', '.svn', '.cache']
 silent! let g:grepper.stop        = 255
 silent! let g:grepper.tools       = ['git', 'ag', 'rg', 'grep', 'ack', 'ack-grep']
@@ -735,7 +735,8 @@ nnoremap <leader><leader>u             :PlugUpdate<CR>
 
 " => Plugin: vim-rooter ------------------------------------------------------------------------------------------ {{{1
 
-let g:rooter_patterns = ['.config/', 'lib/', '.git', '.git/']
+let g:rooter_patterns     = ['.config/', 'lib/', '.git', '.git/']
+let g:rooter_silent_chdir = 1
 
 " => Plugin: YouCompleteMe --------------------------------------------------------------------------------------- {{{1
 
