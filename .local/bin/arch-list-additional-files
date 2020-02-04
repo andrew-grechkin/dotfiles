@@ -110,6 +110,7 @@ relaxed() {
 		'/etc/ca-certificates'
 		'/etc/ld.so.cache'
 		'/etc/pacman.d/gnupg'
+		'/etc/skel'
 		'/etc/ssl'
 		'/etc/systemd/system/*.target.wants'
 		'/etc/systemd/user/default.target.wants'
@@ -130,6 +131,7 @@ relaxed() {
 		'/var/lib/systemd/timers'
 		'/var/log'
 		'/var/tmp'
+		'/var/lib/sddm/.cache'
 	)
 	SKIP=(
 		'/boot/initramfs*'

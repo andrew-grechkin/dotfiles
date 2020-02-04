@@ -144,6 +144,7 @@ workspace $ws0            output $center_mon
 assign [class="Google-chrome"]        $ws1
 assign [class="Opera"]                $ws2
 assign [class="dolphin"]              $ws3
+assign [class="Deadbeef"]             $ws6
 assign [class="code"]                 $ws7
 assign [class="Atom"]                 $ws8
 #assign [class="Pamac-manager"]        $ws8
@@ -162,7 +163,6 @@ for_window [class="Thunar"]                                 floating enable
 for_window [class="XCalc"]                                  floating enable
 for_window [class="XClock"]                                 floating enable
 for_window [class="Rofi"]                                   floating enable
-for_window [class="Deadbeef"]                               floating enable
 for_window [class="mpv"]                                    floating enable; border none; sticky
 for_window [class="VirtualBox Manager"]                     floating enable
 
