@@ -9,7 +9,7 @@ rofi.modi:                             run,window,drun,ssh,keys
 ! "Number of columns" Set from: Default
 ! rofi.columns:                        1
 ! "Font to use" Set from: File
-rofi.font:                             DejaVu Sans 10
+rofi.font:                             DejaVu Sans 18
 ! "Border width" Set from: Default
 ! rofi.bw:                             1
 ! "Location on screen" Set from: Default
@@ -107,7 +107,8 @@ rofi.matching:                         fuzzy
 ! "Indicate how it match by underlining it." Set from: Default
 ! rofi.show-match:                     true
 ! "New style theme file" Set from: File
-rofi.theme:                            /usr/share/rofi/themes/arthur.rasi
+!rofi.theme:                            /usr/share/rofi/themes/arthur.rasi
+rofi.theme:                            ~/.config/rofi/arthur.rasi
 ! "Color scheme for normal row" Set from: Default
 ! rofi.color-normal:
 ! "Color scheme for urgent row" Set from: Default

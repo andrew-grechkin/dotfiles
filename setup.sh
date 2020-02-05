@@ -19,6 +19,7 @@ ln -sf "$WORKDIR/.xprofile"                                            ~/
 #ln -sf "$WORKDIR/.zshenv"                                              ~/
 
 ln -sf "$WORKDIR/.config/compton.conf"                                 ~/.config/
+ln -sf "$WORKDIR/.config/fontconfig/conf.d"                            ~/.config/fontconfig/
 ln -sf "$WORKDIR/.config/git"                                          ~/.config/
 ln -sf "$WORKDIR/.config/i3"                                           ~/.config/
 ln -sf "$WORKDIR/.config/mpv"                                          ~/.config/
@@ -37,7 +38,6 @@ ln -sf "$WORKDIR/.config/zathura"                                      ~/.config
 ln -sf "$WORKDIR/.config/zsh"                                          ~/.config/
 
 ln -sf "$WORKDIR/.local/bin"                                           ~/.local/
-ln -sf "$WORKDIR/.local/share/emoji.txt"                               ~/.local/share/
 
 chmod -R u=rwX,go-rwx "$WORKDIR/.ssh"
 
