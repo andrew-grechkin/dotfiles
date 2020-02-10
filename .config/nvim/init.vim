@@ -36,7 +36,7 @@ endif
 
 let VIM_PLUG_URL        = 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
 let VIM_CREATE_DIR      = ':silent !mkdir -p '. VIM_CONFIG_HOME . '/autoload'
-let VIM_PLUG_DOWNLOAD   = ':silent !curl -fLo ' . VIM_CONFIG_HOME . '/autoload/plug.vim ' . VIM_PLUG_URL
+let VIM_PLUG_DOWNLOAD   = ':silent !curl -sfLo ' . VIM_CONFIG_HOME . '/autoload/plug.vim ' . VIM_PLUG_URL
 
 " => Sane defaults ----------------------------------------------------------------------------------------------- {{{1
 

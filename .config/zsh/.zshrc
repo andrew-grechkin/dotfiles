@@ -50,7 +50,7 @@ function br {
 	f=$(mktemp)
 	(
 		set +e
-		broot --outcmd "$f" --hidden "$@"
+		broot --outcmd "$f" --hidden -dp "$@"
 		code=$?
 		if [ "$code" != 0 ]; then
 			rm -f "$f"
