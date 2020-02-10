@@ -51,7 +51,7 @@ rofi.show-icons:                       true
 ! "Disable history in run/ssh" Set from: Default
 ! rofi.disable-history:                false
 ! "Use sorting" Set from: Default
-!rofi.sort:                             true
+rofi.sort:                             true
 ! "Choose the strategy used for sorting: normal (levenshtein) or fzf." Set from: Default
 rofi.sorting-method:                   fzf
 ! "Set case-sensitivity" Set from: Default
