@@ -33,10 +33,7 @@ if has('nvim')
 else
 	let VIM_CONFIG_HOME = '$HOME/.vim'
 endif
-
-let VIM_PLUG_URL        = 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
-let VIM_CREATE_DIR      = ':silent !mkdir -p '. VIM_CONFIG_HOME . '/autoload'
-let VIM_PLUG_DOWNLOAD   = ':silent !curl -sfLo ' . VIM_CONFIG_HOME . '/autoload/plug.vim ' . VIM_PLUG_URL
+let VIM_CONFIG_FILE = resolve(expand($MYVIMRC))
 
 " => Sane defaults ----------------------------------------------------------------------------------------------- {{{1
 
@@ -50,8 +47,7 @@ else
 "	set complete-=i                                                            " Don't scan current on included files for completion
 "	set display=lastline,msgsep                                                " Display more message text
 "	set fillchars=vert:|,fold:                                                 " Separator characters
-	set formatoptions=tcqj                                                     " More intuitive autoformatting
-	set fsync                                                                  " Call fsync() for robust file saving
+"	set fsync                                                                  " Call fsync() for robust file saving
 	silent! set langnoremap                                                    " Helps avoid mappings breaking
 	silent! set nrformats=bin,hex                                              " <c-a> and <c-x> support
 	set ruler                                                                  " Display current line # in a corner
@@ -66,8 +62,11 @@ else
 	command! W :execute ':silent w !sudo tee % > /dev/null' | :edit!           " Save file with root privileges
 endif
 
-
 " => Pre-load ---------------------------------------------------------------------------------------------------- {{{1
+
+let VIM_PLUG_URL        = 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+let VIM_CREATE_DIR      = ':silent !mkdir -p '. VIM_CONFIG_HOME . '/autoload'
+let VIM_PLUG_DOWNLOAD   = ':silent !curl -sfLo ' . VIM_CONFIG_HOME . '/autoload/plug.vim ' . VIM_PLUG_URL
 
 if empty(glob(VIM_CONFIG_HOME . '/autoload/plug.vim'))                         " Download and install vim-plug
 	execute VIM_CREATE_DIR
@@ -102,17 +101,24 @@ endif
 " => Encodings --------------------------------------------------------------------------------------------------- {{{1
 
 setglobal fileencodings=ucs-bom,utf-8,default,cp1251
-set encoding=utf-8                                                             " Set utf8 as standard encoding
-"set bomb                                                                       " Set BOM
-scriptencoding utf-8
+setglobal encoding=utf-8                                                       " Set utf8 as standard encoding
 
-autocmd BufNewFile,BufRead  * try
-autocmd BufNewFile,BufRead  *     set encoding=utf-8
-autocmd BufNewFile,BufRead  * endtry
+augroup SetDefaultEncoding
+	autocmd!
+	autocmd BufNewFile,BufRead  * try
+	autocmd BufNewFile,BufRead  *     set encoding=utf-8
+	autocmd BufNewFile,BufRead  * endtry
+augroup END
 
-" => vim-plug plugins -------------------------------------------------------------------------------------------- {{{1
+augroup SetDefaultBom
+	autocmd!
+	autocmd BufNewFile *.txt try
+	autocmd BufNewFile *.txt     set bomb                                      " Set BOM
+	autocmd BufNewFile *.txt endtry
+augroup END
 
-" ~/.config/nvim/plugins.vim
+" => vim-plug plugins (~/.config/nvim/plugins.vim) --------------------------------------------------------------- {{{1
+
 if !empty(glob(NVIM_CONFIG_HOME . '/plugins.' . DOMAIN . '.vim'))
 	exec 'source ' . NVIM_CONFIG_HOME . '/plugins.' . DOMAIN . '.vim'
 else
@@ -205,6 +211,8 @@ set shiftwidth=4
 set softtabstop=4
 set tabstop=4
 
+set formatoptions=tcqj                                                         " More intuitive autoformatting
+
 "set nowrap                                                                     " No wrap lines
 "set linebreak                                                                  " Soft word wrap
 
@@ -233,9 +241,6 @@ endfunction
 " => Keys remap -------------------------------------------------------------------------------------------------- {{{1
 
 ":noremap <F12> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<' . synIDattr(synID(line("."),col("."),0),"name") . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
-
-" Fast save
-		nnoremap <leader>w             :w!<CR>
 
 " Fast quit
 		nnoremap <leader>q             :quitall<CR>
@@ -316,7 +321,7 @@ silent! tnoremap <C-l>                 <C-\><C-N><C-w><Right>
 
 " => Bookmarks --------------------------------------------------------------------------------------------------- {{{1
 
-		nnoremap <leader>V             :tabedit $MYVIMRC<CR>
+		nnoremap <leader>V             :tabedit <C-R>=VIM_CONFIG_FILE<CR><CR>
 		nnoremap <leader>Z             :tabedit ~/.zshenv<CR>
 
 " => Search for selected text, forwards or backwards ------------------------------------------------------------- {{{1
@@ -411,10 +416,9 @@ silent! packadd termdebug
 augroup autoclose_quickfix_if_last
 	autocmd!
 	autocmd BufEnter * if (winnr('$') == 1 && (&buftype ==# 'quickfix' || &buftype ==# 'loclist')) | bd | endif
-
 augroup END
 
-augroup qf
+augroup Qf
 	autocmd!
 	autocmd FileType qf set nobuflisted
 augroup END
@@ -451,15 +455,7 @@ augroup END
 "	augroup END
 "endif
 
-augroup settings_by_filetype
-	autocmd!
-	autocmd FileType *      setlocal textwidth=120 wrapmargin=0
-	autocmd Filetype json   setlocal foldmethod=syntax foldnestmax=30
-	autocmd Filetype python setlocal foldmethod=indent expandtab smarttab tabstop=4 shiftwidth=4 softtabstop=4
-	autocmd Filetype vim    setlocal foldmethod=marker
-augroup END
-
-augroup auto_gzip
+augroup AutoGzipForNonstandardExtensions
 	autocmd!
 "	Enable editing of gzipped files.
 "	The functions are defined in autoload/gzip.vim.
@@ -472,6 +468,16 @@ augroup auto_gzip
 	autocmd FileAppendPost             *.dsl.dz,*.dict.dz call     gzip#write("gzip -S .dz")
 augroup END
 
+" => Filetype ---------------------------------------------------------------------------------------------------- {{{1
+
+augroup SettingsByFileType
+	autocmd!
+	autocmd FileType *      setlocal textwidth=120 wrapmargin=0
+	autocmd Filetype json   setlocal foldmethod=syntax foldnestmax=30
+	autocmd Filetype python setlocal foldmethod=indent expandtab smarttab tabstop=4 shiftwidth=4 softtabstop=4
+	autocmd Filetype vim    setlocal foldmethod=marker
+augroup END
+
 " => Filetype: perl ---------------------------------------------------------------------------------------------- {{{1
 " man: ft-perl-syntax
 
@@ -479,7 +485,7 @@ let perl_include_pod                     = 0
 let perl_fold                            = 1
 let perl_nofold_packages                 = 1
 
-augroup perl_filetype_settings
+augroup SettingsByFileTypePerl
 	autocmd!
 	autocmd BufNewFile,BufRead *.t   setfiletype perl
 	autocmd BufNewFile,BufRead *.pod setfiletype pod
@@ -543,17 +549,19 @@ let g:fugitive_gitlab_domains = ['https://gitlab.' . DOMAIN . '.com']
 
 " => Plugin: NERDTree -------------------------------------------------------------------------------------------- {{{1
 
-" Enable NERDTree on Vim startup
-"autocmd VimEnter * NERDTree
-
-" Autoclose NERDTree if it's the only open window left
-autocmd BufEnter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
-
 let NERDTreeShowHidden        = 1
 let NERDTreeCaseSensitiveSort = 1
 let NERDTreeShowBookmarks     = 1                                              " Display bookmarks by default
 let NERDTreeHijackNetrw       = 0
 let NERDTreeQuitOnOpen        = 1
+
+augroup PluginNERDTree
+	autocmd!
+	" Enable NERDTree on Vim startup
+"	autocmd VimEnter * NERDTree
+	" Autoclose NERDTree if it's the only open window left
+	autocmd BufEnter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+augroup END
 
 noremap <leader>n                      :NERDTreeToggle<CR>
 
@@ -678,32 +686,10 @@ xmap gs                                <Plug>(GrepperOperator)
 " Search current selection (alias for gs in visual mode)
 vmap <leader>g                         <Plug>(GrepperOperator)
 
-
 " => Plugin: vim-go ---------------------------------------------------------------------------------------------- {{{1
 
 "" first setup steps:
 ""	:GoInstallBinaries
-"
-"" run :GoBuild or :GoTestCompile based on the go file
-"function! s:build_go_files()
-"	let l:file = expand('%')
-"	if l:file =~# '^\f\+_test\.go$'
-"		call go#test#Test(0, 1)
-"	elseif l:file =~# '^\f\+\.go$'
-"		call go#cmd#Build(0)
-"	endif
-"endfunction
-"
-"augroup go_filetype_settings
-"	autocmd!
-"	autocmd BufNewFile,BufRead *.go setlocal noexpandtab tabstop=4 shiftwidth=4
-""	autocmd BufWritePost       *.go normal! zv
-"	autocmd FileType go nnoremap <leader>b :<C-u>call <SID>build_go_files()<CR>
-"	autocmd FileType go nnoremap <leader>e :GoRename<CR>
-"	autocmd FileType go nmap     <leader>r <Plug>(go-run)
-"	autocmd FileType go nmap     <leader>c <Plug>(go-coverage-toggle)
-"	autocmd FileType go nmap     <leader>i <Plug>(go-info)
-"augroup END
 "
 "let g:go_fmt_command                 = "goimports"
 "let g:go_fmt_fail_silently           = 1
@@ -721,6 +707,27 @@ vmap <leader>g                         <Plug>(GrepperOperator)
 "
 ""let g:go_play_open_browser           = 0
 ""let g:loaded_syntastic_go_gofmt_checker = 0
+"
+"" run :GoBuild or :GoTestCompile based on the go file
+"function! s:build_go_files()
+"	let l:file = expand('%')
+"	if l:file =~# '^\f\+_test\.go$'
+"		call go#test#Test(0, 1)
+"	elseif l:file =~# '^\f\+\.go$'
+"		call go#cmd#Build(0)
+"	endif
+"endfunction
+"
+"augroup SettingsByFileTypeGo
+"	autocmd!
+"	autocmd BufNewFile,BufRead *.go setlocal noexpandtab tabstop=4 shiftwidth=4
+""	autocmd BufWritePost       *.go normal! zv
+"	autocmd FileType go nnoremap <leader>b :<C-u>call <SID>build_go_files()<CR>
+"	autocmd FileType go nnoremap <leader>e :GoRename<CR>
+"	autocmd FileType go nmap     <leader>r <Plug>(go-run)
+"	autocmd FileType go nmap     <leader>c <Plug>(go-coverage-toggle)
+"	autocmd FileType go nmap     <leader>i <Plug>(go-info)
+"augroup END
 
 " => Plugin: vim-mergetool --------------------------------------------------------------------------------------- {{{1
 
