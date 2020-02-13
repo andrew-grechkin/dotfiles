@@ -26,7 +26,7 @@ super + b
 	exo-open --launch WebBrowser
 super + o
 	opera
-super + c
+super + h
 	google-chrome-stable
 #super + p
 #	exo-open --launch TerminalEmulator "profanity"
@@ -76,7 +76,6 @@ XF86Forward
 #button8
 #	cmus-remote --prev
 #	xte "keydown Alt_R" "keydown F1" "keyup Alt_R" "keyup F1"
-
 #button9
 #	cmus-remote --next
 #	xte "keydown Alt_R" "keydown F2" "keyup Alt_R" "keyup F2"

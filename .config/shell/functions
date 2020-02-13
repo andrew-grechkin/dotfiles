@@ -64,7 +64,7 @@ function _start_ssh_agent() {
 #	fi
 }
 
-# => filesystem ------------------------------------------------------------------------------------------------------ {{{1
+# => filesystem -------------------------------------------------------------------------------------------------- {{{1
 
 function locate() {
 	local DIR="${1:-$(pwd)}"
@@ -76,13 +76,12 @@ function locate() {
 function ssl-chain() {
 	local SERVER=$1
 	local PORT=${2:-443}
-	echo quit | openssl s_client -showcerts -servername "${SERVER}" -connect "${SERVER}:${PORT}"
+	echo 'quit' | openssl s_client -showcerts -servername "${SERVER}" -connect "${SERVER}:${PORT}"
 }
 
 # => fzf --------------------------------------------------------------------------------------------------------- {{{1
 
 function _fzf_compgen_helper() {
-
 	local EXCLUDE_FOLDERS_FD=('.cache' '.git' '.m2' '.snapshots' '.steam' '.vim' 'Steam' 'dosdevices' 'git' '/media/nfs/' '/proc/' '/sys/' 'tmp')
 	local CMD1=(fd -HL --type "$2" . "$1" "${EXCLUDE_FOLDERS_FD[@]/#/-E=}")
 	local CMD2=(find "$1" -type "$2")
@@ -95,6 +94,7 @@ function _fzf_command_helper() {
 	local GIT_LIST=(git ls-files -co --exclude-standard)
 #	local GIT_LIST="git ls-tree -r --name-only HEAD"
 	local RG__LIST=(rg --hidden --files)
+
 	($GIT_LIST || $RG__LIST || _fzf_compgen_helper "$(pwd)" 'f') 2>/dev/null
 }
 
@@ -244,7 +244,7 @@ function fzf-journal() {
 		--tac
 		"${FZF_DEFAULT_BINDS[@]}"
 	)
-	FZF_DEFAULT_OPTS= $CMD
+	FZF_DEFAULT_OPTS=$CMD
 }
 
 function rl() {

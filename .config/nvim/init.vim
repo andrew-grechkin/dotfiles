@@ -516,11 +516,13 @@ let g:ale_fixers                    = {
 \   '*':    ['remove_trailing_lines', 'trim_whitespace'],
 \   'perl': ['remove_trailing_lines', 'trim_whitespace', 'perltidy'],
 \}
+
 "let g:ale_linters_explicit          = 1
 let g:ale_linters                   = {
 \   'perl': ['perl', 'perlcritic'],
 \}
 "\   'cpp': ['ccls', 'clang', 'clangcheck', 'clangd', 'clangtidy', 'clazy', 'cppcheck', 'cpplint', 'cquery', 'flawfinder', 'gcc'],
+
 let g:ale_sign_error                = '✘'
 let g:ale_sign_warning              = '❇'
 let g:ale_set_loclist               = 1
@@ -528,6 +530,7 @@ let g:ale_set_quickfix              = 0
 let g:ale_open_list                 = 1
 let g:ale_keep_list_window_open     = 0
 let g:ale_list_window_size          = 5
+
 " ale_cpp
 let g:ale_cpp_gcc_options           = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
 let g:ale_cpp_clang_options         = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
