@@ -8,7 +8,6 @@
 
 --all-containers-tightness=2
 #--block-brace-tightness=0
-#--tight-secret-operators
 --vertical-tightness=0
 --vertical-tightness-closing=0
 
@@ -32,8 +31,11 @@
 #--closing-side-comment-interval=50
 #--closing-side-comment-warnings
 
---space-keyword-paren
+## Whitespace Control
+#--tight-secret-operators
 --no-space-for-semicolon
+--space-keyword-paren
+--space-prototype-paren=0
 
 #--break-at-old-comma-breakpoints
 --comma-arrow-breakpoints=0
