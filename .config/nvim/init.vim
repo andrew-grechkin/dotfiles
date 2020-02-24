@@ -499,6 +499,13 @@ augroup SettingsByFileTypePerl
 	autocmd FileType perl vnoremap <silent> tt :!perltidy -q<CR>
 augroup END
 
+augroup SettingsByFileTypeTypescript
+	autocmd!
+	autocmd FileType typescript set      formatprg=prettier
+	autocmd Filetype typescript setlocal foldmethod=syntax expandtab smarttab tabstop=2 shiftwidth=2 softtabstop=2
+	autocmd FileType typescript nmap     <silent> tt <Plug>(ale_fix)
+augroup END
+
 " => Plugin: airline --------------------------------------------------------------------------------------------- {{{1
 
 let g:airline#extensions#ale#enabled     = 1
@@ -510,16 +517,18 @@ let g:airline_theme                      = "luna"
 
 let g:ale_fix_on_save               = 1                                        " fix files when you save them
 let g:ale_fix_on_save_ignore        = {
-\   'perl': ['perltidy'],
+\   'perl':       ['perltidy'],
+\   'typescript': ['tsfmt'],
 \}
 let g:ale_fixers                    = {
-\   '*':    ['remove_trailing_lines', 'trim_whitespace'],
-\   'perl': ['remove_trailing_lines', 'trim_whitespace', 'perltidy'],
+\   '*':          ['remove_trailing_lines', 'trim_whitespace'],
+\   'perl':       ['remove_trailing_lines', 'trim_whitespace', 'perltidy'],
+\   'typescript': ['remove_trailing_lines', 'trim_whitespace', 'tsfmt'],
 \}
 
 "let g:ale_linters_explicit          = 1
 let g:ale_linters                   = {
-\   'perl': ['perl', 'perlcritic'],
+\   'perl':       ['perl', 'perlcritic'],
 \}
 "\   'cpp': ['ccls', 'clang', 'clangcheck', 'clangd', 'clangtidy', 'clazy', 'cppcheck', 'cpplint', 'cquery', 'flawfinder', 'gcc'],
 
