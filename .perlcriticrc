@@ -465,7 +465,7 @@ allow = for foreach if
 equivalent_modules = Moo Moo::Role
 
 [ValuesAndExpressions::ProhibitMagicNumbers]
-allowed_values = -1 0 1 2 3 4 5 8 10 100 200 400 404
+allowed_values = -1 0 1 2 3 4 5 8 10 42 64 100 200 303 400 401 404 500 1000 1900 3600
 # Kind of literals to allow.
 # Valid values: Binary, Exp, Float, Hex, Octal.
 # allowed_types = Float
