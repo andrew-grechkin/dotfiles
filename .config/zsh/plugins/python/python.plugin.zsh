@@ -1,3 +1,5 @@
+# vim: syntax=zsh foldmethod=marker
+
 function activate-local-python() {
 	local PYTHON_LOCAL=${1:-${XDG_CACHE_HOME}/python3}
 	[[ ! -f "$PYTHON_LOCAL/bin/activate" ]] && python3 -m venv "$PYTHON_LOCAL"
@@ -13,3 +15,8 @@ function activate-local-python2() {
 
 	source-file "$PYTHON_LOCAL/bin/activate"
 }
+
+# => aliases ----------------------------------------------------------------------------------------------------- {{{1
+
+alias pip-ensure='python -m ensurepip --default-pip'
+alias pip-upgrade='pip freeze | pip install --upgrade -r /dev/stdin'

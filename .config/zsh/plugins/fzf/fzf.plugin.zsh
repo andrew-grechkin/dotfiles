@@ -72,7 +72,7 @@ export FZF_DEFAULT_OPTS=$(printf " '%s'" ${FZF_DEFAULT_BINDS[@]} ${FZF_FILE_BIND
 export FZF_CTRL_T_OPTS="$FZF_DEFAULT_OPTS"
 export FZF_TMUX=1
 
-# => ssh (override default one) ---------------------------------------------------------------------------------- {{{1
+# => ssh (overrides the default one) ----------------------------------------------------------------------------- {{{1
 
 function _ssh_config_parsed_hosts() {
 	local SSH_CONF=(~/.ssh/config ~/.ssh/config.d/* /etc/ssh/ssh_config)
@@ -88,15 +88,18 @@ function _ssh_hosts_parsed_hosts() {
 	command grep -v '^\s*\(#\|$\)' /etc/hosts | command grep -Fv '0.0.0.0'
 }
 
-function _fzf_complete_ssh() {
-	_fzf_complete '+m --bind=tab:accept' "$@" < <(
-		command cat <(
-			_ssh_config_parsed_hosts
-			_ssh_known_parsed_hosts
-			_ssh_hosts_parsed_hosts
-		) | awk '{if (length($2) > 0) {print $2}}' | sort -u
-	)
+function _ssh_hosts() {
+	command cat <(
+		_ssh_config_parsed_hosts
+		_ssh_known_parsed_hosts
+		_ssh_hosts_parsed_hosts
+	) | awk '{if (length($2) > 0) {print $2}}' | sort -u
 }
+
+function _fzf_complete_ssh() {
+	_fzf_complete '+m --bind=tab:accept' "$@" < <(_ssh_hosts)
+}
+
 # => docker ------------------------------------------------------------------------------------------------------ {{{1
 
 _fzf_complete_docker() {
@@ -137,7 +140,7 @@ _fzf_complete_kubectl_post() {
 	awk '{print $1}'
 }
 
-# => git --------------------------------------------------------------------------------------------------------- {{{1
+# => git completion ---------------------------------------------------------------------------------------------- {{{1
 
 function fzf-git-branches-widget() LBUFFER+=$(git-branches | join-lines)
 function fzf-git-files-widget()    LBUFFER+=$(git-files | join-lines)
@@ -155,53 +158,61 @@ bindkey '^j^j' fzf-git-branches-widget
 bindkey '^j^y' fzf-git-files-widget
 bindkey '^j^u' fzf-git-tags-widget
 
-# => common --------------------------------------------------------------------------------------------------------- {{{1
+# => context completion ------------------------------------------------------------------------------------------ {{{1
 
 function fzf-detect-widget() {
 	setopt local_options ksh_glob
 	case "$LBUFFER" in
 		git+( )@(show)*( ))
-			LBUFFER+=$(git-hashes | join-lines)
+			RESULT=$(git-hashes | join-lines)
 			;;
 		git+( )@(remote)+( )@(remove|rename|show)*( ))
-			LBUFFER+=$(git-remotes | join-lines)
+			RESULT=$(git-remotes | join-lines)
 			;;
 		git+( )@(co|checkout|l|log|diff)*( ))
-			LBUFFER+=$(git-branches | join-lines)
+			RESULT=$(git-branches | join-lines)
 			;;
 		git+( )*@(--|rm)*( ))
-			LBUFFER+=$(git-files | join-lines)
+			RESULT=$(git-files | join-lines)
 			;;
 		git+( )@(add)*( ))
-			LBUFFER+=$(git-files | join-lines)
+			RESULT=$(git-files | join-lines)
 			;;
 		docker+( )rmi* | docker*-f* | docker*\ run*)
-			LBUFFER+=$(docker-images | fzf --multi --reverse | awk '{print $1}' | join-lines)
+			RESULT=$(docker-images | fzf --multi --reverse | awk '{print $1}' | join-lines)
 			;;
 		docker+( )start* | docker*stop* | docker*rm* | docker*exec* | docker*kill*)
-			LBUFFER+=$(docker-containers | fzf --multi --reverse | awk '{print $1}' | join-lines)
+			RESULT=$(docker-containers | fzf --multi --reverse | awk '{print $1}' | join-lines)
 			;;
 		docker*( ))
-			LBUFFER+=$(docker-commands | fzf --bind=tab:accept --reverse | awk '{print $1}' | join-lines)
+			RESULT=$(docker-commands | fzf --bind=tab:accept --reverse | awk '{print $1}' | join-lines)
 			;;
 		(kubectl|k)+( )(exec\ *\ -c\ |logs\ *-c\ ))
-			LBUFFER+=$(kubectl-containers | fzf --multi --reverse | awk '{print $1}' | join-lines)
+			RESULT=$(kubectl-containers | fzf --multi --reverse | awk '{print $1}' | join-lines)
 			;;
 		(kubectl|k)+( )(exec|logs)\ *)
-			LBUFFER+=$(kubectl-pods | fzf --multi --reverse | awk '{print $1}' | join-lines)
+			RESULT=$(kubectl-pods | fzf --multi --reverse | awk '{print $1}' | join-lines)
 			;;
 		(kubectl|k)*( ))
-			LBUFFER+=$(kubectl-commands | fzf -n 1 --reverse --bind=tab:accept | awk '{print $1}' | join-lines)
+			RESULT=$(kubectl-commands | fzf -n 1 --reverse --bind=tab:accept | awk '{print $1}' | join-lines)
+			;;
+		ssh*( ))
+			RESULT=$(_ssh_hosts | fzf -n 1 --reverse --bind=tab:accept | awk '{print $1}' | join-lines)
 			;;
 		*( )cd+( )*)
-			LBUFFER+=$(_fzf_compgen_helper "$(pwd)" 'd' | fzf | join-lines)
+			RESULT=$(_fzf_compgen_helper "$(pwd)" 'd' | fzf | join-lines)
 			;;
 		**( ))
-			LBUFFER+=$(_fzf_command_helper | fzf -m | join-lines)
+			RESULT=$(_fzf_command_helper | fzf -m | join-lines)
 			;;
 	esac
+	if [[ -n $RESULT ]]; then
+		LBUFFER=$(echo "$LBUFFER" | sed -e 's/[[:space:]]*$//g')
+		LBUFFER+=$RESULT
+	fi
 }
 
 zle -N fzf-detect-widget
 
+# bind to alt-space
 bindkey '^[ ' fzf-detect-widget

@@ -244,7 +244,7 @@ function fzf-journal() {
 		--tac
 		"${FZF_DEFAULT_BINDS[@]}"
 	)
-	FZF_DEFAULT_OPTS=$CMD
+	$CMD
 }
 
 function rl() {

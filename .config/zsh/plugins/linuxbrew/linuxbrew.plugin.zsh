@@ -1,3 +1,5 @@
+# vim: syntax=zsh foldmethod=marker
+
 function install-linuxbrew() {
 	local HOMEBREW_PREFIX=${HOMEBREW_PREFIX:-${HOME}/.cache/linuxbrew}
 	sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"

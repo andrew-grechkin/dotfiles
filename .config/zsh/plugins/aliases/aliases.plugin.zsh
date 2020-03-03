@@ -70,11 +70,6 @@ alias gotest='go test -v -count 1 -failfast .'
 alias vpn-booking='sudo openvpn ~/.config/openvpn/booking.com.ovpn'
 alias vpn-home='sudo openvpn ~/.config/openvpn/home.lan.ovpn'
 
-# => python ------------------------------------------------------------------------------------------------------ {{{1
-
-alias pip-ensure='python -m ensurepip --default-pip'
-alias pip-upgrade='pip freeze | pip install --upgrade -r /dev/stdin'
-
 # => opkg -------------------------------------------------------------------------------------------------------- {{{1
 
 if [[ -x "/opt/bin/opkg" ]]; then
@@ -98,6 +93,7 @@ alias se='SUDO_EDITOR=vim sudoedit'
 alias fix-agent='eval $(tmux showenv -s SSH_AUTH_SOCK)'
 alias dd='dd oflag=sync status=progress'
 alias :q='exit'
+alias :qa='exit'
 alias grab-cd='abcde -1 -o flac -a default,cue'
 
 # => kubectl ----------------------------------------------------------------------------------------------------- {{{1

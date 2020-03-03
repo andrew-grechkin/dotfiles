@@ -1,3 +1,5 @@
+# vim: syntax=zsh foldmethod=marker
+
 function fix-gpg-tty() {
 	### use systemd-gpgagent as ssh-agent (not working correctly in tmux)
 	# Set GPG TTY
@@ -15,7 +17,6 @@ function encrypt-files() {
 }
 
 function decrypt-files() {
-#	gpg --decrypt-files $@
 	for f in $@; do
 		FILENAMEFULL=$(basename "$f")
 		gpg --decrypt --output "./${FILENAMEFULL/.gpg}" "$f"

@@ -1,3 +1,5 @@
+# vim: syntax=zsh foldmethod=marker
+
 function update-perl-inc() {
 	_appendvar_head PERL5LIB "$HOME/git/booking/pakket/lib"
 	_appendvar_head PERL5LIB "./lib"
@@ -29,5 +31,7 @@ function enable-perlbrew() {
 
 enable-perlbrew
 update-perl-inc
+
+# => aliases ----------------------------------------------------------------------------------------------------- {{{1
 
 alias perldebug='PERLDB_OPTS="RemotePort=localhost:9000" perl -I${PERL_LOCAL_LIB_ROOT}/lib/perl5/x86_64-linux-thread-multi/dbgp-helper -d '

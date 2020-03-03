@@ -1,18 +1,20 @@
+# vim: syntax=zsh foldmethod=marker
+
 function is-grep-flag-available() {
-    echo | grep $1 "" >/dev/null 2>&1
+	echo | grep $1 "" >/dev/null 2>&1
 }
 
 local GREP_OPTIONS=""
 local VCS_FOLDERS="{.bzr,CVS,.git,.hg,.svn}"
 
 if is-grep-flag-available --color=auto; then
-    GREP_OPTIONS+=" --color=auto"
+	GREP_OPTIONS+=" --color=auto"
 fi
 
 if is-grep-flag-available --exclude-dir=.cvs; then
-    GREP_OPTIONS+=" --exclude-dir=$VCS_FOLDERS"
+	GREP_OPTIONS+=" --exclude-dir=$VCS_FOLDERS"
 elif is-grep-flag-available --exclude=.cvs; then
-    GREP_OPTIONS+=" --exclude=$VCS_FOLDERS"
+	GREP_OPTIONS+=" --exclude=$VCS_FOLDERS"
 fi
 
 unfunction is-grep-flag-available

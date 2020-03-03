@@ -1,5 +1,19 @@
 # vim: syntax=zsh foldmethod=marker
 
+#key=(
+#    Home     "${terminfo[khome]}"
+#    End      "${terminfo[kend]}"
+#    Insert   "${terminfo[kich1]}"
+#    Delete   "${terminfo[kdch1]}"
+#    Up       "${terminfo[kcuu1]}"
+#    Down     "${terminfo[kcud1]}"
+#    Left     "${terminfo[kcub1]}"
+#    Right    "${terminfo[kcuf1]}"
+#    PageUp   "${terminfo[kpp]}"
+#    PageDown "${terminfo[knp]}"
+#    BackTab  "${terminfo[kcbt]}"
+#)
+
 # => Updates editor information when the keymap changes ---------------------------------------------------------- {{{1
 
 function zle-keymap-select() {
@@ -49,13 +63,15 @@ bindkey          '^n'   down-line-or-history
 bindkey          '^o'   accept-line-and-down-history
 bindkey          '^s'   history-incremental-search-forward
 
-# => ctrl-h, ctrl-w, ctrl-? for char and word deletion ----------------------------------------------------------- {{{1
+# => ctrl-d, ctrl-h, ctrl-?, ctrl-w for char and word deletion --------------------------------------------------- {{{1
 
 bindkey          '^d'   delete-char-or-list
-bindkey          '^h'   backward-delete-char
-bindkey          '^w'   backward-kill-word
 bindkey -M vicmd '^d'   delete-char-or-list
+bindkey          '^h'      backward-delete-char
 bindkey -M vicmd '^h'   vi-backward-delete-char
+bindkey          '^?'      backward-delete-char
+bindkey -M vicmd '^?'   vi-backward-delete-char
+bindkey          '^w'      backward-kill-word
 bindkey -M vicmd '^w'   vi-backward-kill-word
 
 # => ctrl-r to perform backward search in history ---------------------------------------------------------------- {{{1
@@ -66,12 +82,11 @@ bindkey -M vicmd '^r'   history-incremental-search-backward
 # => ctrl-b and ctrl-f to move cursor left and right ------------------------------------------------------------- {{{1
 
 bindkey          '^b'   backward-char
-bindkey          '^f'   forward-char
 bindkey -M vicmd '^b'   backward-char
+bindkey          '^f'   forward-char
 bindkey -M vicmd '^f'   forward-char
 
 # => Home, End, ctrl-a and ctrl-e to move to beginning/end of line ----------------------------------------------- {{{1
-
 
 if [[ "${terminfo[khome]}" != "" ]]; then
 	bindkey "${terminfo[khome]}"             beginning-of-line
@@ -81,26 +96,10 @@ if [[ "${terminfo[kend]}" != "" ]]; then
 	bindkey "${terminfo[kend]}"             end-of-line
 	bindkey -M vicmd "${terminfo[kend]}" vi-end-of-line
 fi
-bindkey          '^a'    beginning-of-line
-bindkey          '^e'    end-of-line
-bindkey -M vicmd '^a' vi-beginning-of-line
-bindkey -M vicmd '^e' vi-end-of-line
-
-# => some backports from emacs key bindings ---------------------------------------------------------------------- {{{1
-
-bindkey          '^k'   kill-line
-bindkey -M vicmd '^k'   kill-line
-bindkey          '^u'   backward-kill-line
-bindkey -M vicmd '^u'   backward-kill-line
-bindkey          '^t'   transpose-chars
-bindkey          '\eb'  backward-word
-bindkey          '\ef'  forward-word
-bindkey -M vicmd '\ef'  vi-forward-word
-bindkey          '\ed'  kill-word
-bindkey -M vicmd '\ed'  kill-word
-bindkey          '\et'  transpose-words
-bindkey          '^x^e' edit-command-line
-bindkey          '^xu'  undo
+bindkey          '^a'      beginning-of-line
+bindkey -M vicmd '^a'   vi-beginning-of-line
+bindkey          '^e'      end-of-line
+bindkey -M vicmd '^e'   vi-end-of-line
 
 # => Insert, Delete ---------------------------------------------------------------------------------------------- {{{1
 
@@ -112,6 +111,35 @@ if [[ "${terminfo[kdch1]}" != "" ]]; then
 	bindkey          "${terminfo[kdch1]}" delete-char-or-list
 	bindkey -M vicmd "${terminfo[kdch1]}" delete-char-or-list
 fi
+
+# => PageUp, PageDown as home and end ---------------------------------------------------------------------------- {{{1
+
+if [[ "${terminfo[kpp]}" != "" ]]; then
+	bindkey          "${terminfo[kpp]}"    beginning-of-line
+	bindkey -M vicmd "${terminfo[kpp]}" vi-beginning-of-line
+fi
+if [[ "${terminfo[knp]}" != "" ]]; then
+	bindkey          "${terminfo[knp]}"    end-of-line
+	bindkey -M vicmd "${terminfo[knp]}" vi-end-of-line
+fi
+
+# => some backports from emacs key bindings ---------------------------------------------------------------------- {{{1
+
+bindkey          '^k'   kill-line
+bindkey -M vicmd '^k'   kill-line
+bindkey          '^u'   backward-kill-line
+bindkey -M vicmd '^u'   backward-kill-line
+# conflicts with fzf
+#bindkey          '^t'   transpose-chars
+bindkey          '\eb'  backward-word
+bindkey          '\ef'  forward-word
+bindkey -M vicmd '\ef'  vi-forward-word
+bindkey          '\ed'  kill-word
+bindkey -M vicmd '\ed'  kill-word
+bindkey          '\et'  transpose-words
+bindkey -M vicmd '\et'  transpose-words
+bindkey          '^x^e' edit-command-line
+bindkey          '^xu'  undo
 
 # => Mode indicator ---------------------------------------------------------------------------------------------- {{{1
 
