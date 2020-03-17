@@ -20,7 +20,7 @@ setw -g monitor-activity on                                                    #
 set  -g visual-activity on
 set  -g focus-events on                                                        # focus events enabled for terminals that support them
 set  -g other-pane-width 70
-set  -g word-separators ' 	@:'
+set  -g word-separators ' 	@:,.'
 
 # => mouse support ----------------------------------------------------------------------------------------------- {{{1
 

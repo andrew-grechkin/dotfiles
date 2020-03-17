@@ -529,6 +529,7 @@ let g:ale_fixers                    = {
 "let g:ale_linters_explicit          = 1
 let g:ale_linters                   = {
 \   'perl':       ['perl', 'perlcritic'],
+\   'typescript': ['tslint'],
 \}
 "\   'cpp': ['ccls', 'clang', 'clangcheck', 'clangd', 'clangtidy', 'clazy', 'cppcheck', 'cpplint', 'cquery', 'flawfinder', 'gcc'],
 
@@ -776,7 +777,7 @@ let g:ycm_collect_identifiers_from_tags_files           = 1 " default 0
 "let g:ycm_seed_identifiers_with_syntax                  = 1
 
 " necessary for UltiSnips
-let g:ycm_key_list_select_completion                    = ['<C-n>', '<Down>']
+let g:ycm_key_list_select_completion                    = ['<C-n>', '<Down>', '<M-Space>']
 let g:ycm_key_list_previous_completion                  = ['<C-p>', '<Up>']
 
 "nnoremap <leader>g :YcmCompleter GoTo<CR>
