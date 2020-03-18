@@ -9,7 +9,8 @@ function update-perl-inc() {
 function activate-local-perl() {
 	local PERL_LOCAL=${1:-${HOME}/.local/usr}
 	if [[ ":$PERL5LIB:" != *":$PERL_LOCAL/lib/perl5:"* ]] ;then
-		[[ -e "$PERL_LOCAL/lib/perl5/local/lib.pm" ]] || cpanm -nf --local-lib="$PERL_LOCAL" local::lib
+		[[ -e "$PERL_LOCAL/lib/perl5/local/lib.pm" ]] || echo "Preparing Perl local environment in: $PERL_LOCAL"
+		[[ -e "$PERL_LOCAL/lib/perl5/local/lib.pm" ]] || cpanm -nqf --local-lib="$PERL_LOCAL" local::lib
 		eval "$(perl -I "$PERL_LOCAL/lib/perl5/" -Mlocal::lib="$PERL_LOCAL")"
 	fi
 
@@ -35,12 +36,19 @@ function enable-perlbrew() {
 	source-file "$PERLBREW_ROOT/etc/bashrc"
 	source-file "$PERLBREW_ROOT/etc/perlbrew-completion.bash"
 
-	[[ "$NEED_PERLBREW_INIT" == 1 ]] && perlbrew switch system
-
-	perlbrew list 2>/dev/null | grep '\* system' &>/dev/null && activate-local-perl "$PERLBREW_ROOT/perls/system"
+	if [[ "$NEED_PERLBREW_INIT" == 1 ]]; then
+		perlbrew lib create system@default
+		perlbrew switch system@default
+	fi
 }
 
-[[ -n "$(command -v perlbrew)" ]] && enable-perlbrew
+if [[ -n "$(command -v perlbrew)" ]]; then
+	enable-perlbrew
+else
+	#perlbrew list 2>/dev/null | grep '\* system' &>/dev/null && activate-local-perl "$PERLBREW_ROOT/perls/system"
+	[[ -n "$(command -v cpanm)" ]] && activate-local-perl
+fi
+
 update-perl-inc
 
 # => aliases ----------------------------------------------------------------------------------------------------- {{{1

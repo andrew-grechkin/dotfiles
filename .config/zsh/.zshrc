@@ -3,6 +3,11 @@
 source-file "$XDG_CONFIG_HOME/shell/rc"
 source-file "$XDG_CONFIG_HOME/shell/rc.work"
 
+[[ -d "$HOME/.local/bin"       ]] && _appendvar_head PATH "$HOME/.local/bin"
+[[ -d "$HOME/.local/scripts"   ]] && _appendvar_head PATH "$HOME/.local/scripts"
+[[ -d "$HOME/.cache/bin"       ]] && _appendvar_head PATH "$HOME/.cache/bin"
+export PATH
+
 # => Install antigen --------------------------------------------------------------------------------------------- {{{1
 
 function install-antigen() {
@@ -30,12 +35,9 @@ else
 	install-antigen
 fi
 
-[[ -n "$GOPATH"                ]] && _appendvar_head PATH "$GOPATH/bin"
-[[ -n "$GEM_HOME"              ]] && _appendvar_head PATH "$GEM_HOME/bin"
-[[ -n "$PERLBREW_PATH"         ]] && _appendvar_head PATH "$PERLBREW_PATH"
-[[ -d "$HOME/.local/bin"       ]] && _appendvar_head PATH "$HOME/.local/bin"
-[[ -d "$HOME/.local/scripts"   ]] && _appendvar_head PATH "$HOME/.local/scripts"
-[[ -d "$HOME/.cache/bin"       ]] && _appendvar_head PATH "$HOME/.cache/bin"
+[[ -n "$PERLBREW_PATH"         ]] && _appendvar_tail PATH "$PERLBREW_PATH"
+[[ -n "$GOPATH"                ]] && _appendvar_tail PATH "$GOPATH/bin"
+[[ -n "$GEM_HOME"              ]] && _appendvar_tail PATH "$GEM_HOME/bin"
 export PATH
 
 # => broot ------------------------------------------------------------------------------------------------------- {{{1

@@ -16,6 +16,7 @@ antigen bundle grep
 antigen bundle linuxbrew
 antigen bundle perl
 antigen bundle rsync
+antigen bundle ssh
 antigen bundle sudo
 antigen bundle systemd
 antigen bundle tmux
