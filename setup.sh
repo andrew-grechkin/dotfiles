@@ -23,12 +23,12 @@ ln -sf "$WORKDIR/.config/fontconfig/conf.d"                            ~/.config
 ln -sf "$WORKDIR/.config/git"                                          ~/.config/
 ln -sf "$WORKDIR/.config/i3"                                           ~/.config/
 ln -sf "$WORKDIR/.config/mpv"                                          ~/.config/
-ln -sf "$WORKDIR/.config/shell"                                        ~/.config/
 ln -sf "$WORKDIR/.config/npm"                                          ~/.config/
 ln -sf "$WORKDIR/.config/nvim/init.vim"                                ~/.config/nvim
 ln -sf "$WORKDIR/.config/nvim/plugins.vim"                             ~/.config/nvim
 ln -sf "$WORKDIR/.config/perltidyrc"                                   ~/.config/
 ln -sf "$WORKDIR/.config/rofi"                                         ~/.config/
+ln -sf "$WORKDIR/.config/shell"                                        ~/.config/
 ln -sf "$WORKDIR/.config/sxhkd"                                        ~/.config/
 ln -sf "$WORKDIR/.config/systemd"                                      ~/.config/
 ln -sf "$WORKDIR/.config/tigrc"                                        ~/.config/

@@ -65,11 +65,6 @@ alias fix-compaudit='compaudit | xargs chmod go-w'
 
 alias gotest='go test -v -count 1 -failfast .'
 
-# => vpn connections --------------------------------------------------------------------------------------------- {{{1
-
-alias vpn-booking='sudo openvpn ~/.config/openvpn/booking.com.ovpn'
-alias vpn-home='sudo openvpn ~/.config/openvpn/home.lan.ovpn'
-
 # => opkg -------------------------------------------------------------------------------------------------------- {{{1
 
 if [[ -x "/opt/bin/opkg" ]]; then

@@ -26,7 +26,7 @@ super + b
 	exo-open --launch WebBrowser
 super + o
 	opera
-super + h
+super + m
 	google-chrome-stable
 #super + p
 #	exo-open --launch TerminalEmulator "profanity"

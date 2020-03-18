@@ -7,6 +7,7 @@ antigen use oh-my-zsh
 # => Default repo bundles ---------------------------------------------------------------------------------------- {{{1
 
 antigen bundle vi-mode
+antigen bundle broot
 antigen bundle cpanm
 antigen bundle dirpersist
 antigen bundle encode64
@@ -40,6 +41,7 @@ antigen theme grand
 #antigen theme "$XDG_CONFIG_HOME" "zsh/grand"
 #antigen theme gnzh
 
+# antigen puts a lot of junk into PATH so save PATH before and restore it after
 local SAVEPATH=$PATH
 
 antigen apply                                                                  # Tell antigen that you're done

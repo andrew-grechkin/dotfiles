@@ -1,6 +1,18 @@
 # vim: syntax=zsh foldmethod=marker
 
-function update-perl-inc() {
+# => exports ----------------------------------------------------------------------------------------------------- {{{1
+
+export PERLBREW_HOME="$HOME/.local/usr/perlbrew"
+export PERLBREW_ROOT="$HOME/.local/share/perlbrew"
+
+# => aliases ----------------------------------------------------------------------------------------------------- {{{1
+
+alias perldebug='PERLDB_OPTS="RemotePort=localhost:9000" perl -I${PERL_LOCAL_LIB_ROOT}/lib/perl5/x86_64-linux-thread-multi/dbgp-helper -d '
+alias perlverbose='export PERL5OPT="-MCarp=verbose"'
+
+# => functions --------------------------------------------------------------------------------------------------- {{{1
+
+function export-perl5lib() {
 	_appendvar_head PERL5LIB "$HOME/git/booking/pakket/lib"
 	_appendvar_head PERL5LIB "./lib"
 	export PERL5LIB
@@ -13,12 +25,6 @@ function activate-local-perl() {
 		[[ -e "$PERL_LOCAL/lib/perl5/local/lib.pm" ]] || cpanm -nqf --local-lib="$PERL_LOCAL" local::lib
 		eval "$(perl -I "$PERL_LOCAL/lib/perl5/" -Mlocal::lib="$PERL_LOCAL")"
 	fi
-
-#	PATH="$PERL_LOCAL/bin${PATH:+:${PATH}}"
-#	PERL5LIB="$PERL_LOCAL/lib/perl5${PERL5LIB:+:${PERL5LIB}}"
-#	PERL_LOCAL_LIB_ROOT="${PERL_LOCAL}${PERL_LOCAL_LIB_ROOT:+:${PERL_LOCAL_LIB_ROOT}}"
-#	PERL_MB_OPT="--install_base \"$PERL_LOCAL\""
-#	PERL_MM_OPT="INSTALL_BASE=$PERL_LOCAL"
 }
 
 function enable-perlbrew() {
@@ -42,6 +48,8 @@ function enable-perlbrew() {
 	fi
 }
 
+# => main -------------------------------------------------------------------------------------------------------- {{{1
+
 if [[ -n "$(command -v perlbrew)" ]]; then
 	enable-perlbrew
 else
@@ -49,9 +57,4 @@ else
 	[[ -n "$(command -v cpanm)" ]] && activate-local-perl
 fi
 
-update-perl-inc
-
-# => aliases ----------------------------------------------------------------------------------------------------- {{{1
-
-alias perldebug='PERLDB_OPTS="RemotePort=localhost:9000" perl -I${PERL_LOCAL_LIB_ROOT}/lib/perl5/x86_64-linux-thread-multi/dbgp-helper -d '
-alias perlverbose='export PERL5OPT="-MCarp=verbose"'
+export-perl5lib
