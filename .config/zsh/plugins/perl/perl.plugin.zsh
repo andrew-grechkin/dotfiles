@@ -3,7 +3,7 @@
 # => exports ----------------------------------------------------------------------------------------------------- {{{1
 
 export PERLBREW_HOME="$HOME/.local/usr/perlbrew"
-export PERLBREW_ROOT="$HOME/.local/share/perlbrew"
+export PERLBREW_ROOT="$HOME/.local/usr/perlbrew"
 
 # => aliases ----------------------------------------------------------------------------------------------------- {{{1
 

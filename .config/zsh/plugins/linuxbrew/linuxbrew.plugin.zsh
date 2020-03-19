@@ -2,7 +2,7 @@
 
 # => exports ----------------------------------------------------------------------------------------------------- {{{1
 
-export HOMEBREW_PREFIX=${HOMEBREW_PREFIX:-$XDG_DATA_HOME/linuxbrew}
+export HOMEBREW_PREFIX=${HOMEBREW_PREFIX:-$HOME/.local/usr/linuxbrew}
 
 # => functions --------------------------------------------------------------------------------------------------- {{{1
 
@@ -15,7 +15,7 @@ function install-linuxbrew() {
 
 function enable-linuxbrew() {
 	[[ -e "${HOMEBREW_PREFIX}/bin/brew" ]] && eval "$($HOMEBREW_PREFIX/bin/brew shellenv)"
-	FPATH=$(brew --prefix)/share/zsh/site-functions:$FPATH
+	[[ -e "${HOMEBREW_PREFIX}/bin/brew" ]] && FPATH=$(brew --prefix)/share/zsh/site-functions:$FPATH
 }
 
 # => main -------------------------------------------------------------------------------------------------------- {{{1

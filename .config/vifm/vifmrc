@@ -114,11 +114,12 @@ set statusline="  Hint: %z%= %A %10u:%-7g %15s %20d  "
 
 " => :mark mark /full/directory/path [filename] ------------------------------------------------------------------ {{{1
 
-mark r \/                     home
 mark b ~/.local/bin/
 mark d ~/git/private/dotfiles/submodules/private ssh
 mark h ~/
 mark m /media/nfs/home
+mark r \/                                        home
+mark u ~/.local/usr/
 
 " ------------------------------------------------------------------------------
 
