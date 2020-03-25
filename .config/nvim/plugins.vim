@@ -29,6 +29,13 @@ call plug#begin()
 		Plug 'simnalamburt/vim-mundo', {'on': 'MundoToggle'}                   " Visualize the undo tree
 		Plug 'w0rp/ale'                                                        " Async syntax checker
 	endif
+	if has('nvim')
+		" These plugins demand neovim
+		" Snippets support
+		Plug 'ervandew/supertab'
+		Plug 'SirVer/ultisnips'
+		Plug 'andrew-grechkin/vim-snippets'
+	endif
 "	checking empty($KDEHOME) here is a weird way to check if this config is used in personal/work environment
 "	KDEHOME is always defined on personal machines. I need to do something smarter in future
 	if empty($KDEHOME)
@@ -47,10 +54,6 @@ call plug#begin()
 		Plug 'ryanoasis/vim-devicons'
 		Plug 'tmux-plugins/vim-tmux', {'for': 'tmux'}                          " Vim plugin for .tmux.conf
 		Plug 'vifm/vifm.vim'
-		" Snippets support
-		Plug 'ervandew/supertab'
-		Plug 'SirVer/ultisnips'
-		Plug 'andrew-grechkin/vim-snippets'
 	endif
 	if 0
 		" These plugins are disabled
@@ -67,5 +70,7 @@ call plug#begin()
 		Plug 'vim-scripts/vimwiki'                                             " Personal wiki
 		Plug 'vim-syntastic/syntastic'
 		Plug 'vim-vdebug/vdebug'
+		Plug 'xolox/vim-misc'
+		Plug 'xolox/vim-easytags'
 	endif
 call plug#end()
