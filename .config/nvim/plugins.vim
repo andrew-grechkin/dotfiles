@@ -1,4 +1,4 @@
-call plug#begin()
+call plug#begin('~/.cache/vim/plugged')
 	Plug 'junegunn/vim-plug'
 	Plug 'junegunn/fzf.vim'                                                    " Fuzzy search
 	Plug 'junegunn/vim-easy-align'
@@ -31,6 +31,7 @@ call plug#begin()
 	endif
 	if has('nvim')
 		" These plugins demand neovim
+		Plug 'janko/vim-test'
 		" Snippets support
 		Plug 'ervandew/supertab'
 		Plug 'SirVer/ultisnips'

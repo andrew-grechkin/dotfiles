@@ -6,12 +6,6 @@ else
 	export DOTPROFILE_EXECUTED="tmux"
 fi
 
-# => gnupg ------------------------------------------------------------------------------------------------------- {{{1
-
-#if [[ -e "$HOME/.gnupg" ]]; then
-#	export   GNUPGHOME=$XDG_CONFIG_HOME/gnupg
-#fi
-
 # => SSH agent --------------------------------------------------------------------------------------------------- {{{1
 
 if [[ -n "$SSH_CLIENT" ]] || [[ -n "$SSH_CONNECTION" ]] || [[ -n "$SSH_TTY" ]]; then

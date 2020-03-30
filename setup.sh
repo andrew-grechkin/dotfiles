@@ -10,11 +10,8 @@ mkdir -p ~/.local/share
 SCRIPT=$(realpath -s "$0")
 WORKDIR=$(dirname "$SCRIPT")
 
-ln -sf "$WORKDIR/.config/nvim/init.vim"                                ~/.vimrc
-ln -sf "$WORKDIR/.config/tmux/config"                                  ~/.tmux.conf
 ln -sf "$WORKDIR/.pam_environment"                                     ~/
 ln -s  "$WORKDIR/.ssh"                                                 ~/
-ln -sf "$WORKDIR/.perlcriticrc"                                        ~/
 ln -sf "$WORKDIR/.xprofile"                                            ~/
 #ln -sf "$WORKDIR/.zshenv"                                              ~/
 
@@ -26,6 +23,7 @@ ln -sf "$WORKDIR/.config/mpv"                                          ~/.config
 ln -sf "$WORKDIR/.config/npm"                                          ~/.config/
 ln -sf "$WORKDIR/.config/nvim/init.vim"                                ~/.config/nvim
 ln -sf "$WORKDIR/.config/nvim/plugins.vim"                             ~/.config/nvim
+ln -sf "$WORKDIR/.config/perlcriticrc"                                 ~/.config/
 ln -sf "$WORKDIR/.config/perltidyrc"                                   ~/.config/
 ln -sf "$WORKDIR/.config/rofi"                                         ~/.config/
 ln -sf "$WORKDIR/.config/shell"                                        ~/.config/

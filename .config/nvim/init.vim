@@ -25,13 +25,13 @@
 
 " => Variables --------------------------------------------------------------------------------------------------- {{{1
 
-let NVIM_CONFIG_HOME = '$HOME/.config/nvim'
-let DOMAIN           = 'book' . 'ing'
+let VIM_CONFIG_HOME = '$HOME/.config/nvim'
+let PRIVATE_DOMAIN  = 'book' . 'ing'
 
 if has('nvim')
-	let VIM_CONFIG_HOME = NVIM_CONFIG_HOME
+	let VIM_CACHE_HOME = '$HOME/.config/nvim'
 else
-	let VIM_CONFIG_HOME = '$HOME/.vim'
+	let VIM_CACHE_HOME = '$HOME/.cache/vim'
 endif
 let VIM_CONFIG_FILE = resolve(expand($MYVIMRC))
 
@@ -41,7 +41,15 @@ if has('nvim')
 	set inccommand=split
 	command! W :execute ':w suda://%'
 else
-	set nocompatible                                                           " Not compatible with Vi
+	set nocompatible                                                           " Disable Vi compatibility
+
+	" move all configs out of $HOME
+	let rtp=&runtimepath
+	set runtimepath=~/.cache/vim
+	let &runtimepath.=','.rtp.',~/.cache/vim/after'
+	set viminfo+=n~/.cache/vim/info
+	silent! set undodir=~/.cache/vim/undo                                      " Set undodir explicitly for vim
+
 "	set belloff=all                                                            " Disable the bell
 "	set cscopeverbose                                                          " Verbose cscope output
 "	set complete-=i                                                            " Don't scan current on included files for completion
@@ -58,17 +66,16 @@ else
 	set tabpagemax=50                                                          " Maximum number of tabs open by -p flag
 	set noesckeys                                                              " Don't wait after pressing ESC in insert mode
 	set ttyfast                                                                " Indicates that our connection is fast
-	set viminfo+=n$HOME/.cache/viminfo
 	command! W :execute ':silent w !sudo tee % > /dev/null' | :edit!           " Save file with root privileges
 endif
 
 " => Pre-load ---------------------------------------------------------------------------------------------------- {{{1
 
 let VIM_PLUG_URL        = 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
-let VIM_CREATE_DIR      = ':silent !mkdir -p '. VIM_CONFIG_HOME . '/autoload'
-let VIM_PLUG_DOWNLOAD   = ':silent !curl -sfLo ' . VIM_CONFIG_HOME . '/autoload/plug.vim ' . VIM_PLUG_URL
+let VIM_CREATE_DIR      = ':silent !mkdir -p '. VIM_CACHE_HOME . '/autoload'
+let VIM_PLUG_DOWNLOAD   = ':silent !curl -sfLo ' . VIM_CACHE_HOME . '/autoload/plug.vim ' . VIM_PLUG_URL
 
-if empty(glob(VIM_CONFIG_HOME . '/autoload/plug.vim'))                         " Download and install vim-plug
+if empty(glob(VIM_CACHE_HOME . '/autoload/plug.vim'))                         " Download and install vim-plug
 	execute VIM_CREATE_DIR
 	execute VIM_PLUG_DOWNLOAD
 	autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
@@ -93,10 +100,8 @@ set path=.,**,/usr/include/**
 set tags+=tags;                                                                " Look for a tags file recursively in parent directories
 set pumheight=8                                                                " Maximum height of autocomplete popup window
 
-if has('persistent_undo')
-	set undodir=$HOME/.cache/.VIM_UNDO_FILES                                   " Save all undo files in a single location (less messy, more risky)...
-	set undofile                                                               " Enable persistent undo
-endif
+silent! set undofile                                                           " Save persistent undo    " Enable persistent undo
+
 
 " => Encodings --------------------------------------------------------------------------------------------------- {{{1
 
@@ -119,10 +124,10 @@ augroup END
 
 " => vim-plug plugins (~/.config/nvim/plugins.vim) --------------------------------------------------------------- {{{1
 
-if !empty(glob(NVIM_CONFIG_HOME . '/plugins.' . DOMAIN . '.vim'))
-	exec 'source ' . NVIM_CONFIG_HOME . '/plugins.' . DOMAIN . '.vim'
+if !empty(glob(VIM_CONFIG_HOME . '/plugins.' . PRIVATE_DOMAIN . '.vim'))
+	exec 'source ' . VIM_CONFIG_HOME . '/plugins.' . PRIVATE_DOMAIN . '.vim'
 else
-	exec 'source ' . NVIM_CONFIG_HOME . '/plugins.vim'
+	exec 'source ' . VIM_CONFIG_HOME . '/plugins.vim'
 endif
 
 "packloadall                                                                    " Load all plugins
@@ -243,7 +248,7 @@ endfunction
 ":noremap <F12> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<' . synIDattr(synID(line("."),col("."),0),"name") . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
 
 " Fast quit
-		nnoremap <leader>q             :quitall<CR>
+"		nnoremap <leader>q             :quitall<CR>
 
 " Fast split navigation
 silent! nnoremap <leader>'             :belowright vsplit<CR>
@@ -287,7 +292,7 @@ silent! tnoremap <C-l>                 <C-\><C-N><C-w><Right>
 		nnoremap <leader>b9            :b9<CR>
 
 " fast tabs
-		nnoremap <leader>t             :tab split<CR>
+		nnoremap <leader><leader>t     :tab split<CR>
 		nnoremap <leader>h             :tabfirst<CR>
 		nnoremap <leader>j             :tabprevious<CR>
 		nnoremap <leader>k             :tabnext<CR>
@@ -309,9 +314,9 @@ silent! tnoremap <C-l>                 <C-\><C-N><C-w><Right>
 " Black hole deletes
 		nnoremap <leader><leader>d     "_d
 
-" Tab and BS in v mode ident code
-		vnoremap <Tab>                 >gv
-		vnoremap <BS>                  <gv
+" < and > dont loose selection when changing indentation
+		vnoremap >                     >gv
+		vnoremap <                     <gv
 
 " Clear current search highlighting
 		nnoremap <leader><leader>l     :nohlsearch<CR>
@@ -321,8 +326,8 @@ silent! tnoremap <C-l>                 <C-\><C-N><C-w><Right>
 
 " => Bookmarks --------------------------------------------------------------------------------------------------- {{{1
 
-		nnoremap <leader>V             :tabedit <C-R>=VIM_CONFIG_FILE<CR><CR>
-		nnoremap <leader>Z             :tabedit ~/.zshenv<CR>
+		nnoremap <leader><leader>v     :tabedit <C-R>=VIM_CONFIG_FILE<CR><CR>
+		nnoremap <leader><leader>z     :tabedit ~/.zshenv<CR>
 
 " => Search for selected text, forwards or backwards ------------------------------------------------------------- {{{1
 
@@ -473,9 +478,10 @@ augroup END
 augroup SettingsByFileType
 	autocmd!
 	autocmd FileType *      setlocal textwidth=120 wrapmargin=0
-	autocmd Filetype json   setlocal foldmethod=syntax foldnestmax=30
+	autocmd Filetype json   setlocal foldmethod=syntax expandtab smarttab tabstop=4 shiftwidth=4 softtabstop=4 foldnestmax=30
 	autocmd Filetype python setlocal foldmethod=indent expandtab smarttab tabstop=4 shiftwidth=4 softtabstop=4
 	autocmd Filetype vim    setlocal foldmethod=marker
+	autocmd Filetype yaml   setlocal foldmethod=syntax expandtab smarttab tabstop=4 shiftwidth=4 softtabstop=4
 augroup END
 
 " => Filetype: perl ---------------------------------------------------------------------------------------------- {{{1
@@ -558,7 +564,7 @@ let g:ale_lint_on_insert_leave      = 0
 
 " => Plugin: fugitive -------------------------------------------------------------------------------------------- {{{1
 
-let g:fugitive_gitlab_domains = ['https://gitlab.' . DOMAIN . '.com']
+let g:fugitive_gitlab_domains = ['https://gitlab.' . PRIVATE_DOMAIN . '.com']
 
 " => Plugin: NERDTree -------------------------------------------------------------------------------------------- {{{1
 
@@ -576,7 +582,7 @@ augroup PluginNERDTree
 	autocmd BufEnter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 augroup END
 
-noremap <leader>n                      :NERDTreeToggle<CR>
+noremap <leader><leader>n              :NERDTreeToggle<CR>
 
 " => Plugin: vim-nerdtree-syntax-highlight ----------------------------------------------------------------------- {{{1
 
@@ -631,9 +637,13 @@ endfunction
 command! FilesCurrentDir  execute 'Files' getcwd()
 command! FilesProject     execute 'Files' s:find_git_root()
 
-noremap <C-p>                          :FilesCurrentDir<CR>
-noremap <C-t>                          :FilesProject<CR>
-noremap <leader><leader>b              :Buffers<CR>
+noremap  <C-p>                         :FilesCurrentDir<CR>
+noremap  <C-t>                         :FilesProject<CR>
+noremap  <leader><leader>b             :Buffers<CR>
+
+" => Plugin: tagbar ---------------------------------------------------------------------------------------------- {{{1
+
+nmap     <leader><leader>'             :TagbarToggle<CR>
 
 " => Plugin: UltiSnips ------------------------------------------------------------------------------------------- {{{1
 
@@ -694,10 +704,10 @@ nnoremap <leader><leader>g             :Grepper -dir repo<CR>
 " Search for the current word
 nnoremap <leader>*                     :Grepper -cword -noprompt<CR>
 " Search for the current selection or {motion} (see text-objects)
-nmap gs                                <Plug>(GrepperOperator)
-xmap gs                                <Plug>(GrepperOperator)
+nmap     gs                            <Plug>(GrepperOperator)
+xmap     gs                            <Plug>(GrepperOperator)
 " Search current selection (alias for gs in visual mode)
-vmap <leader>g                         <Plug>(GrepperOperator)
+vmap     <leader>g                     <Plug>(GrepperOperator)
 
 " => Plugin: vim-go ---------------------------------------------------------------------------------------------- {{{1
 
@@ -757,6 +767,15 @@ nnoremap <leader><leader>u             :PlugUpdate<CR>
 
 let g:rooter_patterns     = ['.config/', 'lib/', '.git', '.git/']
 let g:rooter_silent_chdir = 1
+
+" => Plugin: vim-test -------------------------------------------------------------------------------------------- {{{1
+
+let test#strategy = "neovim"
+let test#perl#prove#executable = 'yath test --qvf'
+let g:test#perl#prove#file_pattern = '\v^x?t/.*\.t$'
+
+nmap     <silent> <leader><leader>h    :let $T2_WORKFLOW = line(".") \| :TestFile<CR>
+nmap     <silent> <leader><leader>f    :let $T2_WORKFLOW = ""        \| :TestFile<CR>
 
 " => Plugin: YouCompleteMe --------------------------------------------------------------------------------------- {{{1
 
@@ -829,8 +848,8 @@ let g:vdebug_keymap = {
 
 " => Company-specific -------------------------------------------------------------------------------------------- {{{1
 
-if !empty(glob(NVIM_CONFIG_HOME . '/' . DOMAIN . '.vim'))
-	exec 'source ' . NVIM_CONFIG_HOME . '/' . DOMAIN . '.vim'
+if !empty(glob(VIM_CONFIG_HOME . '/' . PRIVATE_DOMAIN . '.vim'))
+	exec 'source ' . VIM_CONFIG_HOME . '/' . PRIVATE_DOMAIN . '.vim'
 endif
 
 " => Know-How ---------------------------------------------------------------------------------------------------- {{{1

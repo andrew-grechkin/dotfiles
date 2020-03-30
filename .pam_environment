@@ -12,20 +12,27 @@ XDG_CACHE_HOME      DEFAULT="@{HOME}/.cache"
 XDG_CONFIG_HOME     DEFAULT="@{HOME}/.config"
 XDG_DATA_HOME       DEFAULT="@{HOME}/.local/share"
 
-# => wine -------------------------------------------------------------------------------------------------------- {{{1
-
-WINEPREFIX          DEFAULT="@{HOME}/.cache/wine/default-x32"
-WINEARCH            DEFAULT=win32
-
 # => shell ------------------------------------------------------------------------------------------------------- {{{1
 
 ZDOTDIR             DEFAULT="${XDG_CONFIG_HOME}/zsh"
 
+# => wine -------------------------------------------------------------------------------------------------------- {{{1
+
+WINEPREFIX          DEFAULT="${XDG_CACHE_HOME}/wine/default-x32"
+WINEARCH            DEFAULT=win32
+
 # => X11 settings ------------------------------------------------------------------------------------------------ {{{1
 
-GTK_RC_FILES        DEFAULT="@{HOME}/.config/x11/gtk1rc"
-GTK2_RC_FILES       DEFAULT="@{HOME}/.config/x11/gtk2rc"
-#XINITRC             DEFAULT="@{HOME}/.config/x11/xinitrc"
-#XSERVERRC           DEFAULT="@{HOME}/.config/x11/xserverrc"
-#XAUTHORITY          DEFAULT="${XDG_RUNTIME_DIR}/Xauthority"
+GTK_RC_FILES        DEFAULT="${XDG_CONFIG_HOME}/x11/gtk1rc"
+GTK2_RC_FILES       DEFAULT="${XDG_CONFIG_HOME}/x11/gtk2rc"
+#XINITRC             DEFAULT="${XDG_CONFIG_HOME}/.config/x11/xinitrc"
+#XSERVERRC           DEFAULT="${XDG_CONFIG_HOME}/x11/xserverrc"
+
+### this might break lightdm
+XAUTHORITY          DEFAULT="${XDG_RUNTIME_DIR}/Xauthority"
 #ICEAUTHORITY        DEFAULT="${XDG_RUNTIME_DIR}/ICEauthority"
+
+# => kde --------------------------------------------------------------------------------------------------------- {{{1
+
+#KDEWM               DEFAULT="/usr/bin/i3"
+KDEHOME             DEFAULT="${XDG_CONFIG_HOME}/kde"
