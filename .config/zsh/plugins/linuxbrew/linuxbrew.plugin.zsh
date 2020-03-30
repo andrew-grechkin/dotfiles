@@ -2,7 +2,7 @@
 
 # => exports ----------------------------------------------------------------------------------------------------- {{{1
 
-export HOMEBREW_PREFIX=${HOMEBREW_PREFIX:-$HOME/.local/usr/linuxbrew}
+export HOMEBREW_PREFIX=${HOMEBREW_PREFIX:-$XDG_DATA_HOME/linuxbrew}
 
 # => functions --------------------------------------------------------------------------------------------------- {{{1
 
