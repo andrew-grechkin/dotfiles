@@ -481,7 +481,7 @@ augroup SettingsByFileType
 	autocmd Filetype json   setlocal foldmethod=syntax expandtab smarttab tabstop=4 shiftwidth=4 softtabstop=4 foldnestmax=30
 	autocmd Filetype python setlocal foldmethod=indent expandtab smarttab tabstop=4 shiftwidth=4 softtabstop=4
 	autocmd Filetype vim    setlocal foldmethod=marker
-	autocmd Filetype yaml   setlocal foldmethod=syntax expandtab smarttab tabstop=4 shiftwidth=4 softtabstop=4
+	autocmd Filetype yaml   setlocal foldmethod=syntax expandtab smarttab tabstop=2 shiftwidth=2 softtabstop=2
 augroup END
 
 " => Filetype: perl ---------------------------------------------------------------------------------------------- {{{1
