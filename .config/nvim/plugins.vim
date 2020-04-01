@@ -25,6 +25,7 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'dyng/ctrlsf.vim', {'on': ['CtrlSF','<Plug>CtrlSFPrompt','<Plug>CtrlSFCwordPath','<Plug>CtrlSFVwordExec']} " Global search and replace
 		Plug 'lambdalisue/suda.vim'                                            " run sudo from vim
 		Plug 'majutsushi/tagbar'
+		Plug 'vimwiki/vimwiki'
 		Plug 'masukomi/vim-markdown-folding'
 		Plug 'simnalamburt/vim-mundo', {'on': 'MundoToggle'}                   " Visualize the undo tree
 		Plug 'w0rp/ale'                                                        " Async syntax checker

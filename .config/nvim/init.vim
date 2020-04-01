@@ -777,6 +777,13 @@ let g:test#perl#prove#file_pattern = '\v^x?t/.*\.t$'
 nmap     <silent> <leader><leader>h    :let $T2_WORKFLOW = line(".") \| :TestFile<CR>
 nmap     <silent> <leader><leader>f    :let $T2_WORKFLOW = ""        \| :TestFile<CR>
 
+" => Plugin: vimwiki --------------------------------------------------------------------------------------------- {{{1
+
+let g:vimwiki_list = [
+	\{'path': '~/.local/share/wiki',       'syntax': 'markdown', 'ext': '.mdwiki'},
+	\{'path': 'wiki',                      'syntax': 'markdown', 'ext': '.mdwiki'}
+\]
+
 " => Plugin: YouCompleteMe --------------------------------------------------------------------------------------- {{{1
 
 "let g:ycm_global_ycm_extra_conf = '~/.config/shell/ycm_extra_conf.py'          " Where to search for .ycm_extra_conf.py if not found
