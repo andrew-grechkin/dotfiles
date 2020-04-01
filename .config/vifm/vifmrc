@@ -314,6 +314,13 @@ filextype *.vym
 	\ {Open with VYM}
 	\ vym %f &,
 
+" Data
+filetype *.json,*.yaml,*.yml
+	\ vim %c,
+	\ json2yaml %f &,
+fileviewer *.json
+	\ jq < %f,
+
 " MD5
 filetype *.md5
 	\ {Check MD5 hash sum}

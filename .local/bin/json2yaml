@@ -1,0 +1,29 @@
+#!/usr/bin/env perl
+
+use v5.28;
+use strict;
+use warnings;
+
+# core
+
+# non core
+use JSON::MaybeXS qw(decode_json);
+use Path::Tiny;
+use YAML::Tiny;
+
+my $arg = path($ARGV[0])->absolute;
+if ($arg =~ m/.json$/) {
+    my $file = $arg->parent->child($arg->basename =~ s/.json/.yaml/xmsgr);
+    $file->exists
+        and die "File already exists: $file";
+    YAML::Tiny->new(decode_json($arg->slurp_utf8))->write($file->absolute);
+} elsif ($arg =~ m/.ya?ml$/) {
+    my $file = $arg->parent->child($arg->basename =~ s/.ya?ml/.json/xmsgr);
+    $file->exists
+        and die "File already exists: $file";
+    my $yaml = YAML::Tiny->read($arg);
+    my $text = JSON::MaybeXS->new->pretty->canonical->encode($yaml->[0]);
+    $file->spew_utf8($text);
+} else {
+    die 'Unknown format';
+}
