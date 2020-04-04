@@ -52,7 +52,6 @@ else
 
 "	set belloff=all                                                            " Disable the bell
 "	set cscopeverbose                                                          " Verbose cscope output
-"	set complete-=i                                                            " Don't scan current on included files for completion
 "	set display=lastline,msgsep                                                " Display more message text
 "	set fillchars=vert:|,fold:                                                 " Separator characters
 "	set fsync                                                                  " Call fsync() for robust file saving
@@ -71,9 +70,9 @@ endif
 
 " => Pre-load ---------------------------------------------------------------------------------------------------- {{{1
 
-let VIM_PLUG_URL        = 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
-let VIM_CREATE_DIR      = ':silent !mkdir -p '. VIM_CACHE_HOME . '/autoload'
-let VIM_PLUG_DOWNLOAD   = ':silent !curl -sfLo ' . VIM_CACHE_HOME . '/autoload/plug.vim ' . VIM_PLUG_URL
+let VIM_PLUG_URL      = 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+let VIM_CREATE_DIR    = ':silent !mkdir -p '. VIM_CACHE_HOME . '/autoload'
+let VIM_PLUG_DOWNLOAD = ':silent !curl -sfLo ' . VIM_CACHE_HOME . '/autoload/plug.vim ' . VIM_PLUG_URL
 
 if empty(glob(VIM_CACHE_HOME . '/autoload/plug.vim'))                         " Download and install vim-plug
 	execute VIM_CREATE_DIR
@@ -99,20 +98,18 @@ set nowritebackup
 set path=.,**,/usr/include/**
 set tags+=tags;                                                                " Look for a tags file recursively in parent directories
 set pumheight=8                                                                " Maximum height of autocomplete popup window
-
-silent! set undofile                                                           " Save persistent undo    " Enable persistent undo
-
+set undofile                                                                   " Enable persistent undo
 
 " => Encodings --------------------------------------------------------------------------------------------------- {{{1
 
-setglobal fileencodings=ucs-bom,utf-8,default,cp1251
-setglobal encoding=utf-8                                                       " Set utf8 as standard encoding
+setglobal fileencodings=ucs-bom,utf-8,default,cp1251                           " Order of encodings detection
+setglobal encoding=utf-8                                                       " Set utf-8 as default encoding
 
 augroup SetDefaultEncoding
 	autocmd!
-	autocmd BufNewFile,BufRead  * try
-	autocmd BufNewFile,BufRead  *     set encoding=utf-8
-	autocmd BufNewFile,BufRead  * endtry
+	autocmd BufNewFile,BufRead * try
+	autocmd BufNewFile,BufRead *     set encoding=utf-8
+	autocmd BufNewFile,BufRead * endtry
 augroup END
 
 augroup SetDefaultBom
@@ -122,13 +119,87 @@ augroup SetDefaultBom
 	autocmd BufNewFile *.txt endtry
 augroup END
 
-" => vim-plug plugins (~/.config/nvim/plugins.vim) --------------------------------------------------------------- {{{1
+" => vim-plug plugins -------------------------------------------------------------------------------------------- {{{1
 
-if !empty(glob(VIM_CONFIG_HOME . '/plugins.' . PRIVATE_DOMAIN . '.vim'))
-	exec 'source ' . VIM_CONFIG_HOME . '/plugins.' . PRIVATE_DOMAIN . '.vim'
-else
-	exec 'source ' . VIM_CONFIG_HOME . '/plugins.vim'
-endif
+call plug#begin('~/.cache/vim/plugged')
+	Plug 'junegunn/vim-plug'
+	Plug 'junegunn/fzf.vim'                                                    " Fuzzy search
+	Plug 'junegunn/vim-easy-align'
+	Plug 'junegunn/vim-peekaboo'                                               " Preview registers
+	Plug 'tpope/vim-abolish'
+	Plug 'tpope/vim-fugitive'                                                  " Git support
+	Plug 'tpope/vim-repeat'                                                    " Repeat everything
+	Plug 'tpope/vim-surround'                                                  " Better surround commands
+	Plug 'tpope/vim-unimpaired'                                                " Pairs of helpful commands
+	Plug 'airblade/vim-gitgutter'                                              " Git status/modifications of the file
+	Plug 'easymotion/vim-easymotion'                                           " Better move commands
+	Plug 'mhinz/vim-grepper'                                                   " Grep integration
+	Plug 'scrooloose/nerdcommenter', {'on': '<Plug>NERDCommenterToggle'}       " Commenting helpers
+	Plug 'scrooloose/nerdtree', {'on': 'NERDTreeToggle'}
+	Plug 'mhinz/vim-startify'
+	Plug 'christoomey/vim-tmux-navigator'                                      " Better tmux integration
+	Plug 'andrew-grechkin/vim-rooter'                                          " Cwd if file is in git repo should be repo root
+	" Colors support
+	Plug 'flazz/vim-colorschemes'                                              " Huge set of color schemes
+	Plug 'vim-airline/vim-airline'                                             " Most informative status line
+	Plug 'vim-airline/vim-airline-themes'                                      " Status line themes
+	if v:version >= 800 || has('nvim')                                         " These plugins demand modern vim or neovim
+		Plug 'dyng/ctrlsf.vim', {'on': ['CtrlSF','<Plug>CtrlSFPrompt','<Plug>CtrlSFCwordPath','<Plug>CtrlSFVwordExec']} " Global search and replace
+		Plug 'lambdalisue/suda.vim'                                            " run sudo from vim
+		Plug 'majutsushi/tagbar'
+		Plug 'vimwiki/vimwiki'                                                 " Personal wiki
+		Plug 'masukomi/vim-markdown-folding'
+		Plug 'simnalamburt/vim-mundo', {'on': 'MundoToggle'}                   " Visualize the undo tree
+		Plug 'w0rp/ale'                                                        " Async syntax checker
+	endif
+	if has('nvim')                                                             " These plugins demand neovim
+		Plug 'janko/vim-test'
+		" Snippets support
+		Plug 'ervandew/supertab'
+		Plug 'SirVer/ultisnips'
+		Plug 'andrew-grechkin/vim-snippets'
+	endif
+"	checking empty($KDEHOME) here is a weird way to check if this config is used in personal/work environment
+"	KDEHOME is always defined on personal machines. I need to do something smarter in future
+	if empty($KDEHOME)                                                         " Install these pluggins only at work remote machines
+		Plug 'fatih/vim-go', {'for': 'go'}
+		Plug 'junegunn/fzf', {'dir': '~/.cache/fzf', 'do': './install --bin'}
+		Plug 'rodjek/vim-puppet'                                               " For Puppet syntax highlighting
+		Plug 'vim-ruby/vim-ruby', {'for': 'ruby'}                              " For Facts, Ruby functions, and custom providers
+	else                                                                       " Install these pluggins only on personal machines
+		Plug 'tpope/vim-rhubarb'                                               " fugitive Github module
+		Plug 'shumphrey/fugitive-gitlab.vim'                                   " fugitive Gitlab module
+		Plug 'Valloric/YouCompleteMe', {'do': './install.py --clang-completer --system-libclang'}
+		Plug 'mgrabovsky/vim-cuesheet'
+		Plug 'pearofducks/ansible-vim'
+		Plug 'ryanoasis/vim-devicons'
+		Plug 'tmux-plugins/vim-tmux', {'for': 'tmux'}                          " Vim plugin for .tmux.conf
+		Plug 'vifm/vifm.vim'
+	endif
+	if 0                                                                       " These plugins are disabled
+		Plug 'MarcWeber/vim-addon-local-vimrc'
+		Plug 'chrisbra/csv.vim'
+		Plug 'guns/xterm-color-table.vim', {'on': 'XtermColorTable'}
+		Plug 'itchyny/lightline.vim'
+		Plug 'jceb/vim-hier'
+		Plug 'mhinz/vim-grepper', {'on': ['Grepper', '<Plug>(GrepperOperator)']} " Grep integration
+		Plug 'neoclide/coc.nvim', {'do': { -> coc#util#install()}}             " Language Server support
+		Plug 'samoshkin/vim-mergetool'
+		Plug 'tpope/vim-vinegar'
+		Plug 'vim-scripts/ScrollColors', {'on': 'SCROLL'}                      " Scroll through color schemes
+		Plug 'vim-syntastic/syntastic'
+		Plug 'vim-vdebug/vdebug'
+		Plug 'xolox/vim-misc'
+		Plug 'xolox/vim-easytags'
+	endif
+	if !empty(glob(VIM_CONFIG_HOME . '/plugins.' . PRIVATE_DOMAIN . '.vim'))
+		exec 'source ' . VIM_CONFIG_HOME . '/plugins.' . PRIVATE_DOMAIN . '.vim'
+	endif
+call plug#end()
+
+function! PlugLoaded(name)
+	return (has_key(g:plugs, a:name) && isdirectory(g:plugs[a:name].dir))
+endfunction
 
 "packloadall                                                                    " Load all plugins
 "silent! helptags ALL                                                           " Load help files for all plugins
@@ -177,6 +248,8 @@ set cursorline
 " => Editor ------------------------------------------------------------------------------------------------------ {{{1
 
 filetype plugin indent on                                                      " Mandatory for modern plugins
+
+set complete+=i,kspell                                                         " Complete from include files and from spell if enabled
 
 set foldcolumn=2
 set foldmethod=syntax
@@ -250,14 +323,14 @@ endfunction
 " Fast quit
 "		nnoremap <leader>q             :quitall<CR>
 
+" Double quote selection
+"		vnoremap <leader>"             c"<c-r>""<ESC>
+
 " Fast split navigation
 silent! nnoremap <leader>'             :belowright vsplit<CR>
 silent! nnoremap <leader>"             :belowright split<CR>
 silent! tnoremap <leader>'             :belowright vsplit<CR>
 silent! tnoremap <leader>"             :belowright split<CR>
-
-" Double quote selection
-"		vnoremap <leader>"             c"<c-r>""<ESC>
 
 silent! tnoremap <leader><Esc>         <C-\><C-N>
 silent! tnoremap <A-h>                 <C-\><C-N><C-w><Left>
@@ -314,7 +387,7 @@ silent! tnoremap <C-l>                 <C-\><C-N><C-w><Right>
 " Black hole deletes
 		nnoremap <leader><leader>d     "_d
 
-" < and > dont loose selection when changing indentation
+" < and > don't loose selection when changing indentation
 		vnoremap >                     >gv
 		vnoremap <                     <gv
 
@@ -322,7 +395,7 @@ silent! tnoremap <C-l>                 <C-\><C-N><C-w><Right>
 		nnoremap <leader><leader>l     :nohlsearch<CR>
 
 " Open terminal
-		nnoremap <leader>m             :belowright 10split term://zsh<CR>
+		nnoremap <leader><leader>m     :belowright 10split term://zsh<CR>
 
 " => Bookmarks --------------------------------------------------------------------------------------------------- {{{1
 
@@ -423,11 +496,6 @@ augroup autoclose_quickfix_if_last
 	autocmd BufEnter * if (winnr('$') == 1 && (&buftype ==# 'quickfix' || &buftype ==# 'loclist')) | bd | endif
 augroup END
 
-augroup Qf
-	autocmd!
-	autocmd FileType qf set nobuflisted
-augroup END
-
 "augroup save_restore_position
 "	autocmd!
 "	autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | execute "normal! g'\"" | endif
@@ -439,7 +507,7 @@ augroup pre_post_process
 	" Regenerate tags when saving Python files
 	autocmd BufWritePost *.py     silent! !ctags -R &
 	" Remove all trailing whitespaces (ALE does this better)
-"	autocmd BufWritePre  *        :%s/\s\+$//e                                                                         " Remove trailing spaces on save
+"	autocmd BufWritePre  *        :%s/\s\+$//e
 	autocmd BufReadPost fugitive://* set bufhidden=delete
 augroup END
 
@@ -480,6 +548,7 @@ augroup SettingsByFileType
 	autocmd FileType *      setlocal textwidth=120 wrapmargin=0
 	autocmd Filetype json   setlocal foldmethod=syntax expandtab smarttab tabstop=4 shiftwidth=4 softtabstop=4 foldnestmax=30
 	autocmd Filetype python setlocal foldmethod=indent expandtab smarttab tabstop=4 shiftwidth=4 softtabstop=4
+	autocmd FileType qf     set      nobuflisted
 	autocmd Filetype vim    setlocal foldmethod=marker
 	autocmd Filetype yaml   setlocal foldmethod=syntax expandtab smarttab tabstop=2 shiftwidth=2 softtabstop=2
 augroup END
@@ -498,12 +567,15 @@ augroup SettingsByFileTypePerl
 	autocmd BufNewFile,BufRead *.itn setfiletype itn
 	autocmd Filetype perl setlocal foldmethod=syntax expandtab smarttab tabstop=4 shiftwidth=4 softtabstop=4
 	autocmd FileType perl setlocal keywordprg=perldoc
-	autocmd FileType perl set formatprg=perltidy
-	autocmd Filetype perl setlocal re=1                                                                                " Use old verion of syntax highlight regexp which look like working much faster (to check use syntime on -> syntime report)
+	autocmd FileType perl set      formatprg=perltidy
+	" Use old verion of syntax highlight regexp which look like working much faster (to check use syntime on -> syntime report)
+	autocmd Filetype perl setlocal re=1
 	autocmd FileType perl nmap     <silent> tt <Plug>(ale_fix)
 "	autocmd FileType perl nnoremap <silent> tt :%!perltidy -q<CR>
 	autocmd FileType perl vnoremap <silent> tt :!perltidy -q<CR>
 augroup END
+
+" => Filetype: typescript ---------------------------------------------------------------------------------------- {{{1
 
 augroup SettingsByFileTypeTypescript
 	autocmd!
@@ -514,53 +586,57 @@ augroup END
 
 " => Plugin: airline --------------------------------------------------------------------------------------------- {{{1
 
-let g:airline#extensions#ale#enabled     = 1
-let g:airline#extensions#tabline#enabled = 1
-let g:airline_powerline_fonts            = 0
-let g:airline_theme                      = "luna"
+if PlugLoaded('vim-airline')
+	let g:airline#extensions#ale#enabled     = 1
+	let g:airline#extensions#tabline#enabled = 1
+	let g:airline_powerline_fonts            = 0
+	let g:airline_theme                      = "luna"
+endif
 
 " => Plugin: ale ------------------------------------------------------------------------------------------------- {{{1
 
-let g:ale_fix_on_save               = 1                                        " fix files when you save them
-let g:ale_fix_on_save_ignore        = {
-\   'perl':       ['perltidy'],
-\   'typescript': ['tsfmt'],
-\}
-let g:ale_fixers                    = {
-\   '*':          ['remove_trailing_lines', 'trim_whitespace'],
-\   'perl':       ['remove_trailing_lines', 'trim_whitespace', 'perltidy'],
-\   'typescript': ['remove_trailing_lines', 'trim_whitespace', 'tsfmt'],
-\}
+if PlugLoaded('ale')
+	let g:ale_fix_on_save               = 1                                        " fix files when you save them
+	let g:ale_fix_on_save_ignore        = {
+	\   'perl':       ['perltidy'],
+	\   'typescript': ['tsfmt'],
+	\}
+	let g:ale_fixers                    = {
+	\   '*':          ['remove_trailing_lines', 'trim_whitespace'],
+	\   'perl':       ['remove_trailing_lines', 'trim_whitespace', 'perltidy'],
+	\   'typescript': ['remove_trailing_lines', 'trim_whitespace', 'tsfmt'],
+	\}
 
-"let g:ale_linters_explicit          = 1
-let g:ale_linters                   = {
-\   'perl':       ['perl', 'perlcritic'],
-\   'typescript': ['tslint'],
-\}
-"\   'cpp': ['ccls', 'clang', 'clangcheck', 'clangd', 'clangtidy', 'clazy', 'cppcheck', 'cpplint', 'cquery', 'flawfinder', 'gcc'],
+	"let g:ale_linters_explicit          = 1
+	let g:ale_linters                   = {
+	\   'perl':       ['perl', 'perlcritic'],
+	\   'typescript': ['tslint'],
+	\}
+	"\   'cpp': ['ccls', 'clang', 'clangcheck', 'clangd', 'clangtidy', 'clazy', 'cppcheck', 'cpplint', 'cquery', 'flawfinder', 'gcc'],
 
-let g:ale_sign_error                = '✘'
-let g:ale_sign_warning              = '❇'
-let g:ale_set_loclist               = 1
-let g:ale_set_quickfix              = 0
-let g:ale_open_list                 = 1
-let g:ale_keep_list_window_open     = 0
-let g:ale_list_window_size          = 5
+	let g:ale_sign_error                = '✘'
+	let g:ale_sign_warning              = '❇'
+	let g:ale_set_loclist               = 1
+	let g:ale_set_quickfix              = 0
+	let g:ale_open_list                 = 1
+	let g:ale_keep_list_window_open     = 0
+	let g:ale_list_window_size          = 5
 
-" ale_cpp
-let g:ale_cpp_gcc_options           = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
-let g:ale_cpp_clang_options         = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
-let g:ale_cpp_clangd_options        = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
-" ale_perl
-let g:ale_perl_perl_executable      = 'perl'
-let g:ale_perl_perl_options         = '-cw -Ilib'
-let g:ale_perl_perlcritic_showrules = 1
+	" ale_cpp
+	let g:ale_cpp_gcc_options           = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
+	let g:ale_cpp_clang_options         = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
+	let g:ale_cpp_clangd_options        = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
+	" ale_perl
+	let g:ale_perl_perl_executable      = 'perl'
+	let g:ale_perl_perl_options         = '-cw -Ilib'
+	let g:ale_perl_perlcritic_showrules = 1
 
-" necessary for UltiSnips
-let g:ale_lint_on_enter             = 0
-let g:ale_lint_on_filetype_changed  = 0
-let g:ale_lint_on_text_changed      = 0
-let g:ale_lint_on_insert_leave      = 0
+	" necessary for UltiSnips
+	let g:ale_lint_on_enter             = 0
+	let g:ale_lint_on_filetype_changed  = 0
+	let g:ale_lint_on_text_changed      = 0
+	let g:ale_lint_on_insert_leave      = 0
+endif
 
 " => Plugin: fugitive -------------------------------------------------------------------------------------------- {{{1
 
@@ -643,7 +719,7 @@ noremap  <leader><leader>b             :Buffers<CR>
 
 " => Plugin: tagbar ---------------------------------------------------------------------------------------------- {{{1
 
-nmap     <leader><leader>'             :TagbarToggle<CR>
+noremap  <leader><leader>'             :TagbarToggle<CR>
 
 " => Plugin: UltiSnips ------------------------------------------------------------------------------------------- {{{1
 
@@ -770,8 +846,8 @@ let g:rooter_silent_chdir = 1
 
 " => Plugin: vim-test -------------------------------------------------------------------------------------------- {{{1
 
-let test#strategy = "neovim"
-let test#perl#prove#executable = 'yath test --qvf'
+let test#strategy                  = "neovim"
+let test#perl#prove#executable     = 'yath test --qvf'
 let g:test#perl#prove#file_pattern = '\v^x?t/.*\.t$'
 
 nmap     <silent> <leader><leader>h    :let $T2_WORKFLOW = line(".") \| :TestFile<CR>
@@ -779,10 +855,12 @@ nmap     <silent> <leader><leader>f    :let $T2_WORKFLOW = ""        \| :TestFil
 
 " => Plugin: vimwiki --------------------------------------------------------------------------------------------- {{{1
 
-let g:vimwiki_list = [
-	\{'path': '~/.local/share/wiki',       'syntax': 'markdown', 'ext': '.mdwiki'},
-	\{'path': 'wiki',                      'syntax': 'markdown', 'ext': '.mdwiki'}
-\]
+if PlugLoaded('vimwiki/vimwiki')
+	let g:vimwiki_list = [
+		\{'path': '~/.local/share/wiki', 'syntax': 'markdown', 'ext': '.mdwiki'},
+		\{'path': 'wiki',                'syntax': 'markdown', 'ext': '.mdwiki'}
+	\]
+endif
 
 " => Plugin: YouCompleteMe --------------------------------------------------------------------------------------- {{{1
 

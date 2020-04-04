@@ -6,6 +6,7 @@ mkdir -p ~/.config
 mkdir -p ~/.config/nvim
 mkdir -p ~/.config/xfce4
 mkdir -p ~/.local/share
+mkdir -p ~/.local/share/tig
 
 SCRIPT=$(realpath -s "$0")
 WORKDIR=$(dirname "$SCRIPT")
@@ -13,7 +14,9 @@ WORKDIR=$(dirname "$SCRIPT")
 ln -sf "$WORKDIR/.pam_environment"                                     ~/
 ln -s  "$WORKDIR/.ssh"                                                 ~/
 ln -sf "$WORKDIR/.xprofile"                                            ~/
-#ln -sf "$WORKDIR/.zshenv"                                              ~/
+[ -z "$ZDOTDIR" ] && ln -sf "$WORKDIR/.zshenv"                         ~/
+[ -z "$MYVIMRC" ] && ln -sf "$WORKDIR/.config/nvim/init.vim"           ~/.vimrc
+
 
 ln -sf "$WORKDIR/.config/compton.conf"                                 ~/.config/
 ln -sf "$WORKDIR/.config/fontconfig/conf.d"                            ~/.config/fontconfig/
@@ -22,7 +25,6 @@ ln -sf "$WORKDIR/.config/i3"                                           ~/.config
 ln -sf "$WORKDIR/.config/mpv"                                          ~/.config/
 ln -sf "$WORKDIR/.config/npm"                                          ~/.config/
 ln -sf "$WORKDIR/.config/nvim/init.vim"                                ~/.config/nvim
-ln -sf "$WORKDIR/.config/nvim/plugins.vim"                             ~/.config/nvim
 ln -sf "$WORKDIR/.config/perlcriticrc"                                 ~/.config/
 ln -sf "$WORKDIR/.config/perltidyrc"                                   ~/.config/
 ln -sf "$WORKDIR/.config/rofi"                                         ~/.config/

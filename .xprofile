@@ -1,6 +1,6 @@
-# vim: syntax=conf foldmethod=marker
+# vim: syntax=sh foldmethod=marker
 
-# when lightdm runs this script the ssh agent is not yet started, but we expect it will be started later and created the socket
+# when lightdm runs this script the ssh agent is not yet started, but I expect it will be started later and create the socket
 
 # => keyring-ssh-agent ------------------------------------------------------------------------------------------- {{{1
 

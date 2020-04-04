@@ -18,9 +18,10 @@ export        GEM_SPEC_CACHE="$GEM_HOME/spec"
 export                GOPATH="$XDG_CACHE_HOME/go"
 export            PYLINTHOME="$XDG_CACHE_HOME/pylint.d"
 export               INPUTRC="$XDG_CONFIG_HOME/inputrc"
-export               MYVIMRC="$XDG_CONFIG_HOME/nvim/init.vim"
-export               VIMINIT="source $MYVIMRC"
-export                WGETRC="$XDG_CONFIG_HOME/wgetrc"
+
+[[ -f "$XDG_CONFIG_HOME/nvim/init.vim" ]] && export MYVIMRC="$XDG_CONFIG_HOME/nvim/init.vim"
+[[ -f "$XDG_CONFIG_HOME/nvim/init.vim" ]] && export VIMINIT="source $MYVIMRC"
+[[ -f "$XDG_CONFIG_HOME/wgetrc"        ]] && export WGETRC="$XDG_CONFIG_HOME/wgetrc"
 
 [[ -e "$XDG_CONFIG_HOME" ]] || mkdir -p "$XDG_CONFIG_HOME"
 [[ -e "$XDG_CACHE_HOME"  ]] || mkdir -p "$XDG_CACHE_HOME"

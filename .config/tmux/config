@@ -1,4 +1,6 @@
 # vim: nowrap foldmethod=marker
+# man: tmux
+# cheatsheet: https://tmuxcheatsheet.com/
 
 set  -g default-terminal "screen-256color"                                     # support 256 colors and HOME, END ...
 set  -gs escape-time 0                                                         # Lower escape timing for quicker response to scroll-buffer/vim access
@@ -58,7 +60,6 @@ bind      "'"   split-window -h -c "#{pane_current_path}"
 bind      '"'   split-window -v -c "#{pane_current_path}"
 bind   -n "M-'" split-window -h -c "#{pane_current_path}"
 bind   -n 'M-"' split-window -v -c "#{pane_current_path}"
-bind      'M-b' break-pane
 
 # => smart pane switching with awareness of vim splits See: https://github.com/christoomey/vim-tmux-navigator ---- {{{1
 

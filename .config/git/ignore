@@ -1,6 +1,8 @@
 tags
+
 #ignore thumbnails created by windows
 Thumbs.db
+
 #Ignore files build by Visual Studio
 *.aps
 *.bak
@@ -20,21 +22,20 @@ Thumbs.db
 *.tlh
 *.user
 *.vscode
-*.vstags
 *.vspscc
+*.vstags
 *_i.c
 *_p.c
 .settings*/
 [Bb]in
 [Dd]ebug*/
+[Oo]bj/
 [Rr]elease*/
 [Tt]est[Rr]esult*
+_Deparsed_XSubs.pm
 _ReSharper*/
-[Oo]bj/
 workspace/
 x32-[Dd]ebug*/
 x32-[Rr]elease*/
 x64-[Dd]ebug*/
 x64-[Rr]elease*/
-_Deparsed_XSubs.pm
-yarn.lock
