@@ -273,6 +273,8 @@ set virtualedit=block
 
 set spelllang=en,nl,ru
 
+		nnoremap <leader><leader>s     :set spell!<CR>
+
 " => Text, tab and indent related -------------------------------------------------------------------------------- {{{1
 
 silent! set breakindent

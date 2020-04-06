@@ -93,24 +93,13 @@ if [[ "${terminfo[khome]}" != "" ]]; then
 	bindkey -M vicmd "${terminfo[khome]}" vi-beginning-of-line
 fi
 if [[ "${terminfo[kend]}" != "" ]]; then
-	bindkey "${terminfo[kend]}"             end-of-line
-	bindkey -M vicmd "${terminfo[kend]}" vi-end-of-line
+	bindkey "${terminfo[kend]}"              end-of-line
+	bindkey -M vicmd "${terminfo[kend]}"  vi-end-of-line
 fi
 bindkey          '^a'      beginning-of-line
 bindkey -M vicmd '^a'   vi-beginning-of-line
 bindkey          '^e'      end-of-line
 bindkey -M vicmd '^e'   vi-end-of-line
-
-# => Insert, Delete ---------------------------------------------------------------------------------------------- {{{1
-
-if [[ "${terminfo[kich1]}" != "" ]]; then
-	bindkey          "${terminfo[kich1]}" overwrite-mode
-	bindkey -M vicmd "${terminfo[kich1]}" vi-insert
-fi
-if [[ "${terminfo[kdch1]}" != "" ]]; then
-	bindkey          "${terminfo[kdch1]}" delete-char-or-list
-	bindkey -M vicmd "${terminfo[kdch1]}" delete-char-or-list
-fi
 
 # => PageUp, PageDown as home and end ---------------------------------------------------------------------------- {{{1
 
@@ -121,6 +110,17 @@ fi
 if [[ "${terminfo[knp]}" != "" ]]; then
 	bindkey          "${terminfo[knp]}"    end-of-line
 	bindkey -M vicmd "${terminfo[knp]}" vi-end-of-line
+fi
+
+# => Insert, Delete ---------------------------------------------------------------------------------------------- {{{1
+
+if [[ "${terminfo[kich1]}" != "" ]]; then
+	bindkey          "${terminfo[kich1]}" overwrite-mode
+	bindkey -M vicmd "${terminfo[kich1]}" vi-insert
+fi
+if [[ "${terminfo[kdch1]}" != "" ]]; then
+	bindkey          "${terminfo[kdch1]}" delete-char-or-list
+	bindkey -M vicmd "${terminfo[kdch1]}" delete-char-or-list
 fi
 
 # => some backports from emacs key bindings ---------------------------------------------------------------------- {{{1
