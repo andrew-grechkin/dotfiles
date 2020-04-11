@@ -134,7 +134,9 @@ call plug#begin('~/.cache/vim/plugged')
 	Plug 'airblade/vim-gitgutter'                                              " Git status/modifications of the file
 	Plug 'easymotion/vim-easymotion'                                           " Better move commands
 	Plug 'mhinz/vim-grepper'                                                   " Grep integration
-	Plug 'scrooloose/nerdcommenter', {'on': '<Plug>NERDCommenterToggle'}       " Commenting helpers
+	Plug 'tpope/vim-commentary'                                                " Commenting helpers
+"	Plug 'scrooloose/nerdcommenter', {'on': '<Plug>NERDCommenterToggle'}       " Commenting helpers
+"	Plug 'tomtom/tcomment_vim'                                                 " Commenting helpers
 	Plug 'scrooloose/nerdtree', {'on': 'NERDTreeToggle'}
 	Plug 'mhinz/vim-startify'
 	Plug 'christoomey/vim-tmux-navigator'                                      " Better tmux integration
@@ -191,6 +193,9 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'vim-vdebug/vdebug'
 		Plug 'xolox/vim-misc'
 		Plug 'xolox/vim-easytags'
+		" perl autocomplete (not working properly)
+		Plug 'chumakd/perlomni.vim'
+		Plug 'Shougo/deoplete.nvim'
 	endif
 	if !empty(glob(VIM_CONFIG_HOME . '/plugins.' . PRIVATE_DOMAIN . '.vim'))
 		exec 'source ' . VIM_CONFIG_HOME . '/plugins.' . PRIVATE_DOMAIN . '.vim'
@@ -548,6 +553,7 @@ augroup END
 augroup SettingsByFileType
 	autocmd!
 	autocmd FileType *      setlocal textwidth=120 wrapmargin=0
+	autocmd FileType *      let b:commentary_startofline = 1
 	autocmd Filetype json   setlocal foldmethod=syntax expandtab smarttab tabstop=4 shiftwidth=4 softtabstop=4 foldnestmax=30
 	autocmd Filetype python setlocal foldmethod=indent expandtab smarttab tabstop=4 shiftwidth=4 softtabstop=4
 	autocmd FileType qf     set      nobuflisted
@@ -673,16 +679,16 @@ noremap <leader><leader>n              :NERDTreeToggle<CR>
 
 " => Plugin: NERDComment ----------------------------------------------------------------------------------------- {{{1
 
-let g:NERDCommentEmptyLines      = 1                                           " Allow commenting and inverting empty lines (useful when commenting a region)
-let g:NERDCustomDelimiters       = { 'c': { 'left': '/**','right': '*/' } }    " Add your own custom formats or override the defaults
-"let g:NERDDefaultAlign           = 'start'                                     " Comment at the beginning of the line instead of following code indentation
-let g:NERDRemoveExtraSpaces      = 1
-let g:NERDSpaceDelims            = 0                                           " Add spaces after comment delimiters by default
-let g:NERDToggleCheckAllLines    = 1                                           " Enable NERDCommenterToggle to check all selected lines is commented or not
-let g:NERDTrimTrailingWhitespace = 1                                           " Enable trimming of trailing whitespace when uncommenting
+" let g:NERDCommentEmptyLines      = 1                                           " Allow commenting and inverting empty lines (useful when commenting a region)
+" let g:NERDCustomDelimiters       = { 'c': { 'left': '/**','right': '*/' } }    " Add your own custom formats or override the defaults
+" "let g:NERDDefaultAlign           = 'start'                                     " Comment at the beginning of the line instead of following code indentation
+" let g:NERDRemoveExtraSpaces      = 1
+" let g:NERDSpaceDelims            = 0                                           " Add spaces after comment delimiters by default
+" let g:NERDToggleCheckAllLines    = 1                                           " Enable NERDCommenterToggle to check all selected lines is commented or not
+" let g:NERDTrimTrailingWhitespace = 1                                           " Enable trimming of trailing whitespace when uncommenting
 
 " map comment to ctrl-/
-map <C-_>                              <Plug>NERDCommenterToggle
+" map <C-_>                              <Plug>NERDCommenterToggle
 
 " => Plugin: netrw ----------------------------------------------------------------------------------------------- {{{1
 
@@ -734,12 +740,17 @@ let g:UltiSnipsJumpBackwardTrigger ='<s-tab>'
 " If you want :UltiSnipsEdit to split your window.
 let g:UltiSnipsEditSplit           ='vertical'
 
+" => Plugin: vim-commentary -------------------------------------------------------------------------------------- {{{1
+
+nmap     <C-_>                         gcl
+vmap     <C-_>                         gcgv
+
 " => Plugin: vim-easy-align -------------------------------------------------------------------------------------- {{{1
 
 " Start interactive EasyAlign for a motion/text object (e.g. gaip)
-nmap ga                                <Plug>(EasyAlign)
+nmap     ga                            <Plug>(EasyAlign)
 " Start interactive EasyAlign in visual mode (e.g. vipga)
-xmap ga                                <Plug>(EasyAlign)
+xmap     ga                            <Plug>(EasyAlign)
 
 " => Plugin: CtrlSF ---------------------------------------------------------------------------------------------- {{{1
 
