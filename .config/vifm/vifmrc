@@ -209,11 +209,10 @@ filextype *.djvu
 	\ {View in apvlv}
 	\ apvlv,
 
-"	\ mpv --no-osc --term-osd=force --no-audio-display,
 " Audio
 filetype *.wav,*.mp3,*.flac,*.m4a,*.m4b,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,*.cue,*.wv
 	\ {Play using mpv}
-	\ mpv --no-osc --term-osd=force,
+	\ mpv --no-osc --term-osd=force --no-audio-display,
 	\ {Play using ffplay}
 	\ ffplay -nodisp -autoexit,
 	\ {Play using MPlayer}

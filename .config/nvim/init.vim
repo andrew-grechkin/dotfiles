@@ -137,6 +137,7 @@ call plug#begin('~/.cache/vim/plugged')
 	Plug 'tpope/vim-commentary'                                                " Commenting helpers
 "	Plug 'scrooloose/nerdcommenter', {'on': '<Plug>NERDCommenterToggle'}       " Commenting helpers
 "	Plug 'tomtom/tcomment_vim'                                                 " Commenting helpers
+	Plug 'jiangmiao/auto-pairs'
 	Plug 'scrooloose/nerdtree', {'on': 'NERDTreeToggle'}
 	Plug 'mhinz/vim-startify'
 	Plug 'christoomey/vim-tmux-navigator'                                      " Better tmux integration
@@ -553,7 +554,6 @@ augroup END
 augroup SettingsByFileType
 	autocmd!
 	autocmd FileType *      setlocal textwidth=120 wrapmargin=0
-	autocmd FileType *      let b:commentary_startofline = 1
 	autocmd Filetype json   setlocal foldmethod=syntax expandtab smarttab tabstop=4 shiftwidth=4 softtabstop=4 foldnestmax=30
 	autocmd Filetype python setlocal foldmethod=indent expandtab smarttab tabstop=4 shiftwidth=4 softtabstop=4
 	autocmd FileType qf     set      nobuflisted
@@ -744,6 +744,11 @@ let g:UltiSnipsEditSplit           ='vertical'
 
 nmap     <C-_>                         gcl
 vmap     <C-_>                         gcgv
+
+augroup SettingsVimCommentary
+	autocmd!
+	autocmd FileType *      let b:commentary_startofline = 1
+augroup END
 
 " => Plugin: vim-easy-align -------------------------------------------------------------------------------------- {{{1
 
