@@ -137,7 +137,6 @@ call plug#begin('~/.cache/vim/plugged')
 	Plug 'tpope/vim-commentary'                                                " Commenting helpers
 "	Plug 'scrooloose/nerdcommenter', {'on': '<Plug>NERDCommenterToggle'}       " Commenting helpers
 "	Plug 'tomtom/tcomment_vim'                                                 " Commenting helpers
-	Plug 'jiangmiao/auto-pairs'
 	Plug 'scrooloose/nerdtree', {'on': 'NERDTreeToggle'}
 	Plug 'mhinz/vim-startify'
 	Plug 'christoomey/vim-tmux-navigator'                                      " Better tmux integration
@@ -194,6 +193,7 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'vim-vdebug/vdebug'
 		Plug 'xolox/vim-misc'
 		Plug 'xolox/vim-easytags'
+		Plug 'jiangmiao/auto-pairs'
 		" perl autocomplete (not working properly)
 		Plug 'chumakd/perlomni.vim'
 		Plug 'Shougo/deoplete.nvim'
