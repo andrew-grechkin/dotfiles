@@ -135,14 +135,15 @@ mark u ~/.local/usr/
 " %D the other window directory name.
 " %m run the command in a menu window
 
-command! df df -h %m 2> /dev/null
-command! diff vim -d %f %F
-command! zip zip -r %f.zip %f
-command! run !! ./%f
-command! make !!make %a
-command! take :mkdir %a | cd %a
-command! vgrep vim "+grep %a"
+command! df     df -h %m 2> /dev/null
+command! diff   vim -d %f %F
+command! ln     ln -s %f:p %D
+command! make   !!make %a
 command! reload :write | restart
+command! run    !! ./%f
+command! take   :mkdir %a | cd %a
+command! vgrep  vim "+grep %a"
+command! zip    zip -r %f.zip %f
 
 " ------------------------------------------------------------------------------
 

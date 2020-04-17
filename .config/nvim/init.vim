@@ -574,7 +574,7 @@ augroup SettingsByFileTypePerl
 	autocmd BufNewFile,BufRead *.pod setfiletype pod
 	autocmd BufNewFile,BufRead *.itn setfiletype itn
 	autocmd Filetype perl setlocal foldmethod=syntax expandtab smarttab tabstop=4 shiftwidth=4 softtabstop=4
-	autocmd FileType perl setlocal keywordprg=perldoc
+	autocmd FileType perl setlocal keywordprg=perldoc\ -f
 	autocmd FileType perl set      formatprg=perltidy
 	" Use old verion of syntax highlight regexp which look like working much faster (to check use syntime on -> syntime report)
 	autocmd Filetype perl setlocal re=1
