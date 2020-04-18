@@ -137,7 +137,9 @@ mark u ~/.local/usr/
 
 command! df     df -h %m 2> /dev/null
 command! diff   vim -d %f %F
-command! ln     ln -s %f:p %D
+command! fd     fd %a %m
+command! ln     ln    %f:p %D
+command! lns    ln -s %f:p %D
 command! make   !!make %a
 command! reload :write | restart
 command! run    !! ./%f
@@ -566,7 +568,7 @@ nnoremap <a-l> <tab>
 
 " Use ag (the silver searcher) instead of grep
 "
-set grepprg='ag --hidden --line-numbers %i %a %s'
+set grepprg='ag --line-numbers %i %a %s'
 
 " Add additional place to look for executables
 "

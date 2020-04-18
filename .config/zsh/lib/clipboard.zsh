@@ -11,39 +11,19 @@
 # clipcopy - Copy data to clipboard
 #
 # Usage:
-#
-#  <command> | clipcopy    - copies stdin to clipboard
-#
-#  clipcopy <file>         - copies a file's contents to clipboard
-#
+#  <command> | clipcopy      - copies stdin to clipboard
+#  clipcopy <file> <file>... - copies file's contents to clipboard
 function clipcopy() {
 	emulate -L zsh
-	local file=$1
 	if [[ $OSTYPE == darwin* ]]; then
-		if [[ -z $file ]]; then
-			pbcopy
-		else
-			cat $file | pbcopy
-		fi
+		cat "${@[@]}" | pbcopy
 	elif [[ $OSTYPE == cygwin* ]]; then
-		if [[ -z $file ]]; then
-			cat > /dev/clipboard
-		else
-			cat $file > /dev/clipboard
-		fi
+		cat "${@[@]}" > /dev/clipboard
 	else
 		if (( $+commands[xclip] )); then
-			if [[ -z $file ]]; then
-				xclip -i -sel p -f | xclip -i -sel c
-			else
-				cat "$file" | xclip -i -sel p -f | xclip -i -sel c
-			fi
+			cat "${@[@]}" | xclip -i -sel p -f | xclip -i -sel c
 		elif (( $+commands[xsel] )); then
-			if [[ -z $file ]]; then
-				xsel --clipboard --input
-			else
-				cat "$file" | xsel --clipboard --input
-			fi
+			cat "${@[@]}" | xsel --clipboard --input
 		else
 			print "clipcopy: Platform $OSTYPE not supported or xclip/xsel not installed" >&2
 			return 1
@@ -54,20 +34,9 @@ function clipcopy() {
 # clippaste - "Paste" data from clipboard to stdout
 #
 # Usage:
-#
-#   clippaste   - writes clipboard's contents to stdout
-#
+#   clippaste                - writes clipboard's contents to stdout
 #   clippaste | <command>    - pastes contents and pipes it to another process
-#
-#   clippaste > <file>      - paste contents to a file
-#
-# Examples:
-#
-#   # Pipe to another process
-#   clippaste | grep foo
-#
-#   # Paste to a file
-#   clippaste > file.txt
+#   clippaste > <file>       - paste contents to a file
 function clippaste() {
 	emulate -L zsh
 	if [[ $OSTYPE == darwin* ]]; then

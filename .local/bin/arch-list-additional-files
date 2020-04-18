@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 set -eo pipefail
 
@@ -53,8 +53,8 @@ strict() {
 	LIST_ALL_FILES="find /boot /etc /opt /srv /usr /var  | sort -u"
 
 	comm -13 \
-		<( eval $LIST_ALL_PACMAN_FILES ) \
-		<( eval $LIST_ALL_FILES )
+		<( eval "$LIST_ALL_PACMAN_FILES" ) \
+		<( eval "$LIST_ALL_FILES" )
 }
 
 # relaxed mode is more forgiving about hits

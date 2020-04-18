@@ -1,7 +1,8 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 chosen="$(perl "${HOME}/.local/bin/grep-emoji" | LC_ALL=en_US.utf8 fzf)"
 
 [[ "$chosen" != "" ]] || exit
 
+# shellcheck disable=2001
 echo "$chosen" | sed 's/ > .*//'

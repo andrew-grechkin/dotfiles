@@ -1,8 +1,8 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 function _i3lock() {
-	TMP_FILE=${XDG_RUNTIME_DIR}/screen-lock-tmp.png
-	DST_FILE=${XDG_RUNTIME_DIR}/screen-lock.png
+	TMP_FILE="${XDG_RUNTIME_DIR}/screen-lock-tmp.png"
+	DST_FILE="${XDG_RUNTIME_DIR}/screen-lock.png"
 	import -window root "$TMP_FILE" || scrot "$TMP_FILE"
 #	convert $TMP_FILE -scale 10% -scale 1000% $DST_FILE
 #	convert $TMP_FILE -paint 3 -modulate 80 $DST_FILE

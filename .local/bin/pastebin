@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# pastebin - Copy data to termbin/pastebin service
+#
+# Usage:
+#  <command> | pastebin      - copies stdin to termbin/pastebin
+#  pastebin <file> <file>... - copies file's contents to termbin/pastebin
+if is-work-network; then
+	cat "${@}" | work-pastebin
+else
+	if [[ -n "$(command -v socat)" ]]; then
+		cat "${@}" | socat - TCP4:termbin.com:9999
+	elif [[ -n "$(command -v nc)" ]]; then
+		cat "${@}" | nc termbin.com 9999
+	else
+		print "tbincopy: socat/netcat command not found" >&2
+		return 1
+	fi
+fi

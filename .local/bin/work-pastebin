@@ -1,0 +1,21 @@
+#!/bin/bash
+
+DOMAIN_PARTS=(paste . booking . com)
+DOMAIN=$(printf "%s" "${DOMAIN_PARTS[@]}")
+CMD=(
+	curl --noproxy "$DOMAIN" -s
+	-d "author=$USER"
+	-d "syntax=0"
+	-d "lifespan=5"
+	--data-urlencode pasteEnter@-
+	"https://$DOMAIN/api"
+)
+
+RESPONSE="$(cat "$@" | "${CMD[@]}")"
+ERROR="$(echo "$RESPONSE" | jq -r .error)"
+
+if [[ "$ERROR" = "0" ]]; then
+	echo "Paste is saved to: $(echo "$RESPONSE" | jq -r .url)"
+else
+	echo "Error: $(echo "$RESPONSE" | jq -r .message)"
+fi
