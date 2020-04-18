@@ -51,6 +51,7 @@ bind      'M-e' new-window -n 'tmux.conf' "sh -c '\${EDITOR:-vim} ~/.config/tmux
 bind      'M-r' source-file ~/.config/tmux/config \; display 'Config reloaded' # reload tmux configuration
 bind      'C-l' send-keys 'C-l' \; run 'sleep 0.1' \; clear-history            # clear shell screen and tmux history buffer
 bind      'C-a' setw synchronize-panes \; display "synchronize-panes is now #{?pane_synchronized,on,off}"
+bind      'C-s' capture-pane -b temp-capture-buffer -S - \; save-buffer -b temp-capture-buffer /tmp/tmux.log \; delete-buffer -b temp-capture-buffer \; run-shell "~/.local/bin/pastebin /tmp/tmux.log"
 
 # => window splitting -------------------------------------------------------------------------------------------- {{{1
 
