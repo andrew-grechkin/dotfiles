@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# when tmux runs this script environment is not set, so have to do it here
+PATH="${HOME}/.local/bin:${PATH}"
+
 # pastebin - Copy data to termbin/pastebin service
 #
 # Usage:
@@ -13,7 +16,7 @@ else
 	elif [[ -n "$(command -v nc)" ]]; then
 		cat "${@}" | nc termbin.com 9999
 	else
-		print "tbincopy: socat/netcat command not found" >&2
+		print "pastebin: socat/netcat command not found" >&2
 		return 1
 	fi
 fi
