@@ -120,6 +120,7 @@ mark h ~/
 mark m /media/nfs/home
 mark r \/                                        home
 mark u ~/.local/usr/
+mark p ~/.local/share/perlbrew                   libs
 
 " ------------------------------------------------------------------------------
 

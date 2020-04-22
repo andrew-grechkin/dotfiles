@@ -96,3 +96,7 @@ alias grab-cd='abcde -1 -o flac -a default,cue'
 alias k='kubectl'
 alias kga='kubectl get all'
 alias kaf='kubectl apply -f'
+
+# => diff/patch -------------------------------------------------------------------------------------------------- {{{1
+
+alias diffdirs='diff -wBNuar'
