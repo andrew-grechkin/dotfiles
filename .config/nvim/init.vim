@@ -864,12 +864,15 @@ let g:rooter_silent_chdir = 1
 
 " => Plugin: vim-test -------------------------------------------------------------------------------------------- {{{1
 
-let test#strategy                  = "neovim"
-let test#perl#prove#executable     = 'yath test --qvf'
+let g:test#strategy                = 'neovim'
+let g:test#perl#prove#executable   = 'yath test --qvf'
 let g:test#perl#prove#file_pattern = '\v^x?t/.*\.t$'
 
-nmap     <silent> <leader><leader>h    :let $T2_WORKFLOW = line(".") \| :TestFile<CR>
-nmap     <silent> <leader><leader>f    :let $T2_WORKFLOW = ""        \| :TestFile<CR>
+augroup VimTestByFileTypePerl
+	autocmd!
+	autocmd FileType perl nmap <silent> <leader><leader>h :let $T2_WORKFLOW = line(".") \| :TestFile<CR>
+	autocmd FileType perl nmap <silent> <leader><leader>f :let $T2_WORKFLOW = ""        \| :TestFile<CR>
+augroup END
 
 " => Plugin: vimwiki --------------------------------------------------------------------------------------------- {{{1
 
