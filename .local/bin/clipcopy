@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# clipcopy - Copy data to clipboard
+#
+# Usage:
+#  <command> | clipcopy      - copies stdin to clipboard
+#  clipcopy <file> <file>... - copies file's contents to clipboard
+
+set -eo pipefail
+
+case "$OSTYPE" in
+	cygwin*|msys*)
+		cat "$@" > /dev/clipboard
+		;;
+	darwin*)
+		cat "$@" | pbcopy
+		;;
+	*)
+		if [[ -n "$(command -v xclip)" ]]; then
+			cat "$@" | xclip -i -sel p -f | xclip -i -sel c
+		elif [[ -n "$(command -v xsel)" ]]; then
+			cat "$@" | xsel --input --clipboard
+		else
+			print "clipcopy: Platform $OSTYPE not supported or xclip/xsel not installed" >&2
+			return 1
+		fi
+		;;
+esac

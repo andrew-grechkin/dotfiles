@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -eo pipefail
+
 DOMAIN_PARTS=(paste . booking . com)
 DOMAIN=$(printf "%s" "${DOMAIN_PARTS[@]}")
 CMD=(

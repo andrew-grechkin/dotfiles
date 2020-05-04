@@ -1,5 +1,15 @@
 # vim: syntax=zsh foldmethod=marker
 
+# => short commands ---------------------------------------------------------------------------------------------- {{{1
+
+function g() {
+	if [[ $# -gt 0 ]]; then
+		git "$@"
+	else
+		git status
+	fi
+}
+
 # => config manipulation ----------------------------------------------------------------------------------------- {{{1
 # man: git-config
 

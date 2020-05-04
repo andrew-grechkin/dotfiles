@@ -499,6 +499,14 @@ silent! packadd termdebug
 
 " => Automatization ---------------------------------------------------------------------------------------------- {{{1
 
+function! s:find_git_root()
+	return system('git rev-parse --show-toplevel 2> /dev/null')[:-2]
+endfunction
+
+function! s:find_current_dir()
+	return expand('%:p:h')
+endfunction
+
 augroup autoclose_quickfix_if_last
 	autocmd!
 	autocmd BufEnter * if (winnr('$') == 1 && (&buftype ==# 'quickfix' || &buftype ==# 'loclist')) | bd | endif
@@ -548,6 +556,10 @@ augroup AutoGzipForNonstandardExtensions
 	autocmd FileAppendPre              *.dsl.dz,*.dict.dz call     gzip#appre("gzip -dn -S .dz")
 	autocmd FileAppendPost             *.dsl.dz,*.dict.dz call     gzip#write("gzip -S .dz")
 augroup END
+
+" => ctags ------------------------------------------------------------------------------------------------------- {{{1
+
+nnoremap <leader>ct                    :!ctags -R .<CR>
 
 " => Filetype ---------------------------------------------------------------------------------------------------- {{{1
 
@@ -707,14 +719,6 @@ let g:netrw_winsize      = 25
 "autocmd BufEnter * if winnr('$') == 1 && getbufvar(winbufnr(winnr()), "&filetype") == "netrw" | q | endif
 
 " => Plugin: fzf ------------------------------------------------------------------------------------------------- {{{1
-
-function! s:find_git_root()
-	return system('git rev-parse --show-toplevel 2> /dev/null')[:-2]
-endfunction
-
-function! s:find_current_dir()
-	return expand('%:p:h')
-endfunction
 
 "command! FilesProject    execute 'Files' s:find_git_root()
 "command! FilesCurrentDir execute 'Files' s:find_current_dir()

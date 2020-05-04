@@ -1,15 +1,17 @@
 #!/bin/bash
 
-# when tmux runs this script environment is not set, so have to do it here
-PATH="${HOME}/.local/bin:${PATH}"
-
 # pastebin - Copy data to termbin/pastebin service
 #
 # Usage:
 #  <command> | pastebin      - copies stdin to termbin/pastebin
 #  pastebin <file> <file>... - copies file's contents to termbin/pastebin
-if is-work-network; then
-	cat "${@}" | work-pastebin
+
+set -eo pipefail
+
+CWD=$(dirname "$0")
+
+if [[ -n "$(command -v "$CWD/pastebin.work")" ]] && [[ -n "$(command -v "$CWD/is-work-network")" ]] && "$CWD/is-work-network"; then
+	cat "${@}" | "$CWD/pastebin.work"
 else
 	if [[ -n "$(command -v socat)" ]]; then
 		cat "${@}" | socat - TCP4:termbin.com:9999
