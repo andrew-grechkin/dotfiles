@@ -1,6 +1,9 @@
 #!/bin/bash
 # man: git-log
 
+DN=$(dirname "$0")
+PATH=$DN:$PATH
+
 git-in-repo && {
 	CMD=(git log
 		--color=always

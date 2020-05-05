@@ -1,5 +1,8 @@
 #!/bin/bash
 
+DN=$(dirname "$0")
+PATH=$DN:$PATH
+
 git-in-repo && {
 	git tag --sort -version:refname \
 		| fzf --multi --preview 'git show --color=always {}'

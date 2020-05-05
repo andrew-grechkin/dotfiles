@@ -4,36 +4,28 @@
 
 #zmodload zsh/zprof
 
-# => zsh init helprer functions ---------------------------------------------------------------------------------- {{{1
+# => zsh init vital helprer functions ---------------------------------------------------------------------------- {{{1
 
 function source-file() {
-#	echo "source: $(date) '$1'"
-	[[ -r "$1" ]] && source "$1"
+	for FILE in "$@"; do
+#		echo "source: $(date) '$FILE'"
+		[[ -r "$FILE" ]] && source "$FILE"
+	done
 }
 
-function _appendvar_head() {
-	local VAR=$1
-	local CONTENT=${(P)VAR}
-	local APPEND=$2
-	case ":${CONTENT}:" in
-		*:"$APPEND":*)
-			;;
-		*)
-			CONTENT=$APPEND${CONTENT:+:$CONTENT}
-			eval "$VAR=$CONTENT"
+function _prependvar() {
+	local CURRENT_VALUE=${(P)1}
+	case ":${CURRENT_VALUE}:" in
+		*:"$2":*) ;;
+		*) eval "$1=${2}${CURRENT_VALUE:+:$CURRENT_VALUE}" ;;
 	esac
 }
 
-function _appendvar_tail() {
-	local VAR=$1
-	local CONTENT=${(P)VAR}
-	local APPEND=$2
-	case ":${CONTENT}:" in
-		*:"$APPEND":*)
-			;;
-		*)
-			CONTENT=${CONTENT:+$CONTENT:}$APPEND
-			eval "$VAR=$CONTENT"
+function _appendvar() {
+	local CURRENT_VALUE=${(P)1}
+	case ":${CURRENT_VALUE}:" in
+		*:"$2":*) ;;
+		*) eval "$1=${CURRENT_VALUE:+$CURRENT_VALUE:}$2" ;;
 	esac
 }
 

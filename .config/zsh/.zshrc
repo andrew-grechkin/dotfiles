@@ -32,14 +32,14 @@ fi
 
 # => PATH prepare ------------------------------------------------------------------------------------------------ {{{1
 
-[[ -n "$GOPATH"          ]] && [[ -d "$GOPATH"          ]] && _appendvar_tail PATH "$GOPATH/bin"
-[[ -n "$GEM_HOME"        ]] && [[ -d "$GEM_HOME"        ]] && _appendvar_tail PATH "$GEM_HOME/bin"
-[[ -n "$HOMEBREW_PREFIX" ]] && [[ -d "$HOMEBREW_PREFIX" ]] && _appendvar_head PATH "$HOMEBREW_PREFIX/bin"
-[[ -n "$HOMEBREW_PREFIX" ]] && [[ -d "$HOMEBREW_PREFIX" ]] && _appendvar_head PATH "$HOMEBREW_PREFIX/sbin"
-[[ -n "$PERLBREW_PATH"         ]] && _appendvar_head PATH "$PERLBREW_PATH"
-[[ -d "$HOME/.local/bin"       ]] && _appendvar_head PATH "$HOME/.local/bin"
-[[ -d "$HOME/.local/scripts"   ]] && _appendvar_head PATH "$HOME/.local/scripts"
-[[ -d "$HOME/.cache/bin"       ]] && _appendvar_head PATH "$HOME/.cache/bin"
+[[ -n "$GOPATH"          ]] && [[ -d "$GOPATH"          ]] && _appendvar PATH "$GOPATH/bin"
+[[ -n "$GEM_HOME"        ]] && [[ -d "$GEM_HOME"        ]] && _appendvar PATH "$GEM_HOME/bin"
+[[ -n "$HOMEBREW_PREFIX" ]] && [[ -d "$HOMEBREW_PREFIX" ]] && _prependvar PATH "$HOMEBREW_PREFIX/bin"
+[[ -n "$HOMEBREW_PREFIX" ]] && [[ -d "$HOMEBREW_PREFIX" ]] && _prependvar PATH "$HOMEBREW_PREFIX/sbin"
+[[ -n "$PERLBREW_PATH"         ]] && _prependvar PATH "$PERLBREW_PATH"
+[[ -d "$HOME/.local/bin"       ]] && _prependvar PATH "$HOME/.local/bin"
+[[ -d "$HOME/.local/scripts"   ]] && _prependvar PATH "$HOME/.local/scripts"
+[[ -d "$HOME/.cache/bin"       ]] && _prependvar PATH "$HOME/.cache/bin"
 export PATH
 
 # => show profiler ----------------------------------------------------------------------------------------------- {{{1

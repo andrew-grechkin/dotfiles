@@ -1,8 +1,8 @@
 # vim: syntax=zsh foldmethod=marker
 
-export       XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
-export        XDG_CACHE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}
-export         XDG_DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}
+export       XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+export        XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
+export         XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 export           TMUX_TMPDIR="$XDG_RUNTIME_DIR"
 export                  LESS='-x4 -iRSw'
 
@@ -21,10 +21,14 @@ export               INPUTRC="$XDG_CONFIG_HOME/inputrc"
 
 [[ -f "$XDG_CONFIG_HOME/nvim/init.vim" ]] && export MYVIMRC="$XDG_CONFIG_HOME/nvim/init.vim"
 [[ -f "$XDG_CONFIG_HOME/nvim/init.vim" ]] && export VIMINIT="source $MYVIMRC"
-[[ -f "$XDG_CONFIG_HOME/wgetrc"        ]] && export WGETRC="$XDG_CONFIG_HOME/wgetrc"
+[[ -f "$XDG_CONFIG_HOME/wgetrc"        ]] && export  WGETRC="$XDG_CONFIG_HOME/wgetrc"
+
+# => make necessary dirs ----------------------------------------------------------------------------------------- {{{1
 
 [[ -e "$XDG_CONFIG_HOME" ]] || mkdir -p "$XDG_CONFIG_HOME"
 [[ -e "$XDG_CACHE_HOME"  ]] || mkdir -p "$XDG_CACHE_HOME"
 [[ -e "$XDG_DATA_HOME"   ]] || mkdir -p "$XDG_DATA_HOME"
+
+# => source common functions ------------------------------------------------------------------------------------- {{{1
 
 source-file "$XDG_CONFIG_HOME/shell/functions"

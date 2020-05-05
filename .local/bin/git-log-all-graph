@@ -1,5 +1,8 @@
 #!/bin/bash
 
+DN=$(dirname "$0")
+PATH=$DN:$PATH
+
 git-in-repo && {
 	git-log --all --graph "$@" \
 		| fzf-git-log "$@"

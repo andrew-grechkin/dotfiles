@@ -23,7 +23,7 @@ AGENTS=(
 )
 
 function _is_ssh_auth_sock_ok() {
-	[ -n "$SSH_AUTH_SOCK" ] && [ -S "$SSH_AUTH_SOCK" ]
+	[[ -n "$SSH_AUTH_SOCK" ]] && [[ -S "$SSH_AUTH_SOCK" ]]
 }
 
 function _try_existing_ssh_auth_sock_term() {
@@ -48,12 +48,13 @@ function _check_ssh_agent() {
 
 function _start_ssh_agent() {
 	SSHAGENT=/usr/bin/ssh-agent
-	SSHAGENTARGS="-s"
+	SSHAGENTARGS=(-s)
 
 	if [[ -x "$SSHAGENT" ]]; then
 #		eval `$SSHAGENT $SSHAGENTARGS`
 #		trap "kill $SSH_AGENT_PID" 0
-		$($SSHAGENT $SSHAGENTARGS > "$XDG_CACHE_HOME/ssh-agent.rc")
+		# shellcheck disable=2091
+		$("$SSHAGENT" "${SSHAGENTARGS[@]}" > "$XDG_CACHE_HOME/ssh-agent.rc")
 		source-file "$XDG_CACHE_HOME/ssh-agent.rc"
 	fi
 
@@ -67,12 +68,15 @@ function _start_ssh_agent() {
 # => fzf --------------------------------------------------------------------------------------------------------- {{{1
 
 function _fzf_compgen_helper() {
-	local EXCLUDE_FOLDERS_FD=('.cache' '.git' '.m2' '.snapshots' '.steam' '.vim' 'Steam' 'dosdevices' 'git' '/media/nfs/' '/proc/' '/sys/' 'tmp')
+	local EXCLUDE_FOLDERS_FD=('.cache' '.git' '.m2' '.snapshots' '.steam' '.vim' 'Steam' 'dosdevices' '/media/nfs/' '/proc/' '/sys/' 'tmp')
 	local CMD1=(fd -HL --type "$2" . "$1" "${EXCLUDE_FOLDERS_FD[@]/#/-E=}")
 	local CMD2=(find "$1" -type "$2")
 	local FILT=(grep -v -F '/.git')
 
-	($CMD1 || $CMD2 | $FILT) 2>/dev/null
+	{
+		"${CMD1[@]}" \
+		|| "${CMD2[@]}" | "${FILT[@]}"
+	} 2>/dev/null
 }
 
 function _fzf_command_helper() {
@@ -80,5 +84,9 @@ function _fzf_command_helper() {
 #	local GIT_LIST="git ls-tree -r --name-only HEAD"
 	local RG__LIST=(rg --hidden --files)
 
-	($GIT_LIST || $RG__LIST || _fzf_compgen_helper "$(pwd)" 'f') 2>/dev/null
+	{
+		"${GIT_LIST[@]}" \
+		|| "${RG__LIST[@]}" \
+		|| _fzf_compgen_helper "$(pwd)" 'f'
+	} 2>/dev/null
 }
