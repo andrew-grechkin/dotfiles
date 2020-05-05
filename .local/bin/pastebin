@@ -8,17 +8,19 @@
 
 set -eo pipefail
 
-CWD=$(dirname "$0")
+DN=$(dirname "$0")
+PATH=$DN:$PATH
 
-if [[ -n "$(command -v "$CWD/pastebin.work")" ]] && [[ -n "$(command -v "$CWD/is-work-network")" ]] && "$CWD/is-work-network"; then
-	cat "${@}" | "$CWD/pastebin.work"
+if [[ -n "$(command -v pastebin.work)" ]] && [[ -n "$(command -v is-work-network)" ]] && is-work-network; then
+	cat "${@}" | pastebin.work
 else
 	if [[ -n "$(command -v socat)" ]]; then
-		cat "${@}" | socat - TCP4:termbin.com:9999
+		URL=$(tr -d '\0' < <(cat "${@}" | socat - TCP4:termbin.com:9999))
 	elif [[ -n "$(command -v nc)" ]]; then
-		cat "${@}" | nc termbin.com 9999
+		URL=$(tr -d '\0' < <(cat "${@}" | nc termbin.com 9999))
 	else
 		print "pastebin: socat/netcat command not found" >&2
 		return 1
 	fi
+	[[ -n "$URL" ]] && echo "$URL" && echo "$URL" | clipcopy
 fi

@@ -2,6 +2,9 @@
 
 set -eo pipefail
 
+DN=$(dirname "$0")
+PATH=$DN:$PATH
+
 DOMAIN_PARTS=(paste . booking . com)
 DOMAIN=$(printf "%s" "${DOMAIN_PARTS[@]}")
 CMD=(
@@ -17,7 +20,8 @@ RESPONSE="$(cat "$@" | "${CMD[@]}")"
 ERROR="$(echo "$RESPONSE" | jq -r .error)"
 
 if [[ "$ERROR" = "0" ]]; then
-	echo "Paste is saved to: $(echo "$RESPONSE" | jq -r .url)"
+	URL=$(echo "$RESPONSE" | jq -r .url)
+	[[ -n "$URL" ]] && echo "Paste is saved to: $URL" && echo "$URL" | clipcopy
 else
 	echo "Error: $(echo "$RESPONSE" | jq -r .message)"
 fi
