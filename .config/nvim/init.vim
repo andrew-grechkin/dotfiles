@@ -751,10 +751,10 @@ let g:UltiSnipsEditSplit           ='vertical'
 nmap     <C-_>                         gcl
 vmap     <C-_>                         gcgv
 
-augroup SettingsVimCommentary
-	autocmd!
-	autocmd FileType *      let b:commentary_startofline = 1
-augroup END
+"augroup SettingsVimCommentary
+"	autocmd!
+"	autocmd FileType *      let b:commentary_startofline = 1
+"augroup END
 
 " => Plugin: vim-easy-align -------------------------------------------------------------------------------------- {{{1
 

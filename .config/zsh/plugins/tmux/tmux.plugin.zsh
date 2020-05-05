@@ -3,9 +3,7 @@
 # => correct ssh auth for tmux sessions -------------------------------------------------------------------------- {{{1
 
 function fix_ssh_agent() {
-	if [[ -n "$TMUX" ]]; then
-		eval $(tmux showenv -s SSH_AUTH_SOCK)
-	fi
+	[[ -n "$TMUX" ]] && eval $(command tmux showenv -s SSH_AUTH_SOCK)
 }
 
 # => Fix ssh agent path on remote servers automatically ---------------------------------------------------------- {{{1

@@ -9,7 +9,6 @@ antigen use oh-my-zsh
 antigen bundle vi-mode
 antigen bundle broot
 antigen bundle cpanm
-antigen bundle dirpersist
 antigen bundle fzf
 antigen bundle gnupg
 antigen bundle grep

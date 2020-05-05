@@ -5,11 +5,11 @@ export         LESSHISTFILE=-
 
 # => set PATH ---------------------------------------------------------------------------------------------------- {{{1
 if [[ "$(hostname)" = "home" ]]; then
-	_appendvar_head PATH "/volume1/@appstore/ffmpeg/bin"
+	_prependvar PATH "/volume1/@appstore/ffmpeg/bin"
 fi
 
-[[ -d "/opt/bin"               ]] && _appendvar_head PATH "/opt/bin"
-[[ -d "/opt/usr/bin"           ]] && _appendvar_head PATH "/opt/usr/bin"
-[[ -d "/tools/bin"             ]] && _appendvar_head PATH "/tools/bin"
-[[ -d "/var/packages/arch/bin" ]] && _appendvar_head PATH "/var/packages/arch/bin"
+[[ -d "/opt/bin"               ]] && _prependvar PATH "/opt/bin"
+[[ -d "/opt/usr/bin"           ]] && _prependvar PATH "/opt/usr/bin"
+[[ -d "/tools/bin"             ]] && _prependvar PATH "/tools/bin"
+[[ -d "/var/packages/arch/bin" ]] && _prependvar PATH "/var/packages/arch/bin"
 export PATH

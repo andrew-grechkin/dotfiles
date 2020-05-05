@@ -5,6 +5,21 @@ function tmux() {
 	command tmux -f "$XDG_CONFIG_HOME/tmux/config" "$@"
 }
 
+# => generate CDPATH --------------------------------------------------------------------------------------------- {{{1
+
+function gen-cdpath() {
+	declare -a DIRS
+	for FILE in "$HOME"/git/* "$HOME"/*; do
+		[[ -d "${FILE%/}" ]] && DIRS+=("${FILE%/}")
+	done
+
+	local IFS=:
+	export CDPATH="${DIRS[*]}"
+} &> /dev/null
+
+gen-cdpath
+unset -f gen-cdpath
+
 # => proxy related ----------------------------------------------------------------------------------------------- {{{1
 
 function disable-proxy() {
