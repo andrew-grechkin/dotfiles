@@ -1,11 +1,5 @@
 # vim: syntax=zsh foldmethod=marker
-
-function join-lines() {
-	local item
-	while read item; do
-		echo -n " ${(q)item}"
-	done
-}
+# set ft=zsh
 
 # => Load fzf (key bindings, completion) ------------------------------------------------------------------------- {{{1
 
@@ -18,9 +12,6 @@ for F in '/usr/share/fzf/completion.zsh' "$XDG_CONFIG_HOME/fzf/completion.zsh"; 
 done
 
 # => Settings ---------------------------------------------------------------------------------------------------- {{{1
-
-# Use \ as the trigger sequence instead of the default **
-export FZF_COMPLETION_TRIGGER='\'
 
 # Options to fzf command
 #export FZF_COMPLETION_OPTS='+c -x'
@@ -72,37 +63,19 @@ export FZF_DEFAULT_OPTS=$(printf " '%s'" ${FZF_DEFAULT_BINDS[@]} ${FZF_FILE_BIND
 export FZF_CTRL_T_OPTS="$FZF_DEFAULT_OPTS"
 export FZF_TMUX=1
 
+# => sequence trigger (Use \ as the trigger sequence instead of the default **) ---------------------------------- {{{1
+
+export FZF_COMPLETION_TRIGGER='\'
+
 # => ssh (overrides the default one) ----------------------------------------------------------------------------- {{{1
 
-function _ssh_config_parsed_hosts() {
-	local SSH_CONF=(~/.ssh/config ~/.ssh/config.d/* /etc/ssh/ssh_config)
-	command perl -mList::Util=uniq -nE 'm/[*?%#]/x and next; if (m/^.*host(?:name|\s)+(.*)/i) {push @hosts, split(m/ |,/, $1 =~ s/"//gr)}; END {say for uniq sort @hosts}' "${SSH_CONF[@]}"
-}
-
-function _ssh_known_parsed_hosts() {
-	local SSH_KNOWN=(~/.ssh/known_hosts ~/.cache/ssh-known-hosts.work)
-	command grep -oE '^[[a-z0-9.,:-]+' <(cat "${SSH_KNOWN[@]}") | tr ',' '\n' | tr -d '[' | awk '{print $1 " " $1}'
-}
-
-function _ssh_hosts_parsed_hosts() {
-	command grep -v '^\s*\(#\|$\)' /etc/hosts | command grep -Fv '0.0.0.0'
-}
-
-function _ssh_hosts() {
-	command cat <(
-		_ssh_config_parsed_hosts
-		_ssh_known_parsed_hosts
-		_ssh_hosts_parsed_hosts
-	) | awk '{if (length($2) > 0) {print $2}}' | sort -u
-}
-
 function _fzf_complete_ssh() {
-	_fzf_complete '+m --bind=tab:accept' "$@" < <(_ssh_hosts)
+	_fzf_complete '+m --bind=tab:accept' "$@" < <(ssh-hosts)
 }
 
 # => docker ------------------------------------------------------------------------------------------------------ {{{1
 
-_fzf_complete_docker() {
+function _fzf_complete_docker() {
 	case "$1" in
 		docker*\ rmi\ * | docker*-f* | docker*\ run\ *)
 			_fzf_complete "--reverse -m" "$@" < <(docker-images)
@@ -116,13 +89,13 @@ _fzf_complete_docker() {
 	esac
 }
 
-_fzf_complete_docker_post() {
+function _fzf_complete_docker_post() {
 	awk '{print $1}'
 }
 
 # => kubectl ----------------------------------------------------------------------------------------------------- {{{1
 
-_fzf_complete_kubectl() {
+function _fzf_complete_kubectl() {
 	case "$1" in
 		kubectl*\ exec\ *\ -c\ )
 			_fzf_complete "--reverse --bind=tab:accept" "$@" < <(kubectl-containers)
@@ -136,17 +109,17 @@ _fzf_complete_kubectl() {
 	esac
 }
 
-_fzf_complete_kubectl_post() {
+function _fzf_complete_kubectl_post() {
 	awk '{print $1}'
 }
 
 # => git completion ---------------------------------------------------------------------------------------------- {{{1
 
-function fzf-git-branches-widget() LBUFFER+=$(git-branches | join-lines)
-function fzf-git-files-widget()    LBUFFER+=$(git-files | join-lines)
-function fzf-git-hashes-widget()   LBUFFER+=$(git-hashes | join-lines)
-function fzf-git-remotes-widget()  LBUFFER+=$(git-remotes | join-lines)
-function fzf-git-tags-widget()     LBUFFER+=$(git-tags | join-lines)
+function fzf-git-branches-widget() LBUFFER+=$(git-branches | stdin-join-lines)
+function fzf-git-files-widget()    LBUFFER+=$(git-files | stdin-join-lines)
+function fzf-git-hashes-widget()   LBUFFER+=$(git-hashes | stdin-join-lines)
+function fzf-git-remotes-widget()  LBUFFER+=$(git-remotes | stdin-join-lines)
+function fzf-git-tags-widget()     LBUFFER+=$(git-tags | stdin-join-lines)
 
 zle -N fzf-git-branches-widget
 zle -N fzf-git-files-widget
@@ -164,46 +137,46 @@ function fzf-detect-widget() {
 	setopt local_options ksh_glob
 	case "$LBUFFER" in
 		git+( )@(show)*( ))
-			RESULT=$(git-hashes | join-lines)
+			RESULT=$(git-hashes | stdin-join-lines)
 			;;
 		git+( )@(remote)+( )@(remove|rename|show)*( ))
-			RESULT=$(git-remotes | join-lines)
+			RESULT=$(git-remotes | stdin-join-lines)
 			;;
 		git+( )@(co|checkout|l|log|diff)*( ))
-			RESULT=$(git-branches | join-lines)
+			RESULT=$(git-branches | stdin-join-lines)
 			;;
 		git+( )*@(--|rm)*( ))
-			RESULT=$(git-files | join-lines)
+			RESULT=$(git-files | stdin-join-lines)
 			;;
 		git+( )@(add)*( ))
-			RESULT=$(git-files | join-lines)
+			RESULT=$(git-files | stdin-join-lines)
 			;;
 		docker+( )rmi* | docker*-f* | docker*\ run*)
-			RESULT=$(docker-images | fzf --multi --reverse | awk '{print $1}' | join-lines)
+			RESULT=$(docker-images | fzf --multi --reverse | awk '{print $1}' | stdin-join-lines)
 			;;
 		docker+( )start* | docker*stop* | docker*rm* | docker*exec* | docker*kill*)
-			RESULT=$(docker-containers | fzf --multi --reverse | awk '{print $1}' | join-lines)
+			RESULT=$(docker-containers | fzf --multi --reverse | awk '{print $1}' | stdin-join-lines)
 			;;
 		docker*( ))
-			RESULT=$(docker-commands | fzf --bind=tab:accept --reverse | awk '{print $1}' | join-lines)
+			RESULT=$(docker-commands | fzf --bind=tab:accept --reverse | awk '{print $1}' | stdin-join-lines)
 			;;
 		(kubectl|k)+( )(exec\ *\ -c\ |logs\ *-c\ ))
-			RESULT=$(kubectl-containers | fzf --multi --reverse | awk '{print $1}' | join-lines)
+			RESULT=$(kubectl-containers | fzf --multi --reverse | awk '{print $1}' | stdin-join-lines)
 			;;
 		(kubectl|k)+( )(exec|logs)\ *)
-			RESULT=$(kubectl-pods | fzf --multi --reverse | awk '{print $1}' | join-lines)
+			RESULT=$(kubectl-pods | fzf --multi --reverse | awk '{print $1}' | stdin-join-lines)
 			;;
 		(kubectl|k)*( ))
-			RESULT=$(kubectl-commands | fzf -n 1 --reverse --bind=tab:accept | awk '{print $1}' | join-lines)
+			RESULT=$(kubectl-commands | fzf -n 1 --reverse --bind=tab:accept | awk '{print $1}' | stdin-join-lines)
 			;;
 		ssh*( ))
-			RESULT=$(_ssh_hosts | fzf -n 1 --reverse --bind=tab:accept | awk '{print $1}' | join-lines)
+			RESULT=$(ssh-hosts | fzf -n 1 --reverse --bind=tab:accept | awk '{print $1}' | stdin-join-lines)
 			;;
 		*( )cd+( )*)
-			RESULT=$(_fzf_compgen_helper "$(pwd)" 'd' | fzf | join-lines)
+			RESULT=$(_fzf_compgen_dir "$(pwd)" | fzf | stdin-join-lines)
 			;;
 		**( ))
-			RESULT=$(_fzf_command_helper | fzf -m | join-lines)
+			RESULT=$(_fzf_command_helper | fzf -m | stdin-join-lines)
 			;;
 	esac
 	if [[ -n $RESULT ]]; then
@@ -216,3 +189,18 @@ zle -N fzf-detect-widget
 
 # bind to alt-space
 bindkey '^[ ' fzf-detect-widget
+
+# => completion overrides ---------------------------------------------------------------------------------------- {{{1
+
+bindkey '^_' _complete_help
+
+# Call the function to make sure that it is loaded.
+# _ssh &>/dev/null
+
+# Save the original function.
+# functions[_ssh-orig]=$functions[_ssh]
+
+# Redefine your completion function referencing the original.
+# _ssh() {
+# 	FZF_COMPLETION_TRIGGER='' _fzf_complete_ssh
+# }

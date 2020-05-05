@@ -1,0 +1,13 @@
+#!/bin/bash
+
+CMD=(fzf
+	--ansi
+	--reverse
+	--tiebreak=index
+	--preview-window=right:40%:wrap:hidden
+	--preview="echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | xargs git show --color=always $@"
+	--bind="ctrl-m:execute(echo {} | grep -o '[[:xdigit:]]\{6,\}')+abort"
+	--bind="ctrl-o:execute-silent(echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | xargs git checkout)+abort"
+)
+
+"${CMD[@]}"

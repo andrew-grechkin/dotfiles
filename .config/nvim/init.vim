@@ -571,6 +571,7 @@ augroup SettingsByFileType
 	autocmd FileType qf     set      nobuflisted
 	autocmd Filetype vim    setlocal foldmethod=marker
 	autocmd Filetype yaml   setlocal foldmethod=syntax expandtab smarttab tabstop=2 shiftwidth=2 softtabstop=2
+	autocmd FileType sh     setlocal iskeyword+=$
 augroup END
 
 " => Filetype: perl ---------------------------------------------------------------------------------------------- {{{1
@@ -593,6 +594,7 @@ augroup SettingsByFileTypePerl
 	autocmd FileType perl nmap     <silent> tt <Plug>(ale_fix)
 "	autocmd FileType perl nnoremap <silent> tt :%!perltidy -q<CR>
 	autocmd FileType perl vnoremap <silent> tt :!perltidy -q<CR>
+	autocmd FileType perl setlocal iskeyword+=$,@,%
 augroup END
 
 " => Filetype: typescript ---------------------------------------------------------------------------------------- {{{1

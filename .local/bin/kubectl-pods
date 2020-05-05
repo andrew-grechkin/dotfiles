@@ -1,0 +1,4 @@
+#!/bin/bash
+
+command kubectl get pods 2>/dev/null \
+	| grep -v '^NAME'

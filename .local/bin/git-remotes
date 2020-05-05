@@ -1,0 +1,6 @@
+#!/bin/bash
+
+git-in-repo && {
+	git remote \
+		| fzf --multi --preview ''
+}

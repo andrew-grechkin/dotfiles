@@ -1,0 +1,3 @@
+#!/bin/bash
+
+perl -E 'do {$ARGV[0] and m/$ARGV[0]/ or next; say $_; my @c = split m/\s+/; print `docker rmi --force $c[2]`} foreach `docker images -a`' "$1"

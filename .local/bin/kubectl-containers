@@ -1,0 +1,4 @@
+#!/bin/bash
+
+command kubectl get pods -o jsonpath="{.items[*].spec.containers[*].name}" \
+	| tr ' ' "\n"

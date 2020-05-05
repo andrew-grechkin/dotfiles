@@ -1,0 +1,8 @@
+#!/bin/bash
+
+git-in-repo && {
+	git-log --single-worktree --no-merges "$@" \
+		| fzf-git-log "$@"
+#	--topo-order
+#	--since="12 weeks ago"
+}

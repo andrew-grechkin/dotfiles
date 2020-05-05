@@ -1,0 +1,4 @@
+#!/bin/bash
+
+command docker ps -a \
+	| grep -v '^CONTAINER'

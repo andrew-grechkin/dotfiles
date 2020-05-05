@@ -1,0 +1,6 @@
+#!/bin/bash
+
+git-in-repo && {
+	git-log --single-worktree --no-merges \
+		| fzf-git-ref
+}

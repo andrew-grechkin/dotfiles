@@ -17,29 +17,6 @@ function git-set-fast() {
 	git config zsh-prompt.status fast
 }
 
-# => recursive operations ---------------------------------------------------------------------------------------- {{{1
-
-function git-pull-recursive() {
-	local CWD=${1:-$(pwd)}
-
-	for git_dir in "$CWD"/**/.git; do
-		repo=$(dirname $git_dir)
-		echo '\033[0;33m'"Updating $repo"'\033[0m'
-		git -C $repo fetch --all -p
-		git -C $repo pull
-	done
-}
-
-function git-gc-recursive() {
-	local CWD=${1:-$(pwd)}
-
-	for git_dir in "$CWD"/**/.git; do
-		repo=$(dirname $git_dir)
-		echo '\033[0;33m'"Gc $repo"'\033[0m'
-		git -C $repo reflog expire --all --expire=now && nice git -C $repo gc --prune=now --aggressive
-	done
-}
-
 # => prompt vcs_info --------------------------------------------------------------------------------------------- {{{1
 
 function +vi-git-set-message-status() {

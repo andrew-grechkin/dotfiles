@@ -1,0 +1,8 @@
+#!/bin/bash
+
+DIR="${1:-$(pwd)}"
+
+[[ -d "$DIR" ]] && {
+	tree -Chp "$DIR" \
+	|| ls -la --color=always
+} 2> /dev/null

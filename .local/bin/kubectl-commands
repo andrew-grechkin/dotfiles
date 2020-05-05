@@ -1,0 +1,5 @@
+#!/bin/bash
+
+command kubectl --help 2>/dev/null \
+	| grep --color=never '^\s\{2\}\w' \
+	| grep -v 'kubectl'

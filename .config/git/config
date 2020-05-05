@@ -2,21 +2,20 @@
 	br       = branch -vv
 	bush     = !"f(){ while true; do git push && break; git pull --no-tags --rebase || break; done }; f"
 	co       = checkout
-	compress = !"zsh -c 'gcompress'"
+	compress = !"git-compress"
 	d        = diff -b --submodule=diff
 	dg       = difftool --gui
 	dt       = difftool
 	fall     = fetch --all --prune --prune-tags
 	ha       = !git --no-pager log --all --graph --pretty=oneline
-	l        = !"zsh -c 'glo'"
-	lr       = !"zsh -c 'glor'"
-	lg       = !"zsh -c 'glog'"
-	la       = !"zsh -c 'gla'"
-	lag      = !"zsh -c 'glag'"
+	l        = !"git-log-branch"
+	lr       = !"git-reflog"
+	lg       = !"git-log-graph"
+	la       = !"git-log-all"
+	lag      = !"git-log-all-graph"
 	mg       = mergetool --gui
 	mt       = mergetool
-	pall     = !"zsh -c 'gpall'"
-	pushallf = !"zsh -c 'gpushallf'"
+	pall     = !"git-push-all"
 	sh       = show --show-signature -b
 	st       = status -b
 	up       = pull -v --no-tags

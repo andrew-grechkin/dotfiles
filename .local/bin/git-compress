@@ -1,0 +1,4 @@
+#!/bin/bash
+
+command git reflog expire --all --expire=now \
+&& nice git gc --prune=now --aggressive

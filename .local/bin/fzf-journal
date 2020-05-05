@@ -1,0 +1,9 @@
+#!/bin/bash
+
+CMD=(
+	fzf
+	--tac
+	"${FZF_DEFAULT_BINDS[@]}"
+)
+
+"${CMD[@]}"

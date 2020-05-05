@@ -1,0 +1,3 @@
+#!/bin/bash
+
+command git rev-parse HEAD &>/dev/null

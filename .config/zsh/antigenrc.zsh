@@ -10,7 +10,6 @@ antigen bundle vi-mode
 antigen bundle broot
 antigen bundle cpanm
 antigen bundle dirpersist
-antigen bundle encode64
 antigen bundle fzf
 antigen bundle gnupg
 antigen bundle grep

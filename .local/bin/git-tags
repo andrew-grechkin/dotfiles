@@ -1,0 +1,6 @@
+#!/bin/bash
+
+git-in-repo && {
+	git tag --sort -version:refname \
+		| fzf --multi --preview 'git show --color=always {}'
+}

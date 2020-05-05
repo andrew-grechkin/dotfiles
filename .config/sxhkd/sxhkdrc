@@ -8,13 +8,13 @@ super + shift + Return
 super + control + v
 	$HOME/.local/bin/play-clipboard-url
 super + BackSpace
-	$HOME/.local/bin/exit.rofi
+	$HOME/.local/bin/rofi-exit
 super + control + l
-	$HOME/.local/bin/exit.rofi lock
+	$HOME/.local/bin/rofi-exit lock
 super + shift + e
-	$HOME/.local/bin/emoji.rofi
+	$HOME/.local/bin/rofi-emoji
 super + shift + s
-	$HOME/.local/bin/gopass.rofi
+	$HOME/.local/bin/rofi-gopass
 super + c
 	rofi -show calc -modi "calc:qalc +u8" -no-show-match -no-sort
 super + d

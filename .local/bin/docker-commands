@@ -1,0 +1,4 @@
+#!/bin/bash
+
+command docker --help 2>/dev/null \
+	| grep --color=never '^\s\{2\}\w'
