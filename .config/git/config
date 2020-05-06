@@ -8,11 +8,11 @@
 	dt       = difftool
 	fall     = fetch --all --prune --prune-tags
 	ha       = !git --no-pager log --all --graph --pretty=oneline
-	l        = !git-log-branch
-	lr       = !git-reflog
-	lg       = !git-log-graph
-	la       = !git-log-all
-	lag      = !git-log-all-graph
+	l        = !fzf-git-log-branch
+	lr       = !fzf-git-reflog
+	lg       = !fzf-git-log-graph
+	la       = !fzf-git-log-all
+	lag      = !fzf-git-log-all-graph
 	mg       = mergetool --gui
 	mt       = mergetool
 	pall     = !git-push-all

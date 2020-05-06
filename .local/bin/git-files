@@ -4,6 +4,5 @@ DN=$(dirname "$0")
 PATH=$DN:$PATH
 
 git-in-repo && {
-	git ls-files -co --exclude-standard \
-	| fzf --multi
+	git ls-files -co --exclude-standard
 }

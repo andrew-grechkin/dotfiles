@@ -4,6 +4,5 @@ DN=$(dirname "$0")
 PATH=$DN:$PATH
 
 git-in-repo && {
-	git-log --all --graph --reflog "$@" \
-		| fzf-git-log "$@"
+	git-log --all --graph --reflog "$@"
 }

@@ -4,6 +4,5 @@ DN=$(dirname "$0")
 PATH=$DN:$PATH
 
 git-in-repo && {
-	git branch --all --no-column --sort -objectname --format='%(refname:lstrip=2)' \
-		| fzf --multi --preview 'git show --color=always {}'
+	git branch --all --no-column --sort -objectname --format='%(refname:lstrip=2)'
 }

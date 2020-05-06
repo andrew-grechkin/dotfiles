@@ -1,0 +1,6 @@
+#!/bin/bash
+
+DN=$(dirname "$0")
+PATH=$DN:$PATH
+
+git-tags | fzf --multi --preview 'git show --color=always {}'

@@ -4,8 +4,7 @@ DN=$(dirname "$0")
 PATH=$DN:$PATH
 
 git-in-repo && {
-	git-log --single-worktree --no-merges "$@" \
-		| fzf-git-log "$@"
+	git-log --single-worktree --no-merges "$@"
 #	--topo-order
 #	--since="12 weeks ago"
 }

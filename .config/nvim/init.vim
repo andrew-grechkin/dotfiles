@@ -151,6 +151,7 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'majutsushi/tagbar'
 		Plug 'vimwiki/vimwiki'                                                 " Personal wiki
 		Plug 'masukomi/vim-markdown-folding'
+		Plug 'pedrohdz/vim-yaml-folds'
 		Plug 'simnalamburt/vim-mundo', {'on': 'MundoToggle'}                   " Visualize the undo tree
 		Plug 'w0rp/ale'                                                        " Async syntax checker
 	endif
@@ -570,7 +571,7 @@ augroup SettingsByFileType
 	autocmd Filetype python setlocal foldmethod=indent expandtab smarttab tabstop=4 shiftwidth=4 softtabstop=4
 	autocmd FileType qf     set      nobuflisted
 	autocmd Filetype vim    setlocal foldmethod=marker
-	autocmd Filetype yaml   setlocal foldmethod=syntax expandtab smarttab tabstop=2 shiftwidth=2 softtabstop=2
+	autocmd Filetype yaml   setlocal expandtab smarttab tabstop=2 shiftwidth=2 softtabstop=2
 	autocmd FileType sh     setlocal iskeyword+=$
 augroup END
 

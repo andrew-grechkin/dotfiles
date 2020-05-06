@@ -115,11 +115,11 @@ function _fzf_complete_kubectl_post() {
 
 # => git completion ---------------------------------------------------------------------------------------------- {{{1
 
-function fzf-git-branches-widget() LBUFFER+=$(git-branches | stdin-join-lines)
-function fzf-git-files-widget()    LBUFFER+=$(git-files | stdin-join-lines)
-function fzf-git-hashes-widget()   LBUFFER+=$(git-hashes | stdin-join-lines)
-function fzf-git-remotes-widget()  LBUFFER+=$(git-remotes | stdin-join-lines)
-function fzf-git-tags-widget()     LBUFFER+=$(git-tags | stdin-join-lines)
+function fzf-git-branches-widget() LBUFFER+=$(fzf-git-branches | stdin-join-lines)
+function fzf-git-files-widget()    LBUFFER+=$(fzf-git-files    | stdin-join-lines)
+function fzf-git-hashes-widget()   LBUFFER+=$(fzf-git-hashes   | stdin-join-lines)
+function fzf-git-remotes-widget()  LBUFFER+=$(fzf-git-remotes  | stdin-join-lines)
+function fzf-git-tags-widget()     LBUFFER+=$(fzf-git-tags     | stdin-join-lines)
 
 zle -N fzf-git-branches-widget
 zle -N fzf-git-files-widget
