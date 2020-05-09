@@ -105,3 +105,9 @@ function _fzf_command_helper() {
 		|| _fzf_compgen_helper "$(pwd)" 'f'
 	} 2>/dev/null
 }
+
+# => kubectl ----------------------------------------------------------------------------------------------------- {{{1
+
+function kpatch() {
+	kubectl patch -p '{"spec":{"targetStep":2}}' --type="merge" "$@"
+}

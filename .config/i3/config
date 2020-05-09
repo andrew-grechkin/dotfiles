@@ -88,9 +88,11 @@ set $ws0                  "0"
 
 # => monitors ---------------------------------------------------------------------------------------------------- {{{1
 
-set $left_mon             "DP2"
-set $center_mon           "HDMI1"
-set $right_mon            "eDP1"
+#set $left_mon             "DP2"
+#set $center_mon           "HDMI1"
+#set $right_mon            "eDP1"
+set $left_mon             "HDMI1"
+set $center_mon           "eDP1"
 
 # => switch to workspace ----------------------------------------------------------------------------------------- {{{1
 
