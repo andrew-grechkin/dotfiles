@@ -495,45 +495,45 @@ set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,
 " Sample mappings
 
 " Start shell in current directory
-nnoremap s :shell<cr>
+nnoremap s :shell<CR>
 
 " Display sorting dialog
-nnoremap S :sort<cr>
+nnoremap S :sort<CR>
 
 " Toggle visibility of preview window
-nnoremap w :view<cr>
-vnoremap w :view<cr>gv
+nnoremap w :view<CR>
+vnoremap w :view<CR>gv
 
 " Open file in existing instance of gvim
-nnoremap o :!gvim --remote-tab-silent %f<cr>
+nnoremap o :!gvim --remote-tab-silent %f<CR>
 " Open file in new instance of gvim
-nnoremap O :!gvim %f<cr>
+nnoremap O :!gvim %f<CR>
 
 " Open file in the background using its default program
-nnoremap gb :file &<cr>l
+nnoremap gb :file &<CR>l
 
 " Interaction with system clipboard
 if has('win')
 	" Yank current directory path to Windows clipboard with forward slashes
-	nnoremap yp :!echo %"d:gs!\!/! %i | clip<cr>
+	nnoremap yp :!echo %"d:gs!\!/! %i | clip<CR>
 	" Yank path to current file to Windows clipboard with forward slashes
-	nnoremap yf :!echo %"c:gs!\!/! %i | clip<cr>
+	nnoremap yf :!echo %"c:gs!\!/! %i | clip<CR>
 elseif executable('xclip')
 	" Yank current directory path into the clipboard
-	nnoremap yd :!echo -n %d | xclip -i -sel p -f %i | xclip -i -sel c %i<cr>
+	nnoremap yd :!echo -n %d | xclip -i -sel p -f %i | xclip -i -sel c %i<CR>
 	" Yank current file path into the clipboard
-	nnoremap yf :!echo -n %c:p | xclip -i -sel p -f %i | xclip -i -sel c %i<cr>
+	nnoremap yf :!echo -n %c:p | xclip -i -sel p -f %i | xclip -i -sel c %i<CR>
 	" yank current filename without path into the clipboard
-	nnoremap yn :!echo -n %c | xclip -i -sel p -f %i | xclip -i -sel c %i<cr>
+	nnoremap yn :!echo -n %c | xclip -i -sel p -f %i | xclip -i -sel c %i<CR>
 	" yank root of current file's name into the clipboard
-	nnoremap yr :!echo -n %c:r | xclip -i -sel p -f %i | xclip -i -sel c %i<cr>
+	nnoremap yr :!echo -n %c:r | xclip -i -sel p -f %i | xclip -i -sel c %i<CR>
 elseif executable('xsel')
 	" Yank current directory path into primary and selection clipboards
 	nnoremap yd :!echo -n %d | xsel --input --primary %i &&
-				\ echo -n %d | xsel --clipboard --input %i<cr>
+				\ echo -n %d | xsel --clipboard --input %i<CR>
 	" Yank current file path into into primary and selection clipboards
 	nnoremap yf :!echo -n %c:p | xsel --input --primary %i &&
-				\ echo -n %c:p | xsel --clipboard --input %i<cr>
+				\ echo -n %c:p | xsel --clipboard --input %i<CR>
 endif
 
 " Mappings for faster renaming
@@ -542,24 +542,24 @@ nnoremap cc cw<c-u>
 nnoremap A cw
 
 " Open console in current directory
-nnoremap ,t :!exo-open --launch TerminalEmulator &<cr>
+nnoremap ,t :!exo-open --launch TerminalEmulator &<CR>
 
 " Open editor to edit vifmrc and apply settings after returning to vifm
-nnoremap ,c :write | edit $MYVIFMRC | restart<cr>
+nnoremap ,c :write | edit $MYVIFMRC | restart<CR>
 " Open gvim to edit vifmrc
-nnoremap ,C :!gvim --remote-tab-silent $MYVIFMRC &<cr>
+nnoremap ,C :!gvim --remote-tab-silent $MYVIFMRC &<CR>
 
 " Toggle wrap setting on ,w key
-nnoremap ,w :set wrap!<cr>
+nnoremap ,w :set wrap!<CR>
 
 " Example of standard two-panel file managers mappings
-nnoremap <f2> :file<cr>
-nnoremap <f3> :!less %f<cr>
-nnoremap <f4> :edit<cr>
-nnoremap <f5> :copy<cr>
-nnoremap <f6> :move<cr>
+nnoremap <f2> :file<CR>
+nnoremap <f3> :!less %f<CR>
+nnoremap <f4> :edit<CR>
+nnoremap <f5> :copy<CR>
+nnoremap <f6> :move<CR>
 nnoremap <f7> :mkdir<space>
-nnoremap <f8> :delete<cr>
+nnoremap <f8> :delete<CR>
 nnoremap <a-h> <tab>
 nnoremap <a-l> <tab>
 
@@ -593,8 +593,9 @@ set grepprg='ag --line-numbers %i %a %s'
 command! FZFfind   :set noquickview | :execute 'goto "'.system('_fzf_compgen_helper "." f | fzf --border --reverse 2>/dev/tty || echo "./dummy"').'"%IU' | redraw
 command! FZFlocate :set noquickview | :execute 'goto "'.system('command locate / | fzf --border --reverse 2>/dev/tty || echo "./dummy"').'"%IU' | redraw
 
-nnoremap <c-p> :FZFfind<cr>
-nnoremap <c-t> :FZFlocate<cr>
+nnoremap <c-p> :FZFfind<CR>
+nnoremap <c-t> :FZFlocate<CR>
+nnoremap <c-@> :sync<CR>
 
 " silently extract selected archives in background
 command extract aunpack %f &>/dev/null &
