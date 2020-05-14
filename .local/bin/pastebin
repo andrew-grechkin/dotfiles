@@ -1,12 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
 
 # pastebin - Copy data to termbin/pastebin service
 #
 # Usage:
 #  <command> | pastebin      - copies stdin to termbin/pastebin
 #  pastebin <file> <file>... - copies file's contents to termbin/pastebin
-
-set -eo pipefail
 
 DN=$(dirname "$0")
 PATH=$DN:$PATH

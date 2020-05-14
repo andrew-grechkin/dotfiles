@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
 
 chosen="$(perl "${HOME}/.local/bin/grep-emoji" | LC_ALL=en_US.utf8 fzf)"
 

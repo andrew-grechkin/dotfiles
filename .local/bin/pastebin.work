@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-set -eo pipefail
+set -Eeuo pipefail
 
 DN=$(dirname "$0")
 PATH=$DN:$PATH

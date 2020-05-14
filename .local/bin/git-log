@@ -1,5 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # man: git-log
+
+set -Eeuo pipefail
 
 DN=$(dirname "$0")
 PATH=$DN:$PATH

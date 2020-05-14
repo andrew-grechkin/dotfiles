@@ -1,3 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
 
 command docker images --format '{{.Repository}}:{{.Tag}} \t\t{{.ID}} \t\t{{.Size}} \t\t{{.CreatedSince}}' 2>/dev/null

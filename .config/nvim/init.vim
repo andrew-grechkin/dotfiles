@@ -394,7 +394,8 @@ silent! tnoremap <C-l>                 <C-\><C-N><C-w><Right>
 		nnoremap <C-PageUp>            :tabprevious<CR>
 
 " Black hole deletes
-		nnoremap <leader><leader>d     "_d
+		nnoremap <leader>d             "_d
+		vnoremap <leader>dd            "_dd
 
 " < and > don't loose selection when changing indentation
 		vnoremap >                     >gv

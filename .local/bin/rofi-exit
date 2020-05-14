@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
 
 function _i3lock() {
 	TMP_FILE="${XDG_RUNTIME_DIR}/screen-lock-tmp.png"

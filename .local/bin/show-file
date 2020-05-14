@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
 
 [[ -f "$1" ]] && {
 	bat --style=numbers --color=always "$1" \

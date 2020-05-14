@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
 
 function list-gopass-files() {
 	shopt -s nullglob globstar
@@ -21,10 +23,10 @@ elif [[ $# -lt 2 ]]; then
 else
 	if [[ "$1" == "--pass" ]]; then
 		# gopass --clip is broken for some reason, temporary substitution
-		mapfile -t DATA < <(gopass show "$2")
-		echo "${DATA[0]}" | xclip -i -sel p -f | xclip -i -sel c &>/dev/null
-		notify-send "Password for $2 copied to clipboard" -i dialog-password
-		# gopass --clip "$2" | while read -r MESSAGE; do notify-send "$MESSAGE" -i dialog-password; done
+		# mapfile -t DATA < <(gopass show "$2")
+		# echo "${DATA[0]}" | xclip -i -sel p -f | xclip -i -sel c &>/dev/null
+		# notify-send "Password for $2 copied to clipboard" -i dialog-password
+		gopass --clip "$2" | while read -r MESSAGE; do notify-send "$MESSAGE" -i dialog-password; done
 	elif [[ "$1" == "--otp" ]]; then
 		gopass otp --clip "$2" | while read -r MESSAGE; do notify-send "$MESSAGE" -i dialog-password; done
 	elif [[ "$1" == "--name" ]]; then

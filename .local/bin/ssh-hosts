@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
 
 function ssh_config_parsed_hosts() {
 	local SSH_CONF=(~/.ssh/config ~/.ssh/config.d/* /etc/ssh/ssh_config)
