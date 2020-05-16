@@ -18,6 +18,7 @@ ln -sf "$WORKDIR/.xprofile"                                            ~/
 [ -z "$MYVIMRC" ] && ln -sf "$WORKDIR/.config/nvim/init.vim"           ~/.vimrc
 
 
+ln -sf "$WORKDIR/.config/alacritty"                                    ~/.config/
 ln -sf "$WORKDIR/.config/compton.conf"                                 ~/.config/
 ln -sf "$WORKDIR/.config/fontconfig/conf.d"                            ~/.config/fontconfig/
 ln -sf "$WORKDIR/.config/git"                                          ~/.config/
