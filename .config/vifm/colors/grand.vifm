@@ -55,7 +55,9 @@ highlight /.*\.7z$|
 	\.*\.rar$|
 	\.*\.tar$|
 	\.*\.tgz$|
+	\.*\.tzst$|
 	\.*\.xz$|
+	\.*\.zst$|
 	\.*\.zip$/I          cterm=bold              ctermfg=red          ctermbg=none
 highlight /.*\.avi$|
 	\.*\.lrv$|

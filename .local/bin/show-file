@@ -3,7 +3,7 @@
 set -Eeuo pipefail
 
 [[ -f "$1" ]] && {
-	bat --style=numbers --color=always "$1" \
-	|| pygmentize -O style=monokai -f console256 -g "$1" \
+	pygmentize -O style=monokai -f console256 -g "$1" \
+	|| bat --style=numbers --color=always "$1" \
 	|| cat "$1"
 } 2> /dev/null

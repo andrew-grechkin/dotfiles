@@ -1,17 +1,13 @@
-" vim: filetype=vim :
-" Sample configuration file for vifm (last updated: 2 June, 2019)
-" You can edit this file by hand.
-" The " character at the beginning of a line comments out the line.
-" Blank lines are ignored.
-" The basic format for each item is shown with an example.
+" vim: filetype=vim
+" man: https://vifm.info/manual.shtml
 
-" ------------------------------------------------------------------------------
+" => Generic settings -------------------------------------------------------------------------------------------- {{{1
 
-" Command used to edit files in various contexts.  The default is vim.
+" Command used to edit files in various contexts. The default is vim.
 " If you would like to use another vi clone such as Elvis or Vile
 " you will need to change this setting.
 
-set vicmd=vim
+" set vicmd=vim
 " set vicmd=elvis\ -G\ termcap
 " set vicmd=vile
 
@@ -60,17 +56,16 @@ set vimhelp
 " If you would like to run an executable file when you
 " press return on the file name set this.
 
-set norunexec
+set runexec
 
 " Selected color scheme
 
 colorscheme grand
 
-" Format for displaying time in file list. For example:
-" TIME_STAMP_FORMAT=%m/%d-%H:%M
+" Format for displaying time in file list. For example: TIME_STAMP_FORMAT=%m/%d-%H:%M
 " See man date or man strftime for details.
 
-set timefmt=%m/%d\ %H:%M
+set timefmt=%F\ %T
 
 " Show list of matches on tab completion in command-line mode
 
@@ -85,8 +80,7 @@ set wildstyle=popup
 
 set suggestoptions=normal,visual,view,otherpane,keys,marks,registers
 
-" Ignore case in search patterns unless it contains at least one uppercase
-" letter
+" Ignore case in search patterns unless it contains at least one uppercase letter
 
 set ignorecase
 set smartcase
@@ -102,64 +96,56 @@ set incsearch
 
 set scrolloff=4
 
-" Don't do too many requests to slow file systems
-
-if !has('win')
-	set slowfs=curlftpfs
-endif
-
 " Set custom status line look
 
-set statusline="  Hint: %z%= %A %10u:%-7g %15s %20d  "
+set statusline=" Hint: %z%= %A %10u:%-7g %15s %20d "
 
-" => :mark mark /full/directory/path [filename] ------------------------------------------------------------------ {{{1
+" => Commands ---------------------------------------------------------------------------------------------------- {{{1
+" man: https://vifm.info/manual.shtml#Command%20macros
 
-mark b ~/.local/bin/
-mark d ~/git/private/dotfiles/submodules/private ssh
-mark h ~/
-mark m /media/nfs/home
-mark r \/                                        home
-mark u ~/.local/usr/
-mark p ~/.local/share/perlbrew                   libs
+command! reload :write | restart
 
-" ------------------------------------------------------------------------------
-
-" :com[mand][!] command_name action
-" The following macros can be used in a command
-" %a is replaced with the user arguments.
-" %c the current file under the cursor.
-" %C the current file under the cursor in the other directory.
-" %f the current selected file, or files.
-" %F the current selected file, or files in the other directory.
-" %b same as %f %F.
-" %d the current directory name.
-" %D the other window directory name.
-" %m run the command in a menu window
-
-command! df     df -h %m 2> /dev/null
-command! diff   vim -d %f %F
-command! fd     fd %a %m
+" create
+command! take   :mkdir %a | cd %a
 command! ln     ln    %f:p %D
 command! lns    ln -s %f:p %D
-command! make   !!make %a
-command! reload :write | restart
+
+" execute
 command! run    !! ./%f
-command! take   :mkdir %a | cd %a
+command! make   !!make %a
+
+" info
+command! df     df -h %m 2> /dev/null
+
+" compare
+command! diff   vim -d %f %F
+
+" search
+command! fd     fd %a %M
 command! vgrep  vim "+grep %a"
-command! zip    zip -r %f.zip %f
 
-" ------------------------------------------------------------------------------
+" pack
+command! tar    tar -I zstd -cvf %c.tzst %f
+command! z      7z a             %c.7z   %f
+command! zip    zip -r           %c.zip  %f
 
-" The file type is for the default programs to be used with
-" a file extension.
+" unpack
+command! untar  tar -xf     %c
+command! unz    7z x        %c
+command! unzip  unar -e 866 %c
+" silently extract selected archives in background
+command extract aunpack %f &>/dev/null &
+
+" => File associations ------------------------------------------------------------------------------------------- {{{1
+
+" The file type is for the default programs to be used with a file extension.
 " :filetype pattern1,pattern2 defaultprogram,program2
 " :fileviewer pattern1,pattern2 consoleviewer
 " The other programs for the file type can be accessed with the :file command
 " The command macros %f, %F, %d, %F may be used in the commands.
 " The %a macro is ignored.  To use a % you must put %%.
 
-" For automated FUSE mounts, you must register an extension with :file[x]type
-" in one of following formats:
+" For automated FUSE mounts, you must register an extension with :file[x]type in one of following formats:
 "
 " :filetype extensions FUSE_MOUNT|some_mount_command using %SOURCE_FILE and %DESTINATION_DIR variables
 " %SOURCE_FILE and %DESTINATION_DIR are filled in by vifm at runtime.
@@ -173,10 +159,10 @@ command! zip    zip -r %f.zip %f
 " %PARAM value is filled from the first line of file (whole line).
 " Example first line for SshMount filetype: root@127.0.0.1:/
 "
-" You can also add %CLEAR if you want to clear screen before running FUSE
-" program.
+" You can also add %CLEAR if you want to clear screen before running FUSE program.
 
-" ebook
+" => File associations: ebooks ----------------------------------------------------------------------------------- {{{1
+
 filextype *.chm,*.epub,*.fb2,*.fbz,*.fb2.zip,*.mobi,*.rtf,*.tcr
 	\ cr3 %f %i &,
 	\ xdg-open %c %i &,
@@ -186,7 +172,8 @@ filextype *.fb2,*.xml
 	\ lint-fb2 %c %i &,
 	\ kate %c %i &,
 
-" Pdf
+" => File associations: Pdf -------------------------------------------------------------------------------------- {{{1
+
 filextype *.pdf
 	\ {View in zathura}
 	\ cat %c | zathura %i - &,
@@ -197,14 +184,16 @@ filextype *.pdf
 fileviewer *.pdf
 	\ pdftotext -nopgbrk %c -,
 
-" PostScript
+" => File associations: PostScript ------------------------------------------------------------------------------- {{{1
+
 filextype *.ps,*.eps,*.ps.gz
 	\ {View in zathura}
 	\ zathura %c %i &,
 	\ {View in gv}
 	\ gv %c %i &,
 
-" Djvu
+" => File associations: Djvu ------------------------------------------------------------------------------------- {{{1
+
 filextype *.djvu
 	\ {View in zathura}
 	\ cat %c | zathura %i - &,
@@ -213,7 +202,8 @@ filextype *.djvu
 	\ {View in apvlv}
 	\ apvlv,
 
-" Audio
+" => File associations: Audio ------------------------------------------------------------------------------------ {{{1
+
 filetype *.wav,*.mp3,*.flac,*.m4a,*.m4b,*.wma,*.ape,*.ac3,*.og[agx],*.spx,*.opus,*.cue,*.wv
 	\ {Play using mpv}
 	\ mpv --no-osc --term-osd=force --no-audio-display,
@@ -247,7 +237,8 @@ filetype *.ogg
 filetype *.mid,*.midi
 	\ timidity -inq -- %c,
 
-" Video
+" => File associations: Video ------------------------------------------------------------------------------------ {{{1
+
 filextype *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
 	\*.fl[icv],*.m2v,*.mov,*.webm,*.mts,*.lrv,*.m4v,*.r[am],*.qt,*.divx,
 	\*.as[fx]
@@ -265,8 +256,9 @@ fileviewer *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.mpeg,*.vob,
 	\ mediainfo,
 	\ ffprobe -pretty %c 2>&1,
 
-" Web
-filextype *.html,*.htm
+" => File associations: Web -------------------------------------------------------------------------------------- {{{1
+
+filextype *.html,*.htm,*.mht
 	\ {Open with default browser}
 	\ exo-open --launch WebBrowser %f &,
 	\ {Open with dwb}
@@ -278,22 +270,11 @@ filextype *.html,*.htm
 filetype *.html,*.htm
 	\ links,
 	\ lynx,
+fileviewer *.htm,*.html
+	\ html2text2 %f
 
-" Object
-filetype *.o
-	\ nm %f | less,
+" => File associations: Images ----------------------------------------------------------------------------------- {{{1
 
-" Cert
-fileviewer *.pem
-	\ openssl x509 -inform PEM -in %f -text
-
-" Man page
-filetype *.[1-8]
-	\ man ./%c,
-fileviewer *.[1-8]
-	\ man ./%c | col -b,
-
-" Images
 filextype *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm
 	\ {View in vimiv}
 	\ vimiv %c %i &,
@@ -306,6 +287,23 @@ filextype *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm
 fileviewer *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm
 	\ mediainfo,
 	\ identify -verbose,
+
+" => File associations: Object ----------------------------------------------------------------------------------- {{{1
+
+filetype *.o
+	\ nm %f | less,
+
+" => File associations: misc ------------------------------------------------------------------------------------- {{{1
+
+" Cert
+fileviewer *.pem
+	\ openssl x509 -inform PEM -in %f -text
+
+" Man page
+filetype *.[1-8]
+	\ man ./%c,
+fileviewer *.[1-8]
+	\ man ./%c | col -b,
 
 " OpenRaster
 filextype *.ora
@@ -355,71 +353,8 @@ filetype *.torrent
 fileviewer *.torrent
 	\ dumptorrent -v,
 
-" FuseZipMount
-"filetype *.zip,*.jar,*.war,*.ear,*.oxt,*.apkg
-"    \ {Mount with fuse-zip}
-"    \ FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR,
-"    \ {View contents}
-"    \ zip -sf %c | less,
-"    \ {Extract here}
-"    \ tar -xf,
-fileviewer *.zip,*.jar,*.war,*.ear,*.oxt
-	\ zip -sf,
-
-" ArchiveMount
-filetype *.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,*.txz,*.zip,*.jar,*.war,*.ear,*.oxt,*.apkg,*.rar,*.7z
-	\ {Mount with archivemount}
-	\ FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR,
-fileviewer *.tgz,*.tar.gz
-	\ tar -tzf,
-fileviewer *.tar.bz2,*.tbz2
-	\ tar -tjf,
-fileviewer *.tar.txz,*.txz
-	\ xz --list,
-fileviewer *.tar
-	\ tar -tf,
-
-" Rar2FsMount and rar archives
-filetype *.rar
-	\ {Mount with rar2fs}
-	\ FUSE_MOUNT|rar2fs %SOURCE_FILE %DESTINATION_DIR,
-fileviewer *.rar
-	\ unrar v,
-
-" IsoMount
-filetype *.iso,*.mdf,*.nrg
-	\ {Mount with fuseiso}
-	\ FUSE_MOUNT|fuseiso %SOURCE_FILE %DESTINATION_DIR,
-
-" SshMount
-filetype *.ssh
-	\ {Mount with sshfs}
-	\ FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR %FOREGROUND,
-
-" EncfsMount
-filetype *.encfs
-	\ {Mount with encfs}
-	\ FUSE_MOUNT2|encfs %PARAM %DESTINATION_DIR %FOREGROUND,
-
-" FtpMount
-filetype *.ftp
-	\ {Mount with curlftpfs}
-	\ FUSE_MOUNT2|curlftpfs -o ftp_port=-,,disable_eprt %PARAM %DESTINATION_DIR %FOREGROUND,
-
-" Fuse7z and 7z archives
-filetype *.7z
-	\ {Mount with fuse-7z}
-	\ FUSE_MOUNT|fuse-7z %SOURCE_FILE %DESTINATION_DIR,
-fileviewer *.7z
-	\ 7z l,
-
-" Office files
-filextype *.odt,*.doc,*.docx,*.xls,*.xlsx,*.odp,*.pptx
-	\ libreoffice %f &,
-fileviewer *.doc
-	\ catdoc,
-fileviewer *.docx
-	\ docx2txt.pl %f -,
+fileviewer *.gpg
+	\ gpg --decrypt
 
 " TuDu files
 filetype *.tudu
@@ -429,34 +364,101 @@ filetype *.tudu
 filextype *.pro
 	\ qtcreator %f &,
 
-" Directories
-filextype */
-	\ {View in thunar}
-	\ Thunar %f &,
+" => File associations: office files ----------------------------------------------------------------------------- {{{1
 
-fileviewer *.gpg
-	\ gpg --decrypt
+filextype *.odt,*.doc,*.docx,*.xls,*.xlsx,*.odp,*.pptx
+	\ libreoffice %f &,
+fileviewer *.doc
+	\ catdoc,
+fileviewer *.docx
+	\ docx2txt.pl %f -,
 
-" Syntax highlighting in preview
-"
-" Explicitly set highlight type for some extensions
-"
+" => File associations: archives --------------------------------------------------------------------------------- {{{1
+
+" FuseZipMount
+"filetype *.zip,*.jar,*.war,*.ear,*.oxt,*.apkg
+"    \ {Mount with fuse-zip}
+"    \ FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR,
+"    \ {View contents}
+"    \ zip -sf %c | less,
+"    \ {Extract here}
+"    \ tar -xf,
+fileviewer *.zip
+	\ unzip -l -O 866,
+fileviewer *.zip,*.jar,*.war,*.ear,*.oxt
+	\ zip -sf,
+
+" ArchiveMount
+filetype *.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,*.txz,*.tar.zst,*.tzst,*.zip,*.jar,*.war,*.ear,*.oxt,*.apkg,*.rar,*.7z
+	\ {Mount with archivemount}
+	\ FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR,
+	\ {Convert to tar.zstd}
+	\ convert-archive %f &,
+fileviewer *.tar,*.tgz,*.tar.gz,*.tar.bz2,*.tbz2,*.tar.xz,*.txz,*.tar.zst,*.tzst
+	\ tar -tf,
+fileviewer *.tar.txz,*.txz
+	\ xz --list,
+
+" Rar2FsMount and rar archives
+filetype *.rar
+	\ {Mount with rar2fs}
+	\ FUSE_MOUNT|rar2fs %SOURCE_FILE %DESTINATION_DIR,
+fileviewer *.rar
+	\ unrar v,
+
+" Fuse7z and 7z archives
+filetype *.7z
+	\ {Mount with fuse-7z}
+	\ FUSE_MOUNT|fuse-7z %SOURCE_FILE %DESTINATION_DIR,
+fileviewer *.7z
+	\ 7z l,
+
+" => File associations: SshMount --------------------------------------------------------------------------------- {{{1
+
+filetype *.ssh
+	\ {Mount with sshfs}
+	\ FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR %FOREGROUND,
+
+" => File associations: FtpMount --------------------------------------------------------------------------------- {{{1
+
+filetype *.ftp
+	\ {Mount with curlftpfs}
+	\ FUSE_MOUNT2|curlftpfs -o ftp_port=-,,disable_eprt %PARAM %DESTINATION_DIR %FOREGROUND,
+
+" => File associations: IsoMount --------------------------------------------------------------------------------- {{{1
+
+filetype *.iso,*.mdf,*.nrg
+	\ {Mount with fuseiso}
+	\ FUSE_MOUNT|fuseiso %SOURCE_FILE %DESTINATION_DIR,
+
+" => File associations: EncfsMount ------------------------------------------------------------------------------- {{{1
+
+filetype *.encfs
+	\ {Mount with encfs}
+	\ FUSE_MOUNT2|encfs %PARAM %DESTINATION_DIR %FOREGROUND,
+
+" => Syntax highlighting in preview ------------------------------------------------------------------------------ {{{1
+
 " 256-color terminal
 " fileviewer *.[ch],*.[ch]pp highlight -O xterm256 -s dante --syntax c %c
 " fileviewer Makefile,Makefile.* highlight -O xterm256 -s dante --syntax make %c
-"
+
 " 16-color terminal
 " fileviewer *.c,*.h highlight -O ansi -s dante %c
-"
-" Or leave it for automatic detection
-"
-fileviewer *[^/]
-	\ pygmentize -O style=monokai -f console256 -g,
-	\ bat -n --color=always,
 
-" Displaying pictures in terminal
-"
+" Default file viewer
+fileviewer *[^/],.*[^/]
+	\ show-file,
+
+" Default dir viewer
+fileviewer */,.*/
+	\ show-dir,
+
+" => Displaying pictures in terminal ----------------------------------------------------------------------------- {{{1
+
 " fileviewer *.jpg,*.png shellpic %c
+
+" => Default file execution -------------------------------------------------------------------------------------- {{{1
 
 " Open all other files with default system programs (you can also remove all
 " :file[x]type commands above to ensure they don't interfere with system-wide
@@ -471,16 +473,14 @@ fileviewer *[^/]
 " For Windows:
 " filetype * start, explorer
 
-" ------------------------------------------------------------------------------
+" => Save state between sessions --------------------------------------------------------------------------------- {{{1
 
 " What should be saved automatically between vifm sessions.  Drop "savedirs"
 " value if you don't want vifm to remember last visited directories for you.
 set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,
 	\phistory,fhistory,dirstack,registers,bookmarks,bmarks
 
-" ------------------------------------------------------------------------------
-
-" Examples of configuring both panels
+" => Examples of configuring both panels ------------------------------------------------------------------------- {{{1
 
 " Customize view columns a bit (enable ellipsis for truncated file names)
 "
@@ -490,9 +490,7 @@ set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,
 "
 " filter! /^.*\.(lo|o|d|class|py[co])$|.*~$/
 
-" ------------------------------------------------------------------------------
-
-" Sample mappings
+" => Sample mappings --------------------------------------------------------------------------------------------- {{{1
 
 " Start shell in current directory
 nnoremap s :shell<CR>
@@ -513,57 +511,47 @@ nnoremap O :!gvim %f<CR>
 nnoremap gb :file &<CR>l
 
 " Interaction with system clipboard
-if has('win')
-	" Yank current directory path to Windows clipboard with forward slashes
-	nnoremap yp :!echo %"d:gs!\!/! %i | clip<CR>
-	" Yank path to current file to Windows clipboard with forward slashes
-	nnoremap yf :!echo %"c:gs!\!/! %i | clip<CR>
-elseif executable('xclip')
-	" Yank current directory path into the clipboard
-	nnoremap yd :!echo -n %d | xclip -i -sel p -f %i | xclip -i -sel c %i<CR>
-	" Yank current file path into the clipboard
-	nnoremap yf :!echo -n %c:p | xclip -i -sel p -f %i | xclip -i -sel c %i<CR>
-	" yank current filename without path into the clipboard
-	nnoremap yn :!echo -n %c | xclip -i -sel p -f %i | xclip -i -sel c %i<CR>
-	" yank root of current file's name into the clipboard
-	nnoremap yr :!echo -n %c:r | xclip -i -sel p -f %i | xclip -i -sel c %i<CR>
-elseif executable('xsel')
-	" Yank current directory path into primary and selection clipboards
-	nnoremap yd :!echo -n %d | xsel --input --primary %i &&
-				\ echo -n %d | xsel --clipboard --input %i<CR>
-	" Yank current file path into into primary and selection clipboards
-	nnoremap yf :!echo -n %c:p | xsel --input --primary %i &&
-				\ echo -n %c:p | xsel --clipboard --input %i<CR>
-endif
+" Yank current directory path into the clipboard
+nnoremap yd :!echo -n %d   %i | clipcopy<CR>
+" Yank current file path into the clipboard
+nnoremap yp :!echo -n %c:p %i | clipcopy<CR>
+" yank current filename without path into the clipboard
+nnoremap yn :!echo -n %c   %i | clipcopy<CR>
 
 " Mappings for faster renaming
-nnoremap I cw<c-a>
+nnoremap A  cw
+nnoremap I  cw<c-a>
 nnoremap cc cw<c-u>
-nnoremap A cw
-
-" Open console in current directory
-nnoremap ,t :!exo-open --launch TerminalEmulator &<CR>
 
 " Open editor to edit vifmrc and apply settings after returning to vifm
 nnoremap ,c :write | edit $MYVIFMRC | restart<CR>
-" Open gvim to edit vifmrc
-nnoremap ,C :!gvim --remote-tab-silent $MYVIFMRC &<CR>
+
+" Open console in current directory
+nnoremap ,t :!exo-open --launch TerminalEmulator &<CR>
 
 " Toggle wrap setting on ,w key
 nnoremap ,w :set wrap!<CR>
 
 " Example of standard two-panel file managers mappings
-nnoremap <f2> :file<CR>
-nnoremap <f3> :!less %f<CR>
-nnoremap <f4> :edit<CR>
-nnoremap <f5> :copy<CR>
-nnoremap <f6> :move<CR>
-nnoremap <f7> :mkdir<space>
-nnoremap <f8> :delete<CR>
-nnoremap <a-h> <tab>
-nnoremap <a-l> <tab>
+nnoremap <f2>  :file<CR>
+nnoremap <f3>  :!less %f<CR>
+nnoremap <f4>  :edit<CR>
+nnoremap <f5>  :copy<CR>
+nnoremap <f6>  :move<CR>
+nnoremap <f7>  :mkdir<space>
+nnoremap <f8>  :delete<CR>
+nnoremap <f10> :quit<CR>
 
-" ------------------------------------------------------------------------------
+" => fsf integration (ctrl-t, ctrl-p) ---------------------------------------------------------------------------- {{{1
+
+command! FZFfind   :set noquickview | :execute 'goto "'.system('_fzf_compgen_helper "." f | fzf --border --reverse 2>/dev/tty || echo "./dummy"').'"%IU' | redraw
+command! FZFlocate :set noquickview | :execute 'goto "'.system('command locate / | fzf --border --reverse 2>/dev/tty || echo "./dummy"').'"%IU' | redraw
+
+nnoremap <c-p> :FZFfind<CR>
+nnoremap <c-t> :FZFlocate<CR>
+nnoremap <c-@> :sync<CR>
+
+" => Various customization examples ------------------------------------------------------------------------------ {{{1
 
 " Various customization examples
 
@@ -588,17 +576,15 @@ set grepprg='ag --line-numbers %i %a %s'
 "
 " let $VIFM_SERVER_NAME = v:servername
 
-" => fsf integration (ctrl-t, ctrl-p) ---------------------------------------------------------------------------- {{{1
+" => bookmarks --------------------------------------------------------------------------------------------------- {{{1
 
-command! FZFfind   :set noquickview | :execute 'goto "'.system('_fzf_compgen_helper "." f | fzf --border --reverse 2>/dev/tty || echo "./dummy"').'"%IU' | redraw
-command! FZFlocate :set noquickview | :execute 'goto "'.system('command locate / | fzf --border --reverse 2>/dev/tty || echo "./dummy"').'"%IU' | redraw
-
-nnoremap <c-p> :FZFfind<CR>
-nnoremap <c-t> :FZFlocate<CR>
-nnoremap <c-@> :sync<CR>
-
-" silently extract selected archives in background
-command extract aunpack %f &>/dev/null &
+mark b ~/.local/bin/
+mark d ~/git/private/dotfiles/submodules/private ssh
+mark h ~/
+mark m /media/nfs/home
+mark r \/                                        home
+mark u ~/.local/usr/
+mark p ~/.local/share/perlbrew                   libs
 
 " => file icons -------------------------------------------------------------------------------------------------- {{{1
 
@@ -607,10 +593,11 @@ set classify+=' ::*.sh::, ::*.cpp::, ::*.c::, ::*.hpp::, ::*.pl,,
 set classify+=' ::/^copying|license$/::, ::.git/,,*.git/::'
 set classify+=' ::*.fb2,,*.epub,,*.djvu::, ::*.pdf::'
 set classify+=' ::*.doc,,*.docx::, ::*.xls,,*.xls[mx]::, ::*.ppt,,*.pptx::'
-set classify+=' ::*.7z,,*.ace,,*.arj,,*.bz2,,*.cpio,,*.dz,,*.gz,,*.jar,,*.lzh,,*.lzma,,*.rar,,*.rz,,*.tar,,*.taz,,*.tb2,,*.tbz,,*.tbz2,,*.tgz,,*.tlz,,*.trz,,*.txz,,*.tz,,*.tz2,,*.xz,,*.z,,*.zip,,*.zoo::, ::*.deb::, ::*.rpm::'
+set classify+=' ::*.7z,,*.ace,,*.arj,,*.bz2,,*.cpio,,*.dz,,*.gz,,*.jar,,*.lzh,,*.lzma,,*.rar,,*.rz,,*.tar,,*.taz,,*.tb2,,*.tbz,,*.tbz2,,*.tgz,,*.tlz,,*.trz,,*.txz,,*.tz,,*.tz2,,*.zst,,*.tzst,,*.xz,,*.z,,*.zip,,*.zoo::, ::*.deb::, ::*.rpm::'
 set classify+=' ::*.bmp,,*.gif,,*.jpeg,,*.jpg,,*.ico,,*.png,,*.ppm,,*.tga,,*.tif,,*.tiff,,*.xbm,,*.xcf,,*.xpm,,*.xspf,,*.xwd,,*.svg,,*.svgz::'
 set classify+=' ::*.aac,,*.anx,,*.asf,,*.au,,*.axa,,*.flac,,*.m2a,,*.m4a,,*.mid,,*.midi,,*.mp3,,*.mpc,,*.oga,,*.ogg,,*.ogx,,*.ra,,*.ram,,*.rm,,*.spx,,*.wav,,*.wma,,*.ac3::'
-set classify+=' ::*.avi,,*.ts,,*.axv,,*.divx,,*.m2v,,*.m4p,,*.m4v,,.mka,,*.mkv,,*.mov,,*.mp4,,*.lrv,,*.flv,,*.mp4v,,*.mpeg,,*.mpg,,*.nuv,,*.ogv,,*.pbm,,*.pgm,,*.qt,,*.vob,,*.wmv,,*.xvid::'
-set classify+=' ::*.htm,,*.html,,**.[sx]html,,*.xml::'
-set classify+=' ::*.diff::'
-set classify+=' ::*.iso::'
+set classify+=' ::*.avi,,*.ts,,*.axv,,*.divx,,*.m2v,,*.m4p,,*.m4v,,.mka,,*.mkv,,*.mov,,*.mp4,,*.lrv,,*.flv::'
+set classify+=' ::*.mp4v,,*.mpeg,,*.mpg,,*.nuv,,*.ogv,,*.pbm,,*.pgm,,*.qt,,*.vob,,*.wmv,,*.xvid::'
+set classify+=' ::*.htm,,*.html,,**.[sx]html,,*.mht,,*.mhtml,,*.xml::'
+set classify+=' ::*.diff,,*.patch::'
+set classify+=' ::*.iso,,*.img::'
