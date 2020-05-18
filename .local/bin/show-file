@@ -3,7 +3,18 @@
 set -Eeuo pipefail
 
 [[ -f "$1" ]] && {
-	pygmentize -O style=monokai -f console256 -g "$1" \
-	|| bat --style=numbers --color=always "$1" \
-	|| cat "$1"
+	stat "$1"
+
+	echo -n "  Type: "
+	file -b "$1"
+	echo
+
+	if file -bi "$1" | grep 'charset=binary' &>/dev/null; then
+		hexdump -C "$1" \
+		|| true
+	else
+		pygmentize -O style=monokai -f console256 -g "$1" \
+		|| bat --style=numbers --color=always "$1" \
+		|| cat "$1"
+	fi
 } 2> /dev/null

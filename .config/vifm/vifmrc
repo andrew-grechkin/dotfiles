@@ -53,10 +53,9 @@ set undolevels=100
 
 set vimhelp
 
-" If you would like to run an executable file when you
-" press return on the file name set this.
+" If you would like to run an executable file when you press return on the file name set this.
 
-set runexec
+set norunexec
 
 " Selected color scheme
 
@@ -164,21 +163,23 @@ command extract aunpack %f &>/dev/null &
 " => File associations: ebooks ----------------------------------------------------------------------------------- {{{1
 
 filextype *.chm,*.epub,*.fb2,*.fbz,*.fb2.zip,*.mobi,*.rtf,*.tcr
-	\ cr3 %f %i &,
+	\ {Open with xdg-open}
 	\ xdg-open %c %i &,
+	\ cr3      %c %i &,
 	\ FBReader %c %i &,
 
 filextype *.fb2,*.xml
-	\ lint-fb2 %c %i &,
-	\ kate %c %i &,
+	\ kate     %f %i &,
+	\ lint-fb2 %f %i &,
 
 " => File associations: Pdf -------------------------------------------------------------------------------------- {{{1
 
 filextype *.pdf
 	\ {View in zathura}
 	\ cat %c | zathura %i - &,
-	\ {View with xdg-open}
+	\ {Open with xdg-open}
 	\ xdg-open %c %i &,
+	\ {View in apvlv}
 	\ apvlv,
 	\ xpdf,
 fileviewer *.pdf
@@ -188,16 +189,16 @@ fileviewer *.pdf
 
 filextype *.ps,*.eps,*.ps.gz
 	\ {View in zathura}
-	\ zathura %c %i &,
+	\ cat %c | zathura %i - &,
 	\ {View in gv}
-	\ gv %c %i &,
+	\ gv      %c %i &,
 
 " => File associations: Djvu ------------------------------------------------------------------------------------- {{{1
 
 filextype *.djvu
 	\ {View in zathura}
 	\ cat %c | zathura %i - &,
-	\ {View with xdg-open}
+	\ {Open with xdg-open}
 	\ xdg-open %c %i &,
 	\ {View in apvlv}
 	\ apvlv,
@@ -276,8 +277,10 @@ fileviewer *.htm,*.html
 " => File associations: Images ----------------------------------------------------------------------------------- {{{1
 
 filextype *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm
+	\ {Open with xdg-open}
+	\ xdg-open %c %i &,
 	\ {View in vimiv}
-	\ vimiv %c %i &,
+	\ vimiv    %c %i &,
 	\ {View in sxiv}
 	\ sxiv,
 	\ {View in gpicview}
@@ -288,12 +291,10 @@ fileviewer *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm
 	\ mediainfo,
 	\ identify -verbose,
 
-" => File associations: Object ----------------------------------------------------------------------------------- {{{1
+" => File associations: misc ------------------------------------------------------------------------------------- {{{1
 
 filetype *.o
 	\ nm %f | less,
-
-" => File associations: misc ------------------------------------------------------------------------------------- {{{1
 
 " Cert
 fileviewer *.pem
@@ -534,7 +535,7 @@ nnoremap ,w :set wrap!<CR>
 
 " Example of standard two-panel file managers mappings
 nnoremap <f2>  :file<CR>
-nnoremap <f3>  :!less %f<CR>
+nnoremap <f3>  :!{ show-dir %c || show-file %c } | less<CR>
 nnoremap <f4>  :edit<CR>
 nnoremap <f5>  :copy<CR>
 nnoremap <f6>  :move<CR>

@@ -1,7 +1,13 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 
 set -Eeuo pipefail
 
-while read LINE; do
-	echo -n " ${(q)LINE}"
-done
+# while read LINE; do
+# 	echo -n " ${(q)LINE}"
+# done
+
+mapfile -t DATA
+
+# do not quote DATA to force bash eliminate empty lines
+# shellcheck disable=SC2086
+echo ${DATA[*]}

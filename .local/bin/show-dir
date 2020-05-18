@@ -5,6 +5,12 @@ set -Eeuo pipefail
 DIR="${1:-$(pwd)}"
 
 [[ -d "$DIR" ]] && {
+	stat "$1"
+
+	echo -n "  Type: "
+	file -b "$1"
+	echo
+
 	tree -Chp "$DIR" \
 	|| ls -la --color=always
 } 2> /dev/null

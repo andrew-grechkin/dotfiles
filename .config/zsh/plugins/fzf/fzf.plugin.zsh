@@ -32,20 +32,13 @@ export FZF_ALT_C_COMMAND='_fzf_compgen_helper $(pwd) d'
 
 # => Setup options ----------------------------------------------------------------------------------------------- {{{1
 
-PREVIEW='
-	b() {(file -bi "$1" | grep "charset=binary") &>/dev/null && (hexdump -C "$1" || true)};
-	f() {b "$1" || show-file "$1"}
-	d() {[[ -d "$1" ]] && (tree -C "$1" || true)};
-	p() {stat "$1"; echo -n "  Type: "; file -b "$1"; echo; (d "$1" || f "$1") 2>&1};
-	p {} | head -n 100
-'
 export FZF_DEFAULT_BINDS=(
 	--bind 'ctrl-d:page-down'
 	--bind 'ctrl-u:page-up'
 	--bind 'f1:toggle-preview'
 	--bind 'f2:toggle-preview-wrap'
 	--bind 'home:top'
-	--bind 'ctrl-y:execute-silent(echo {} | xclip -i -sel p -f | xclip -i -sel c)+abort'
+	--bind 'ctrl-y:execute-silent(echo -n {} | clipcopy)+abort'
 )
 export FZF_FILE_BINDS=(
 	--bind 'f3:execute((show-dir {} || show-file {} ) | $PAGER > /dev/tty 2>&1)'
@@ -57,7 +50,7 @@ export FZF_FILE_BINDS=(
 )
 export FZF_FILE_PREVIEW=(
 	--preview-window=right:78:hidden
-	--preview="${PREVIEW}"
+	--preview="{ show-dir {} || show-file {} } 2>&1 | head -n 100"
 )
 export FZF_DEFAULT_OPTS=$(printf " '%s'" ${FZF_DEFAULT_BINDS[@]} ${FZF_FILE_BINDS[@]} ${FZF_FILE_PREVIEW[@]})
 export FZF_CTRL_T_OPTS="$FZF_DEFAULT_OPTS"
@@ -137,19 +130,19 @@ function fzf-detect-widget() {
 	setopt local_options ksh_glob
 	case "$LBUFFER" in
 		git+( )@(show)*( ))
-			RESULT=$(git-hashes | stdin-join-lines)
+			RESULT=$(fzf-git-hashes | stdin-join-lines)
 			;;
 		git+( )@(remote)+( )@(remove|rename|show)*( ))
-			RESULT=$(git-remotes | stdin-join-lines)
+			RESULT=$(fzf-git-remotes | stdin-join-lines)
 			;;
 		git+( )@(co|checkout|l|log|diff)*( ))
-			RESULT=$(git-branches | stdin-join-lines)
+			RESULT=$(fzf-git-branches | stdin-join-lines)
 			;;
 		git+( )*@(--|rm)*( ))
-			RESULT=$(git-files | stdin-join-lines)
+			RESULT=$(fzf-git-files | stdin-join-lines)
 			;;
 		git+( )@(add)*( ))
-			RESULT=$(git-files | stdin-join-lines)
+			RESULT=$(fzf-git-files | stdin-join-lines)
 			;;
 		docker+( )rmi* | docker*-f* | docker*\ run*)
 			RESULT=$(docker-images | fzf --multi --reverse | awk '{print $1}' | stdin-join-lines)
@@ -180,7 +173,7 @@ function fzf-detect-widget() {
 			;;
 	esac
 	if [[ -n $RESULT ]]; then
-		LBUFFER=$(echo "$LBUFFER" | sed -e 's/[[:space:]]*$//g')
+		LBUFFER=$(echo "$LBUFFER" | sed -e 's/[[:space:]]*$/ /g')
 		LBUFFER+=$RESULT
 	fi
 }
