@@ -3,7 +3,7 @@
 super + Return
 	exo-open --launch TerminalEmulator
 super + shift + Return
-	alacritty --command "$HOME/.local/bin/tmux-default-session"
+	exo-open --launch TerminalEmulator "$HOME/.local/bin/tmux-default-session"
 
 super + control + v
 	$HOME/.local/bin/play-clipboard-url

@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 
-set -Eeuo pipefail
+set -Euo pipefail
 
 WD=${1:-$(pwd)}
 
