@@ -1,13 +1,24 @@
-#!/usr/bin/env bash
+#!/usr/bin/env perl
 
-set -Eeuo pipefail
+use v5.28;
+use strict;
+use warnings;
 
-# while read LINE; do
-# 	echo -n " ${(q)LINE}"
-# done
+print join (' ', map {chomp; length $_ ? $_ : +()} <>); ## no critic [InputOutput::ProhibitJoinedReadline]
 
-mapfile -t DATA
+__END__
 
-# do not quote DATA to force bash eliminate empty lines
-# shellcheck disable=SC2086
-echo ${DATA[*]}
+# perl is much more efficient here
+##!/usr/bin/env bash
+#
+#set -Eeuo pipefail
+#
+## while read LINE; do
+## 	echo -n " ${(q)LINE}"
+## done
+#
+#mapfile -t DATA
+#
+## do not quote DATA to force bash eliminate empty lines
+## shellcheck disable=SC2086
+#echo ${DATA[*]}

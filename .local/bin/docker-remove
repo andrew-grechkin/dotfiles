@@ -2,4 +2,5 @@
 
 set -Eeuo pipefail
 
-perl -E 'do {$ARGV[0] and m/$ARGV[0]/ or next; say $_; my @c = split m/\s+/; print `docker rmi --force $c[2]`} foreach `docker images -a`' "$1"
+command docker images -a \
+	| perl -nlE 'BEGIN {$re = shift} m/$re/ or next; say $_; @c = split m/\s+/; print `docker rmi --force $c[2]`' "$1"
