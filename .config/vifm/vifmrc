@@ -129,11 +129,11 @@ command! z      7z a             %c.7z   %f
 command! zip    zip -r           %c.zip  %f
 
 " unpack
-command! untar  tar -xf     %c
-command! unz    7z x        %c
-command! unzip  unar -e 866 %c
+command! untar  tar -xf     %c &
+command! unz    7z x        %c &
+command! unzip  unar -e 866 %c &
 " silently extract selected archives in background
-command extract aunpack %f &>/dev/null &
+command extract aunpack     %c &>/dev/null &
 
 " => File associations ------------------------------------------------------------------------------------------- {{{1
 
@@ -400,6 +400,10 @@ fileviewer *.tar,*.tgz,*.tar.gz,*.tar.bz2,*.tbz2,*.tar.xz,*.txz,*.tar.zst,*.tzst
 fileviewer *.tar.txz,*.txz
 	\ xz --list,
 
+filetype *.tar,*.tar.bz2,*.tbz2,*.tgz,*.tar.gz,*.tar.xz,*.txz,*.tar.zst,*.tzst
+	\ {Extract here...}
+	\ tar -xf %c &
+
 " Rar2FsMount and rar archives
 filetype *.rar
 	\ {Mount with rar2fs}
@@ -437,6 +441,11 @@ filetype *.iso,*.mdf,*.nrg
 filetype *.encfs
 	\ {Mount with encfs}
 	\ FUSE_MOUNT2|encfs %PARAM %DESTINATION_DIR %FOREGROUND,
+
+" => File associations: so libraries ----------------------------------------------------------------------------- {{{1
+
+fileviewer *.so,lib*.so.*
+	\ readelf -d %f,
 
 " => Syntax highlighting in preview ------------------------------------------------------------------------------ {{{1
 
