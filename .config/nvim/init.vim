@@ -125,7 +125,7 @@ call plug#begin('~/.cache/vim/plugged')
 	Plug 'junegunn/vim-plug'
 	Plug 'junegunn/fzf.vim'                                                    " Fuzzy search
 	Plug 'junegunn/vim-easy-align'
-	Plug 'junegunn/vim-peekaboo'                                               " Preview registers
+"	Plug 'junegunn/vim-peekaboo'                                               " Preview registers
 	Plug 'tpope/vim-abolish'
 	Plug 'tpope/vim-fugitive'                                                  " Git support
 	Plug 'tpope/vim-repeat'                                                    " Repeat everything
@@ -134,8 +134,8 @@ call plug#begin('~/.cache/vim/plugged')
 	Plug 'airblade/vim-gitgutter'                                              " Git status/modifications of the file
 	Plug 'easymotion/vim-easymotion'                                           " Better move commands
 	Plug 'mhinz/vim-grepper'                                                   " Grep integration
-	Plug 'tpope/vim-commentary'                                                " Commenting helpers
-"	Plug 'scrooloose/nerdcommenter', {'on': '<Plug>NERDCommenterToggle'}       " Commenting helpers
+"	Plug 'tpope/vim-commentary'                                                " Commenting helpers
+	Plug 'scrooloose/nerdcommenter', {'on': '<Plug>NERDCommenterToggle'}       " Commenting helpers
 "	Plug 'tomtom/tcomment_vim'                                                 " Commenting helpers
 	Plug 'scrooloose/nerdtree', {'on': 'NERDTreeToggle'}
 	Plug 'mhinz/vim-startify'
@@ -599,6 +599,14 @@ augroup SettingsByFileTypePerl
 	autocmd FileType perl setlocal iskeyword+=$,@,%
 augroup END
 
+" => Filetype: c/cpp --------------------------------------------------------------------------------------------- {{{1
+" man: ft-cpp-syntax
+
+augroup SettingsByFileTypeCpp
+	autocmd!
+	autocmd FileType cpp nmap      <silent> tt <Plug>(ale_fix)
+augroup END
+
 " => Filetype: typescript ---------------------------------------------------------------------------------------- {{{1
 
 augroup SettingsByFileTypeTypescript
@@ -622,11 +630,13 @@ endif
 if PlugLoaded('ale')
 	let g:ale_fix_on_save               = 1                                        " fix files when you save them
 	let g:ale_fix_on_save_ignore        = {
+	\   'cpp':        ['clang-format'],
 	\   'perl':       ['perltidy'],
 	\   'typescript': ['tsfmt'],
 	\}
 	let g:ale_fixers                    = {
 	\   '*':          ['remove_trailing_lines', 'trim_whitespace'],
+	\   'cpp':        ['clang-format', 'remove_trailing_lines', 'trim_whitespace'],
 	\   'perl':       ['remove_trailing_lines', 'trim_whitespace', 'perltidy'],
 	\   'typescript': ['remove_trailing_lines', 'trim_whitespace', 'tsfmt'],
 	\}
@@ -647,9 +657,15 @@ if PlugLoaded('ale')
 	let g:ale_list_window_size          = 5
 
 	" ale_cpp
-	let g:ale_cpp_gcc_options           = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
-	let g:ale_cpp_clang_options         = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
-	let g:ale_cpp_clangd_options        = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
+	let g:ale_c_build_dir_names          = ['.build', 'build']
+	let g:ale_c_parse_compile_commands   = 1
+	let g:ale_c_parse_makefile           = 1
+	let g:ale_cpp_build_dir_names        = ['.build', 'build']
+"	let g:ale_cpp_clang_options          = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
+"	let g:ale_cpp_clangd_options         = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
+"	let g:ale_cpp_gcc_options            = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
+	let g:ale_cpp_parse_compile_commands = 1
+	let g:ale_cpp_parse_makefile         = 1
 	" ale_perl
 	let g:ale_perl_perl_executable      = 'perl'
 	let g:ale_perl_perl_options         = '-cw -Ilib'
@@ -695,16 +711,16 @@ noremap <leader><leader>n              :NERDTreeToggle<CR>
 
 " => Plugin: NERDComment ----------------------------------------------------------------------------------------- {{{1
 
-" let g:NERDCommentEmptyLines      = 1                                           " Allow commenting and inverting empty lines (useful when commenting a region)
-" let g:NERDCustomDelimiters       = { 'c': { 'left': '/**','right': '*/' } }    " Add your own custom formats or override the defaults
-" "let g:NERDDefaultAlign           = 'start'                                     " Comment at the beginning of the line instead of following code indentation
-" let g:NERDRemoveExtraSpaces      = 1
-" let g:NERDSpaceDelims            = 0                                           " Add spaces after comment delimiters by default
-" let g:NERDToggleCheckAllLines    = 1                                           " Enable NERDCommenterToggle to check all selected lines is commented or not
-" let g:NERDTrimTrailingWhitespace = 1                                           " Enable trimming of trailing whitespace when uncommenting
+let g:NERDCommentEmptyLines      = 1                                           " Allow commenting and inverting empty lines (useful when commenting a region)
+let g:NERDCustomDelimiters       = { 'c': { 'left': '/**','right': '*/' } }    " Add your own custom formats or override the defaults
+"let g:NERDDefaultAlign           = 'start'                                     " Comment at the beginning of the line instead of following code indentation
+let g:NERDRemoveExtraSpaces      = 1
+let g:NERDSpaceDelims            = 0                                           " Add spaces after comment delimiters by default
+let g:NERDToggleCheckAllLines    = 1                                           " Enable NERDCommenterToggle to check all selected lines is commented or not
+let g:NERDTrimTrailingWhitespace = 1                                           " Enable trimming of trailing whitespace when uncommenting
 
 " map comment to ctrl-/
-" map <C-_>                              <Plug>NERDCommenterToggle
+map <C-_>                              <Plug>NERDCommenterToggle
 
 " => Plugin: netrw ----------------------------------------------------------------------------------------------- {{{1
 
@@ -750,8 +766,8 @@ let g:UltiSnipsEditSplit           ='vertical'
 
 " => Plugin: vim-commentary -------------------------------------------------------------------------------------- {{{1
 
-nmap     <C-_>                         gcl
-vmap     <C-_>                         gcgv
+"nmap     <C-_>                         gcl
+"vmap     <C-_>                         gcgv
 
 "augroup SettingsVimCommentary
 "	autocmd!

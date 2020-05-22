@@ -2,21 +2,57 @@
 
 set -Eeuo pipefail
 
-[[ -f "$1" ]] && {
+function show-elf() {
+	{ readelf -dsW "$1" && echo && hexdump -C "$1"; } \
+	|| true
+}
+
+function header() {
 	stat "$1"
 
 	echo -n "  Type: "
 	file -b "$1"
-	echo
+}
 
-	if file -bi "$1" | grep 'charset=binary' &>/dev/null; then
+function body() {
+	TYPE=$(file -bi "$1")
+	echo -n "  MIME: "
+	echo "$TYPE"
+
+	# NAME=$(basename "$1")
+	# DIR=$(dirname "$1")
+	# BASE="${NAME%.*}"
+	# EXT="${NAME##*.}"
+
+	if echo "$TYPE" | grep 'application/x-pie-executable' &>/dev/null; then
+		show-elf "$1"
+	elif echo "$TYPE" | grep 'application/x-archive' &>/dev/null; then
+		{ nm -C "$1"; } \
+		|| true
+	else
+		echo
+	fi
+}
+
+function footer() {
+	SIZE=$(command stat -c %s "$1")
+
+	(( SIZE > 50000000)) && return
+
+	if echo "$TYPE" | grep 'charset=binary' &>/dev/null; then
 		hexdump -C "$1" \
 		|| true
-	elif (( $(command stat -c %s "$1") < 1000000 )); then
+	elif (( SIZE < 1000000 )); then
 		pygmentize -O style=monokai -f console256 -g "$1" \
 		|| bat --style=numbers --color=always "$1" \
 		|| cat "$1"
 	else
 		cat "$1"
 	fi
+}
+
+[[ -f "$1" ]] && {
+	header "$1"
+	body   "$1"
+	footer "$1"
 } 2> /dev/null

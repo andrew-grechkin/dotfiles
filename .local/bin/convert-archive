@@ -26,10 +26,15 @@ foreach my $file (map {path($_)} @ARGV) {
         $extention = $LAST_PAREN_MATCH{'extention'} // '';
     }
 
+    my $outfile = $file->parent->child($name . OUTPUT()->{'extention'});
+    $outfile->exists
+        and die "File already exists: $outfile";
+
     my $tmp = Path::Tiny->tempdir('convert-archive-XXXXXXXXXX', 'CLEANUP' => 1);
 
     # extracting
     if ($extention eq 'zip') {
+
         # use 7z and recode later
         # local $ENV{'LANG'} = 'C';
         # system ('7z', 'x', '-no-utf16', '-y', "-o$tmp", $file);
@@ -40,11 +45,12 @@ foreach my $file (map {path($_)} @ARGV) {
 
         # use unar with forced encoding
         system ('unar', '-e', '866', '-o', $tmp, $file);
+    } elsif ($extention =~ m{[t]?[bz2|gz|xz|z|az]}) {
+        system ('unar', '-o', $tmp, $file);
     } else {
         system ('7z', 'x', '-y', "-o$tmp", $file);
     }
 
     # compressing
-    system ('tar', '-I', OUTPUT()->{'format'}, '-cf', $file->parent->child($name . OUTPUT()->{'extention'}),
-        '-C', $tmp, map {$_->basename} $tmp->children);
+    system ('tar', '-I', OUTPUT()->{'format'}, '-cf', $outfile, '-C', $tmp, map {$_->basename} $tmp->children);
 }
