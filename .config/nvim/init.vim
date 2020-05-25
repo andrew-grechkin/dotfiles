@@ -100,6 +100,9 @@ set tags+=tags;                                                                "
 set pumheight=8                                                                " Maximum height of autocomplete popup window
 set undofile                                                                   " Enable persistent undo
 
+set exrc
+set secure
+
 " => Encodings --------------------------------------------------------------------------------------------------- {{{1
 
 setglobal fileencodings=ucs-bom,utf-8,default,cp1251                           " Order of encodings detection
@@ -661,9 +664,11 @@ if PlugLoaded('ale')
 	let g:ale_c_parse_compile_commands   = 1
 	let g:ale_c_parse_makefile           = 1
 	let g:ale_cpp_build_dir_names        = ['.build', 'build']
-"	let g:ale_cpp_clang_options          = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
-"	let g:ale_cpp_clangd_options         = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
-"	let g:ale_cpp_gcc_options            = '-std=c++17 -Wall -I $HOME/git/private/cpp/lib/basis/include -I $HOME/git/private/cpp/examples/sparse/src/include'
+	let g:ale_cpp_clang_options          = '-std=c++17 -Wall -I ./include -I ./src/include'
+	let g:ale_cpp_clangcheck_options     = '-std=c++17 -Wall -I ./include -I ./src/include'
+	let g:ale_cpp_clangd_options         = '-std=c++17 -Wall -I ./include -I ./src/include'
+	let g:ale_cpp_clangtidy_options      = '-std=c++17 -Wall -I ./include -I ./src/include'
+	let g:ale_cpp_gcc_options            = '-std=c++17 -Wall -I ./include -I ./src/include'
 	let g:ale_cpp_parse_compile_commands = 1
 	let g:ale_cpp_parse_makefile         = 1
 	" ale_perl

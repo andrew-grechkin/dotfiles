@@ -26,9 +26,14 @@ function body() {
 
 	if echo "$TYPE" | grep 'application/x-pie-executable' &>/dev/null; then
 		show-elf "$1"
+	elif echo "$TYPE" | grep 'application/x-object' &>/dev/null; then
+		{ echo; nm -ClS "$1"; objdump -afltSd "$1"; } \
+		|| true
+		exit 0;
 	elif echo "$TYPE" | grep 'application/x-archive' &>/dev/null; then
 		{ nm -C "$1"; } \
 		|| true
+		exit 0;
 	else
 		echo
 	fi
