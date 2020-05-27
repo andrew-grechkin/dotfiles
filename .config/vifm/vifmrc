@@ -291,6 +291,10 @@ fileviewer *.bmp,*.gif,*.jpg,*.jpeg,*.png,*.xpm
 
 " => File associations: misc ------------------------------------------------------------------------------------- {{{1
 
+filetype CMakeLists.txt
+	\ {Build...}
+	\ build-cmake %d,
+
 filetype *.[1-8]
 	\ man ./%c,
 fileviewer *.[1-8]
@@ -357,61 +361,68 @@ filetype *.iso,*.mdf,*.nrg
 " => File associations: archives --------------------------------------------------------------------------------- {{{1
 
 " ArchiveMount
-filetype *.tar,*.rar,*.7z,*.zip,
+filetype *.tar,
 	\*.tar.bz2,*.tbz2,*.tar.gz,*.tgz,*.tar.xz,*.txz,*.tar.zst,*.tzst,*.tar.z,*.taz,
 	\*.jar,*.war,*.ear,*.oxt,*.apkg
 	\ {Mount with archivemount}
 	\ FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR,
-	\ {Convert to tar.zstd}
-	\ convert-archive %f &,
-
-filetype *.rar
-	\ {Mount with rar2fs}
-	\ FUSE_MOUNT|rar2fs %SOURCE_FILE %DESTINATION_DIR,
-fileviewer *.rar
-	\ unrar v,
-
-filetype *.tar,
-	\*.tar.bz2,*.tbz2,*.tar.gz,*.tgz,*.tar.xz,*.txz,*.tar.zst,*.tzst,*.tar.z,*.taz
-	\ {Extract here...}
-	\ tar -xf %c &,
-fileviewer *.tar,
-	\*.tar.bz2,*.tbz2,*.tar.gz,*.tgz,*.tar.xz,*.txz,*.tar.zst,*.tzst,*.tar.z,*.taz
-	\ tar -tf %c &,
-fileviewer *.tar.txz,*.txz
-	\ xz --list %c &,
-
-filetype *.zip,
-	\*.jar,*.war,*.ear,*.oxt,*.apkg
-	\ {Mount with fuse-zip}
-	\ FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR,
-	\ {View contents}
-	\ zip -sf %c | less,
-	\ {Extract here...}
-	\ unar -e 866 %c &,
-fileviewer *.zip,
-	\*.jar,*.war,*.ear,*.oxt,*.apkg
-	\ unzip -l -O 866,
-fileviewer *.zip,
-	\*.jar,*.war,*.ear,*.oxt,*.apkg
-	\ zip -sf,
 
 filetype *.7z,
-	\*.a,*.so,lib*.so.*,
-	\*.apm,*.ar,*.arj,*.cab,*.chm,*.cpio,*.cramfs,*.deb,*.dll,*.dmg,*.doc,*.esd,*.exe,
+	\*.dsl.dz,*.tar,*.a,*.so,lib*.so.*,*.zip,*.ova,*.sfs,
+	\*.apk,*.apm,*.ar,*.arj,*.cab,*.chm,*.cpio,*.cramfs,*.deb,*.dll,*.dmg,*.doc,*.esd,*.exe,
 	\*.flv,*.hxs,*.img,*.iso,*.iso,*.jar,*.lib,*.macho,*.msi,*.msp,*.nsis,*.pkg,*.pmd,*.ppt,
-	\*.qcow,*.qcow2,*.qcow2c,*.r00,*.rar,*.raw,*.rpm,*.squashfs,*.swf,*.swm,*.sys,*.vdi,*.vhd,*.vmdk,*.wim,*.xar,*.xls
-	\ {Mount with fuse-7z-ng}
+	\*.qcow,*.qcow2,*.qcow2c,*.r00,*.rar,*.raw,*.rpm,*.squashfs,*.swf,*.swm,*.sys,*.vdi,*.vhd,*.vmdk,*.wim,*.xar,*.xls,
+	\*.tar.bz2,*.tbz2,*.tar.gz,*.tgz,*.tar.xz,*.txz,*.tar.zst,*.tzst,*.tar.z,*.taz
+	\ {Mount with fuse-p7zip}
 	\ FUSE_MOUNT|fuse3-p7zip %SOURCE_FILE %DESTINATION_DIR,
 	\ {Show file}
 	\ show-file %c | less,
 	\ {Extract here...}
 	\ 7z x %c &,
+	\ {Convert to tar.zstd...}
+	\ convert-archive %f &,
 fileviewer *.7z,
-	\*.apm,*.ar,*.arj,*.cab,*.chm,*.cpio,*.cramfs,*.deb,*.dll,*.dmg,*.doc,*.esd,*.exe,
+	\*.dsl.dz,*.tar,
+	\*.apk,*.apm,*.ar,*.arj,*.cab,*.chm,*.cpio,*.cramfs,*.deb,*.dll,*.dmg,*.doc,*.esd,*.exe,
 	\*.flv,*.hxs,*.img,*.iso,*.iso,*.jar,*.lib,*.macho,*.msi,*.msp,*.nsis,*.pkg,*.pmd,*.ppt,
-	\*.qcow,*.qcow2,*.qcow2c,*.r00,*.rar,*.raw,*.rpm,*.squashfs,*.swf,*.swm,*.sys,*.vdi,*.vhd,*.vmdk,*.wim,*.xar,*.xls
+	\*.qcow,*.qcow2,*.qcow2c,*.r00,*.rar,*.raw,*.rpm,*.squashfs,*.swf,*.swm,*.sys,*.vdi,*.vhd,*.vmdk,*.wim,*.xar,*.xls,
+	\*.tar.bz2,*.tbz2,*.tar.gz,*.tgz,*.tar.xz,*.txz,*.tar.zst,*.tzst,*.tar.z,*.taz
 	\ 7z l %f &,
+
+filetype *.tar,
+	\*.tar.bz2,*.tbz2,*.tar.gz,*.tgz,*.tar.xz,*.txz,*.tar.zst,*.tzst,*.tar.z,*.taz,
+	\*.jar,*.war,*.ear,*.oxt,*.apkg
+	\ {Extract here...}
+	\ tar -xf %c &,
+	\ {Convert to tar.zstd...}
+	\ convert-archive %f &,
+fileviewer *.tar,
+	\*.tar.bz2,*.tbz2,*.tar.gz,*.tgz,*.tar.xz,*.txz,*.tar.zst,*.tzst,*.tar.z,*.taz,
+	\*.jar,*.war,*.ear,*.oxt,*.apkg
+	\ tar -tf %c &,
+fileviewer *.tar.txz,*.txz
+	\ xz --list %c &,
+
+"filetype *.rar
+"	\ {Mount with rar2fs}
+"	\ FUSE_MOUNT|rar2fs %SOURCE_FILE %DESTINATION_DIR,
+"fileviewer *.rar
+"	\ unrar v,
+
+"filetype *.zip,
+"	\*.jar,*.war,*.ear,*.oxt,*.apkg
+"	\ {Mount with fuse-zip}
+"	\ FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR,
+"	\ {View contents}
+"	\ zip -sf %c | less,
+"	\ {Extract here...}
+"	\ unar -e 866 %c &,
+"fileviewer *.zip,
+"	\*.jar,*.war,*.ear,*.oxt,*.apkg
+"	\ unzip -l -O 866,
+"fileviewer *.zip,
+"	\*.jar,*.war,*.ear,*.oxt,*.apkg
+"	\ zip -sf,
 
 " => File associations: SshMount --------------------------------------------------------------------------------- {{{1
 
@@ -440,7 +451,16 @@ filetype *.encfs
 " 16-color terminal
 " fileviewer *.c,*.h highlight -O ansi -s dante %c
 
+filetype *[^/],.*[^/]
+	\ {Edit in vim}
+	\ vim,
+
+filetype *[^/],.*[^/]
+	\ {View in less}
+	\ less,
+
 " Default file viewer
+
 fileviewer *[^/],.*[^/]
 	\ show-file,
 

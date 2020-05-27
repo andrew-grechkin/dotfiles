@@ -148,6 +148,8 @@ call plug#begin('~/.cache/vim/plugged')
 	Plug 'flazz/vim-colorschemes'                                              " Huge set of color schemes
 	Plug 'vim-airline/vim-airline'                                             " Most informative status line
 	Plug 'vim-airline/vim-airline-themes'                                      " Status line themes
+	Plug 'inkarkat/vim-localrc'
+	"Plug 'embear/vim-localvimrc'
 	if v:version >= 800 || has('nvim')                                         " These plugins demand modern vim or neovim
 		Plug 'dyng/ctrlsf.vim', {'on': ['CtrlSF','<Plug>CtrlSFPrompt','<Plug>CtrlSFCwordPath','<Plug>CtrlSFVwordExec']} " Global search and replace
 		Plug 'lambdalisue/suda.vim'                                            " run sudo from vim
@@ -664,11 +666,12 @@ if PlugLoaded('ale')
 	let g:ale_c_parse_compile_commands   = 1
 	let g:ale_c_parse_makefile           = 1
 	let g:ale_cpp_build_dir_names        = ['.build', 'build']
-	let g:ale_cpp_clang_options          = '-std=c++17 -Wall -I ./include -I ./src/include'
-	let g:ale_cpp_clangcheck_options     = '-std=c++17 -Wall -I ./include -I ./src/include'
-	let g:ale_cpp_clangd_options         = '-std=c++17 -Wall -I ./include -I ./src/include'
-	let g:ale_cpp_clangtidy_options      = '-std=c++17 -Wall -I ./include -I ./src/include'
-	let g:ale_cpp_gcc_options            = '-std=c++17 -Wall -I ./include -I ./src/include'
+	let g:ale_cpp_options                = '-std=c++20 -Wall -I ./include -I ./src/include'
+	let g:ale_cpp_clang_options          = '-std=c++20 -Wall -I ./include -I ./src/include'
+	let g:ale_cpp_clangcheck_options     = '-std=c++20 -Wall -I ./include -I ./src/include'
+	let g:ale_cpp_clangd_options         = '-std=c++20 -Wall -I ./include -I ./src/include'
+	let g:ale_cpp_clangtidy_options      = '-std=c++20 -Wall -I ./include -I ./src/include'
+	let g:ale_cpp_gcc_options            = '-std=c++20 -Wall -I ./include -I ./src/include'
 	let g:ale_cpp_parse_compile_commands = 1
 	let g:ale_cpp_parse_makefile         = 1
 	" ale_perl
@@ -916,6 +919,7 @@ endif
 
 "let g:ycm_global_ycm_extra_conf = '~/.config/shell/ycm_extra_conf.py'          " Where to search for .ycm_extra_conf.py if not found
 "let g:ycm_confirm_extra_conf                            = 0
+"let g:ycm_global_ycm_extra_conf                         = 0
 
 "let g:ycm_show_diagnostics_ui                           = 0 " default 1
 "let g:ycm_register_as_syntastic_checker                 = 0 " default 1

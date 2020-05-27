@@ -1,4 +1,5 @@
 !.local/bin
+.local/bin/fuse3-p7zip
 *.antigen-compat
 *.zwc
 .config/mpv/watch_later
