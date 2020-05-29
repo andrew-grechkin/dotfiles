@@ -300,13 +300,21 @@ filetype *.[1-8]
 fileviewer *.[1-8]
 	\ man ./%c | col -b,
 
+filetype *.json
+	\ {View}
+	\ jq -CS < %c | less -r,
+	\ {Lint json}
+	\ lint-json %f %i &,
+fileviewer *.json
+	\ jq -CS < %f,
+
 filetype *.json,*.yaml,*.yml
+	\ {View}
+	\ vim %c,
 	\ {Edit}
 	\ vim %c,
 	\ {Convert json <-> yaml}
 	\ json2yaml %f &,
-fileviewer *.json
-	\ jq < %f,
 
 filetype *.md5
 	\ {Check MD5 hash sum}

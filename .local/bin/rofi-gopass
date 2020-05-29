@@ -2,6 +2,9 @@
 
 set -Eeuo pipefail
 
+DN=$(dirname "$0")
+PATH="$DN:$PATH"
+
 function list-gopass-files() {
 	shopt -s nullglob globstar
 
