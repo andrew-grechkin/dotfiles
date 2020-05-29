@@ -2,9 +2,10 @@
 
 set -Eeuo pipefail
 
-/home/agrechkin/.local/bin/clippaste | /home/agrechkin/.local/bin/kbd-transcode | /home/agrechkin/.local/bin/clipcopy
-#xclip -o -sel p 2>/dev/null | /home/agrechkin/.local/bin/kbd-transcode | xclip -i -sel p -f | xclip -i -sel c
-#xsel -p | /home/agrechkin/.local/bin/kbd-transcode | xsel -i -bps
+DN=$(dirname "$0")
+PATH="$DN:$PATH"
+
+clippaste | kbd-transcode | clipcopy
 
 xdotool key Shift+Insert
 

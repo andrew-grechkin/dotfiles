@@ -251,8 +251,6 @@ filextype *.3gp,
 	\ ffplay -fs -autoexit,
 	\ {View using mplayer}
 	\ mplayer,
-	\ {View using Dragon}
-	\ dragon %f:p,
 fileviewer *.3gp,
 	\*.as[fx],*.avi,*.dat,*.divx,*.fl[icv],*.lrv,*.m2v,*.m4v,*.mkv,*.mov,*.mp4,*.mpeg,*.mpg,*.mts,
 	\*.ogv,*.qt,*.r[am],*.ts,*.vob,*.webm,*.wmv
@@ -301,18 +299,18 @@ fileviewer *.[1-8]
 	\ man ./%c | col -b,
 
 filetype *.json
-	\ {View}
+	\ {View json}
 	\ jq -CS < %c | less -r,
 	\ {Lint json}
 	\ lint-json %f %i &,
 fileviewer *.json
 	\ jq -CS < %f,
 
+filetype *.yaml,*.yml
+	\ {View yaml}
+	\ less %c,
+
 filetype *.json,*.yaml,*.yml
-	\ {View}
-	\ vim %c,
-	\ {Edit}
-	\ vim %c,
 	\ {Convert json <-> yaml}
 	\ json2yaml %f &,
 
@@ -468,7 +466,6 @@ filetype *[^/],.*[^/]
 	\ less,
 
 " Default file viewer
-
 fileviewer *[^/],.*[^/]
 	\ show-file,
 
@@ -499,8 +496,7 @@ fileviewer */,.*/
 
 " What should be saved automatically between vifm sessions.  Drop "savedirs"
 " value if you don't want vifm to remember last visited directories for you.
-set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,
-	\phistory,fhistory,dirstack,registers,bookmarks,bmarks
+set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,phistory,fhistory,dirstack,registers,bookmarks,bmarks
 
 " => Examples of configuring both panels ------------------------------------------------------------------------- {{{1
 
