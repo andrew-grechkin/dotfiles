@@ -272,7 +272,7 @@ fileviewer *.htm,*.html
 
 " => File associations: Images ----------------------------------------------------------------------------------- {{{1
 
-filextype *.bmp,*.gif,*.jpg,*.jpeg,*.png,*.xpm
+filextype *.bmp,*.gif,*.jpg,*.jpeg,*.png,*.xpm,*.svg
 	\ {Open with xdg-open}
 	\ xdg-open %c %i &,
 	\ {View in vimiv}
@@ -283,7 +283,7 @@ filextype *.bmp,*.gif,*.jpg,*.jpeg,*.png,*.xpm
 	\ gpicview,
 	\ {View in shotwell}
 	\ shotwell,
-fileviewer *.bmp,*.gif,*.jpg,*.jpeg,*.png,*.xpm
+fileviewer *.bmp,*.gif,*.jpg,*.jpeg,*.png,*.xpm,*.svg
 	\ mediainfo,
 	\ identify -verbose,
 
@@ -330,7 +330,7 @@ filetype *.sha512
 	\ {Check SHA512 hash sum}
 	\ sha512sum -c %f %S,
 
-filetype *.asc
+filetype *.asc,*.sig
 	\ {Check signature}
 	\ !!gpg --verify,
 
@@ -373,6 +373,9 @@ filetype *.tar,
 	\ {Mount with archivemount}
 	\ FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR,
 
+filetype *.zip
+	\ {Mount with fuse-p7zip}
+	\ FUSE_MOUNT|mount-zip %SOURCE_FILE %DESTINATION_DIR,
 filetype *.7z,
 	\*.dsl.dz,*.tar,*.a,*.so,lib*.so.*,*.zip,*.ova,*.sfs,
 	\*.apk,*.apm,*.ar,*.arj,*.cab,*.chm,*.cpio,*.cramfs,*.deb,*.dll,*.dmg,*.doc,*.esd,*.exe,
@@ -388,7 +391,7 @@ filetype *.7z,
 	\ {Convert to tar.zstd...}
 	\ convert-archive %f &,
 fileviewer *.7z,
-	\*.dsl.dz,*.tar,
+	\*.dsl.dz,*.tar,*.a,*.so,lib*.so.*,*.zip,*.ova,*.sfs,
 	\*.apk,*.apm,*.ar,*.arj,*.cab,*.chm,*.cpio,*.cramfs,*.deb,*.dll,*.dmg,*.doc,*.esd,*.exe,
 	\*.flv,*.hxs,*.img,*.iso,*.iso,*.jar,*.lib,*.macho,*.msi,*.msp,*.nsis,*.pkg,*.pmd,*.ppt,
 	\*.qcow,*.qcow2,*.qcow2c,*.r00,*.rar,*.raw,*.rpm,*.squashfs,*.swf,*.swm,*.sys,*.vdi,*.vhd,*.vmdk,*.wim,*.xar,*.xls,

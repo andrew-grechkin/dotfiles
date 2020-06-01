@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+DN=$(dirname "$0")
+PATH="$DN:$PATH"
+
+FUSE3_P7ZIP_FORCE_ENCODING=CP866 command fuse3-p7zip "$@"
