@@ -433,6 +433,10 @@ fileviewer *.tar.txz,*.txz
 "	\*.jar,*.war,*.ear,*.oxt,*.apkg
 "	\ zip -sf,
 
+filetype *.s3fs
+	\ {Mount with s3fs}
+	\ FUSE_MOUNT2|s3fs %PARAM %DESTINATION_DIR %FOREGROUND,
+
 " => File associations: SshMount --------------------------------------------------------------------------------- {{{1
 
 filetype *.ssh

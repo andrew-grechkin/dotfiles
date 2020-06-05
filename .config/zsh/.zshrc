@@ -1,5 +1,7 @@
 # vim: syntax=zsh foldmethod=marker
 
+[[ -n "$ZSH_TRACE" ]] && echo ".config/zsh/.zshrc: $$"
+
 source-file "$XDG_CONFIG_HOME/shell/rc"
 source-file "$XDG_CONFIG_HOME/shell/rc.work"
 

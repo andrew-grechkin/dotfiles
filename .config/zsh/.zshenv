@@ -1,5 +1,7 @@
 # vim: syntax=zsh foldmethod=marker
 
+[[ -n "$ZSH_TRACE" ]] && echo ".config/zsh/.zshenv: $$"
+
 # => enable profiler --------------------------------------------------------------------------------------------- {{{1
 
 #zmodload zsh/zprof
@@ -8,7 +10,7 @@
 
 function source-file() {
 	for FILE in "$@"; do
-#		echo "source: $(date) '$FILE'"
+		[[ -n "$ZSH_TRACE" ]] && echo "source: $(date) '$FILE'"
 		[[ -r "$FILE" ]] && source "$FILE"
 	done
 }
