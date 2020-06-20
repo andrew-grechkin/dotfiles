@@ -1,0 +1,55 @@
+#!/usr/bin/env perl
+
+use v5.28;
+use strict;
+use warnings;
+use autodie qw(:all);
+use diagnostics;
+
+use File::Temp qw(tempdir);
+use List::Util qw(max);
+
+my $url    = 'http://mirror.ams1.nl.leaseweb.net/archlinux/{repo}/os/x86_64';
+my @repos  = qw(core extra community);
+my $tmpdir = tempdir(CLEANUP => 1);
+
+foreach my $repo (@repos) {
+    my $files_url = join ('/', $url =~ s/{repo}/$repo/r, "$repo.files.tar.gz");
+    system ("cd '$tmpdir' && curl '$files_url' | bsdtar -xf-");
+}
+
+opendir (my $dh, $tmpdir);
+my @pkgs = readdir ($dh);
+closedir ($dh);
+
+my $max_len = max map length, @pkgs;
+
+my @not_installed;
+foreach my $pkg (sort @pkgs) {
+    $pkg eq '.' || $pkg eq '..'
+        and next;
+
+    my @files;
+    my $path = join ('/', $tmpdir, $pkg, 'files');
+    if (open (my $fh, '<', $path)) {
+        while (defined (my $line = <$fh>)) {
+            chomp $line;
+            next if $line eq '%FILES%' or substr ($line, -1) eq '/';
+            push @files, '/' . $line;
+        }
+        close ($fh);
+
+        my $amount = scalar @files
+            or next;
+
+        my @existing_files = grep -e, @files
+            or push (@not_installed, $pkg) && next;
+
+        printf ("%-${max_len}s %3d%%\n", $pkg, 100 * scalar @existing_files / $amount);
+    } else {
+        say "error: failed to open $path";
+    }
+}
+
+#say 'Not installed:';
+#say foreach @not_installed;

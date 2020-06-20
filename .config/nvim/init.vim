@@ -134,7 +134,6 @@ call plug#begin('~/.cache/vim/plugged')
 	Plug 'tpope/vim-repeat'                                                    " Repeat everything
 	Plug 'tpope/vim-surround'                                                  " Better surround commands
 	Plug 'tpope/vim-unimpaired'                                                " Pairs of helpful commands
-	Plug 'airblade/vim-gitgutter'                                              " Git status/modifications of the file
 	Plug 'easymotion/vim-easymotion'                                           " Better move commands
 	Plug 'mhinz/vim-grepper'                                                   " Grep integration
 "	Plug 'tpope/vim-commentary'                                                " Commenting helpers
@@ -144,13 +143,13 @@ call plug#begin('~/.cache/vim/plugged')
 	Plug 'mhinz/vim-startify'
 	Plug 'christoomey/vim-tmux-navigator'                                      " Better tmux integration
 	Plug 'andrew-grechkin/vim-rooter'                                          " Cwd if file is in git repo should be repo root
+	Plug 'vim-utils/vim-man'
 	" Colors support
 	Plug 'flazz/vim-colorschemes'                                              " Huge set of color schemes
 	Plug 'vim-airline/vim-airline'                                             " Most informative status line
 	Plug 'vim-airline/vim-airline-themes'                                      " Status line themes
-	Plug 'inkarkat/vim-localrc'
-	"Plug 'embear/vim-localvimrc'
 	if v:version >= 800 || has('nvim')                                         " These plugins demand modern vim or neovim
+		Plug 'airblade/vim-gitgutter'                                          " Git status/modifications of the file
 		Plug 'dyng/ctrlsf.vim', {'on': ['CtrlSF','<Plug>CtrlSFPrompt','<Plug>CtrlSFCwordPath','<Plug>CtrlSFVwordExec']} " Global search and replace
 		Plug 'lambdalisue/suda.vim'                                            " run sudo from vim
 		Plug 'majutsushi/tagbar'
@@ -158,6 +157,8 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'masukomi/vim-markdown-folding'
 		Plug 'pedrohdz/vim-yaml-folds'
 		Plug 'simnalamburt/vim-mundo', {'on': 'MundoToggle'}                   " Visualize the undo tree
+		Plug 'inkarkat/vim-localrc'
+		"Plug 'embear/vim-localvimrc'
 		Plug 'w0rp/ale'                                                        " Async syntax checker
 	endif
 	if has('nvim')                                                             " These plugins demand neovim

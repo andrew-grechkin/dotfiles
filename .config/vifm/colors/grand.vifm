@@ -42,6 +42,7 @@ highlight /.*\.aac$|
 	\.*\.mka$|
 	\.*\.mpa$|
 	\.*\.mp3$|
+	\.*\.oga$|
 	\.*\.ogg$|
 	\.*\.wav$/I          cterm=bold              ctermfg=cyan         ctermbg=none
 highlight /.*\.7z$|

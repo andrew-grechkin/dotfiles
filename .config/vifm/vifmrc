@@ -167,6 +167,7 @@ filextype *.chm,*.epub,*.fb2,*.fbz,*.fb2.zip,*.mobi,*.rtf,*.tcr
 	\ xdg-open %c %i &,
 	\ cr3      %c %i &,
 	\ FBReader %c %i &,
+	\ foliate  %c %i &,
 
 filextype *.fb2,*.xml
 	\ kate     %f %i &,
@@ -246,7 +247,7 @@ filextype *.3gp,
 	\*.as[fx],*.avi,*.dat,*.divx,*.fl[icv],*.lrv,*.m2v,*.m4v,*.mkv,*.mov,*.mp4,*.mpeg,*.mpg,*.mts,
 	\*.ogv,*.qt,*.r[am],*.ts,*.vob,*.webm,*.wmv
 	\ {View using mpv}
-	\ mpv,
+	\ mpv %f %i &,
 	\ {View using ffplay}
 	\ ffplay -fs -autoexit,
 	\ {View using mplayer}
