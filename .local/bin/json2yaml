@@ -9,24 +9,24 @@ use JSON::PP;
 use Path::Tiny;
 use YAML::Tiny;
 
-my $arg = path($ARGV[0])->absolute;
+my $path = path($ARGV[0])->absolute;
 
-$arg->exists
-    or die "File does not exists: $arg";
+$path->exists
+    or die "File does not exists: $path";
 
-if ($arg =~ m/.json$/xms) {
-    my $file = $arg->parent->child($arg->basename =~ s/.json$/.yaml/xmsr);
+if ($path =~ m/.json$/xms) {
+    my $file = $path->parent->child($path->basename =~ s/.json$/.yaml/xmsr);
     $file->exists
         and die "File already exists: $file";
     my $json = JSON::PP->new;
     $json->boolean_values(0, 1);
-    YAML::Tiny->new($json->decode($arg->slurp_utf8))->write($file->absolute);
-} elsif ($arg =~ m/.ya?ml$/xms) {
-    my $file = $arg->parent->child($arg->basename =~ s/.ya?ml$/.json/xmsr);
+    YAML::Tiny->new($json->decode($path->slurp_utf8))->write($file->absolute);
+} elsif ($path =~ m/.ya?ml$/xms) {
+    my $file = $path->parent->child($path->basename =~ s/.ya?ml$/.json/xmsr);
     $file->exists
         and die "File already exists: $file";
-    my $yaml_decoded = YAML::Tiny->read($arg)->[0];
-    my $json = JSON::PP->new;
+    my $yaml_decoded = YAML::Tiny->read($path)->[0];
+    my $json         = JSON::PP->new;
     $file->spew_utf8($json->pretty->canonical->encode($yaml_decoded));
 } else {
     die 'Unknown format';

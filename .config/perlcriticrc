@@ -169,7 +169,7 @@ modules = Class::ISA {Found use of Class::ISA. This module is deprecated by the 
 #modules_file =
 
 [Perlsecret]
-allow_secrets = Abbott and Costello, Baby Cart, Bang Bang, Enterprise, Leaning Abbott and Costello, Venus, Winking Fat Comma
+allow_secrets = Abbott and Costello, Baby Cart, Bang Bang, Enterprise, Goatse, Leaning Abbott and Costello, Venus, Winking Fat Comma
 
 #[TestingAndDebugging::ProhibitNoStrict]
 # This is a common patterns to (re)define glob CODE entries

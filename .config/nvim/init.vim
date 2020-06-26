@@ -148,6 +148,7 @@ call plug#begin('~/.cache/vim/plugged')
 	Plug 'flazz/vim-colorschemes'                                              " Huge set of color schemes
 	Plug 'vim-airline/vim-airline'                                             " Most informative status line
 	Plug 'vim-airline/vim-airline-themes'                                      " Status line themes
+	Plug 'sbdchd/vim-run'
 	if v:version >= 800 || has('nvim')                                         " These plugins demand modern vim or neovim
 		Plug 'airblade/vim-gitgutter'                                          " Git status/modifications of the file
 		Plug 'dyng/ctrlsf.vim', {'on': ['CtrlSF','<Plug>CtrlSFPrompt','<Plug>CtrlSFCwordPath','<Plug>CtrlSFVwordExec']} " Global search and replace
@@ -169,8 +170,8 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'andrew-grechkin/vim-snippets'
 	endif
 	" support Perl
-	Plug 'mvgrimes/vim-trackperlvars'
-	Plug '~/.local/share/vim-plug/perlart', {'for': 'perl'}
+	Plug '~/.local/share/vim-plug/trackperlvars', {'for': 'perl'}
+	Plug '~/.local/share/vim-plug/perlart',       {'for': 'perl'}
 	" support puppet
 	Plug 'rodjek/vim-puppet'                                                   " For Puppet syntax highlighting
 "	checking empty($KDEHOME) here is a weird way to check if this config is used in personal/work environment
@@ -898,6 +899,13 @@ nnoremap <leader><leader>u             :PlugUpdate<CR>
 
 let g:rooter_patterns     = ['.config/', 'lib/', '.git', '.git/']
 let g:rooter_silent_chdir = 1
+
+" => Plugin: vim-run --------------------------------------------------------------------------------------------- {{{1
+
+augroup VimRunByFileType
+	autocmd!
+	autocmd FileType perl nnoremap <F5>                   :Run<CR>
+augroup END
 
 " => Plugin: vim-test -------------------------------------------------------------------------------------------- {{{1
 
