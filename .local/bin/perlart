@@ -1,0 +1,94 @@
+#!/usr/bin/env perl
+
+use v5.28;
+use strict;
+use warnings;
+use experimental qw(declared_refs refaliasing signatures);
+
+use Code::ART;
+use Getopt::Long qw(:config auto_help no_ignore_case bundling);
+use Path::Tiny;
+use Pod::Usage;
+
+GetOptions(
+    'no-cacograms' => \my $no_cacograms,
+    'no-homograms' => \my $no_homograms,
+    'no-parograms' => \my $no_parograms,
+    'no-unused'    => \my $no_unused,
+);
+
+foreach my $file_path (@ARGV) {
+    my $file_content = path($file_path)->slurp_raw();
+    my \%classified_vars = classify_all_vars_in($file_content);
+
+    if (!$no_cacograms) {                                                      # cacograms
+        _report_cacogram($file_path, $file_content, $_)
+            foreach grep {$_->{'is_cacogram'}} values $classified_vars{'vars'}->%*;
+    }
+
+    if (!$no_homograms) {                                                      # cacograms
+        _report_homograms($file_path, $file_content, $_)
+            foreach grep {$_->{'homograms'}->%*} values $classified_vars{'vars'}->%*;
+    }
+
+    if (!$no_parograms) {                                                      # cacograms
+        _report_parograms($file_path, $file_content, $_)
+            foreach grep {$_->{'parograms'}->%*} values $classified_vars{'vars'}->%*;
+    }
+
+    if (!$no_unused) {                                                         # cacograms
+        _report_unused($file_path, $file_content, $_) foreach values $classified_vars{'vars'}->%*;
+    }
+}
+
+sub _report_cacogram ($file_path, $file_content, $check_variable) {
+    foreach my $index ($check_variable->{'declared_at'}, keys $check_variable->{'used_at'}->%*) {
+        my ($line, $offset) = _line_offset($file_content, $index);
+        say "Cacogram '$check_variable->{'decl_name'}' used at $file_path:$line:$offset";
+    }
+    return;
+}
+
+sub _report_homograms ($file_path, $file_content, $check_variable) {
+    my ($line, $offset) = _line_offset($file_content, $check_variable->{'declared_at'});
+    say "Homogram '$check_variable->{'decl_name'}' usage detected at $file_path:$line:$offset";
+    return;
+}
+
+sub _report_parograms ($file_path, $file_content, $check_variable) {
+    my ($line, $offset) = _line_offset($file_content, $check_variable->{'declared_at'});
+    say "Parogram '$check_variable->{'decl_name'}' usage detected at $file_path:$line:$offset";
+    return;
+}
+
+sub _report_unused ($file_path, $file_content, $check_variable) {
+    if (not $check_variable->{'used_at'}->%*) {
+        my ($line, $offset) = _line_offset($file_content, $check_variable->{'declared_at'});
+        say "Unused variable '$check_variable->{'decl_name'}' found at $file_path:$line:$offset";
+    }
+    return;
+}
+
+sub _line_offset ($file_content, $index) {
+    my $linenum = substr ($file_content, 0, $index) =~ tr/\n//;
+    return $linenum + 1, 0;                                                    # TODO: calculate offset
+}
+
+__END__
+
+=head1 NAME
+
+perlart - Process perl modules with Code::ART
+
+=head1 SYNOPSIS
+
+perlart [options] [file ...]
+
+ Options:
+   --help            brief help message
+   --no-cacograms    Do not report cacograms
+   --no-homograms    Do not report homograms
+   --no-parograms    Do not report parograms
+   --no-unused       Do not report unused variables
+
+=cut

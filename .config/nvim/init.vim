@@ -159,7 +159,7 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'simnalamburt/vim-mundo', {'on': 'MundoToggle'}                   " Visualize the undo tree
 		Plug 'inkarkat/vim-localrc'
 		"Plug 'embear/vim-localvimrc'
-		Plug 'w0rp/ale'                                                        " Async syntax checker
+		Plug 'dense-analysis/ale'                                              " Async syntax checker
 	endif
 	if has('nvim')                                                             " These plugins demand neovim
 		Plug 'janko/vim-test'
@@ -168,12 +168,16 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'SirVer/ultisnips'
 		Plug 'andrew-grechkin/vim-snippets'
 	endif
+	" support Perl
+	Plug 'mvgrimes/vim-trackperlvars'
+	Plug '~/.local/share/vim-plug/perlart', {'for': 'perl'}
+	" support puppet
+	Plug 'rodjek/vim-puppet'                                                   " For Puppet syntax highlighting
 "	checking empty($KDEHOME) here is a weird way to check if this config is used in personal/work environment
 "	KDEHOME is always defined on personal machines. I need to do something smarter in future
 	if empty($KDEHOME)                                                         " Install these pluggins only at work remote machines
 		Plug 'fatih/vim-go', {'for': 'go'}
 		Plug 'junegunn/fzf', {'dir': '~/.cache/fzf', 'do': './install --bin'}
-		Plug 'rodjek/vim-puppet'                                               " For Puppet syntax highlighting
 		Plug 'vim-ruby/vim-ruby', {'for': 'ruby'}                              " For Facts, Ruby functions, and custom providers
 	else                                                                       " Install these pluggins only on personal machines
 		Plug 'tpope/vim-rhubarb'                                               " fugitive Github module
@@ -649,7 +653,7 @@ if PlugLoaded('ale')
 
 	"let g:ale_linters_explicit          = 1
 	let g:ale_linters                   = {
-	\   'perl':       ['perl', 'perlcritic'],
+	\   'perl':       ['perl', 'perlcritic', 'perlart'],
 	\   'typescript': ['tslint'],
 	\}
 	"\   'cpp': ['ccls', 'clang', 'clangcheck', 'clangd', 'clangtidy', 'clazy', 'cppcheck', 'cpplint', 'cquery', 'flawfinder', 'gcc'],
