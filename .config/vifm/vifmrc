@@ -285,6 +285,7 @@ filextype *.bmp,*.gif,*.jpg,*.jpeg,*.png,*.xpm,*.svg
 	\ {View in shotwell}
 	\ shotwell,
 fileviewer *.bmp,*.gif,*.jpg,*.jpeg,*.png,*.xpm,*.svg
+	\ chafa --clear -c 240 %c,
 	\ mediainfo,
 	\ identify -verbose,
 
