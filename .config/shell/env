@@ -6,6 +6,10 @@ export         XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 export           TMUX_TMPDIR="$XDG_RUNTIME_DIR"
 export                  LESS='-x4 -iRSw'
 
+export                EDITOR="${EDITOR:-vim}"
+export                 PAGER="${PAGER:-less}"
+export                VISUAL="${VISUAL:-vim}"
+
 # => cleanup some litter in $HOME -------------------------------------------------------------------------------- {{{1
 
 export         DOCKER_CONFIG="$XDG_CONFIG_HOME/docker"

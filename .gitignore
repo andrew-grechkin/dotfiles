@@ -1,5 +1,4 @@
 !.local/bin
-.local/bin/fuse3-p7zip
 *.antigen-compat
 *.zwc
 .config/mpv/watch_later
@@ -12,3 +11,5 @@
 .config/vifm/scripts/README
 .config/vifm/vifm-help.txt
 .config/vifm/vifminfo
+.config/zsh/plugins/completion/_bk
+.local/bin/fuse3-p7zip
