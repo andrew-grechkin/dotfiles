@@ -120,7 +120,7 @@ command! df     df -h %m 2> /dev/null
 command! diff   vim -d %f %F
 
 " search
-command! fd     fd %a %M
+command! fd     fd --hidden %a %M
 command! vgrep  vim "+grep %a"
 
 " pack
@@ -169,7 +169,7 @@ filextype *.chm,*.epub,*.fb2,*.fbz,*.fb2.zip,*.mobi,*.rtf,*.tcr
 	\ FBReader %c %i &,
 	\ foliate  %c %i &,
 
-filextype *.fb2,*.xml
+filextype *.fb2,*.xml,*.gpx
 	\ kate     %f %i &,
 	\ {Lint xml}
 	\ lint-fb2 %f %i &,

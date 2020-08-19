@@ -170,8 +170,8 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'andrew-grechkin/vim-snippets'
 	endif
 	" support Perl
-	Plug '~/.local/share/vim-plug/trackperlvars', {'for': 'perl'}
-	Plug '~/.local/share/vim-plug/perlart',       {'for': 'perl'}
+	"Plug '~/.local/share/vim-plug/trackperlvars', {'for': 'perl'}
+	"Plug '~/.local/share/vim-plug/perlart',       {'for': 'perl'}
 	" support puppet
 	Plug 'rodjek/vim-puppet'                                                   " For Puppet syntax highlighting
 "	checking empty($KDEHOME) here is a weird way to check if this config is used in personal/work environment

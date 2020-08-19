@@ -111,4 +111,3 @@ function gen-cdpath() {
 
 gen-cdpath
 unset -f gen-cdpath
-

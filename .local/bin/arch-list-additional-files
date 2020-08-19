@@ -119,6 +119,7 @@ relaxed() {
 		'/usr/share/fonts'
 		'/usr/share/icons'
 		'/usr/share/mime'
+		'/usr/var/lib/pacman'
 		'/var/cache/fontconfig'
 		'/var/cache/man'
 		'/var/cache/pacman'
