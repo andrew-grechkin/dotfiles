@@ -8,8 +8,9 @@ PATH="$DN:$PATH"
 function list-gopass-files() {
 	shopt -s nullglob globstar
 
-	path_config=$(gopass config | grep 'path:')
-	path=${path_config#*"file://"}
+	path_config=$(gopass config 2>/dev/null | grep 'path:')
+	#path=${path_config#*"file://"}
+	path=${path_config#*"path: "}
 
 	password_files=("$path"/**/*.gpg)
 	password_files=("${password_files[@]#*"$path/"}")

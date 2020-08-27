@@ -137,6 +137,7 @@ relaxed() {
 	SKIP=(
 		'/boot/initramfs*'
 		'/boot/refind_linux.conf'
+		'/boot/vmlinuz-linux'
 		'/etc/.pwd.lock'
 		'/etc/.updated'
 		'/etc/docker'
