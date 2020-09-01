@@ -135,7 +135,7 @@ function fzf-detect-widget() {
 		git+( )@(remote)+( )@(remove|rename|show)*( ))
 			RESULT=$(fzf-git-remotes | stdin-join-lines)
 			;;
-		git+( )@(co|checkout|l|log|diff)*( ))
+		git+( )@(co|checkout|l|log|diff|br*|br*-D)*( ))
 			RESULT=$(fzf-git-branches | stdin-join-lines)
 			;;
 		git+( )*@(--|rm)*( ))
