@@ -34,6 +34,10 @@ function body() {
 		{ nm -C "$1"; } \
 		|| true
 		exit 0;
+	elif echo "$TYPE" | grep 'image/' &>/dev/null; then
+		{ chafa --clear -c 240 "$1"; } \
+		|| true
+		exit 0;
 	else
 		echo
 	fi

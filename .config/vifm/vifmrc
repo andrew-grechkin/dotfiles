@@ -110,30 +110,31 @@ command! ln     ln %f:p %D
 command! lns    ln -s %f:p %D
 
 " execute
-command! run    !! ./%f
+command! run    !! ./%c
 command! make   !!make %a
 
 " info
 command! df     df -h %m 2> /dev/null
 
 " compare
-command! diff   vim -d %f %F
+command! diff   vimdiff %f %F
 
 " search
 command! fd     fd --hidden %a %M
 command! vgrep  vim "+grep %a"
 
 " pack
-command! tar    tar -I zstd -cvf %c.tzst %f
-command! z      7z a             %c.7z   %f
-command! zip    zip -r           %c.zip  %f
+command! p      tar -cvaf   %c.tzst %f
+command! z      7z a        %c.7z   %f
+
+" repack
+command! rep    convert-archive %c
 
 " unpack
-command! untar  tar -xf     %c &
-command! unz    7z x        %c &
-command! unzip  unar -e 866 %c &
-" silently extract selected archives in background
-command extract aunpack     %c &>/dev/null &
+command! unp    extract-here %c
+
+" checksum
+command! sha    find %c -type f -print0 | sort -z | xargs --null sha256sum -b > %c.sha256
 
 " => File associations ------------------------------------------------------------------------------------------- {{{1
 
@@ -170,19 +171,22 @@ filextype *.chm,*.epub,*.fb2,*.fbz,*.fb2.zip,*.mobi,*.rtf,*.tcr
 	\ foliate  %c %i &,
 
 filextype *.fb2,*.xml,*.gpx
+	\ {Open with Kate}
 	\ kate     %f %i &,
 	\ {Lint xml}
 	\ lint-fb2 %f %i &,
 
-" => File associations: Pdf -------------------------------------------------------------------------------------- {{{1
+" => File associations: Djvu, Pdf -------------------------------------------------------------------------------- {{{1
+" cat helps to properly show djvu over nfs volumes
 
-filextype *.pdf
+filextype *.djvu,*.pdf
 	\ {View in zathura}
 	\ cat %c | zathura %i - &,
 	\ {Open with xdg-open}
 	\ xdg-open %c %i &,
 	\ {View in apvlv}
 	\ apvlv,
+filextype *.pdf
 	\ xpdf,
 fileviewer *.pdf
 	\ pdftotext -nopgbrk %c -,
@@ -194,16 +198,6 @@ filextype *.ps,*.eps,*.ps.gz
 	\ cat %c | zathura %i - &,
 	\ {View in gv}
 	\ gv %c %i &,
-
-" => File associations: Djvu ------------------------------------------------------------------------------------- {{{1
-
-filextype *.djvu
-	\ {View in zathura}
-	\ cat %c | zathura %i - &,
-	\ {Open with xdg-open}
-	\ xdg-open %c %i &,
-	\ {View in apvlv}
-	\ apvlv,
 
 " => File associations: Audio ------------------------------------------------------------------------------------ {{{1
 
@@ -282,8 +276,6 @@ filextype *.bmp,*.gif,*.jpg,*.jpeg,*.png,*.xpm,*.svg
 	\ sxiv,
 	\ {View in gpicview}
 	\ gpicview,
-	\ {View in shotwell}
-	\ shotwell,
 fileviewer *.bmp,*.gif,*.jpg,*.jpeg,*.png,*.xpm,*.svg
 	\ chafa --clear -c 240 %c,
 	\ mediainfo,
@@ -397,8 +389,6 @@ filetype *.7z,
 	\ extract-here %f &,
 	\ {Convert to tar.zstd...}
 	\ convert-archive %f &,
-	\ {Show file}
-	\ show-file %c | less,
 fileviewer *.7z,
 	\*.dsl.dz,*.tar,*.a,*.so,lib*.so.*,*.zip,*.ova,*.sfs,
 	\*.apk,*.apm,*.ar,*.arj,*.cab,*.chm,*.cpio,*.cramfs,*.deb,*.dll,*.dmg,*.doc,*.esd,*.exe,
@@ -428,56 +418,29 @@ fileviewer *.7z,
 "	\*.jar,*.war,*.ear,*.oxt,*.apkg
 "	\ zip -sf,
 
+" => File associations: S3 mount --------------------------------------------------------------------------------- {{{1
+
 filetype *.s3fs
 	\ {Mount with s3fs}
 	\ FUSE_MOUNT2|s3fs %PARAM %DESTINATION_DIR %FOREGROUND,
 
-" => File associations: SshMount --------------------------------------------------------------------------------- {{{1
+" => File associations: ssh mount -------------------------------------------------------------------------------- {{{1
 
 filetype *.ssh
 	\ {Mount with sshfs}
 	\ FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR %FOREGROUND,
 
-" => File associations: FtpMount --------------------------------------------------------------------------------- {{{1
+" => File associations: ftp mount -------------------------------------------------------------------------------- {{{1
 
 filetype *.ftp
 	\ {Mount with curlftpfs}
 	\ FUSE_MOUNT2|curlftpfs -o ftp_port=-,,disable_eprt %PARAM %DESTINATION_DIR %FOREGROUND,
 
-" => File associations: EncfsMount ------------------------------------------------------------------------------- {{{1
+" => File associations: encfs mount ------------------------------------------------------------------------------ {{{1
 
 filetype *.encfs
 	\ {Mount with encfs}
 	\ FUSE_MOUNT2|encfs %PARAM %DESTINATION_DIR %FOREGROUND,
-
-" => Syntax highlighting in preview ------------------------------------------------------------------------------ {{{1
-
-" 256-color terminal
-" fileviewer *.[ch],*.[ch]pp highlight -O xterm256 -s dante --syntax c %c
-" fileviewer Makefile,Makefile.* highlight -O xterm256 -s dante --syntax make %c
-
-" 16-color terminal
-" fileviewer *.c,*.h highlight -O ansi -s dante %c
-
-filetype *[^/],.*[^/]
-	\ {Edit in vim}
-	\ vim,
-
-filetype *[^/],.*[^/]
-	\ {View in less}
-	\ less,
-
-" Default file viewer
-fileviewer *[^/],.*[^/]
-	\ show-file,
-
-" Default dir viewer
-fileviewer */,.*/
-	\ show-dir,
-
-" => Displaying pictures in terminal ----------------------------------------------------------------------------- {{{1
-
-" fileviewer *.jpg,*.png shellpic %c
 
 " => Default file execution -------------------------------------------------------------------------------------- {{{1
 
@@ -494,9 +457,31 @@ fileviewer */,.*/
 " For Windows:
 " filetype * start, explorer
 
+filetype *[^/],.*[^/]
+	\ {Edit in vim}
+	\ vim,
+	\ {View in less}
+	\ less,
+	\ {Show file}
+	\ show-file %c | less,
+
+filetype *[^/$|.asc$|.sig$],.*[^/$|.asc$|.sig$]
+	\ {Sign the file}
+	\ gpg --detach-sign,
+
+" => Preview ----------------------------------------------------------------------------------------------------- {{{1
+
+" Default file viewer
+fileviewer *[^/],.*[^/]
+	\ show-file,
+
+" Default dir viewer
+fileviewer */,.*/
+	\ show-dir,
+
 " => Save state between sessions --------------------------------------------------------------------------------- {{{1
 
-" What should be saved automatically between vifm sessions.  Drop "savedirs"
+" What should be saved automatically between vifm sessions. Drop "savedirs"
 " value if you don't want vifm to remember last visited directories for you.
 set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,phistory,fhistory,dirstack,registers,bookmarks,bmarks
 
@@ -510,7 +495,7 @@ set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,phistory,fhistory,dir
 "
 " filter! /^.*\.(lo|o|d|class|py[co])$|.*~$/
 
-" => Sample mappings --------------------------------------------------------------------------------------------- {{{1
+" => mappings ---------------------------------------------------------------------------------------------------- {{{1
 
 " Start shell in current directory
 nnoremap s :shell<CR>
@@ -558,9 +543,10 @@ nnoremap <f3>  :!{ show-dir %c || show-file %c } | less<CR>
 nnoremap <f4>  :edit<CR>
 nnoremap <f5>  :copy<CR>
 nnoremap <f6>  :move<CR>
-nnoremap <f7>  :mkdir<space>
+nnoremap <f7>  :mkdir<SPACE>
 nnoremap <f8>  :delete<CR>
 nnoremap <f10> :quit<CR>
+nnoremap <c-@> :sync<CR>
 
 " => fsf integration (ctrl-t, ctrl-p) ---------------------------------------------------------------------------- {{{1
 
@@ -569,11 +555,8 @@ command! FZFlocate :set noquickview | :execute 'goto "'.system('command locate /
 
 nnoremap <c-p> :FZFfind<CR>
 nnoremap <c-t> :FZFlocate<CR>
-nnoremap <c-@> :sync<CR>
 
 " => Various customization examples ------------------------------------------------------------------------------ {{{1
-
-" Various customization examples
 
 " Use ag (the silver searcher) instead of grep
 "
