@@ -6,51 +6,96 @@ use warnings;
 use autodie qw(:all);
 
 use Carp;
-use English qw(-no_match_vars);
 use Path::Tiny;
 
+## no critic [RegularExpressions::ProhibitComplexRegexes]
 use constant {
-    'OUTPUT' => {
-        'format'    => 'zstd',
-        'extention' => '.tzst',
-    },
+    'SUPPORTED' => [{
+            'suffix' => qr{
+                    .tar$ |
+                    .tar.bz2$ | .tbz2$ | .tbz$ | .tz2$ |
+                    .tar.gz$ | .tgz$ | .taz$ |
+                    .tar.lz$ | .tlzip$ |
+                    .tar.lzma$ | .tlzma$ | .tlz$ |
+                    .tar.lzop$ | .tlzo$ | .tlzop$ |
+                    .tar.xz$ | .txz$ |
+                    .tar.zst$ | .tzst$
+                    .tar.Z$ | .taZ$
+                }x,
+            'command' => ['tar', 'xaf', \&_get_filename, '--directory', \&_get_extract_path],
+        },
+        {
+            'suffix'  => qr{.cp866.zip$}x,
+            'command' => ['unzip', '-O', 'cp866', '-d', \&_get_extract_path, \&_get_filename],
+        },
+        {
+            'suffix'  => qr{.7z$ | .rar$ | .zip$}x,
+            'command' => [
+                '7z', 'x', '-y',
+                sub {
+                    my ($file, $basename, $arc, $extract_path) = @_;
+                    return "-o$extract_path";
+                },
+                '--',
+                \&_get_filename,
+            ],
+        },
+    ],
+    'FORMAT' => '.tzst',
 };
+
+sub extract {
+    my ($file, $basename, $arc, $extract_path) = @_;
+
+    $extract_path->mkpath;
+
+    my @command = map {ref $_ eq 'CODE' ? $_->($file, $basename, $arc, $extract_path) : $_} $arc->{'command'}->@*;
+    system (@command);
+
+    return 1;
+}
+
+sub _get_filename {
+    my ($file, $basename, $arc, $extract_path) = @_;
+    return $file->stringify;
+}
+
+sub _get_extract_path {
+    my ($file, $basename, $arc, $extract_path) = @_;
+    return $extract_path->stringify;
+}
 
 foreach my $file (map {path($_)} @ARGV) {
     $file->exists
         or next;
-    my $filename = $file->basename;
-    my ($name, $extention);
-    if ($filename =~ m{(?<name>.*) [.] (?<extention>\w*)$}xms) {
-        $name      = $LAST_PAREN_MATCH{'name'}      // '';
-        $extention = $LAST_PAREN_MATCH{'extention'} // '';
+
+    my $processed;
+    foreach my $arc (SUPPORTED()->@*) {
+        $file =~ m{$arc->{'suffix'}}
+            or next;
+
+        my $basename     = $file->basename($arc->{'suffix'});
+        my $extract_path = Path::Tiny->tempdir('convert-archive-XXXXXXXXXX', 'CLEANUP' => 1);
+
+        $processed = extract($file, $basename, $arc, $extract_path);
+
+        my $outfile = $file->parent->child($basename . FORMAT());
+        $outfile->exists
+            and die "File already exists: $outfile";
+
+        system ('tar', 'caf', $outfile, '--directory', $extract_path, map {$_->basename} $extract_path->children);
+        last;
     }
 
-    my $outfile = $file->parent->child($name . OUTPUT()->{'extention'});
-    $outfile->exists
-        and die "File already exists: $outfile";
-
-    my $tmp = Path::Tiny->tempdir('convert-archive-XXXXXXXXXX', 'CLEANUP' => 1);
-
-    # extracting
-    if ($extention eq 'zip') {
-
-        # use 7z and recode later
-        # local $ENV{'LANG'} = 'C';
-        # system ('7z', 'x', '-no-utf16', '-y', "-o$tmp", $file);
-        # system ("convmv -f cp866 -t utf-8 --notest -r $tmp 2>/dev/null");
-
-        # use unzip-iconv
-        # system ('unzip', '-O', 'cp866', '-d', $tmp, $file);
-
-        # use unar with forced encoding
-        system ('unar', '-e', '866', '-o', $tmp, $file);
-    } elsif ($extention =~ m{[t]?[bz2|gz|xz|z|az]}) {
-        system ('unar', '-o', $tmp, $file);
-    } else {
-        system ('7z', 'x', '-y', "-o$tmp", $file);
-    }
-
-    # compressing
-    system ('tar', '-I', OUTPUT()->{'format'}, '-cf', $outfile, '-C', $tmp, map {$_->basename} $tmp->children);
+    $processed
+        or say {*STDERR} "Unable to process file: $file";
 }
+
+__END__
+
+# use 7z and recode later
+# local $ENV{'LANG'} = 'C';
+# system ('7z', 'x', '-no-utf16', '-y', "-o$tmp", $file);
+# system ("convmv -f cp866 -t utf-8 --notest -r $tmp 2>/dev/null");
+# use unar with forced encoding
+# system ('unar', '-e', '866', '-o', $tmp, $file);

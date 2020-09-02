@@ -370,10 +370,16 @@ filetype *.iso,*.mdf,*.nrg
 
 " ArchiveMount
 filetype *.tar,
-	\*.tar.bz2,*.tbz2,*.tar.gz,*.tgz,*.tar.xz,*.txz,*.tar.zst,*.tzst,*.tar.z,*.taz,
+	\*.tar.bz2,*.tbz2,*.tbz,*.tz2,*.tar.gz,*.tgz,*.taz,*.tar.lz,*.tlzip,*.tar.lzma,*.tlzma,*.tlz,
+	\*.tar.lzop,*.tlzo,*.tlzop,*.tar.xz,*.txz,*.tar.zst,*.tzst,*.tar.Z,*.taZ,
 	\*.jar,*.war,*.ear,*.oxt,*.apkg
 	\ {Mount with archivemount}
 	\ FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR,
+fileviewer *.tar,
+	\*.tar.bz2,*.tbz2,*.tbz,*.tz2,*.tar.gz,*.tgz,*.taz,*.tar.lz,*.tlzip,*.tar.lzma,*.tlzma,*.tlz,
+	\*.tar.lzop,*.tlzo,*.tlzop,*.tar.xz,*.txz,*.tar.zst,*.tzst,*.tar.Z,*.taZ,
+	\*.jar,*.war,*.ear,*.oxt,*.apkg
+	\ tar taf %c &,
 
 filetype *.zip
 	\ {Mount with fuse-p7zip}
@@ -383,36 +389,23 @@ filetype *.7z,
 	\*.apk,*.apm,*.ar,*.arj,*.cab,*.chm,*.cpio,*.cramfs,*.deb,*.dll,*.dmg,*.doc,*.esd,*.exe,
 	\*.flv,*.hxs,*.img,*.iso,*.iso,*.jar,*.lib,*.macho,*.msi,*.msp,*.nsis,*.pkg,*.pmd,*.ppt,
 	\*.qcow,*.qcow2,*.qcow2c,*.r00,*.rar,*.raw,*.rpm,*.squashfs,*.swf,*.swm,*.sys,*.vdi,*.vhd,*.vmdk,*.wim,*.xar,*.xls,
-	\*.tar.bz2,*.tbz2,*.tar.gz,*.tgz,*.tar.xz,*.txz,*.tar.zst,*.tzst,*.tar.z,*.taz
+	\*.tar.bz2,*.tbz2,*.tbz,*.tz2,*.tar.gz,*.tgz,*.taz,*.tar.lz,*.tlzip,*.tar.lzma,*.tlzma,*.tlz,
+	\*.tar.lzop,*.tlzo,*.tlzop,*.tar.xz,*.txz,*.tar.zst,*.tzst,*.tar.Z,*.taZ
 	\ {Mount with fuse-p7zip}
 	\ FUSE_MOUNT|fuse3-p7zip %SOURCE_FILE %DESTINATION_DIR,
-	\ {Show file}
-	\ show-file %c | less,
 	\ {Extract here...}
-	\ 7z x %c &,
+	\ extract-here %f &,
 	\ {Convert to tar.zstd...}
 	\ convert-archive %f &,
+	\ {Show file}
+	\ show-file %c | less,
 fileviewer *.7z,
 	\*.dsl.dz,*.tar,*.a,*.so,lib*.so.*,*.zip,*.ova,*.sfs,
 	\*.apk,*.apm,*.ar,*.arj,*.cab,*.chm,*.cpio,*.cramfs,*.deb,*.dll,*.dmg,*.doc,*.esd,*.exe,
 	\*.flv,*.hxs,*.img,*.iso,*.iso,*.jar,*.lib,*.macho,*.msi,*.msp,*.nsis,*.pkg,*.pmd,*.ppt,
 	\*.qcow,*.qcow2,*.qcow2c,*.r00,*.rar,*.raw,*.rpm,*.squashfs,*.swf,*.swm,*.sys,*.vdi,*.vhd,*.vmdk,*.wim,*.xar,*.xls,
 	\*.tar.bz2,*.tbz2,*.tar.gz,*.tgz,*.tar.xz,*.txz,*.tar.zst,*.tzst,*.tar.z,*.taz
-	\ 7z l %f &,
-
-filetype *.tar,
-	\*.tar.bz2,*.tbz2,*.tar.gz,*.tgz,*.tar.xz,*.txz,*.tar.zst,*.tzst,*.tar.z,*.taz,
-	\*.jar,*.war,*.ear,*.oxt,*.apkg
-	\ {Extract here...}
-	\ tar -xf %c &,
-	\ {Convert to tar.zstd...}
-	\ convert-archive %f &,
-fileviewer *.tar,
-	\*.tar.bz2,*.tbz2,*.tar.gz,*.tgz,*.tar.xz,*.txz,*.tar.zst,*.tzst,*.tar.z,*.taz,
-	\*.jar,*.war,*.ear,*.oxt,*.apkg
-	\ tar -tf %c &,
-fileviewer *.tar.txz,*.txz
-	\ xz --list %c &,
+	\ 7z l %c &,
 
 "filetype *.rar
 "	\ {Mount with rar2fs}

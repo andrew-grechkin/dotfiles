@@ -2,9 +2,13 @@
 
 set -Eeuo pipefail
 
+DN=$(dirname "$0")
+PATH=$DN:$PATH
+
 chosen="$(perl "${HOME}/.local/bin/grep-emoji" | LC_ALL=en_US.utf8 fzf)"
 
 [[ "$chosen" != "" ]] || exit
 
 # shellcheck disable=2001
-echo "$chosen" | sed 's/ > .*//'
+#echo "$chosen" | sed 's/ > .*//'
+echo -n "$chosen" | sed 's/ > .*//' | clipcopy
