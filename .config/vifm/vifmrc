@@ -277,7 +277,7 @@ filextype *.bmp,*.gif,*.jpg,*.jpeg,*.png,*.xpm,*.svg
 	\ {View in gpicview}
 	\ gpicview,
 fileviewer *.bmp,*.gif,*.jpg,*.jpeg,*.png,*.xpm,*.svg
-	\ chafa --clear -c 240 %c,
+	\ chafa --clear -c 240 -s %pwx%ph %c,
 	\ mediainfo,
 	\ identify -verbose,
 
