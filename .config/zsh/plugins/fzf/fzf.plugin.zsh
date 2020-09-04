@@ -37,6 +37,7 @@ export FZF_DEFAULT_BINDS=(
 	--bind 'ctrl-u:page-up'
 	--bind 'f1:toggle-preview'
 	--bind 'f2:toggle-preview-wrap'
+	--bind 'tab:accept'
 	--bind 'home:top'
 	--bind 'ctrl-y:execute-silent(echo -n {} | clipcopy)+abort'
 )
@@ -52,7 +53,12 @@ export FZF_FILE_PREVIEW=(
 	--preview-window=right:78:hidden
 	--preview="{ show-dir {} || show-file {} } 2>&1 | head -n 100"
 )
-export FZF_DEFAULT_OPTS=$(printf " '%s'" ${FZF_DEFAULT_BINDS[@]} ${FZF_FILE_BINDS[@]} ${FZF_FILE_PREVIEW[@]})
+export FZF_MULTI_OPTIONS=(
+	--multi
+	--bind 'tab:toggle-out,shift-tab:toggle-in'
+)
+export FZF_DEFAULT_OPTS=$(printf " '%s'" '--no-multi' ${FZF_DEFAULT_BINDS[@]} ${FZF_FILE_BINDS[@]} ${FZF_FILE_PREVIEW[@]})
+export FZF_MULTI_OPTS=$(printf " '%s'" ${FZF_MULTI_OPTIONS[@]})
 export FZF_CTRL_T_OPTS="$FZF_DEFAULT_OPTS"
 export FZF_TMUX=1
 
@@ -63,7 +69,7 @@ export FZF_COMPLETION_TRIGGER='\'
 # => ssh (overrides the default one) ----------------------------------------------------------------------------- {{{1
 
 function _fzf_complete_ssh() {
-	_fzf_complete '+m --bind=tab:accept' "$@" < <(ssh-hosts)
+	_fzf_complete "$@" < <(ssh-hosts)
 }
 
 # => docker ------------------------------------------------------------------------------------------------------ {{{1
@@ -71,13 +77,13 @@ function _fzf_complete_ssh() {
 function _fzf_complete_docker() {
 	case "$1" in
 		docker*\ rmi\ * | docker*-f* | docker*\ run\ *)
-			_fzf_complete "--reverse -m" "$@" < <(docker-images)
+			_fzf_complete "--reverse $FZF_MULTI_OPTS" "$@" < <(docker-images)
 			;;
 		docker*start* | docker*stop* | docker*rm* | docker*exec* | docker*kill*)
-			_fzf_complete "--reverse -m" "$@" < <(docker-containers)
+			_fzf_complete "--reverse $FZF_MULTI_OPTS" "$@" < <(docker-containers)
 			;;
 		docker\ )
-			_fzf_complete "--reverse --bind=tab:accept" "$@" < <(docker-commands)
+			_fzf_complete "--reverse" "$@" < <(docker-commands)
 			;;
 	esac
 }
@@ -91,13 +97,13 @@ function _fzf_complete_docker_post() {
 function _fzf_complete_kubectl() {
 	case "$1" in
 		kubectl*\ exec\ *\ -c\ )
-			_fzf_complete "--reverse --bind=tab:accept" "$@" < <(kubectl-containers)
+			_fzf_complete "--reverse" "$@" < <(kubectl-containers)
 			;;
 		kubectl*\ exec\ *)
-			_fzf_complete "--reverse --bind=tab:accept" "$@" < <(kubectl-pods)
+			_fzf_complete "--reverse" "$@" < <(kubectl-pods)
 			;;
 		kubectl\ )
-			_fzf_complete "--reverse --bind=tab:accept -n 1" "$@" < <(kubectl-commands)
+			_fzf_complete "--reverse -n 1" "$@" < <(kubectl-commands)
 			;;
 	esac
 }
@@ -148,31 +154,31 @@ function fzf-detect-widget() {
 			RESULT=$(fzf-git-files | stdin-join-lines)
 			;;
 		docker+( )rmi* | docker*-f* | docker*\ run*)
-			RESULT=$(docker-images | fzf --multi --reverse | awk '{print $1}' | stdin-join-lines)
+			RESULT=$(docker-images | fzf --reverse "${FZF_MULTI_OPTIONS[@]}" | awk '{print $1}' | stdin-join-lines)
 			;;
 		docker+( )start* | docker*stop* | docker*rm* | docker*exec* | docker*kill*)
-			RESULT=$(docker-containers | fzf --multi --reverse | awk '{print $1}' | stdin-join-lines)
+			RESULT=$(docker-containers | fzf --reverse "${FZF_MULTI_OPTIONS[@]}" | awk '{print $1}' | stdin-join-lines)
 			;;
 		docker*( ))
-			RESULT=$(docker-commands | fzf --bind=tab:accept --reverse | awk '{print $1}' | stdin-join-lines)
+			RESULT=$(docker-commands | fzf --reverse | awk '{print $1}' | stdin-join-lines)
 			;;
 		(kubectl|k)+( )(exec\ *\ -c\ |logs\ *-c\ ))
-			RESULT=$(kubectl-containers | fzf --multi --reverse | awk '{print $1}' | stdin-join-lines)
+			RESULT=$(kubectl-containers | fzf --reverse "${FZF_MULTI_OPTIONS[@]}" | awk '{print $1}' | stdin-join-lines)
 			;;
 		(kubectl|k)+( )(exec|logs)\ *)
-			RESULT=$(kubectl-pods | fzf --multi --reverse | awk '{print $1}' | stdin-join-lines)
+			RESULT=$(kubectl-pods | fzf --reverse "${FZF_MULTI_OPTIONS[@]}" | awk '{print $1}' | stdin-join-lines)
 			;;
 		(kubectl|k)*( ))
-			RESULT=$(kubectl-commands | fzf -n 1 --reverse --bind=tab:accept | awk '{print $1}' | stdin-join-lines)
+			RESULT=$(kubectl-commands | fzf --reverse -n 1 | awk '{print $1}' | stdin-join-lines)
 			;;
 		ssh*( ))
-			RESULT=$(ssh-hosts | fzf -n 1 --reverse --bind=tab:accept | awk '{print $1}' | stdin-join-lines)
+			RESULT=$(ssh-hosts | fzf --reverse -n 1 | awk '{print $1}' | stdin-join-lines)
 			;;
 		*( )cd+( )*)
 			RESULT=$(_fzf_compgen_dir "$(pwd)" | fzf | stdin-join-lines)
 			;;
 		**( ))
-			RESULT=$(_fzf_command_helper | fzf -m | stdin-join-lines)
+			RESULT=$(_fzf_command_helper | fzf "${FZF_MULTI_OPTIONS[@]}" | stdin-join-lines)
 			;;
 	esac
 	if [[ -n $RESULT ]]; then

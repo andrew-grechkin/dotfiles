@@ -5,4 +5,4 @@ set -Eeuo pipefail
 DN=$(dirname "$0")
 PATH=$DN:$PATH
 
-git-branches "$@" | fzf --multi --preview 'git show --color=always {}'
+git-branches "$@" | fzf --multi --bind 'tab:toggle-out,shift-tab:toggle-in' --preview 'git show --color=always {}'

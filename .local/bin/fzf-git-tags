@@ -5,4 +5,4 @@ set -Eeuo pipefail
 DN=$(dirname "$0")
 PATH=$DN:$PATH
 
-git-tags | fzf --multi --preview 'git show --color=always {}'
+git-tags | fzf --multi --bind 'tab:toggle-out,shift-tab:toggle-in' --preview 'git show --color=always {}'
