@@ -209,6 +209,7 @@ call plug#begin('~/.cache/vim/plugged')
 		" perl autocomplete (not working properly)
 		Plug 'chumakd/perlomni.vim'
 		Plug 'Shougo/deoplete.nvim'
+		Plug 'RRethy/vim-hexokinase', {'do': 'make hexokinase'}
 	endif
 	if !empty(glob(VIM_CONFIG_HOME . '/plugins.' . PRIVATE_DOMAIN . '.vim'))
 		exec 'source ' . VIM_CONFIG_HOME . '/plugins.' . PRIVATE_DOMAIN . '.vim'
@@ -253,6 +254,8 @@ set visualbell
 set laststatus=2                                                               " Always show the status line
 
 " => Colors and Fonts -------------------------------------------------------------------------------------------- {{{1
+
+"set termguicolors
 
 syntax enable                                                                  " Enable syntax highlighting
 

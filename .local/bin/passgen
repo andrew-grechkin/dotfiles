@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -Euo pipefail
+
+PASSWD=$(tr -dc '[:alnum:]|!@#$%&-\?\*\^\(\){}[]\\\|' < /dev/urandom | dd count=24 bs=1 2>/dev/null)
+
+echo "$PASSWD"
