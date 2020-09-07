@@ -22,5 +22,8 @@ else
 		print "pastebin: socat/netcat command not found" >&2
 		return 1
 	fi
-	[[ -n "$URL" ]] && echo "$URL" && echo "$URL" | clipcopy
+	[[ -n "$URL" ]] && {
+		echo "Paste is saved to: $URL"
+		echo -n "$URL" | clipcopy
+	}
 fi

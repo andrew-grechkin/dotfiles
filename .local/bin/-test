@@ -1,8 +1,0 @@
-#!/bin/bash
-
-set -ex
-
-mapfile -t DATA < <(gopass otp websites/gitlab.com/andrew-grechkin)
-echo -n "${DATA[0]}"
-echo "${DATA[0]}" | xclip -i -sel p -f | xclip -i -sel c &>/dev/null
-# notify-send "Password for $2 copied to clipboard" -i dialog-password

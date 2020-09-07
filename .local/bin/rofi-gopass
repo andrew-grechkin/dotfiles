@@ -28,13 +28,12 @@ else
 	if [[ "$1" == "--pass" ]]; then
 		# gopass --clip is broken for some reason, temporary substitution
 		mapfile -t DATA < <(gopass show "$2")
-		echo "${DATA[0]}" | xclip -i -sel p -f | xclip -i -sel c &>/dev/null
-		notify-send "Password for $2 copied to clipboard" -i dialog-password
+		echo -n "${DATA[0]}" | clipcopy && notify-send "Password for $2 copied to clipboard" -i dialog-password
 		#gopass --clip "$2" | while read -r MESSAGE; do notify-send "$MESSAGE" -i dialog-password; done
 	elif [[ "$1" == "--otp" ]]; then
 		gopass otp --clip "$2" | while read -r MESSAGE; do notify-send "$MESSAGE" -i dialog-password; done
 	elif [[ "$1" == "--name" ]]; then
 		USERNAME=$(basename "$2")
-		echo -n "$USERNAME" | xclip -i -sel p -f | xclip -i -sel c &>/dev/null && notify-send "Username '$USERNAME' is copied into the clipboard" -i dialog-password
+		echo -n "$USERNAME" | clipcopy && notify-send "Username '$USERNAME' is copied into the clipboard" -i dialog-password
 	fi
 fi

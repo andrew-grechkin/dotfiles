@@ -2,4 +2,7 @@
 
 set -Eeuo pipefail
 
-mpv "$(xclip -o -sel c)"
+DN=$(dirname "$0")
+PATH=$DN:$PATH
+
+mpv "$(clippaste)"

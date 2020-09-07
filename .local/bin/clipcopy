@@ -17,9 +17,9 @@ case "$OSTYPE" in
 		;;
 	*)
 		if [[ -n "$(command -v xclip)" ]]; then
-			cat "$@" | xclip -i -sel p -f | xclip -i -sel c
+			cat "$@" | xclip -sel p -f | xclip -sel c &> /dev/null
 		elif [[ -n "$(command -v xsel)" ]]; then
-			cat "$@" | xsel --input --clipboard
+			cat "$@" | xsel --input --clipboard &> /dev/null
 		else
 			echo "clipcopy: Platform $OSTYPE not supported or xclip/xsel not installed" >&2
 			exit 1

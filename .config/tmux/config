@@ -35,15 +35,15 @@ set  -g @emulate-scroll-for-no-mouse-alternate-buffer 'on'                     #
 bind   -n MouseDown2Status  kill-window                                        # middle click on a window name in status bar to kill it
 bind   -n MouseDown2Pane    select-pane \; paste-buffer
 #bind   -n DoubleClick1Pane  select-pane \; select-layout main-vertical \; swap-pane -d -t {left}
-bind   -n DoubleClick1Pane  select-pane \; copy-mode \; send-keys -X select-word \; send-keys -X copy-pipe 'xclip -i -sel p -f | xclip -i -sel c'
+bind   -n DoubleClick1Pane  select-pane \; copy-mode \; send-keys -X select-word \; send-keys -X copy-pipe '~/.local/bin/clipcopy'
 
 # => copy mode mouse bindings ------------------------------------------------------------------------------------ {{{1
 
 unbind -T copy-mode-vi MouseDragEnd1Pane                                       # don't exit copy mode on mouse selection
-bind   -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe            'xclip -i -sel p -f | xclip -i -sel c'
+bind   -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe            '~/.local/bin/clipcopy'
 bind   -T copy-mode-vi MouseDown2Pane    send-keys -X copy-selection-and-cancel \; paste-buffer
 bind   -T copy-mode-vi MouseDown3Pane    send-keys -X cancel \; paste-buffer
-bind   -T copy-mode-vi DoubleClick1Pane  select-pane \; send-keys -X select-word \; send-keys -X copy-pipe 'xclip -i -sel p -f | xclip -i -sel c'
+bind   -T copy-mode-vi DoubleClick1Pane  select-pane \; send-keys -X select-word \; send-keys -X copy-pipe '~/.local/bin/clipcopy'
 
 # => key bindings ------------------------------------------------------------------------------------------------ {{{1
 ###
@@ -125,8 +125,8 @@ bind   -T copy-mode-vi 'u'               send-keys -X page-up
 bind   -T copy-mode-vi 'M-u'             send-keys -X page-up
 bind   -T copy-mode-vi 'M-d'             send-keys -X page-down
 bind   -T copy-mode-vi 'v'               send-keys -X begin-selection
-bind   -T copy-mode-vi 'y'               send-keys -X copy-pipe-and-cancel 'xclip -i -sel p -f | xclip -i -sel c'
-bind   -T copy-mode-vi 'Enter'           send-keys -X copy-pipe-and-cancel 'xclip -i -sel p -f | xclip -i -sel c'
+bind   -T copy-mode-vi 'y'               send-keys -X copy-pipe-and-cancel '~/.local/bin/clipcopy'
+bind   -T copy-mode-vi 'Enter'           send-keys -X copy-pipe-and-cancel '~/.local/bin/clipcopy'
 bind   -T copy-mode-vi 'Escape'          send-keys -X cancel
 
 # => nested sessions support, disables prefix in outer session and send everything to inner ---------------------- {{{1

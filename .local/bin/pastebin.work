@@ -21,7 +21,10 @@ ERROR="$(echo "$RESPONSE" | jq -r .error)"
 
 if [[ "$ERROR" = "0" ]]; then
 	URL=$(echo "$RESPONSE" | jq -r .url)
-	[[ -n "$URL" ]] && echo "Paste is saved to: $URL" && echo "$URL" | clipcopy
+	[[ -n "$URL" ]] && {
+		echo "Paste is saved to: $URL"
+		echo -n "$URL" | clipcopy
+	}
 else
 	echo "Error: $(echo "$RESPONSE" | jq -r .message)"
 fi
