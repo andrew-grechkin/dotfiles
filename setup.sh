@@ -25,7 +25,7 @@ ln -sf "$WORKDIR/.config/git"                                          ~/.config
 ln -sf "$WORKDIR/.config/i3"                                           ~/.config/
 ln -sf "$WORKDIR/.config/mpv"                                          ~/.config/
 ln -sf "$WORKDIR/.config/npm"                                          ~/.config/
-ln -sf "$WORKDIR/.config/nvim/init.vim"                                ~/.config/nvim
+ln -sf "$WORKDIR/.config/nvim/"*                                       ~/.config/nvim
 ln -sf "$WORKDIR/.config/perlcriticrc"                                 ~/.config/
 ln -sf "$WORKDIR/.config/perltidyrc"                                   ~/.config/
 ln -sf "$WORKDIR/.config/rofi"                                         ~/.config/

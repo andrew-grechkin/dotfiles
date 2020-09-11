@@ -23,17 +23,38 @@
 "man: text-objects
 "man: word-motions
 
+scriptencoding=utf-8
+
 " => Variables --------------------------------------------------------------------------------------------------- {{{1
 
 let VIM_CONFIG_HOME = '$HOME/.config/nvim'
 let PRIVATE_DOMAIN  = 'book' . 'ing'
+let VIM_CONFIG_FILE = resolve(expand($MYVIMRC))
 
 if has('nvim')
 	let VIM_CACHE_HOME = '$HOME/.config/nvim'
 else
 	let VIM_CACHE_HOME = '$HOME/.cache/vim'
 endif
-let VIM_CONFIG_FILE = resolve(expand($MYVIMRC))
+
+" => Company-specific -------------------------------------------------------------------------------------------- {{{1
+
+let &runtimepath.=','.VIM_CACHE_HOME.'/'.PRIVATE_DOMAIN
+
+" => Preload ----------------------------------------------------------------------------------------------------- {{{1
+
+let g:loaded_netrw             = 1                                             " Disable netrw.
+let g:loaded_netrwPlugin       = 1
+let g:loaded_netrwSettings     = 1
+let g:loaded_netrwFileHandlers = 1
+
+" man: ft-perl-syntax
+
+let perl_include_pod           = 0
+let perl_no_scope_in_variables = 1
+let perl_no_extended_vars      = 1
+let perl_fold                  = 1
+let perl_nofold_packages       = 1
 
 " => Sane defaults ----------------------------------------------------------------------------------------------- {{{1
 
@@ -46,7 +67,7 @@ else
 	" move all configs out of $HOME
 	let rtp=&runtimepath
 	set runtimepath=~/.cache/vim
-	let &runtimepath.=','.rtp.',~/.cache/vim/after'
+	let &runtimepath.=','.rtp.',~/.cache/vim/after,~/.config/nvim,~/.config/nvim/after'
 	set viminfo+=n~/.cache/vim/info
 	silent! set undodir=~/.cache/vim/undo                                      " Set undodir explicitly for vim
 
@@ -74,28 +95,34 @@ let VIM_PLUG_URL      = 'https://raw.githubusercontent.com/junegunn/vim-plug/mas
 let VIM_CREATE_DIR    = ':silent !mkdir -p '. VIM_CACHE_HOME . '/autoload'
 let VIM_PLUG_DOWNLOAD = ':silent !curl -sfLo ' . VIM_CACHE_HOME . '/autoload/plug.vim ' . VIM_PLUG_URL
 
-if empty(glob(VIM_CACHE_HOME . '/autoload/plug.vim'))                         " Download and install vim-plug
+if empty(glob(VIM_CACHE_HOME . '/autoload/plug.vim'))                          " Download and install vim-plug
 	execute VIM_CREATE_DIR
 	execute VIM_PLUG_DOWNLOAD
-	autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+	augroup InstallPlugins
+		autocmd!
+		autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+	augroup END
 endif
 
 " => General ----------------------------------------------------------------------------------------------------- {{{1
 
 let mapleader = "\<Space>"                                                     " Map leader key
 
-" Set to auto read when a file is changed from the outside
-set autoread | autocmd CursorHold,CursorHoldI,FocusGained,BufEnter * silent! checktime
+set autoread                                                                   " Set to auto read when a file is changed from the outside
+augroup DetectFileUpdated
+	autocmd!
+	autocmd CursorHold,CursorHoldI,FocusGained,BufEnter * silent! checktime
+augroup END
 
 "set autochdir
 set autowrite                                                                  " Write the content of the file automatically if you call :make
-set ffs=unix,dos,mac                                                           " Use Unix as the standard file type
+set fileformats=unix,dos,mac                                                   " Use Unix as the standard file type
 set history=10000                                                              " Longest possible command history
 set magic
 set nobackup
 set noswapfile
 set nowritebackup
-set path=.,**,/usr/include/**
+set path=.,
 set tags+=tags;                                                                " Look for a tags file recursively in parent directories
 set pumheight=8                                                                " Maximum height of autocomplete popup window
 set undofile                                                                   " Enable persistent undo
@@ -128,62 +155,73 @@ call plug#begin('~/.cache/vim/plugged')
 	Plug 'junegunn/vim-plug'
 	Plug 'junegunn/fzf.vim'                                                    " Fuzzy search
 	Plug 'junegunn/vim-easy-align'
-"	Plug 'junegunn/vim-peekaboo'                                               " Preview registers
+	Plug 'lambdalisue/fern.vim'
 	Plug 'tpope/vim-abolish'
 	Plug 'tpope/vim-fugitive'                                                  " Git support
 	Plug 'tpope/vim-repeat'                                                    " Repeat everything
 	Plug 'tpope/vim-surround'                                                  " Better surround commands
 	Plug 'tpope/vim-unimpaired'                                                " Pairs of helpful commands
-	Plug 'easymotion/vim-easymotion'                                           " Better move commands
-	Plug 'mhinz/vim-grepper'                                                   " Grep integration
 "	Plug 'tpope/vim-commentary'                                                " Commenting helpers
-	Plug 'scrooloose/nerdcommenter', {'on': '<Plug>NERDCommenterToggle'}       " Commenting helpers
 "	Plug 'tomtom/tcomment_vim'                                                 " Commenting helpers
-	Plug 'scrooloose/nerdtree', {'on': 'NERDTreeToggle'}
-	Plug 'mhinz/vim-startify'
+	Plug 'scrooloose/nerdcommenter', {'on': '<Plug>NERDCommenterToggle'}       " Commenting helpers
 	Plug 'christoomey/vim-tmux-navigator'                                      " Better tmux integration
+	Plug 'mhinz/vim-grepper'                                                   " Grep integration
+	Plug 'nelstrom/vim-visual-star-search'
 	Plug 'andrew-grechkin/vim-rooter'                                          " Cwd if file is in git repo should be repo root
-	Plug 'vim-utils/vim-man'
-	" Colors support
-	Plug 'flazz/vim-colorschemes'                                              " Huge set of color schemes
 	Plug 'vim-airline/vim-airline'                                             " Most informative status line
-	Plug 'vim-airline/vim-airline-themes'                                      " Status line themes
-	Plug 'sbdchd/vim-run'
-	if v:version >= 800 || has('nvim')                                         " These plugins demand modern vim or neovim
-		Plug 'airblade/vim-gitgutter'                                          " Git status/modifications of the file
-		Plug 'dyng/ctrlsf.vim', {'on': ['CtrlSF','<Plug>CtrlSFPrompt','<Plug>CtrlSFCwordPath','<Plug>CtrlSFVwordExec']} " Global search and replace
-		Plug 'lambdalisue/suda.vim'                                            " run sudo from vim
-		Plug 'majutsushi/tagbar'
-		Plug 'vimwiki/vimwiki'                                                 " Personal wiki
-		Plug 'masukomi/vim-markdown-folding'
-		Plug 'pedrohdz/vim-yaml-folds'
-		Plug 'simnalamburt/vim-mundo', {'on': 'MundoToggle'}                   " Visualize the undo tree
-		Plug 'inkarkat/vim-localrc'
-		"Plug 'embear/vim-localvimrc'
-		Plug 'dense-analysis/ale'                                              " Async syntax checker
-	endif
-	if has('nvim')                                                             " These plugins demand neovim
-		Plug 'janko/vim-test'
-		" Snippets support
-		Plug 'ervandew/supertab'
+"	Plug 'vim-airline/vim-airline-themes'                                      " Status line themes
+	if has('python3')
+		let g:ycm_collect_identifiers_from_comments_and_strings = 1
+		let g:ycm_collect_identifiers_from_tags_files           = 1
+		let g:ycm_seed_identifiers_with_syntax                  = 1
+"		Plug 'Valloric/YouCompleteMe', {'do': './install.py --clang-completer --system-libclang'}
+		Plug 'Valloric/YouCompleteMe', {'do': './install.py --clangd-completer'}
+		""" necessary for UltiSnips
+		let g:ale_lint_on_enter            = 0
+		let g:ale_lint_on_filetype_changed = 0
+		let g:ale_lint_on_text_changed     = 0
+		let g:ale_lint_on_insert_leave     = 0
 		Plug 'SirVer/ultisnips'
 		Plug 'andrew-grechkin/vim-snippets'
+	else
+		let g:ale_completion_enabled = 1
 	endif
-	" support Perl
-	"Plug '~/.local/share/vim-plug/trackperlvars', {'for': 'perl'}
-	"Plug '~/.local/share/vim-plug/perlart',       {'for': 'perl'}
-	" support puppet
+	if has('nvim') || has('patch-8.0.902')
+		Plug 'mhinz/vim-signify'
+	else
+		Plug 'mhinz/vim-signify', { 'branch': 'legacy' }
+"		Plug 'airblade/vim-gitgutter'                                          " Git status/modifications of the file
+	endif
+	if has('nvim') || v:version >= 800                                         " These plugins demand modern vim or neovim
+		Plug 'dense-analysis/ale'                                              " Async syntax checker
+		Plug 'unblevable/quick-scope'
+		Plug 'easymotion/vim-easymotion'                                       " Better move commands
+		Plug 'ervandew/supertab'
+		Plug 'junegunn/vim-peekaboo'                                           " Preview registers
+		Plug 'lambdalisue/suda.vim'                                            " run sudo from vim
+		Plug 'majutsushi/tagbar'
+		Plug 'masukomi/vim-markdown-folding'
+		Plug 'mhinz/vim-startify'
+		Plug 'pedrohdz/vim-yaml-folds'
+	endif
+	if has('nvim')                                                             " These plugins demand neovim
+		Plug 'dyng/ctrlsf.vim', {'on': ['CtrlSF','<Plug>CtrlSFPrompt','<Plug>CtrlSFCwordPath','<Plug>CtrlSFVwordExec']} " Global search and replace
+		Plug 'inkarkat/vim-localrc'
+		Plug 'janko/vim-test'
+		Plug 'sbdchd/vim-run'
+		Plug 'simnalamburt/vim-mundo', {'on': 'MundoToggle'}                   " Visualize the undo tree
+	endif
 	Plug 'rodjek/vim-puppet'                                                   " For Puppet syntax highlighting
-"	checking empty($KDEHOME) here is a weird way to check if this config is used in personal/work environment
-"	KDEHOME is always defined on personal machines. I need to do something smarter in future
+	Plug 'vim-ruby/vim-ruby', {'for': 'ruby'}                                  " For Facts, Ruby functions, and custom providers
+"	Plug '~/.local/share/vim-plug/trackperlvars', {'for': 'perl'}
+"	Plug '~/.local/share/vim-plug/perlart',       {'for': 'perl'}
+	""" checking empty($KDEHOME) here is a weird way to check if this config is used in personal/work environment
+	""" KDEHOME is always defined on personal machines. I need to do something smarter in future
 	if empty($KDEHOME)                                                         " Install these pluggins only at work remote machines
-		Plug 'fatih/vim-go', {'for': 'go'}
 		Plug 'junegunn/fzf', {'dir': '~/.cache/fzf', 'do': './install --bin'}
-		Plug 'vim-ruby/vim-ruby', {'for': 'ruby'}                              " For Facts, Ruby functions, and custom providers
 	else                                                                       " Install these pluggins only on personal machines
 		Plug 'tpope/vim-rhubarb'                                               " fugitive Github module
 		Plug 'shumphrey/fugitive-gitlab.vim'                                   " fugitive Gitlab module
-		Plug 'Valloric/YouCompleteMe', {'do': './install.py --clang-completer --system-libclang'}
 		Plug 'mgrabovsky/vim-cuesheet'
 		Plug 'pearofducks/ansible-vim'
 		Plug 'ryanoasis/vim-devicons'
@@ -191,17 +229,18 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'vifm/vifm.vim'
 	endif
 	if 0                                                                       " These plugins are disabled
-		Plug 'MarcWeber/vim-addon-local-vimrc'
+		Plug 'fatih/vim-go', {'for': 'go'}
+		Plug 'vimwiki/vimwiki'                                                 " Personal wiki
 		Plug 'chrisbra/csv.vim'
 		Plug 'guns/xterm-color-table.vim', {'on': 'XtermColorTable'}
+		Plug 'flazz/vim-colorschemes'                                          " Huge set of color schemes
+		Plug 'vim-scripts/ScrollColors', {'on': 'SCROLL'}                      " Scroll through color schemes
 		Plug 'itchyny/lightline.vim'
 		Plug 'jceb/vim-hier'
 		Plug 'mhinz/vim-grepper', {'on': ['Grepper', '<Plug>(GrepperOperator)']} " Grep integration
 		Plug 'neoclide/coc.nvim', {'do': { -> coc#util#install()}}             " Language Server support
 		Plug 'samoshkin/vim-mergetool'
 		Plug 'tpope/vim-vinegar'
-		Plug 'vim-scripts/ScrollColors', {'on': 'SCROLL'}                      " Scroll through color schemes
-		Plug 'vim-syntastic/syntastic'
 		Plug 'vim-vdebug/vdebug'
 		Plug 'xolox/vim-misc'
 		Plug 'xolox/vim-easytags'
@@ -211,14 +250,7 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'Shougo/deoplete.nvim'
 		Plug 'RRethy/vim-hexokinase', {'do': 'make hexokinase'}
 	endif
-	if !empty(glob(VIM_CONFIG_HOME . '/plugins.' . PRIVATE_DOMAIN . '.vim'))
-		exec 'source ' . VIM_CONFIG_HOME . '/plugins.' . PRIVATE_DOMAIN . '.vim'
-	endif
 call plug#end()
-
-function! PlugLoaded(name)
-	return (has_key(g:plugs, a:name) && isdirectory(g:plugs[a:name].dir))
-endfunction
 
 "packloadall                                                                    " Load all plugins
 "silent! helptags ALL                                                           " Load help files for all plugins
@@ -230,8 +262,9 @@ set scrolloff=5                                                                "
 set wildmenu                                                                   " Enhanced command line completion
 "set wildmode=longest:full
 set wildignorecase
-set wildignore+=*.o,*~,*.pyc,*.so,*.swp,*.zip,*.exe                            " Ignore compiled files
+set wildignore+=*.a,*.o,*~,*.pyc,*.so,*.swp,*.zip,*.exe                        " Ignore compiled files
 set wildignore+=*/tmp/*                                                        " MacOSX/Linux
+set wildignore+=*/node_modules/*
 set wildignore+=*\\tmp\\*                                                      " Windows
 
 set number                                                                     " Enable numbers
@@ -255,26 +288,24 @@ set laststatus=2                                                               "
 
 " => Colors and Fonts -------------------------------------------------------------------------------------------- {{{1
 
+set cursorcolumn                                                               " Highlight current column
+set cursorline
 "set termguicolors
-
-syntax enable                                                                  " Enable syntax highlighting
 
 ":silent! colorscheme last256
 :silent! colorscheme molokai
 ":silent! colorscheme woju
 
-set cursorcolumn                                                               " Highlight current column
-set cursorline
+syntax enable                                                                  " Enable syntax highlighting
 
 " => Editor ------------------------------------------------------------------------------------------------------ {{{1
 
 filetype plugin indent on                                                      " Mandatory for modern plugins
 
-set complete+=i,kspell                                                         " Complete from include files and from spell if enabled
+set complete+=kspell                                                           " Complete from include files and from spell if enabled
 
 set foldcolumn=2
 set foldmethod=syntax
-set foldnestmax=2
 
 set list                                                                       " Show special characters
 set listchars=tab:↹\ ,trail:␣,extends:>,precedes:<,nbsp:+                      " Visual form of special characters
@@ -294,7 +325,7 @@ set virtualedit=block
 
 set spelllang=en,nl,ru
 
-		nnoremap <leader><leader>s     :set spell!<CR>
+nnoremap <leader><leader>s :set spell!<CR>
 
 " => Text, tab and indent related -------------------------------------------------------------------------------- {{{1
 
@@ -307,7 +338,7 @@ set smartindent
 
 set noexpandtab                                                                " Never use spaces instead of tabs
 set smarttab                                                                   " Tab setting aware <Tab> key
-set shiftround
+set noshiftround
 set shiftwidth=4
 set softtabstop=4
 set tabstop=4
@@ -322,32 +353,19 @@ set formatoptions=tcqj                                                         "
 set clipboard=unnamed,unnamedplus                                              " Copy into system clipboard (*, +) registers
 
 "vnoremap <C-c>                         "*y :let @+=@*<CR>
-vmap <C-c>                             y
-vmap <C-x>                             c<ESC>
-vmap <C-v>                             "0c<ESC>p
+"vmap <C-c>                             y
+"vmap <C-x>                             c<ESC>
+"vmap <C-v>                             "0c<ESC>p
 "imap <C-v>                             <C-r><C-o>+
 
 " disable indent while inserting from buffer
 let &t_SI .= "\<Esc>[?2004h"
 let &t_EI .= "\<Esc>[?2004l"
-inoremap <special> <expr> <Esc>[200~ XTermPasteBegin()
-function! XTermPasteBegin()
-	set pastetoggle=<Esc>[201~
-	set paste
-	return ""
-endfunction
-
-" => Custom commands --------------------------------------------------------------------------------------------- {{{1
+inoremap <special> <expr> <Esc>[200~ xterm#begin_paste()
 
 " => Keys remap -------------------------------------------------------------------------------------------------- {{{1
 
 ":noremap <F12> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<' . synIDattr(synID(line("."),col("."),0),"name") . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
-
-" Fast quit
-"		nnoremap <leader>q             :quitall<CR>
-
-" Double quote selection
-"		vnoremap <leader>"             c"<c-r>""<ESC>
 
 " Fast split navigation
 silent! nnoremap <leader>'             :belowright vsplit<CR>
@@ -379,13 +397,6 @@ silent! tnoremap <C-l>                 <C-\><C-N><C-w><Right>
 		nnoremap <leader>b0            :blast<CR>
 		nnoremap <leader>b1            :bfirst<CR>
 		nnoremap <leader>b2            :b2<CR>
-		nnoremap <leader>b3            :b3<CR>
-		nnoremap <leader>b4            :b4<CR>
-		nnoremap <leader>b5            :b5<CR>
-		nnoremap <leader>b6            :b6<CR>
-		nnoremap <leader>b7            :b7<CR>
-		nnoremap <leader>b8            :b8<CR>
-		nnoremap <leader>b9            :b9<CR>
 
 " fast tabs
 		nnoremap <leader><leader>t     :tab split<CR>
@@ -426,19 +437,23 @@ silent! tnoremap <C-l>                 <C-\><C-N><C-w><Right>
 		nnoremap <leader><leader>v     :tabedit <C-R>=VIM_CONFIG_FILE<CR><CR>
 		nnoremap <leader><leader>z     :tabedit ~/.zshenv<CR>
 
-" => Search for selected text, forwards or backwards ------------------------------------------------------------- {{{1
+" => ctags ------------------------------------------------------------------------------------------------------- {{{1
 
-vnoremap <silent> * :<C-U>
-	\let old_reg=getreg('"')<Bar>let old_regtype=getregtype('"')<CR>
-	\gvy/<C-R><C-R>=substitute(
-	\escape(@", '/\.*$^~['), '\_s\+', '\\_s\\+', 'g')<CR><CR>
-	\gV:call setreg('"', old_reg, old_regtype)<CR>
+		nnoremap <leader>ct            :!ctags -R .<CR>
 
-vnoremap <silent> # :<C-U>
-	\let old_reg=getreg('"')<Bar>let old_regtype=getregtype('"')<CR>
-	\gvy?<C-R><C-R>=substitute(
-	\escape(@", '?\.*$^~['), '\_s\+', '\\_s\\+', 'g')<CR><CR>
-	\gV:call setreg('"', old_reg, old_regtype)<CR>
+" " => Search for selected text, forwards or backwards ------------------------------------------------------------- {{{1
+"
+" vnoremap <silent> * :<C-U>
+	" \let old_reg=getreg('"')<Bar>let old_regtype=getregtype('"')<CR>
+	" \gvy/<C-R><C-R>=substitute(
+	" \escape(@", '/\.*$^~['), '\_s\+', '\\_s\\+', 'g')<CR><CR>
+	" \gV:call setreg('"', old_reg, old_regtype)<CR>
+"
+" vnoremap <silent> # :<C-U>
+	" \let old_reg=getreg('"')<Bar>let old_regtype=getregtype('"')<CR>
+	" \gvy?<C-R><C-R>=substitute(
+	" \escape(@", '?\.*$^~['), '\_s\+', '\\_s\\+', 'g')<CR><CR>
+	" \gV:call setreg('"', old_reg, old_regtype)<CR>
 
 " => Mouse settings ---------------------------------------------------------------------------------------------- {{{1
 
@@ -460,46 +475,20 @@ if &diff
 		let s:is_started_as_vim_diff = 1
 		setlocal nospell
 		setlocal cmdheight=2                                                   " Increase lower status bar height in diff mode
-		nnoremap <leader>n             ]c
-		nnoremap <leader>p             [c
+		nnoremap <leader>n             ]czz
+		nnoremap <leader>p             [czz
 		nnoremap <leader>u             :diffupdate<CR>
-		nnoremap <leader>a             :call AlgoToggle()<CR>
-		nnoremap <leader>i             :call IwhiteToggle()<CR>
+		nnoremap <leader>a             :call diff#toggle_algorithm()<CR>
+		nnoremap <leader>i             :call diff#toggle_ignore_whitespace()<CR>
 
 		nnoremap <Left>                <C-W><Left>
-		nnoremap <Down>                ]czz
-		nnoremap <Up>                  [czz
+"		nnoremap <Down>                ]czz
+"		nnoremap <Up>                  [czz
 		nnoremap <Right>               <C-w><Right>
 
-"		hi DiffAdd    ctermfg=233 ctermbg=LightGreen guifg=#003300 guibg=#DDFFDD gui=none cterm=none
-"		hi DiffChange ctermbg=white  guibg=#ececec gui=none   cterm=none
-"		hi DiffText   ctermfg=233  ctermbg=yellow  guifg=#000033 guibg=#DDDDFF gui=none cterm=none
-
-		function! IwhiteToggle()
-			if &diffopt =~ 'iwhite'
-				set diffopt-=iwhite
-			else
-				set diffopt+=iwhite
-			endif
-		endfunction
-
-		function! AlgoToggle()
-			if &diffopt =~ 'algorithm:myers'
-				set diffopt-=algorithm:myers
-				set diffopt+=algorithm:patience
-			elseif &diffopt =~ 'algorithm:patience'
-				set diffopt-=algorithm:patience
-				set diffopt+=algorithm:minimal
-			elseif &diffopt =~ 'algorithm:minimal'
-				set diffopt-=algorithm:minimal
-				set diffopt+=algorithm:histogram
-			elseif &diffopt =~ 'algorithm:histogram'
-				set diffopt-=algorithm:histogram
-				set diffopt+=algorithm:myers
-			else
-				set diffopt+=algorithm:patience
-			endif
-		endfunction
+"		hi DiffAdd    ctermfg=233   ctermbg=LightGreen guifg=#003300 guibg=#DDFFDD gui=none cterm=none
+"		hi DiffChange ctermbg=white                                  guibg=#ececec gui=none cterm=none
+"		hi DiffText   ctermfg=233   ctermbg=yellow     guifg=#000033 guibg=#DDDDFF gui=none cterm=none
 	augroup END
 else
 	augroup save_restore_folds                                                 " save and restore folds only in non-diff mode
@@ -509,19 +498,13 @@ else
 	augroup END
 endif
 
-" => Debugger ---------------------------------------------------------------------------------------------------- {{{1
-
-silent! packadd termdebug
-
 " => Automatization ---------------------------------------------------------------------------------------------- {{{1
 
-function! s:find_git_root()
-	return system('git rev-parse --show-toplevel 2> /dev/null')[:-2]
-endfunction
-
-function! s:find_current_dir()
-	return expand('%:p:h')
-endfunction
+augroup SettingsByFileType
+	autocmd!
+	autocmd FileType *      setlocal textwidth=120 wrapmargin=0
+	autocmd FileType qf     set      nobuflisted
+augroup END
 
 augroup autoclose_quickfix_if_last
 	autocmd!
@@ -536,27 +519,17 @@ augroup END
 augroup pre_post_process
 	autocmd!
 	autocmd BufWritePost $MYVIMRC source $MYVIMRC
-	" Regenerate tags when saving Python files
-	autocmd BufWritePost *.py     silent! !ctags -R &
-	" Remove all trailing whitespaces (ALE does this better)
+	""" Remove all trailing whitespaces (ALE does this better)
 "	autocmd BufWritePre  *        :%s/\s\+$//e
 	autocmd BufReadPost fugitive://* set bufhidden=delete
 augroup END
 
 "let ssh_client=$SSH_CLIENT
 "if ssh_client != ''
-"	" Sends default register to terminal TTY using OSC 52 escape sequence (not supported by all terminals yet)
-"	function! s:Osc52Yank()
-"		let buffer=system('base64 -w0', @0)
-"		let buffer=substitute(buffer, "\n$", "", "")
-"		let buffer='\e]52;c;'.buffer.'\x07'
-"		silent exec "!echo -ne ".shellescape(buffer)." > ".shellescape("/dev/pts/0")
-"	endfunction
-"
 "	" Automatically call OSC52 function on yank to sync register with host clipboard
 "	augroup Yank
 "		autocmd!
-"		autocmd TextYankPost * if v:event.operator ==# 'y' | call s:Osc52Yank() | endif
+"		autocmd TextYankPost * if v:event.operator ==# 'y' | call xterm#yank_osc52() | endif
 "	augroup END
 "endif
 
@@ -573,439 +546,9 @@ augroup AutoGzipForNonstandardExtensions
 	autocmd FileAppendPost             *.dsl.dz,*.dict.dz call     gzip#write("gzip -S .dz")
 augroup END
 
-" => ctags ------------------------------------------------------------------------------------------------------- {{{1
+" => Debugger ---------------------------------------------------------------------------------------------------- {{{1
 
-nnoremap <leader>ct                    :!ctags -R .<CR>
-
-" => Filetype ---------------------------------------------------------------------------------------------------- {{{1
-
-augroup SettingsByFileType
-	autocmd!
-	autocmd FileType *      setlocal textwidth=120 wrapmargin=0
-	autocmd Filetype json   setlocal foldmethod=syntax expandtab smarttab tabstop=4 shiftwidth=4 softtabstop=4 foldnestmax=30
-	autocmd Filetype python setlocal foldmethod=indent expandtab smarttab tabstop=4 shiftwidth=4 softtabstop=4
-	autocmd FileType qf     set      nobuflisted
-	autocmd Filetype vim    setlocal foldmethod=marker
-	autocmd Filetype yaml   setlocal expandtab smarttab tabstop=2 shiftwidth=2 softtabstop=2
-	autocmd FileType sh     setlocal iskeyword+=$
-augroup END
-
-" => Filetype: perl ---------------------------------------------------------------------------------------------- {{{1
-" man: ft-perl-syntax
-
-let perl_include_pod                     = 0
-let perl_fold                            = 1
-let perl_nofold_packages                 = 1
-
-augroup SettingsByFileTypePerl
-	autocmd!
-	autocmd BufNewFile,BufRead *.t   setfiletype perl
-	autocmd BufNewFile,BufRead *.pod setfiletype pod
-	autocmd BufNewFile,BufRead *.itn setfiletype itn
-	autocmd Filetype perl setlocal foldmethod=syntax expandtab smarttab tabstop=4 shiftwidth=4 softtabstop=4
-	autocmd FileType perl setlocal keywordprg=perldoc\ -f
-	autocmd FileType perl set      formatprg=perltidy
-	" Use old verion of syntax highlight regexp which look like working much faster (to check use syntime on -> syntime report)
-	autocmd Filetype perl setlocal re=1
-	autocmd FileType perl nmap     <silent> tt <Plug>(ale_fix)
-"	autocmd FileType perl nnoremap <silent> tt :%!perltidy -q<CR>
-	autocmd FileType perl vnoremap <silent> tt :!perltidy -q<CR>
-	autocmd FileType perl setlocal iskeyword+=$,@,%
-augroup END
-
-" => Filetype: c/cpp --------------------------------------------------------------------------------------------- {{{1
-" man: ft-cpp-syntax
-
-augroup SettingsByFileTypeCpp
-	autocmd!
-	autocmd FileType cpp nmap      <silent> tt <Plug>(ale_fix)
-augroup END
-
-" => Filetype: typescript ---------------------------------------------------------------------------------------- {{{1
-
-augroup SettingsByFileTypeTypescript
-	autocmd!
-	autocmd FileType typescript set      formatprg=prettier
-	autocmd Filetype typescript setlocal foldmethod=syntax expandtab smarttab tabstop=2 shiftwidth=2 softtabstop=2
-	autocmd FileType typescript nmap     <silent> tt <Plug>(ale_fix)
-augroup END
-
-" => Plugin: airline --------------------------------------------------------------------------------------------- {{{1
-
-if PlugLoaded('vim-airline')
-	let g:airline#extensions#ale#enabled     = 1
-	let g:airline#extensions#tabline#enabled = 1
-	let g:airline_powerline_fonts            = 0
-	let g:airline_theme                      = "luna"
-endif
-
-" => Plugin: ale ------------------------------------------------------------------------------------------------- {{{1
-
-if PlugLoaded('ale')
-	let g:ale_fix_on_save               = 1                                        " fix files when you save them
-	let g:ale_fix_on_save_ignore        = {
-	\   'cpp':        ['clang-format'],
-	\   'perl':       ['perltidy'],
-	\   'typescript': ['tsfmt'],
-	\}
-	let g:ale_fixers                    = {
-	\   '*':          ['remove_trailing_lines', 'trim_whitespace'],
-	\   'cpp':        ['clang-format', 'remove_trailing_lines', 'trim_whitespace'],
-	\   'perl':       ['remove_trailing_lines', 'trim_whitespace', 'perltidy'],
-	\   'typescript': ['remove_trailing_lines', 'trim_whitespace', 'tsfmt'],
-	\}
-
-	"let g:ale_linters_explicit          = 1
-	let g:ale_linters                   = {
-	\   'perl':       ['perl', 'perlcritic', 'perlart'],
-	\   'typescript': ['tslint'],
-	\}
-	"\   'cpp': ['ccls', 'clang', 'clangcheck', 'clangd', 'clangtidy', 'clazy', 'cppcheck', 'cpplint', 'cquery', 'flawfinder', 'gcc'],
-
-	let g:ale_sign_error                = '✘'
-	let g:ale_sign_warning              = '❇'
-	let g:ale_set_loclist               = 1
-	let g:ale_set_quickfix              = 0
-	let g:ale_open_list                 = 1
-	let g:ale_keep_list_window_open     = 0
-	let g:ale_list_window_size          = 5
-
-	" ale_cpp
-	let g:ale_c_build_dir_names          = ['.build', 'build']
-	let g:ale_c_parse_compile_commands   = 1
-	let g:ale_c_parse_makefile           = 1
-	let g:ale_cpp_build_dir_names        = ['.build', 'build']
-	let g:ale_cpp_options                = '-std=c++20 -Wall -I ./include -I ./src/include'
-	let g:ale_cpp_clang_options          = '-std=c++20 -Wall -I ./include -I ./src/include'
-	let g:ale_cpp_clangcheck_options     = '-std=c++20 -Wall -I ./include -I ./src/include'
-	let g:ale_cpp_clangd_options         = '-std=c++20 -Wall -I ./include -I ./src/include'
-	let g:ale_cpp_clangtidy_options      = '-std=c++20 -Wall -I ./include -I ./src/include'
-	let g:ale_cpp_gcc_options            = '-std=c++20 -Wall -I ./include -I ./src/include'
-	let g:ale_cpp_parse_compile_commands = 1
-	let g:ale_cpp_parse_makefile         = 1
-	" ale_perl
-	let g:ale_perl_perl_executable      = 'perl'
-	let g:ale_perl_perl_options         = '-cw -Ilib'
-	let g:ale_perl_perlcritic_showrules = 1
-
-	" necessary for UltiSnips
-	let g:ale_lint_on_enter             = 0
-	let g:ale_lint_on_filetype_changed  = 0
-	let g:ale_lint_on_text_changed      = 0
-	let g:ale_lint_on_insert_leave      = 0
-endif
-
-" => Plugin: fugitive -------------------------------------------------------------------------------------------- {{{1
-
-let g:fugitive_gitlab_domains = ['https://gitlab.' . PRIVATE_DOMAIN . '.com']
-
-" => Plugin: NERDTree -------------------------------------------------------------------------------------------- {{{1
-
-let NERDTreeShowHidden        = 1
-let NERDTreeCaseSensitiveSort = 1
-let NERDTreeShowBookmarks     = 1                                              " Display bookmarks by default
-let NERDTreeHijackNetrw       = 0
-let NERDTreeQuitOnOpen        = 1
-
-augroup PluginNERDTree
-	autocmd!
-	" Enable NERDTree on Vim startup
-"	autocmd VimEnter * NERDTree
-	" Autoclose NERDTree if it's the only open window left
-	autocmd BufEnter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
-augroup END
-
-noremap <leader><leader>n              :NERDTreeToggle<CR>
-
-" => Plugin: vim-nerdtree-syntax-highlight ----------------------------------------------------------------------- {{{1
-
-"let g:NERDTreeHighlightCursorline            = 0
-"let g:NERDTreeLimitedSyntax                  = 1
-"let g:NERDTreeSyntaxDisableDefaultExtensions = 1
-"let g:NERDTreeDisableExactMatchHighlight     = 1
-"let g:NERDTreeDisablePatternMatchHighlight   = 1
-"let g:NERDTreeSyntaxEnabledExtensions        = ['c', 'h', 'c++', 'hpp', 'go', 'pm', 'pl']
-
-" => Plugin: NERDComment ----------------------------------------------------------------------------------------- {{{1
-
-let g:NERDCommentEmptyLines      = 1                                           " Allow commenting and inverting empty lines (useful when commenting a region)
-let g:NERDCustomDelimiters       = { 'c': { 'left': '/**','right': '*/' } }    " Add your own custom formats or override the defaults
-"let g:NERDDefaultAlign           = 'start'                                     " Comment at the beginning of the line instead of following code indentation
-let g:NERDRemoveExtraSpaces      = 1
-let g:NERDSpaceDelims            = 0                                           " Add spaces after comment delimiters by default
-let g:NERDToggleCheckAllLines    = 1                                           " Enable NERDCommenterToggle to check all selected lines is commented or not
-let g:NERDTrimTrailingWhitespace = 1                                           " Enable trimming of trailing whitespace when uncommenting
-
-" map comment to ctrl-/
-map <C-_>                              <Plug>NERDCommenterToggle
-
-" => Plugin: netrw ----------------------------------------------------------------------------------------------- {{{1
-
-"let g:loaded_netrwPlugin = 1                                                   " Prevent netrw from loading
-let g:netrw_banner       = 1
-"let g:netrw_cursor       = 1
-let g:netrw_liststyle    = 3
-"let g:netrw_list_hide    = netrw_gitignore#Hide().'.*\.swp$'
-"let g:netrw_preview      = 1
-"let g:netrw_sizestyle    = 'H'
-"let g:netrw_usetab       = 1
-let g:netrw_winsize      = 25
-
-"noremap <leader>n :Lexplore<CR>
-
-"autocmd BufEnter * if winnr('$') == 1 && getbufvar(winbufnr(winnr()), "&filetype") == "netrw" | q | endif
-
-" => Plugin: fzf ------------------------------------------------------------------------------------------------- {{{1
-
-"command! FilesProject    execute 'Files' s:find_git_root()
-"command! FilesCurrentDir execute 'Files' s:find_current_dir()
-command! FilesCurrentDir  execute 'Files' getcwd()
-command! FilesProject     execute 'Files' s:find_git_root()
-
-noremap  <C-p>                         :FilesCurrentDir<CR>
-noremap  <C-t>                         :FilesProject<CR>
-noremap  <leader><leader>b             :Buffers<CR>
-
-" => Plugin: tagbar ---------------------------------------------------------------------------------------------- {{{1
-
-noremap  <leader><leader>'             :TagbarToggle<CR>
-
-" => Plugin: UltiSnips ------------------------------------------------------------------------------------------- {{{1
-
-" Trigger configuration. Using <tab> here together with YouCompleteMe works because of 'supertab' plugin
-let g:UltiSnipsExpandTrigger       ='<tab>'
-let g:UltiSnipsListSnippets        ='<c-tab>'
-let g:UltiSnipsJumpForwardTrigger  ='<tab>'
-let g:UltiSnipsJumpBackwardTrigger ='<s-tab>'
-
-" If you want :UltiSnipsEdit to split your window.
-let g:UltiSnipsEditSplit           ='vertical'
-
-" => Plugin: vim-commentary -------------------------------------------------------------------------------------- {{{1
-
-"nmap     <C-_>                         gcl
-"vmap     <C-_>                         gcgv
-
-"augroup SettingsVimCommentary
-"	autocmd!
-"	autocmd FileType *      let b:commentary_startofline = 1
-"augroup END
-
-" => Plugin: vim-easy-align -------------------------------------------------------------------------------------- {{{1
-
-" Start interactive EasyAlign for a motion/text object (e.g. gaip)
-nmap     ga                            <Plug>(EasyAlign)
-" Start interactive EasyAlign in visual mode (e.g. vipga)
-xmap     ga                            <Plug>(EasyAlign)
-
-" => Plugin: CtrlSF ---------------------------------------------------------------------------------------------- {{{1
-
-let g:ctrlsf_auto_focus = {
-	\ "at" : "done",
-	\ "duration_less_than": 2000
-	\ }
-"let g:ctrlsf_debug_mode         = 1
-let g:ctrlsf_default_root       = 'project+wf'
-"let g:ctrlsf_default_view_mode  = 'compact'
-let g:ctrlsf_extra_backend_args = {
-	\ 'ag': '--hidden --nofollow',
-	\ 'rg': '--hidden',
-	\ }
-let g:ctrlsf_extra_root_markers = ['.git', '.hg', '.svn', '.cache']
-let g:ctrlsf_follow_symlinks    = 0
-let g:ctrlsf_ignore_dir         = ['.git', 'bower_components', 'node_modules']
-let g:ctrlsf_parse_speed        = 100
-let g:ctrlsf_position           = 'bottom'
-
-nmap     <leader>f                     <Plug>CtrlSFPrompt
-vmap     <leader>f                     <Plug>CtrlSFVwordExec
-
-" => Plugin: vim-grepper ----------------------------------------------------------------------------------------- {{{1
-
-silent! runtime plugin/grepper.vim                                             " initialize g:grepper with default values
-silent! let g:grepper.highlight   = 1
-silent! let g:grepper.jump        = 0
-silent! let g:grepper.quickfix    = 1
-silent! let g:grepper.dir         = 'cwd'
-silent! let g:grepper.repo        = ['.git', '.hg', '.svn', '.cache']
-silent! let g:grepper.stop        = 255
-silent! let g:grepper.tools       = ['git', 'ag', 'rg', 'grep', 'ack', 'ack-grep']
-silent! let g:grepper.ag.grepprg .= ' --hidden'
-silent! let g:grepper.rg.grepprg .= ' --hidden --smart-case'
-
-" Start Grepper prompt
-nnoremap <leader>g                     :Grepper -dir cwd<CR>
-nnoremap <leader><leader>g             :Grepper -dir repo<CR>
-" Search for the current word
-nnoremap <leader>*                     :Grepper -cword -noprompt<CR>
-" Search for the current selection or {motion} (see text-objects)
-nmap     gs                            <Plug>(GrepperOperator)
-xmap     gs                            <Plug>(GrepperOperator)
-" Search current selection (alias for gs in visual mode)
-vmap     <leader>g                     <Plug>(GrepperOperator)
-
-" => Plugin: vim-go ---------------------------------------------------------------------------------------------- {{{1
-
-"" first setup steps:
-""	:GoInstallBinaries
-"
-"let g:go_fmt_command                 = "goimports"
-"let g:go_fmt_fail_silently           = 1
-"let g:go_fmt_autosave                = 1
-"let g:go_fmt_experimental            = 1
-"let g:go_highlight_types             = 1
-"let g:go_highlight_fields            = 1
-"let g:go_highlight_functions         = 1
-"let g:go_highlight_function_calls    = 1
-"let g:go_highlight_operators         = 1
-"let g:go_highlight_extra_types       = 1
-"let g:go_highlight_build_constraints = 1
-"let g:go_highlight_structs           = 1
-"let g:go_highlight_methods           = 1
-"
-""let g:go_play_open_browser           = 0
-""let g:loaded_syntastic_go_gofmt_checker = 0
-"
-"" run :GoBuild or :GoTestCompile based on the go file
-"function! s:build_go_files()
-"	let l:file = expand('%')
-"	if l:file =~# '^\f\+_test\.go$'
-"		call go#test#Test(0, 1)
-"	elseif l:file =~# '^\f\+\.go$'
-"		call go#cmd#Build(0)
-"	endif
-"endfunction
-"
-"augroup SettingsByFileTypeGo
-"	autocmd!
-"	autocmd BufNewFile,BufRead *.go setlocal noexpandtab tabstop=4 shiftwidth=4
-""	autocmd BufWritePost       *.go normal! zv
-"	autocmd FileType go nnoremap <leader>b :<C-u>call <SID>build_go_files()<CR>
-"	autocmd FileType go nnoremap <leader>e :GoRename<CR>
-"	autocmd FileType go nmap     <leader>r <Plug>(go-run)
-"	autocmd FileType go nmap     <leader>c <Plug>(go-coverage-toggle)
-"	autocmd FileType go nmap     <leader>i <Plug>(go-info)
-"augroup END
-
-" => Plugin: vim-mergetool --------------------------------------------------------------------------------------- {{{1
-
-"let g:mergetool_layout = 'mr'
-"let g:mergetool_prefer_revision = 'local'
-
-" => Plugin: vim-plug -------------------------------------------------------------------------------------------- {{{1
-
-let g:plug_timeout = 300                                                       " Increase vim-plug timeout for YouCompleteMe
-
-nnoremap <leader><leader>u             :PlugUpdate<CR>
-
-" => Plugin: vim-rooter ------------------------------------------------------------------------------------------ {{{1
-
-let g:rooter_patterns     = ['.config/', 'lib/', '.git', '.git/']
-let g:rooter_silent_chdir = 1
-
-" => Plugin: vim-run --------------------------------------------------------------------------------------------- {{{1
-
-augroup VimRunByFileType
-	autocmd!
-	autocmd FileType perl nnoremap <F5>                   :Run<CR>
-augroup END
-
-" => Plugin: vim-test -------------------------------------------------------------------------------------------- {{{1
-
-let g:test#strategy                = 'neovim'
-let g:test#perl#prove#executable   = 'yath test --qvf'
-let g:test#perl#prove#file_pattern = '\v^x?t/.*\.t$'
-
-augroup VimTestByFileTypePerl
-	autocmd!
-	autocmd FileType perl nmap <silent> <leader><leader>h :let $T2_WORKFLOW = line(".") \| :TestFile<CR>
-	autocmd FileType perl nmap <silent> <leader><leader>f :let $T2_WORKFLOW = ""        \| :TestFile<CR>
-augroup END
-
-" => Plugin: vimwiki --------------------------------------------------------------------------------------------- {{{1
-
-if PlugLoaded('vimwiki/vimwiki')
-	let g:vimwiki_list = [
-		\{'path': '~/.local/share/wiki', 'syntax': 'markdown', 'ext': '.mdwiki'},
-		\{'path': 'wiki',                'syntax': 'markdown', 'ext': '.mdwiki'}
-	\]
-endif
-
-" => Plugin: YouCompleteMe --------------------------------------------------------------------------------------- {{{1
-
-"let g:ycm_global_ycm_extra_conf = '~/.config/shell/ycm_extra_conf.py'          " Where to search for .ycm_extra_conf.py if not found
-"let g:ycm_confirm_extra_conf                            = 0
-"let g:ycm_global_ycm_extra_conf                         = 0
-
-"let g:ycm_show_diagnostics_ui                           = 0 " default 1
-"let g:ycm_register_as_syntastic_checker                 = 0 " default 1
-
-let g:ycm_error_symbol                                  = '✘'
-let g:ycm_warning_symbol                                = '❇'
-"let g:ycm_always_populate_location_list                 = 1 " default 0
-
-let g:ycm_complete_in_comments                          = 1
-let g:ycm_goto_buffer_command                           = 'new-or-existing-tab'
-let g:ycm_collect_identifiers_from_comments_and_strings = 1
-let g:ycm_collect_identifiers_from_tags_files           = 1 " default 0
-"let g:ycm_seed_identifiers_with_syntax                  = 1
-
-" necessary for UltiSnips
-let g:ycm_key_list_select_completion                    = ['<C-n>', '<Down>', '<M-Space>']
-let g:ycm_key_list_previous_completion                  = ['<C-p>', '<Up>']
-
-"nnoremap <leader>g :YcmCompleter GoTo<CR>
-""nnoremap <F9>      :YcmDiags <CR>
-""nnoremap <F11>     :YcmForceCompileAndDiagnostics <CR>
-
-" => Plugin: supertab -------------------------------------------------------------------------------------------- {{{1
-
-let g:SuperTabDefaultCompletionType                     = '<C-n>'
-
-" => Plugin: startify -------------------------------------------------------------------------------------------- {{{1
-
-let g:startify_change_to_dir = 0
-
-" => Plugin: vdebug ---------------------------------------------------------------------------------------------- {{{1
-
-if !exists('g:vdebug_options')
-	let g:vdebug_options = {}
-endif
-
-let g:vdebug_options.server              = 'localhost'
-let g:vdebug_options.debug_window_level  = 0
-"let g:vdebug_options["socket_type"]      = 'unix'
-"let g:vdebug_options["unix_path"]        = '/run/user/1027/dbgp.sock'
-"let g:vdebug_options["unix_permissions"] = 0777
-let g:vdebug_options.break_on_open       = 0
-let g:vdebug_options.watch_window_style  = 'compact'                           " This can be 'compact' or 'expanded'.
-
-let g:vdebug_keymap = {
-\	"run" :               "<F5>",
-\	"run_to_cursor" :     "<F9>",
-\	"step_over" :         "<F2>",
-\	"step_into" :         "<F3>",
-\	"step_out" :          "<F4>",
-\	"close" :             "<F6>",
-\	"detach" :            "<F7>",
-\	"set_breakpoint" :    "<F10>",
-\	"get_context" :       "<F11>",
-\	"eval_under_cursor" : "<F12>",
-\	"eval_visual" :       "<leader>e",
-\}
-
-"let g:vdebug_features = {}
-" This determines the maximum number of hash or array values available to you in the watch window. Hopefully this is enough?
-"let g:vdebug_features['max_children']    = 512
-" This determines the maximum number of bytes that will be sent to the debugger
-" While ~1MB of data really shouldn't cause any problem in this day and age, YMMV?
-"let g:vdebug_features['max_data']        = 1000000
-
-" => Company-specific -------------------------------------------------------------------------------------------- {{{1
-
-if !empty(glob(VIM_CONFIG_HOME . '/' . PRIVATE_DOMAIN . '.vim'))
-	exec 'source ' . VIM_CONFIG_HOME . '/' . PRIVATE_DOMAIN . '.vim'
-endif
+silent! packadd termdebug
 
 " => Know-How ---------------------------------------------------------------------------------------------------- {{{1
 
