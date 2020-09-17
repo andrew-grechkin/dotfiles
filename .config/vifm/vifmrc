@@ -221,8 +221,10 @@ filetype *.ape
 filetype *.flac
 	\ {Decode to wav}
 	\ flac -d %f,
-filetype *.mid,*.midi
-	\ timidity -inq -- %c,
+filextype *.kar,*.mid,*.midi
+	\ timidity -ig -- %f %i &,
+"filetype *.kar,*.mid,*.midi
+	"\ timidity -inq -- %c,
 filetype *.og[agx]
 	\ {Transcode to FLAC}
 	\ ffmpeg -i %c %c:r.flac,
@@ -294,11 +296,11 @@ fileviewer *.[1-8]
 
 filetype *.json
 	\ {View json}
-	\ jq -CS < %c | less -r,
+	\ jq -CS --indent 4 < %c | less -r,
 	\ {Lint json}
 	\ lint-json %f %i &,
 fileviewer *.json
-	\ jq -CS < %f,
+	\ jq -CS --indent 4 < %f,
 
 filetype *.yaml,*.yml
 	\ {View yaml}

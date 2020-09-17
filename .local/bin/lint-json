@@ -7,7 +7,7 @@ DATETIME=$(date --rfc-3339=ns)
 for FILE in "$@"; do
 	echo "Linting file: '$FILE'"
 
-	if jq -S < "$FILE" > "${FILE}.${DATETIME}.linted" 2>/dev/null; then
+	if jq -S --indent 4 < "$FILE" > "${FILE}.${DATETIME}.linted" 2>/dev/null; then
 		mv -f "${FILE}.${DATETIME}.linted" "${FILE}"
 	else
 		echo "Wrong file: '$FILE'"

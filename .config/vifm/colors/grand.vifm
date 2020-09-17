@@ -38,6 +38,7 @@ highlight /.*\.aac$|
 	\.*\.flac$|
 	\.*\.m4a$|
 	\.*\.m4b$|
+	\.*\.kar$|
 	\.*\.mid$|
 	\.*\.mka$|
 	\.*\.mpa$|
