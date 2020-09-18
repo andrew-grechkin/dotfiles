@@ -7,5 +7,5 @@ PATH=$DN:$PATH
 
 git-in-repo && {
 	git remote \
-	| xargs -L1 git push --all
+	| xargs -L1 git push
 }
