@@ -166,15 +166,19 @@ command! sha    find %c -type f -print0 | sort -z | xargs --null sha256sum -b > 
 filextype *.chm,*.epub,*.fb2,*.fbz,*.fb2.zip,*.mobi,*.rtf,*.tcr
 	\ {Open with xdg-open}
 	\ xdg-open %c %i &,
-	\ cr3      %c %i &,
 	\ FBReader %c %i &,
 	\ foliate  %c %i &,
+	\ calibre  %c %i &,
+	\ okular   %c %i &,
+	\ cr3      %c %i &,
 
-filextype *.fb2,*.xml,*.gpx
+filextype *.fb2,*.xml,*.gpx,*.xsd
 	\ {Open with Kate}
 	\ kate     %f %i &,
-	\ {Lint xml}
-	\ lint-fb2 %f %i &,
+	\ {Reformat xml}
+	\ reformat-fb2 %f %i &,
+	\ {Reformat hard xml}
+	\ reformat2-fb2 %f %i &,
 
 " => File associations: Djvu, Pdf -------------------------------------------------------------------------------- {{{1
 " cat helps to properly show djvu over nfs volumes
@@ -297,8 +301,8 @@ fileviewer *.[1-8]
 filetype *.json
 	\ {View json}
 	\ jq -CS --indent 4 < %c | less -r,
-	\ {Lint json}
-	\ lint-json %f %i &,
+	\ {Reformat json}
+	\ reformat-json %f %i &,
 fileviewer *.json
 	\ jq -CS --indent 4 < %f,
 
