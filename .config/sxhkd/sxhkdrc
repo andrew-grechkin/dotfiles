@@ -1,9 +1,11 @@
 # vim: syntax=conf
 
 super + Return
+	alacritty --command tmux -f "$XDG_CONFIG_HOME/tmux/config"
+super + ctrl + t
 	exo-open --launch TerminalEmulator
 super + shift + Return
-	exo-open --launch TerminalEmulator "$HOME/.local/bin/tmux-default-session"
+	exo-open --launch TerminalEmulator -- --command "$HOME/.local/bin/tmux-default-session"
 
 super + control + v
 	$HOME/.local/bin/play-clipboard-url
