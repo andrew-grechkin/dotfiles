@@ -23,9 +23,10 @@ command! -nargs=1 Perldoc new
 	\| :execute ':r !perl-doc <f-args>'
 	\| set filetype=man
 
-"nnoremap <silent> <buffer> tt :%!perltidy -q<CR>
-vnoremap <silent> <buffer> tt :!perltidy -q<CR>
-nnoremap <silent> <buffer> K  :Perldoc <C-R>=expand("<cword>")<CR><CR>gg
-vnoremap <silent> <buffer> K  y:Perldoc <C-R>=escape(@",'/\')<CR><CR>gg
+"nnoremap <silent> <buffer> tt         :%!perltidy -q<CR>
+vnoremap <silent> <buffer> tt         :!perltidy -q<CR>
+nnoremap <silent> <buffer> K          :Perldoc <C-R>=expand("<cword>")<CR><CR>gg
+vnoremap <silent> <buffer> K          y:Perldoc <C-R>=escape(@",'/\')<CR><CR>gg
+nnoremap <silent> <buffer> <leader>ct :!ctags -R .<CR>
 
 let b:man_default_sections = '3,2'

@@ -41,27 +41,13 @@ endif
 
 let &runtimepath.=','.VIM_CACHE_HOME.'/'.PRIVATE_DOMAIN
 
-" => Preload ----------------------------------------------------------------------------------------------------- {{{1
-
-let g:loaded_netrw             = 1                                             " Disable netrw.
-let g:loaded_netrwPlugin       = 1
-let g:loaded_netrwSettings     = 1
-let g:loaded_netrwFileHandlers = 1
-
-" man: ft-perl-syntax
-
-let perl_include_pod           = 0
-let perl_no_scope_in_variables = 1
-let perl_no_extended_vars      = 1
-let perl_fold                  = 1
-let perl_nofold_packages       = 1
-
 " => Sane defaults ----------------------------------------------------------------------------------------------- {{{1
 
 if has('nvim')
 	set inccommand=split
 	command! W :execute ':w suda://%'
 else
+	" vint: next-line -ProhibitSetNoCompatible
 	set nocompatible                                                           " Disable Vi compatibility
 
 	" move all configs out of $HOME
@@ -89,7 +75,21 @@ else
 	command! W :execute ':silent w !sudo tee % > /dev/null' | :edit!           " Save file with root privileges
 endif
 
-" => Pre-load ---------------------------------------------------------------------------------------------------- {{{1
+" => Preload ----------------------------------------------------------------------------------------------------- {{{1
+
+" let g:loaded_netrw             = 1                                             " Disable netrw (spellcheck unable to download files)
+" let g:loaded_netrwPlugin       = 1
+" let g:loaded_netrwSettings     = 1
+" let g:loaded_netrwFileHandlers = 1
+
+" man: ft-perl-syntax
+let perl_include_pod           = 0
+let perl_no_scope_in_variables = 1
+let perl_no_extended_vars      = 1
+let perl_fold                  = 1
+let perl_nofold_packages       = 1
+
+let g:tmux_navigator_no_mappings = 1
 
 let VIM_PLUG_URL      = 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
 let VIM_CREATE_DIR    = ':silent !mkdir -p '. VIM_CACHE_HOME . '/autoload'
@@ -114,20 +114,17 @@ augroup DetectFileUpdated
 	autocmd CursorHold,CursorHoldI,FocusGained,BufEnter * silent! checktime
 augroup END
 
-"set autochdir
 set autowrite                                                                  " Write the content of the file automatically if you call :make
 set fileformats=unix,dos,mac                                                   " Use Unix as the standard file type
 set history=10000                                                              " Longest possible command history
 set magic
-set nobackup
-set noswapfile
-set nowritebackup
+set nobackup noswapfile nowritebackup
 set path=.,
 set tags+=tags;                                                                " Look for a tags file recursively in parent directories
 set pumheight=8                                                                " Maximum height of autocomplete popup window
 set undofile                                                                   " Enable persistent undo
 
-set exrc
+" set exrc
 set secure
 
 " => Encodings --------------------------------------------------------------------------------------------------- {{{1
@@ -138,14 +135,14 @@ setglobal encoding=utf-8                                                       "
 augroup SetDefaultEncoding
 	autocmd!
 	autocmd BufNewFile,BufRead * try
-	autocmd BufNewFile,BufRead *     set encoding=utf-8
+	autocmd BufNewFile,BufRead *     setlocal encoding=utf-8
 	autocmd BufNewFile,BufRead * endtry
 augroup END
 
 augroup SetDefaultBom
 	autocmd!
 	autocmd BufNewFile *.txt try
-	autocmd BufNewFile *.txt     set bomb                                      " Set BOM
+	autocmd BufNewFile *.txt     setlocal bomb                                 " Set BOM
 	autocmd BufNewFile *.txt endtry
 augroup END
 
@@ -170,6 +167,10 @@ call plug#begin('~/.cache/vim/plugged')
 	Plug 'andrew-grechkin/vim-rooter'                                          " Cwd if file is in git repo should be repo root
 	Plug 'vim-airline/vim-airline'                                             " Most informative status line
 "	Plug 'vim-airline/vim-airline-themes'                                      " Status line themes
+	Plug 'rodjek/vim-puppet'                                                   " For Puppet syntax highlighting
+	Plug 'vim-ruby/vim-ruby', {'for': 'ruby'}                                  " For Facts, Ruby functions, and custom providers
+"	Plug '~/.local/share/vim-plug/trackperlvars', {'for': 'perl'}
+"	Plug '~/.local/share/vim-plug/perlart',       {'for': 'perl'}
 	if has('python3')
 		let g:ycm_collect_identifiers_from_comments_and_strings = 1
 		let g:ycm_collect_identifiers_from_tags_files           = 1
@@ -211,10 +212,6 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'sbdchd/vim-run'
 		Plug 'simnalamburt/vim-mundo', {'on': 'MundoToggle'}                   " Visualize the undo tree
 	endif
-	Plug 'rodjek/vim-puppet'                                                   " For Puppet syntax highlighting
-	Plug 'vim-ruby/vim-ruby', {'for': 'ruby'}                                  " For Facts, Ruby functions, and custom providers
-"	Plug '~/.local/share/vim-plug/trackperlvars', {'for': 'perl'}
-"	Plug '~/.local/share/vim-plug/perlart',       {'for': 'perl'}
 	""" checking empty($KDEHOME) here is a weird way to check if this config is used in personal/work environment
 	""" KDEHOME is always defined on personal machines. I need to do something smarter in future
 	if empty($KDEHOME)                                                         " Install these pluggins only at work remote machines
@@ -263,8 +260,7 @@ set wildmenu                                                                   "
 "set wildmode=longest:full
 set wildignorecase
 set wildignore+=*.a,*.o,*~,*.pyc,*.so,*.swp,*.zip,*.exe                        " Ignore compiled files
-set wildignore+=*/tmp/*                                                        " MacOSX/Linux
-set wildignore+=*/node_modules/*
+set wildignore+=*/tmp/*,*/node_modules/*                                       " MacOSX/Linux
 set wildignore+=*\\tmp\\*                                                      " Windows
 
 set number                                                                     " Enable numbers
@@ -288,31 +284,27 @@ set laststatus=2                                                               "
 
 " => Colors and Fonts -------------------------------------------------------------------------------------------- {{{1
 
-set cursorcolumn                                                               " Highlight current column
-set cursorline
-"set termguicolors
+" set termguicolors
+set cursorcolumn cursorline                                                    " Highlight current column
 
 ":silent! colorscheme last256
 :silent! colorscheme molokai
 ":silent! colorscheme woju
 
-syntax enable                                                                  " Enable syntax highlighting
+syntax enable
 
 " => Editor ------------------------------------------------------------------------------------------------------ {{{1
 
-filetype plugin indent on                                                      " Mandatory for modern plugins
+filetype plugin indent on
 
 set complete+=kspell                                                           " Complete from include files and from spell if enabled
 
-set foldcolumn=2
-set foldmethod=syntax
+set foldcolumn=2 foldmethod=syntax
 
-set list                                                                       " Show special characters
-set listchars=tab:↹\ ,trail:␣,extends:>,precedes:<,nbsp:+                      " Visual form of special characters
+set list listchars=tab:↹\ ,trail:␣,extends:>,precedes:<,nbsp:+                 " Visual form of special characters
 "set listchars+=eol:↵                                                          " Visible end of line
 
-set showmatch                                                                  " Show matching brackets when text indicator is over them
-set matchpairs+=<:>,«:»
+set showmatch matchpairs+=<:>,«:»
 
 set whichwrap+=<,>,h,l
 
@@ -330,22 +322,16 @@ nnoremap <leader><leader>s :set spell!<CR>
 " => Text, tab and indent related -------------------------------------------------------------------------------- {{{1
 
 silent! set breakindent
-set colorcolumn=120                                                            " Linebreak on 120 characters
+set colorcolumn=120                                                            " Break line on 120 characters
 let &showbreak = '↳⋙⋙⋙'                                                        " Pretty soft break character
 
-set autoindent                                                                 " Copy indent from the previous line
-set smartindent
+set autoindent smartindent                                                     " Copy indent from the previous line
 
-set noexpandtab                                                                " Never use spaces instead of tabs
-set smarttab                                                                   " Tab setting aware <Tab> key
+set noexpandtab smarttab shiftwidth=4 softtabstop=4 tabstop=4
 set noshiftround
-set shiftwidth=4
-set softtabstop=4
-set tabstop=4
 
 set formatoptions=tcqj                                                         " More intuitive autoformatting
 
-"set nowrap                                                                     " No wrap lines
 "set linebreak                                                                  " Soft word wrap
 
 " => Copy & paste ------------------------------------------------------------------------------------------------ {{{1
@@ -378,22 +364,33 @@ silent! tnoremap <A-h>                 <C-\><C-N><C-w><Left>
 silent! tnoremap <A-j>                 <C-\><C-N><C-w><Down>
 silent! tnoremap <A-k>                 <C-\><C-N><C-w><Up>
 silent! tnoremap <A-l>                 <C-\><C-N><C-w><Right>
-silent! tnoremap <C-h>                 <C-\><C-N><C-w><Left>
-silent! tnoremap <C-j>                 <C-\><C-N><C-w><Down>
-silent! tnoremap <C-k>                 <C-\><C-N><C-w><Up>
-silent! tnoremap <C-l>                 <C-\><C-N><C-w><Right>
-		inoremap <A-h>                 <C-\><C-N><C-w><Left>
-		inoremap <A-j>                 <C-\><C-N><C-w><Down>
-		inoremap <A-k>                 <C-\><C-N><C-w><Up>
-		inoremap <A-l>                 <C-\><C-N><C-w><Right>
-		noremap  <A-h>                 <C-w><Left>
-		noremap  <A-j>                 <C-w><Down>
-		noremap  <A-k>                 <C-w><Up>
-		noremap  <A-l>                 <C-w><Right>
+" silent! tnoremap <C-h>                 <C-\><C-N><C-w><Left>
+" silent! tnoremap <C-j>                 <C-\><C-N><C-w><Down>
+" silent! tnoremap <C-k>                 <C-\><C-N><C-w><Up>
+" silent! tnoremap <C-l>                 <C-\><C-N><C-w><Right>
+" 		inoremap <A-h>                 <C-\><C-N><C-w><Left>
+" 		inoremap <A-j>                 <C-\><C-N><C-w><Down>
+" 		inoremap <A-k>                 <C-\><C-N><C-w><Up>
+" 		inoremap <A-l>                 <C-\><C-N><C-w><Right>
+" 		noremap  <A-h>                 <C-w><Left>
+" 		noremap  <A-j>                 <C-w><Down>
+" 		noremap  <A-k>                 <C-w><Up>
+" 		noremap  <A-l>                 <C-w><Right>
+		nnoremap <silent> <A-h>        :TmuxNavigateLeft<CR>
+		nnoremap <silent> <A-j>        :TmuxNavigateDown<CR>
+		nnoremap <silent> <A-k>        :TmuxNavigateUp<CR>
+		nnoremap <silent> <A-l>        :TmuxNavigateRight<CR>
+		nnoremap <silent> <A-\>        :TmuxNavigatePrevious<CR>
+		inoremap <silent> <A-h>        :TmuxNavigateLeft<CR>
+		inoremap <silent> <A-j>        :TmuxNavigateDown<CR>
+		inoremap <silent> <A-k>        :TmuxNavigateUp<CR>
+		inoremap <silent> <A-l>        :TmuxNavigateRight<CR>
 
 " fast buffers
-		nnoremap <leader>bh            :bprevious<CR>
-		nnoremap <leader>bl            :bnext<CR>
+		nnoremap gh                    :bprevious<CR>
+		nnoremap gl                    :bnext<CR>
+" 		nnoremap <leader>bh            :bprevious<CR>
+" 		nnoremap <leader>bl            :bnext<CR>
 		nnoremap <leader>b0            :blast<CR>
 		nnoremap <leader>b1            :bfirst<CR>
 		nnoremap <leader>b2            :b2<CR>
@@ -436,24 +433,6 @@ silent! tnoremap <C-l>                 <C-\><C-N><C-w><Right>
 
 		nnoremap <leader><leader>v     :tabedit <C-R>=VIM_CONFIG_FILE<CR><CR>
 		nnoremap <leader><leader>z     :tabedit ~/.zshenv<CR>
-
-" => ctags ------------------------------------------------------------------------------------------------------- {{{1
-
-		nnoremap <leader>ct            :!ctags -R .<CR>
-
-" " => Search for selected text, forwards or backwards ------------------------------------------------------------- {{{1
-"
-" vnoremap <silent> * :<C-U>
-	" \let old_reg=getreg('"')<Bar>let old_regtype=getregtype('"')<CR>
-	" \gvy/<C-R><C-R>=substitute(
-	" \escape(@", '/\.*$^~['), '\_s\+', '\\_s\\+', 'g')<CR><CR>
-	" \gV:call setreg('"', old_reg, old_regtype)<CR>
-"
-" vnoremap <silent> # :<C-U>
-	" \let old_reg=getreg('"')<Bar>let old_regtype=getregtype('"')<CR>
-	" \gvy?<C-R><C-R>=substitute(
-	" \escape(@", '?\.*$^~['), '\_s\+', '\\_s\\+', 'g')<CR><CR>
-	" \gV:call setreg('"', old_reg, old_regtype)<CR>
 
 " => Mouse settings ---------------------------------------------------------------------------------------------- {{{1
 
@@ -506,9 +485,16 @@ augroup SettingsByFileType
 	autocmd FileType qf     set      nobuflisted
 augroup END
 
-augroup autoclose_quickfix_if_last
+augroup SettingsByBufType
 	autocmd!
 	autocmd BufEnter * if (winnr('$') == 1 && (&buftype ==# 'quickfix' || &buftype ==# 'loclist')) | bd | endif
+	autocmd BufEnter * if (
+			\ &buftype ==# 'help' ||
+			\ &buftype ==# 'nofile' ||
+			\ &buftype ==# 'quickfix' ||
+			\ &buftype ==# 'loclist') |
+			\ nnoremap <silent> <buffer> q :bwipeout<CR> |
+		\ endif
 augroup END
 
 "augroup save_restore_position
@@ -524,6 +510,19 @@ augroup pre_post_process
 	autocmd BufReadPost fugitive://* set bufhidden=delete
 augroup END
 
+augroup AutoGzipForNonstandardExtensions
+	autocmd!
+"	Enable editing of gzipped files
+"	The functions are defined in autoload/gzip.vim
+"	Set binary mode before reading the file
+"	Use "gzip -d", gunzip isn't always available
+	autocmd BufReadPre,FileReadPre     *.dsl.dz,*.dict.dz setlocal bin
+	autocmd BufReadPost,FileReadPost   *.dsl.dz,*.dict.dz call     gzip#read("gzip -dn -S .dz")
+	autocmd BufWritePost,FileWritePost *.dsl.dz,*.dict.dz call     gzip#write("gzip -S .dz")
+	autocmd FileAppendPre              *.dsl.dz,*.dict.dz call     gzip#appre("gzip -dn -S .dz")
+	autocmd FileAppendPost             *.dsl.dz,*.dict.dz call     gzip#write("gzip -S .dz")
+augroup END
+
 "let ssh_client=$SSH_CLIENT
 "if ssh_client != ''
 "	" Automatically call OSC52 function on yank to sync register with host clipboard
@@ -532,19 +531,6 @@ augroup END
 "		autocmd TextYankPost * if v:event.operator ==# 'y' | call xterm#yank_osc52() | endif
 "	augroup END
 "endif
-
-augroup AutoGzipForNonstandardExtensions
-	autocmd!
-"	Enable editing of gzipped files.
-"	The functions are defined in autoload/gzip.vim.
-"	Set binary mode before reading the file.
-"	Use "gzip -d", gunzip isn't always available.
-	autocmd BufReadPre,FileReadPre     *.dsl.dz,*.dict.dz setlocal bin
-	autocmd BufReadPost,FileReadPost   *.dsl.dz,*.dict.dz call     gzip#read("gzip -dn -S .dz")
-	autocmd BufWritePost,FileWritePost *.dsl.dz,*.dict.dz call     gzip#write("gzip -S .dz")
-	autocmd FileAppendPre              *.dsl.dz,*.dict.dz call     gzip#appre("gzip -dn -S .dz")
-	autocmd FileAppendPost             *.dsl.dz,*.dict.dz call     gzip#write("gzip -S .dz")
-augroup END
 
 " => Debugger ---------------------------------------------------------------------------------------------------- {{{1
 
