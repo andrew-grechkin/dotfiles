@@ -77,6 +77,8 @@ endif
 
 " => Preload ----------------------------------------------------------------------------------------------------- {{{1
 
+let g:man_hardwrap = 1
+
 " let g:loaded_netrw             = 1                                             " Disable netrw (spellcheck unable to download files)
 " let g:loaded_netrwPlugin       = 1
 " let g:loaded_netrwSettings     = 1
@@ -152,7 +154,6 @@ call plug#begin('~/.cache/vim/plugged')
 	Plug 'junegunn/vim-plug'
 	Plug 'junegunn/fzf.vim'                                                    " Fuzzy search
 	Plug 'junegunn/vim-easy-align'
-	Plug 'lambdalisue/fern.vim'
 	Plug 'tpope/vim-abolish'
 	Plug 'tpope/vim-fugitive'                                                  " Git support
 	Plug 'tpope/vim-repeat'                                                    " Repeat everything
@@ -171,27 +172,15 @@ call plug#begin('~/.cache/vim/plugged')
 	Plug 'vim-ruby/vim-ruby', {'for': 'ruby'}                                  " For Facts, Ruby functions, and custom providers
 "	Plug '~/.local/share/vim-plug/trackperlvars', {'for': 'perl'}
 "	Plug '~/.local/share/vim-plug/perlart',       {'for': 'perl'}
-	if has('python3')
+	if has('nvim-0.4') && has('python3')
+		let g:ale_completion_enabled = 0
 		let g:ycm_collect_identifiers_from_comments_and_strings = 1
 		let g:ycm_collect_identifiers_from_tags_files           = 1
 		let g:ycm_seed_identifiers_with_syntax                  = 1
 "		Plug 'Valloric/YouCompleteMe', {'do': './install.py --clang-completer --system-libclang'}
 		Plug 'Valloric/YouCompleteMe', {'do': './install.py --clangd-completer'}
-		""" necessary for UltiSnips
-		let g:ale_lint_on_enter            = 0
-		let g:ale_lint_on_filetype_changed = 0
-		let g:ale_lint_on_text_changed     = 0
-		let g:ale_lint_on_insert_leave     = 0
-		Plug 'SirVer/ultisnips'
-		Plug 'andrew-grechkin/vim-snippets'
 	else
 		let g:ale_completion_enabled = 1
-	endif
-	if has('nvim') || has('patch-8.0.902')
-		Plug 'mhinz/vim-signify'
-	else
-		Plug 'mhinz/vim-signify', { 'branch': 'legacy' }
-"		Plug 'airblade/vim-gitgutter'                                          " Git status/modifications of the file
 	endif
 	if has('nvim') || v:version >= 800                                         " These plugins demand modern vim or neovim
 		Plug 'dense-analysis/ale'                                              " Async syntax checker
@@ -200,14 +189,25 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'ervandew/supertab'
 		Plug 'junegunn/vim-peekaboo'                                           " Preview registers
 		Plug 'lambdalisue/suda.vim'                                            " run sudo from vim
-		Plug 'majutsushi/tagbar'
-		Plug 'masukomi/vim-markdown-folding'
+		" Plug 'majutsushi/tagbar'
 		Plug 'mhinz/vim-startify'
 		Plug 'pedrohdz/vim-yaml-folds'
+		Plug 'mhinz/vim-signify'                                               " Git status/modifications of the file
+		""" necessary for UltiSnips
+		let g:ale_lint_on_enter            = 0
+		let g:ale_lint_on_filetype_changed = 0
+		let g:ale_lint_on_text_changed     = 0
+		let g:ale_lint_on_insert_leave     = 0
+		""" Trigger configuration. Using <tab> here together with YouCompleteMe works because of 'supertab' plugin
+		let g:UltiSnipsExpandTrigger       = '<tab>'
+		let g:UltiSnipsListSnippets        = '<A-Space>'
+		let g:UltiSnipsJumpForwardTrigger  = '<tab>'
+		let g:UltiSnipsJumpBackwardTrigger = '<s-tab>'
+		Plug 'SirVer/ultisnips'
+		Plug 'andrew-grechkin/vim-snippets'
 	endif
 	if has('nvim')                                                             " These plugins demand neovim
 		Plug 'dyng/ctrlsf.vim', {'on': ['CtrlSF','<Plug>CtrlSFPrompt','<Plug>CtrlSFCwordPath','<Plug>CtrlSFVwordExec']} " Global search and replace
-		Plug 'inkarkat/vim-localrc'
 		Plug 'janko/vim-test'
 		Plug 'sbdchd/vim-run'
 		Plug 'simnalamburt/vim-mundo', {'on': 'MundoToggle'}                   " Visualize the undo tree
@@ -217,36 +217,39 @@ call plug#begin('~/.cache/vim/plugged')
 	if empty($KDEHOME)                                                         " Install these pluggins only at work remote machines
 		Plug 'junegunn/fzf', {'dir': '~/.cache/fzf', 'do': './install --bin'}
 	else                                                                       " Install these pluggins only on personal machines
-		Plug 'tpope/vim-rhubarb'                                               " fugitive Github module
-		Plug 'shumphrey/fugitive-gitlab.vim'                                   " fugitive Gitlab module
+		Plug 'inkarkat/vim-localrc'
+		Plug 'lambdalisue/fern.vim'
+		Plug 'masukomi/vim-markdown-folding'
 		Plug 'mgrabovsky/vim-cuesheet'
 		Plug 'pearofducks/ansible-vim'
 		Plug 'ryanoasis/vim-devicons'
+		Plug 'shumphrey/fugitive-gitlab.vim'                                   " fugitive Gitlab module
 		Plug 'tmux-plugins/vim-tmux', {'for': 'tmux'}                          " Vim plugin for .tmux.conf
+		Plug 'tpope/vim-rhubarb'                                               " fugitive Github module
 		Plug 'vifm/vifm.vim'
 	endif
-	if 0                                                                       " These plugins are disabled
-		Plug 'fatih/vim-go', {'for': 'go'}
-		Plug 'vimwiki/vimwiki'                                                 " Personal wiki
-		Plug 'chrisbra/csv.vim'
-		Plug 'guns/xterm-color-table.vim', {'on': 'XtermColorTable'}
-		Plug 'flazz/vim-colorschemes'                                          " Huge set of color schemes
-		Plug 'vim-scripts/ScrollColors', {'on': 'SCROLL'}                      " Scroll through color schemes
-		Plug 'itchyny/lightline.vim'
-		Plug 'jceb/vim-hier'
-		Plug 'mhinz/vim-grepper', {'on': ['Grepper', '<Plug>(GrepperOperator)']} " Grep integration
-		Plug 'neoclide/coc.nvim', {'do': { -> coc#util#install()}}             " Language Server support
-		Plug 'samoshkin/vim-mergetool'
-		Plug 'tpope/vim-vinegar'
-		Plug 'vim-vdebug/vdebug'
-		Plug 'xolox/vim-misc'
-		Plug 'xolox/vim-easytags'
-		Plug 'jiangmiao/auto-pairs'
-		" perl autocomplete (not working properly)
-		Plug 'chumakd/perlomni.vim'
-		Plug 'Shougo/deoplete.nvim'
-		Plug 'RRethy/vim-hexokinase', {'do': 'make hexokinase'}
-	endif
+" 	if 0                                                                       " These plugins are disabled
+" 		Plug 'fatih/vim-go', {'for': 'go'}
+" 		Plug 'vimwiki/vimwiki'                                                 " Personal wiki
+" 		Plug 'chrisbra/csv.vim'
+" 		Plug 'guns/xterm-color-table.vim', {'on': 'XtermColorTable'}
+" 		Plug 'flazz/vim-colorschemes'                                          " Huge set of color schemes
+" 		Plug 'vim-scripts/ScrollColors', {'on': 'SCROLL'}                      " Scroll through color schemes
+" 		Plug 'itchyny/lightline.vim'
+" 		Plug 'jceb/vim-hier'
+" 		Plug 'mhinz/vim-grepper', {'on': ['Grepper', '<Plug>(GrepperOperator)']} " Grep integration
+" 		Plug 'neoclide/coc.nvim', {'do': { -> coc#util#install()}}             " Language Server support
+" 		Plug 'samoshkin/vim-mergetool'
+" 		Plug 'tpope/vim-vinegar'
+" 		Plug 'vim-vdebug/vdebug'
+" 		Plug 'xolox/vim-misc'
+" 		Plug 'xolox/vim-easytags'
+" 		Plug 'jiangmiao/auto-pairs'
+" 		" perl autocomplete (not working properly)
+" 		Plug 'chumakd/perlomni.vim'
+" 		Plug 'Shougo/deoplete.nvim'
+" 		Plug 'RRethy/vim-hexokinase', {'do': 'make hexokinase'}
+" 	endif
 call plug#end()
 
 "packloadall                                                                    " Load all plugins
@@ -389,8 +392,6 @@ silent! tnoremap <A-l>                 <C-\><C-N><C-w><Right>
 " fast buffers
 		nnoremap gh                    :bprevious<CR>
 		nnoremap gl                    :bnext<CR>
-" 		nnoremap <leader>bh            :bprevious<CR>
-" 		nnoremap <leader>bl            :bnext<CR>
 		nnoremap <leader>b0            :blast<CR>
 		nnoremap <leader>b1            :bfirst<CR>
 		nnoremap <leader>b2            :b2<CR>
@@ -481,17 +482,16 @@ endif
 
 augroup SettingsByFileType
 	autocmd!
-	autocmd FileType *      setlocal textwidth=120 wrapmargin=0
-	autocmd FileType qf     set      nobuflisted
+	autocmd FileType *           setlocal textwidth=120 wrapmargin=0
+	autocmd FileType qf,help,man setlocal nobuflisted | nnoremap <silent> <buffer> q :bwipeout<CR>
+	autocmd FileType Run         setlocal nobuflisted | nnoremap <silent> <buffer> q :bwipeout!<CR>
 augroup END
 
 augroup SettingsByBufType
 	autocmd!
 	autocmd BufEnter * if (winnr('$') == 1 && (&buftype ==# 'quickfix' || &buftype ==# 'loclist')) | bd | endif
 	autocmd BufEnter * if (
-			\ &buftype ==# 'help' ||
 			\ &buftype ==# 'nofile' ||
-			\ &buftype ==# 'quickfix' ||
 			\ &buftype ==# 'loclist') |
 			\ nnoremap <silent> <buffer> q :bwipeout<CR> |
 		\ endif

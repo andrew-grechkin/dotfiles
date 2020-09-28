@@ -21,7 +21,7 @@ setlocal regexpengine=1
 setlocal keywordprg=:Man
 command! -nargs=1 Perldoc new
 	\| :execute ':r !perl-doc <f-args>'
-	\| set filetype=man
+	\| :Man!
 
 "nnoremap <silent> <buffer> tt         :%!perltidy -q<CR>
 vnoremap <silent> <buffer> tt         :!perltidy -q<CR>
