@@ -78,6 +78,7 @@ alias mirrors-update=' sudo reflector --country Netherlands --latest 8 --protoco
 
 # => misc -------------------------------------------------------------------------------------------------------- {{{1
 
+alias fm=' vifm . .'
 alias se='SUDO_EDITOR=vim sudoedit'
 alias fix-agent=' eval $(tmux showenv -s SSH_AUTH_SOCK)'
 alias dd='dd oflag=sync status=progress'

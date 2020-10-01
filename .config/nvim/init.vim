@@ -170,6 +170,7 @@ call plug#begin('~/.cache/vim/plugged')
 "	Plug 'vim-airline/vim-airline-themes'                                      " Status line themes
 	Plug 'rodjek/vim-puppet'                                                   " For Puppet syntax highlighting
 	Plug 'vim-ruby/vim-ruby', {'for': 'ruby'}                                  " For Facts, Ruby functions, and custom providers
+	Plug 'vifm/vifm.vim'
 "	Plug '~/.local/share/vim-plug/trackperlvars', {'for': 'perl'}
 "	Plug '~/.local/share/vim-plug/perlart',       {'for': 'perl'}
 	if has('nvim-0.4') && has('python3')
@@ -218,7 +219,6 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'junegunn/fzf', {'dir': '~/.cache/fzf', 'do': './install --bin'}
 	else                                                                       " Install these pluggins only on personal machines
 		Plug 'inkarkat/vim-localrc'
-		Plug 'lambdalisue/fern.vim'
 		Plug 'masukomi/vim-markdown-folding'
 		Plug 'mgrabovsky/vim-cuesheet'
 		Plug 'pearofducks/ansible-vim'
@@ -226,7 +226,6 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'shumphrey/fugitive-gitlab.vim'                                   " fugitive Gitlab module
 		Plug 'tmux-plugins/vim-tmux', {'for': 'tmux'}                          " Vim plugin for .tmux.conf
 		Plug 'tpope/vim-rhubarb'                                               " fugitive Github module
-		Plug 'vifm/vifm.vim'
 	endif
 " 	if 0                                                                       " These plugins are disabled
 " 		Plug 'fatih/vim-go', {'for': 'go'}
