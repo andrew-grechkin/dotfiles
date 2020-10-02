@@ -41,6 +41,7 @@ ln -sf "$WORKDIR/.config/zathura"                                      ~/.config
 ln -sf "$WORKDIR/.config/zsh"                                          ~/.config/
 
 ln -sf "$WORKDIR/.local/bin"                                           ~/.local/
+ln -sf "$WORKDIR/.local/share/vim-dict"                                ~/.local/share/
 ln -sf "$WORKDIR/.local/share/vim-plug"                                ~/.local/share/
 
 chmod -R u=rwX,go-rwx "$WORKDIR/.ssh"

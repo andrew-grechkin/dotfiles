@@ -18,7 +18,7 @@ setlocal iskeyword+=$,@,%
 " Use old verion of syntax highlight regexp which look like working much faster (to check use syntime on -> syntime report)
 setlocal regexpengine=1
 
-setlocal dictionary+=~/.local/share/dict/perl
+setlocal dictionary+=~/.local/share/vim-dict/perl
 setlocal complete+=k
 
 setlocal keywordprg=:Man
