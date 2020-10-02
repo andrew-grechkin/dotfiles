@@ -299,6 +299,7 @@ syntax enable
 
 filetype plugin indent on
 
+set dictionary+=~/.local/share/dict/perl
 set complete+=kspell                                                           " Complete from include files and from spell if enabled
 
 set foldcolumn=2 foldmethod=syntax

@@ -18,9 +18,12 @@ setlocal iskeyword+=$,@,%
 " Use old verion of syntax highlight regexp which look like working much faster (to check use syntime on -> syntime report)
 setlocal regexpengine=1
 
+setlocal dictionary+=~/.local/share/dict/perl
+setlocal complete+=k
+
 setlocal keywordprg=:Man
 command! -nargs=1 Perldoc new
-	\| :execute ':r !perl-doc <f-args>'
+	\| :execute ":r !perl-doc '<args>'"
 	\| :Man!
 
 "nnoremap <silent> <buffer> tt         :%!perltidy -q<CR>
