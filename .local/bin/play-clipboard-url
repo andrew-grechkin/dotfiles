@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-
-set -Eeuo pipefail
-
-DN=$(dirname "$0")
-PATH=$DN:$PATH
-
-mpv "$(clippaste)"

@@ -11,8 +11,8 @@ set -Eeuo pipefail
 DN=$(dirname "$0")
 PATH=$DN:$PATH
 
-if [[ -n "$(command -v pastebin.work)" ]] && [[ -n "$(command -v is-work-network)" ]] && is-work-network; then
-	cat "${@}" | pastebin.work
+if [[ -n "$(command -v pastebin-work)" ]] && [[ -n "$(command -v is-work-network)" ]] && is-work-network; then
+	cat "${@}" | pastebin-work
 else
 	if [[ -n "$(command -v socat)" ]]; then
 		URL=$(tr -d '\0' < <(cat "${@}" | socat - TCP4:termbin.com:9999))

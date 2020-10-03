@@ -99,6 +99,10 @@ set scrolloff=4
 
 set statusline=" Hint: %z%= %A %10u:%-7g %15s %20d "
 
+" set millerview
+
+set slowfs+=/mnt
+
 " => Commands ---------------------------------------------------------------------------------------------------- {{{1
 " man: https://vifm.info/manual.shtml#Command%20macros
 
@@ -120,7 +124,6 @@ command! df     df -h %m 2> /dev/null
 command! diff   vimdiff %f %F
 
 " search
-command! fd     fd --hidden %a %M
 command! vgrep  vim "+grep %a"
 
 " pack
@@ -565,8 +568,11 @@ nnoremap <c-t> :FZFlocate<CR>
 " => Various customization examples ------------------------------------------------------------------------------ {{{1
 
 " Use ag (the silver searcher) instead of grep
-"
-set grepprg='ag --line-numbers %i %a %s'
+" set grepprg='ag --hidden --line-numbers %i %a %s'
+set grepprg='rg --hidden --column -- %i %A %s'
+
+" set findprg="find %s %a -print , -type d \( ! -readable -o ! -executable \) -prune"
+set findprg='fd --hidden -- %A'
 
 " Add additional place to look for executables
 "
