@@ -9,7 +9,7 @@ print join (' ', map {chomp; length $_ ? $_ : +()} <>); ## no critic [InputOutpu
 __END__
 
 # perl is much more efficient here
-##!/usr/bin/env bash
+##!/bin/bash
 #
 #set -Eeuo pipefail
 #

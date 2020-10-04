@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # put me in your path before tmux
 # and tmux will play nice with your ssh-agent

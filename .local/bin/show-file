@@ -1,11 +1,6 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 set -Eeuo pipefail
-
-function show-elf() {
-	{ readelf -dsW "$1" && echo && hexdump -C "$1"; } \
-	|| true
-}
 
 function header() {
 	stat "$1"
@@ -24,10 +19,17 @@ function body() {
 	# BASE="${NAME%.*}"
 	# EXT="${NAME##*.}"
 
-	if echo "$TYPE" | grep 'application/x-pie-executable' &>/dev/null; then
-		show-elf "$1"
+	if echo "$TYPE" | grep 'application/x-.*executable' &>/dev/null; then
+		{ readelf -dW "$1" && echo && nm -DC "$1"; } \
+		|| true
+		exit 0;
+	elif echo "$TYPE" | grep 'application/x-sharedlib' &>/dev/null; then
+		{ readelf -dW "$1" && echo && nm -DC "$1"; } \
+		|| { objdump -xfTC "$1"; } \
+		|| true
+		exit 0;
 	elif echo "$TYPE" | grep 'application/x-object' &>/dev/null; then
-		{ echo; nm -ClS "$1"; objdump -afltSd "$1"; } \
+		{ nm -ClS "$1"; echo; objdump -afltSd "$1"; } \
 		|| true
 		exit 0;
 	elif echo "$TYPE" | grep 'application/x-archive' &>/dev/null; then

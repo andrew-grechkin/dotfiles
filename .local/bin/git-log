@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 # man: git-log
 
 set -Eeuo pipefail
