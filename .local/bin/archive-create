@@ -1,0 +1,35 @@
+#!/usr/bin/env perl
+
+use v5.28;
+use strict;
+use warnings;
+use autodie qw(:all);
+
+use Carp;
+use Errno qw(ENOENT);
+use Path::Tiny;
+
+my %handlers = (
+    'MULTIPLE' => {
+        'suffix'  => '.tzst',
+        'handler' => sub {
+            my ($outfile, @items) = @_;
+            system ('tar', 'cf', $outfile, '--zstd', map {$_->stringify} @items);
+        },
+    },
+);
+
+my @items = grep {$_->exists} map {path($_)} @ARGV
+    or exit (ENOENT);
+
+my $basename = $items[0]->basename();
+my $h        = 'MULTIPLE';
+
+my $outfile = Path::Tiny->cwd->child($basename . $handlers{$h}{'suffix'});
+
+$outfile->exists
+    and die "File already exists: $outfile";
+
+$handlers{$h}{'handler'}->($outfile, @items);
+
+__END__

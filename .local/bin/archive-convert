@@ -75,7 +75,7 @@ foreach my $file (map {path($_)} @ARGV) {
             or next;
 
         my $basename     = $file->basename($arc->{'suffix'});
-        my $extract_path = Path::Tiny->tempdir('convert-archive-XXXXXXXXXX', 'CLEANUP' => 1);
+        my $extract_path = Path::Tiny->tempdir('archive-convert-XXXXXXXXXX', 'CLEANUP' => 1);
 
         $processed = extract($file, $basename, $arc, $extract_path);
 

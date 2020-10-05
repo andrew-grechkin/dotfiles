@@ -475,10 +475,18 @@ filetype *[^/],.*[^/]
 	\ less,
 	\ {Show file}
 	\ show-file %c | less,
+	\ {Compress}
+	\ archive-create %f,
 
 filetype *[^/$|.asc$|.sig$],.*[^/$|.asc$|.sig$]
 	\ {Sign the file}
 	\ gpg --detach-sign,
+
+filetype */,.*/
+	\ {Show dir}
+	\ show-dir %c | less,
+	\ {Compress}
+	\ archive-create %f,
 
 " => Preview ----------------------------------------------------------------------------------------------------- {{{1
 
