@@ -87,7 +87,7 @@ function _fzf_command_helper() {
 	{
 		"${GIT_LIST[@]}" \
 		|| "${RG__LIST[@]}" \
-		|| _fzf_compgen_helper "$(pwd)" 'f'
+		|| _fzf_compgen_helper . 'f'
 	} 2>/dev/null
 }
 

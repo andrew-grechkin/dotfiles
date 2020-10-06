@@ -1,12 +1,16 @@
 [alias]
 	br       = branch -vv
+	br-name  = !"git rev-parse --abbrev-ref HEAD"
+	br-redo  = !"git rebase -i `git merge-base master HEAD`"
 	bush     = !"f(){ while true; do git push && break; git pull --no-tags --rebase || break; done }; f"
-	bclean   = !"f(){ git fall; git br | awk '/: gone]/{print $1}' | xargs git branch -D; }; f"
+	bclean   = !"f(){ git fall; git br | awk '/: gone]/{print $1}' | xargs git branch -d; }; f"
 	co       = checkout
 	compress = !git-compress
-	d        = diff -b --submodule=diff
-	dg       = difftool --gui
+	d        = diff -b
+	dc       = diff -b --cached
+	ds       = diff -b --submodule=diff
 	dt       = difftool
+	dg       = difftool --gui
 	fall     = fetch --all --prune --prune-tags
 	ha       = !git --no-pager log --all --graph --pretty=oneline
 	l        = !fzf-git-log-branch
@@ -14,13 +18,20 @@
 	lg       = !fzf-git-log-graph
 	la       = !fzf-git-log-all
 	lag      = !fzf-git-log-all-graph
-	mg       = mergetool --gui
 	mt       = mergetool
+	mg       = mergetool --gui
 	pall     = !git-push-all
 	sh       = show --show-signature -b
 	st       = status -b
-	up       = pull -v --no-tags
+	up       = pull --no-tags
 	w        = whatchanged --show-signature
+	pub      = !"git push -u origin $(git br-name) -o merge_request.create -o merge_request.remove_source_branch"
+	unpub    = !"git push origin :$(git br-name)"
+	unpubt   = !"git push origin :$(git describe --exact-match --tags)"
+	m-span   = !"f(){ C=${2-\"$(git br-name)\"}; A=$(git log -1 $C --merges --pretty=format:%P); echo ${A/ /$1}; }; f"
+	m-log    = !"f(){ git log                    `git m-span ... $@`; }; f"
+	m-diff   = !"f(){ git diff     -b            `git m-span ... $@`; }; f"
+	m-dt     = !"f(){ git difftool -b -t vimdiff `git m-span ... $@`; }; f"
 
 [apply]
 	whitespace = fix
@@ -66,6 +77,9 @@
 
 [difftool "fugitive"]
 	cmd = vim -f -c "Gdiffsplit!" "$MERGED"
+
+[difftool "vimdiff"]
+	cmd = vimdiff "$LOCAL" "$REMOTE"
 
 [difftool "meld"]
 	cmd = meld "$LOCAL" "$REMOTE"

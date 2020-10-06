@@ -6,7 +6,7 @@ if plugin#is_loaded('vim-grepper')
 	silent! let g:grepper.dir         = 'cwd'
 	silent! let g:grepper.repo        = ['.git', '.hg', '.svn', '.cache']
 	silent! let g:grepper.stop        = 255
-	silent! let g:grepper.tools       = ['git', 'ag', 'rg', 'grep', 'ack', 'ack-grep']
+	silent! let g:grepper.tools       = ['git', 'rg', 'ag', 'ack', 'ack-grep', 'grep']
 	silent! let g:grepper.ag.grepprg .= ' --hidden'
 	silent! let g:grepper.rg.grepprg .= ' --hidden --smart-case'
 
