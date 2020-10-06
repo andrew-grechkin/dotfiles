@@ -1,6 +1,7 @@
 [alias]
 	br       = branch -vv
 	bush     = !"f(){ while true; do git push && break; git pull --no-tags --rebase || break; done }; f"
+	bclean   = !"f(){ git fall; git br | awk '/: gone]/{print $1}' | xargs git branch -D; }; f"
 	co       = checkout
 	compress = !git-compress
 	d        = diff -b --submodule=diff

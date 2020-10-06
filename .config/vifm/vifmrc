@@ -134,7 +134,7 @@ command! z      7z a        %c.7z   %f
 command! rep    convert-archive %c
 
 " unpack
-command! unp    extract-here %c
+command! unp    archive-extract-here %c
 
 " checksum
 command! sha    find %c -type f -print0 | sort -z | xargs --null sha256sum -b > %c.sha256
@@ -398,7 +398,7 @@ filetype *.7z,
 	\ {Mount with fuse-p7zip}
 	\ FUSE_MOUNT|fuse3-p7zip %SOURCE_FILE %DESTINATION_DIR,
 	\ {Extract here...}
-	\ extract-here %f &,
+	\ archive-extract-here %f &,
 	\ {Convert to tar.zstd...}
 	\ convert-archive %f &,
 fileviewer *.7z,

@@ -41,6 +41,10 @@ use constant {
             'command' => ['gunzip', \&_get_filename],
         },
         {
+            'suffix'  => qr{.zst$}x,
+            'command' => ['zstd', '-d', \&_get_filename],
+        },
+        {
             'suffix'  => qr{.cp866.zip$}x,
             'command' => ['unzip', '-O', 'cp866', '-d', \&_get_basename, \&_get_filename],
         },

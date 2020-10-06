@@ -1,28 +1,22 @@
 #!/usr/bin/env perl
 
-use v5.30;
-
-#use autodie qw(:all);
+use v5.28;
 use strict;
 use warnings;
-use utf8;
+use autodie;
 use open ':std', ':encoding(UTF-8)';
+use utf8;
 
 use English qw(-no_match_vars);
 
-my $filename = '/usr/share/unicode/emoji/emoji-test.txt';
+unshift (@ARGV, '/usr/share/unicode/emoji/emoji-test.txt');
 
-open (my $fh, '<:encoding(UTF-8)', $filename)
-    or die "Could not open file '$filename' $!";
-
-while (my $line = <$fh>) {
+while (my $line = <>) {
     chomp $line;
-    $line or next;
-    substr ($line, 0, 1) eq '#' and next;
+    $line && substr ($line, 0, 1) ne '#'
+        or next;
 
-    if ($line =~ m/[#]\s (?<emoji>\S+) \sE\d+ [.] \d+\s (?<name>.*)/x) {
+    if ($line =~ m{[#]\s (?<emoji>\S+) \sE\d+ [.] \d+\s (?<name>.*)}x) {
         say $LAST_PAREN_MATCH{'emoji'}, ' > ', $LAST_PAREN_MATCH{'name'};
     }
 }
-
-close ($fh);
