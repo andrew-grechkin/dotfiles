@@ -292,6 +292,7 @@ set laststatus=2                                                               "
 if exists('+termguicolors')
 	set termguicolors
 endif
+
 set cursorcolumn cursorline                                                    " Highlight current column
 
 ":silent! colorscheme last256
@@ -469,10 +470,6 @@ if &diff
 "		nnoremap <Down>                ]czz
 "		nnoremap <Up>                  [czz
 		nnoremap <Right>               <C-w><Right>
-
-"		hi DiffAdd    ctermfg=233   ctermbg=LightGreen guifg=#003300 guibg=#DDFFDD gui=none cterm=none
-"		hi DiffChange ctermbg=white                                  guibg=#ececec gui=none cterm=none
-"		hi DiffText   ctermfg=233   ctermbg=yellow     guifg=#000033 guibg=#DDDDFF gui=none cterm=none
 	augroup END
 else
 	augroup save_restore_folds                                                 " save and restore folds only in non-diff mode
