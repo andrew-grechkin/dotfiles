@@ -161,7 +161,7 @@ font:
   #use_thin_strokes: true
 
 # If `true`, bold text is drawn using the bright color variants.
-draw_bold_text_with_bright_colors: true
+draw_bold_text_with_bright_colors: false
 
 # Colors (Tomorrow Night)
 colors:
@@ -226,12 +226,12 @@ colors:
   # Normal colors
   normal:
     black:   '#000000'
-    red:     '#aa0000'
-    green:   '#00aa00'
-    yellow:  '#aa5500'
-    blue:    '#2222aa'
-    magenta: '#aa00aa'
-    cyan:    '#00aaaa'
+    red:     '#dd1111'
+    green:   '#11dd11'
+    yellow:  '#aa5511'
+    blue:    '#1111dd'
+    magenta: '#aa11aa'
+    cyan:    '#11aaaa'
     white:   '#aaaaaa'
 
   # Bright colors
@@ -240,7 +240,7 @@ colors:
     red:     '#ff5555'
     green:   '#55ff55'
     yellow:  '#ffff55'
-    blue:    '#5555ff'
+    blue:    '#7777ff'
     magenta: '#ff55ff'
     cyan:    '#55ffff'
     white:   '#ffffff'

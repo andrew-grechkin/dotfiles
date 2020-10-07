@@ -60,6 +60,7 @@ set norunexec
 " Selected color scheme
 
 colorscheme grand
+source $XDG_CONFIG_HOME/vifm/dircolors
 
 " Format for displaying time in file list. For example: TIME_STAMP_FORMAT=%m/%d-%H:%M
 " See man date or man strftime for details.

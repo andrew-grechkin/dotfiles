@@ -3,7 +3,8 @@
 # cheatsheet: https://tmuxcheatsheet.com/
 
 set  -g default-terminal "screen-256color"                                     # support 256 colors and HOME, END ...
-set  -gs escape-time 0                                                         # Lower escape timing for quicker response to scroll-buffer/vim access
+set -ga terminal-overrides ",*256col*:Tc,alacritty:Tc"
+set -gs escape-time 0                                                          # Lower escape timing for quicker response to scroll-buffer/vim access
 
 set  -g base-index 1                                                           # Start numbering windows at 1
 setw -g pane-base-index 0                                                      # Start numbering panes at 0

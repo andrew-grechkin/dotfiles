@@ -1,0 +1,203 @@
+# Configuration file for dircolors, a utility to help you set the
+# LS_COLORS environment variable used by GNU ls with the --color option.
+# Copyright (C) 1996-2020 Free Software Foundation, Inc.
+# Copying and distribution of this file, with or without modification,
+# are permitted provided the copyright notice and this notice are preserved.
+# The keywords COLOR, OPTIONS, and EIGHTBIT (honored by the
+# slackware version of dircolors) are recognized but ignored.
+# Below are TERM entries, which can be a glob patterns, to match
+# against the TERM environment variable to determine if it is colorizable.
+TERM Eterm
+TERM ansi
+TERM *color*
+TERM con[0-9]*x[0-9]*
+TERM cons25
+TERM console
+TERM cygwin
+TERM dtterm
+TERM gnome
+TERM hurd
+TERM jfbterm
+TERM konsole
+TERM kterm
+TERM linux
+TERM linux-c
+TERM mlterm
+TERM putty
+TERM rxvt*
+TERM screen*
+TERM st
+TERM terminator
+TERM tmux*
+TERM vt100
+TERM xterm*
+# Below are the color init strings for the basic file types.
+# One can use codes for 256 or more colors supported by modern terminals.
+# The default color codes use the capabilities of an 8 color terminal
+# with some additional attributes as per the following codes:
+# Attribute codes:
+# 00=none 01=bold 04=underscore 05=blink 07=reverse 08=concealed
+# Text color codes:
+# 30=black 31=red 32=green 33=yellow 34=blue 35=magenta 36=cyan 37=white
+# Background color codes:
+# 40=black 41=red 42=green 43=yellow 44=blue 45=magenta 46=cyan 47=white
+# url: https://gist.github.com/DNA/ebb9258089e9e1dfd08c58695b3cd6f1
+#NORMAL 00 # no color code at all
+#FILE 00 # regular file: use no color at all
+RESET                 0        # reset to "normal" color
+DIR                   01;94    # directory
+LINK                  01;96    # symbolic link. (If you set this to 'target' instead of a numerical value, the color is as for the file pointed to.)
+MULTIHARDLINK         00       # regular file with more than one link
+FIFO                  40;33    # pipe
+SOCK                  01;35    # socket
+DOOR                  01;35    # door
+BLK                   40;33;01 # block device driver
+CHR                   40;33;01 # character device driver
+ORPHAN                40;91;01 # symlink to nonexistent file, or non-stat'able file ...
+MISSING               00       # ... and the files they point to
+SETUID                37;41    # file that is setuid (u+s)
+SETGID                30;43    # file that is setgid (g+s)
+CAPABILITY            30;41    # file with capability
+STICKY_OTHER_WRITABLE 30;42    # dir that is sticky and other-writable (+t,o+w)
+OTHER_WRITABLE        34;42    # dir that is other-writable (o+w) and not sticky
+STICKY                37;44    # dir with the sticky bit set (+t) and not other-writable
+EXEC                  01;92    # This is for files with execute permission:
+# List any file extensions like '.gz' or '.tar' that you would like ls
+# to colorize below. Put the extension, a space, and the color init string.
+# (and any comments you want to add after a '#')
+# https://wiki.xiph.org/MIME_Types_and_File_Extensions
+# archives or compressed (bright red)
+.7z      00;91
+.ace     00;91
+.alz     00;91
+.arc     00;91
+.arj     00;91
+.bz      00;91
+.bz2     00;91
+.cab     00;91
+.cpio    00;91
+.deb     00;91
+.dict.dz 00;91
+.dsl.dz  00;91
+.dwm     00;91
+.dz      00;91
+.ear     00;91
+.esd     00;91
+.gz      00;91
+.jar     00;91
+.lha     00;91
+.lrz     00;91
+.lz      00;91
+.lz4     00;91
+.lzh     00;91
+.lzma    00;91
+.lzo     00;91
+.rar     00;91
+.rpm     00;91
+.rz      00;91
+.sar     00;91
+.swm     00;91
+.t7z     00;91
+.tar     00;91
+.taz     00;91
+.tbz     00;91
+.tbz2    00;91
+.tgz     00;91
+.tlz     00;91
+.txz     00;91
+.tz      00;91
+.tzo     00;91
+.tzst    00;91
+.war     00;91
+.wim     00;91
+.xz      00;91
+.z       00;91
+.zip     00;91
+.zoo     00;91
+.zst     00;91
+# image formats
+.asf   01;35
+.bmp   01;35
+.cgm   01;35
+.dl    01;35
+.emf   01;35
+.flc   01;35
+.fli   01;35
+.gif   01;35
+.gl    01;35
+.jpeg  01;35
+.jpg   01;35
+.m2v   01;35
+.mjpeg 01;35
+.mjpg  01;35
+.mng   01;35
+.nuv   01;35
+.ogm   01;35
+.ogv   01;35
+.ogx   01;35
+.pbm   01;35
+.pcx   01;35
+.pgm   01;35
+.png   01;35
+.ppm   01;35
+.rm    01;35
+.rmvb  01;35
+.svg   01;35
+.svgz  01;35
+.tga   01;35
+.tif   01;35
+.tiff  01;35
+.vob   01;35
+.webp  01;35
+.xbm   01;35
+.xcf   01;35
+.xpm   01;35
+.xwd   01;35
+# video formats
+.avi  00;95
+.flv  00;95
+.lrv  00;95
+.m4v  00;95
+.mkv  00;95
+.mov  00;95
+.mp4  00;95
+.mp4v 00;95
+.mpeg 00;95
+.mpg  00;95
+.qt   00;95
+.webm 00;95
+.wmv  00;95
+.yuv  00;95
+# audio formats
+.aac  00;96
+.ac3  00;96
+.ape  00;96
+.au   00;96
+.flac 00;96
+.kar  00;96
+.m4a  00;96
+.m4b  00;96
+.mid  00;96
+.midi 00;96
+.mka  00;96
+.mp3  00;96
+.mpa  00;96
+.mpc  00;96
+.oga  00;96
+.ogg  00;96
+.opus 00;96
+.ra   00;96
+.spx  00;96
+.wav  00;96
+.wv   00;96
+.xspf 00;96
+# If you use DOS-style suffixes, you may want to uncomment the following:
+#.bat 01;32 # executables (bright green)
+#.btm 01;32
+#.cmd 01;32
+#.com 01;32
+#.exe 01;32
+# Or if you want to colorize scripts even if they do not have the executable bit actually set.
+#.csh 01;32
+#.sh  01;32
+#.zsh 01;32

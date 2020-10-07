@@ -93,6 +93,8 @@ let perl_nofold_packages       = 1
 
 let g:tmux_navigator_no_mappings = 1
 
+let g:Hexokinase_highlighters = [ 'backgroundfull' ]
+
 let VIM_PLUG_URL      = 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
 let VIM_CREATE_DIR    = ':silent !mkdir -p '. VIM_CACHE_HOME . '/autoload'
 let VIM_PLUG_DOWNLOAD = ':silent !curl -sfLo ' . VIM_CACHE_HOME . '/autoload/plug.vim ' . VIM_PLUG_URL
@@ -170,6 +172,7 @@ call plug#begin('~/.cache/vim/plugged')
 "	Plug 'vim-airline/vim-airline-themes'                                      " Status line themes
 	Plug 'rodjek/vim-puppet'                                                   " For Puppet syntax highlighting
 	Plug 'vim-ruby/vim-ruby', {'for': 'ruby'}                                  " For Facts, Ruby functions, and custom providers
+	Plug 'pearofducks/ansible-vim'
 	Plug 'vifm/vifm.vim'
 "	Plug '~/.local/share/vim-plug/trackperlvars', {'for': 'perl'}
 "	Plug '~/.local/share/vim-plug/perlart',       {'for': 'perl'}
@@ -192,6 +195,7 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'lambdalisue/suda.vim'                                            " run sudo from vim
 		" Plug 'majutsushi/tagbar'
 		Plug 'mhinz/vim-startify'
+		Plug 'masukomi/vim-markdown-folding'
 		Plug 'pedrohdz/vim-yaml-folds'
 		Plug 'mhinz/vim-signify'                                               " Git status/modifications of the file
 		""" necessary for UltiSnips
@@ -219,13 +223,12 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'junegunn/fzf', {'dir': '~/.cache/fzf', 'do': './install --bin'}
 	else                                                                       " Install these pluggins only on personal machines
 		Plug 'inkarkat/vim-localrc'
-		Plug 'masukomi/vim-markdown-folding'
 		Plug 'mgrabovsky/vim-cuesheet'
-		Plug 'pearofducks/ansible-vim'
 		Plug 'ryanoasis/vim-devicons'
 		Plug 'shumphrey/fugitive-gitlab.vim'                                   " fugitive Gitlab module
 		Plug 'tmux-plugins/vim-tmux', {'for': 'tmux'}                          " Vim plugin for .tmux.conf
 		Plug 'tpope/vim-rhubarb'                                               " fugitive Github module
+		Plug 'RRethy/vim-hexokinase', {'do': 'make hexokinase'}
 	endif
 " 	if 0                                                                       " These plugins are disabled
 " 		Plug 'fatih/vim-go', {'for': 'go'}
@@ -286,11 +289,13 @@ set laststatus=2                                                               "
 
 " => Colors and Fonts -------------------------------------------------------------------------------------------- {{{1
 
-" set termguicolors
+if exists('+termguicolors')
+	set termguicolors
+endif
 set cursorcolumn cursorline                                                    " Highlight current column
 
 ":silent! colorscheme last256
-:silent! colorscheme molokai
+:silent! colorscheme molokai-grand
 ":silent! colorscheme woju
 
 syntax enable
@@ -504,6 +509,7 @@ augroup END
 augroup pre_post_process
 	autocmd!
 	autocmd BufWritePost $MYVIMRC source $MYVIMRC
+	autocmd BufWritePost .config/nvim/colors/molokai-grand.vim source .config/nvim/colors/molokai-grand.vim
 	""" Remove all trailing whitespaces (ALE does this better)
 "	autocmd BufWritePre  *        :%s/\s\+$//e
 	autocmd BufReadPost fugitive://* set bufhidden=delete
