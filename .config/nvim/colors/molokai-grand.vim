@@ -31,10 +31,10 @@ hi iCursor         guifg=#000000 guibg=#F8F8F0
 hi Debug           guifg=#BCA3A3               gui=bold
 hi Define          guifg=#66D9EF
 hi Delimiter       guifg=#8F8F8F
-hi DiffAdd                       guibg=#102010
-hi DiffChange                    guibg=#202010
-hi DiffDelete      guifg=#960050 guibg=#201010
-hi DiffText                      guibg=#3C3C20 gui=undercurl
+hi DiffAdd                       guibg=#203020
+hi DiffChange                    guibg=#303020
+hi DiffDelete      guifg=#960050 guibg=#302020
+hi DiffText                      guibg=#4C4C20 gui=undercurl
 
 hi Directory       guifg=#A6E22E               gui=bold
 hi Error           guifg=#E6DB74 guibg=#1E0010
@@ -67,7 +67,7 @@ hi PreCondit       guifg=#A6E22E               gui=bold
 hi PreProc         guifg=#A6E22E
 hi Question        guifg=#66D9EF
 hi Repeat          guifg=#F92672               gui=bold
-hi Search          guifg=#000000 guibg=#FFE792
+hi Search          guifg=#000000 guibg=#9F8762
 " marks
 hi SignColumn      guifg=#A6E22E guibg=#232526
 hi SpecialChar     guifg=#F92672               gui=bold
@@ -112,7 +112,7 @@ if s:molokai_original == 1
 	hi NonText         guifg=#75715E
 	hi SpecialKey      guifg=#75715E
 else
-	hi Normal          guifg=#D8D8D2 guibg=#111111
+	hi Normal          guifg=#D8D8D2 guibg=#191919
 	hi Comment         guifg=#777777
 	hi CursorLine                    guibg=#293739
 	hi CursorLineNr    guifg=#FD971F               gui=none
