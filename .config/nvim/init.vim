@@ -228,7 +228,6 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'shumphrey/fugitive-gitlab.vim'                                   " fugitive Gitlab module
 		Plug 'tmux-plugins/vim-tmux', {'for': 'tmux'}                          " Vim plugin for .tmux.conf
 		Plug 'tpope/vim-rhubarb'                                               " fugitive Github module
-		Plug 'RRethy/vim-hexokinase', {'do': 'make hexokinase'}
 	endif
 " 	if 0                                                                       " These plugins are disabled
 " 		Plug 'fatih/vim-go', {'for': 'go'}
