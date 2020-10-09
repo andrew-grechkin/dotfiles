@@ -10,7 +10,7 @@
 .config/systemd/user/xfce4-notifyd.service
 .config/vifm/scripts/README
 .config/vifm/vifm-help.txt
-.config/vifm/vifminfo
+.config/vifm/vifminfo*
 .config/zsh/plugins/completion/_bk
 .local/bin/fuse3-p7zip
 .ssh/authorized_keys

@@ -21,4 +21,4 @@ command cat <(
 	ssh_config_parsed_hosts
 	ssh_known_parsed_hosts
 	ssh_hosts_parsed_hosts
-) | awk '{if (length($2) > 0) {print $2}}' | sort -u
+) | awk '{if (length($2) > 0) {print $2} else {print $1}}' | sort -u

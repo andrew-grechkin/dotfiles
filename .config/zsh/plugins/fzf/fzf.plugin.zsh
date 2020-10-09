@@ -1,5 +1,4 @@
-# vim: syntax=zsh foldmethod=marker
-# set ft=zsh
+# vim: filetype=zsh foldmethod=marker
 
 # => Load fzf (key bindings, completion) ------------------------------------------------------------------------- {{{1
 
@@ -11,9 +10,12 @@ for F in '/usr/share/fzf/completion.zsh' "$XDG_CONFIG_HOME/fzf/completion.zsh"; 
 	source-file "$F" && break
 done
 
+# => sequence trigger (Use \ as the trigger sequence instead of the default **) ---------------------------------- {{{1
+
+export FZF_COMPLETION_TRIGGER='\'
+
 # => Settings ---------------------------------------------------------------------------------------------------- {{{1
 
-# Options to fzf command
 #export FZF_COMPLETION_OPTS='+c -x'
 
 function _fzf_compgen_path() {
@@ -24,11 +26,23 @@ function _fzf_compgen_dir() {
 	_fzf_compgen_helper "$1" 'd'
 }
 
+function _fzf_comprun() {
+	local command=$1
+	shift
+
+	case "$command" in
+		cd)           fzf "$@" --preview 'tree -C {} | head -200' ;;
+		export|unset) fzf "$@" --preview "eval 'echo \$'{}" ;;
+		ssh)          fzf "$@" --preview 'dig {}' ;;
+		*)            fzf "$@" ;;
+	esac
+}
+
 # => Setup commands ---------------------------------------------------------------------------------------------- {{{1
 
 export FZF_DEFAULT_COMMAND='_fzf_command_helper'
 export FZF_CTRL_T_COMMAND="_fzf_command_helper"
-export FZF_ALT_C_COMMAND='_fzf_compgen_helper $(pwd) d'
+export FZF_ALT_C_COMMAND='_fzf_compgen_helper . d'
 
 # => Setup options ----------------------------------------------------------------------------------------------- {{{1
 
@@ -53,23 +67,25 @@ export FZF_FILE_PREVIEW=(
 	--preview-window=right:78:hidden
 	--preview="{ show-dir {} || show-file {} } 2>&1 | head -n 100"
 )
+
 export FZF_MULTI_OPTIONS=(
 	--multi
 	--bind 'tab:toggle-out,shift-tab:toggle-in'
 )
+
 export FZF_DEFAULT_OPTS=$(printf " '%s'" '--no-multi' ${FZF_DEFAULT_BINDS[@]} ${FZF_FILE_BINDS[@]} ${FZF_FILE_PREVIEW[@]})
 export FZF_MULTI_OPTS=$(printf " '%s'" ${FZF_MULTI_OPTIONS[@]})
-export FZF_CTRL_T_OPTS="$FZF_DEFAULT_OPTS"
+
+export FZF_CTRL_T_OPTS="$FZF_DEFAULT_OPTS $FZF_MULTI_OPTS"
+# export FZF_CTRL_R_OPTS=""
+# export FZF_ALT_C_OPTS=""
+
 export FZF_TMUX=1
-
-# => sequence trigger (Use \ as the trigger sequence instead of the default **) ---------------------------------- {{{1
-
-export FZF_COMPLETION_TRIGGER='\'
 
 # => ssh (overrides the default one) ----------------------------------------------------------------------------- {{{1
 
 function _fzf_complete_ssh() {
-	_fzf_complete "$@" < <(ssh-hosts)
+	_fzf_complete -- "$@" < <(~/.local/bin/ssh-hosts)
 }
 
 # => docker ------------------------------------------------------------------------------------------------------ {{{1
