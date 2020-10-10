@@ -246,7 +246,7 @@ call plug#begin('~/.cache/vim/plugged')
 " 		Plug 'xolox/vim-misc'
 " 		Plug 'xolox/vim-easytags'
 " 		Plug 'jiangmiao/auto-pairs'
-" 		" perl autocomplete (not working properly)
+" 		""" perl autocomplete (not working properly)
 " 		Plug 'chumakd/perlomni.vim'
 " 		Plug 'Shougo/deoplete.nvim'
 " 		Plug 'RRethy/vim-hexokinase', {'do': 'make hexokinase'}
@@ -513,10 +513,10 @@ augroup END
 
 augroup AutoGzipForNonstandardExtensions
 	autocmd!
-"	Enable editing of gzipped files
-"	The functions are defined in autoload/gzip.vim
-"	Set binary mode before reading the file
-"	Use "gzip -d", gunzip isn't always available
+	""" Enable editing of gzipped files
+	""" The functions are defined in autoload/gzip.vim
+	""" Set binary mode before reading the file
+	""" Use "gzip -d", gunzip isn't always available
 	autocmd BufReadPre,FileReadPre     *.dsl.dz,*.dict.dz setlocal bin
 	autocmd BufReadPost,FileReadPost   *.dsl.dz,*.dict.dz call     gzip#read("gzip -dn -S .dz")
 	autocmd BufWritePost,FileWritePost *.dsl.dz,*.dict.dz call     gzip#write("gzip -S .dz")
