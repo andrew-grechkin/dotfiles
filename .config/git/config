@@ -3,28 +3,31 @@
 	br-name  = !"git rev-parse --abbrev-ref HEAD"
 	br-redo  = !"git rebase -i `git merge-base master HEAD`"
 	bush     = !"f(){ while true; do git push && break; git pull --no-tags --rebase || break; done }; f"
-	bclean   = !"f(){ git fall; git br | awk '/: gone]/{print $1}' | xargs git branch -d; }; f"
+	bclean   = !"f(){ git fall; git br | awk '/: gone]/{print $1}' | xargs --no-run-if-empty git branch -d; }; f"
 	co       = checkout
-	compress = !git-compress
+	compress = !"git-compress"
 	d        = diff -b
 	dc       = diff -b --cached
 	ds       = diff -b --submodule=diff
 	dt       = difftool
 	dg       = difftool --gui
 	fall     = fetch --all --prune --prune-tags
-	ha       = !git --no-pager log --all --graph --pretty=oneline
-	l        = !fzf-git-log-branch
-	lr       = !fzf-git-reflog
-	lg       = !fzf-git-log-graph
-	la       = !fzf-git-log-all
-	lag      = !fzf-git-log-all-graph
+	ha       = !"git --no-pager log --all --graph --pretty=oneline"
+	l        = !"fzf-git-log-branch"
+	lr       = !"fzf-git-reflog"
+	lg       = !"fzf-git-log-graph"
+	la       = !"fzf-git-log-all"
+	lag      = !"fzf-git-log-all-graph"
+	main     = !"git rev-parse --abbrev-ref origin/HEAD 2>&1 | grep -Eho 'origin/trunk|origin/master'"
 	mt       = mergetool
 	mg       = mergetool --gui
-	pall     = !git-push-all
+	pall     = !"git-push-all"
+	rv       = !"git diff -b --color=always $(git merge-base $(git main) HEAD 2>/dev/null)...HEAD"
+	rv-dt    = !"git difftool -b -t vimdiff $(git merge-base $(git main) HEAD 2>/dev/null)...HEAD"
 	sh       = show --show-signature -b
 	st       = status -b
 	up       = pull --no-tags
-	w        = whatchanged --show-signature
+	what     = whatchanged --show-signature
 	pub      = !"git push -u origin $(git br-name) -o merge_request.create -o merge_request.remove_source_branch"
 	unpub    = !"git push origin :$(git br-name)"
 	unpubt   = !"git push origin :$(git describe --exact-match --tags)"
