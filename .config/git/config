@@ -32,7 +32,7 @@
 	unpub    = !"git push origin :$(git br-name)"
 	unpubt   = !"git push origin :$(git describe --exact-match --tags)"
 	m-span   = !"f(){ C=${2-\"$(git br-name)\"}; A=$(git log -1 $C --merges --pretty=format:%P); echo ${A/ /$1}; }; f"
-	m-log    = !"f(){ git log          --color=always `git m-span ... $@`; }; f"
+	m-log    = !"f(){ git log          --color=always `git m-span ..  $@`; }; f"
 	m-diff   = !"f(){ git diff     -b  --color=always `git m-span ... $@`; }; f"
 	m-dt     = !"f(){ git difftool -b -t vimdiff      `git m-span ... $@`; }; f"
 
