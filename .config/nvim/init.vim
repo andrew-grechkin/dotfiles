@@ -168,12 +168,15 @@ call plug#begin('~/.cache/vim/plugged')
 	Plug 'mhinz/vim-grepper'                                                   " Grep integration
 	Plug 'nelstrom/vim-visual-star-search'
 	Plug 'andrew-grechkin/vim-rooter'                                          " Cwd if file is in git repo should be repo root
+	Plug 'Raimondi/delimitMate'
 	Plug 'vim-airline/vim-airline'                                             " Most informative status line
 "	Plug 'vim-airline/vim-airline-themes'                                      " Status line themes
+	Plug 'vifm/vifm.vim'
 	Plug 'rodjek/vim-puppet'                                                   " For Puppet syntax highlighting
 	Plug 'vim-ruby/vim-ruby', {'for': 'ruby'}                                  " For Facts, Ruby functions, and custom providers
 	Plug 'pearofducks/ansible-vim'
-	Plug 'vifm/vifm.vim'
+	Plug 'vim-perl/vim-perl'
+	Plug 'c9s/perlomni.vim'
 "	Plug '~/.local/share/vim-plug/trackperlvars', {'for': 'perl'}
 "	Plug '~/.local/share/vim-plug/perlart',       {'for': 'perl'}
 	if has('nvim-0.4') && has('python3')
@@ -193,7 +196,7 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'ervandew/supertab'
 		Plug 'junegunn/vim-peekaboo'                                           " Preview registers
 		Plug 'lambdalisue/suda.vim'                                            " run sudo from vim
-		" Plug 'majutsushi/tagbar'
+		Plug 'majutsushi/tagbar'
 		Plug 'mhinz/vim-startify'
 		Plug 'masukomi/vim-markdown-folding'
 		Plug 'pedrohdz/vim-yaml-folds'
@@ -263,7 +266,7 @@ set scrolloff=5                                                                "
 set wildmenu                                                                   " Enhanced command line completion
 "set wildmode=longest:full
 set wildignorecase
-set wildignore+=*.a,*.o,*~,*.pyc,*.so,*.swp,*.zip,*.exe                        " Ignore compiled files
+set wildignore+=*.a,*.o,*.obj,.git,*~,*.pyc,*.so,*.swp,*.zip,*.exe             " Ignore compiled files
 set wildignore+=*/tmp/*,*/node_modules/*                                       " MacOSX/Linux
 set wildignore+=*\\tmp\\*                                                      " Windows
 
@@ -427,12 +430,19 @@ silent! tnoremap <A-l>                 <C-\><C-N><C-w><Right>
 " < and > don't loose selection when changing indentation
 		vnoremap >                     >gv
 		vnoremap <                     <gv
+		vnoremap J                     :m '>+1<CR>gv=gv
+		vnoremap K                     :m '<-2<CR>gv=gv
 
 " Clear current search highlighting
 		nnoremap <leader><leader>l     :nohlsearch<CR>
 
+		nnoremap n                     nzzzv
+		nnoremap N                     Nzzzv
+
 " Open terminal
 		nnoremap <leader><leader>m     :belowright 10split term://zsh<CR>
+
+		nnoremap <leader>. :lcd %:p:h<CR>
 
 " => Bookmarks --------------------------------------------------------------------------------------------------- {{{1
 
@@ -480,6 +490,8 @@ endif
 
 " => Automatization ---------------------------------------------------------------------------------------------- {{{1
 
+cnoreabbrev waq wqa
+
 augroup SettingsByFileType
 	autocmd!
 	autocmd FileType *           setlocal textwidth=120 wrapmargin=0
@@ -489,6 +501,7 @@ augroup END
 
 augroup SettingsByBufType
 	autocmd!
+	autocmd TermEnter * setlocal scrolloff=0
 	autocmd BufEnter * if (winnr('$') == 1 && (&buftype ==# 'quickfix' || &buftype ==# 'loclist')) | bd | endif
 	autocmd BufEnter * if (
 			\ &buftype ==# 'nofile' ||

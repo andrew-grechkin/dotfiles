@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -Eeuo pipefail
+
+file=$(readlink -f "$1")
+
+case "$1" in
+    *.md) pandoc -t pdf --pdf-engine pdfroff "$file" | zathura - ;;
+    *) echo 'unknown' ;;
+esac
