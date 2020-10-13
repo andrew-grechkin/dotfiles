@@ -15,11 +15,12 @@ XDG_DATA_HOME       DEFAULT="@{HOME}/.local/share"
 # => shell ------------------------------------------------------------------------------------------------------- {{{1
 
 ZDOTDIR             DEFAULT="${XDG_CONFIG_HOME}/zsh"
+FUSE3_P7ZIP_FORMATS DEFAULT="Iso:Udf:*:APM:GPT"
 
 # => wine -------------------------------------------------------------------------------------------------------- {{{1
 
-WINEPREFIX          DEFAULT="${XDG_CACHE_HOME}/wine/default-x32"
-WINEARCH            DEFAULT=win32
+WINEPREFIX          DEFAULT="${XDG_CACHE_HOME}/wine/default-x64"
+WINEARCH            DEFAULT=win64
 
 # => X11 settings ------------------------------------------------------------------------------------------------ {{{1
 
@@ -36,3 +37,7 @@ XAUTHORITY          DEFAULT="${XDG_RUNTIME_DIR}/Xauthority"
 
 #KDEWM               DEFAULT="/usr/bin/i3"
 KDEHOME             DEFAULT="${XDG_CONFIG_HOME}/kde"
+
+# => misc -------------------------------------------------------------------------------------------------------- {{{1
+
+GROFF_TMPDIR        DEFAULT="/tmp"

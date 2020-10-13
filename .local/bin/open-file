@@ -5,6 +5,6 @@ set -Eeuo pipefail
 file=$(readlink -f "$1")
 
 case "$1" in
-    *.md) pandoc -t pdf --pdf-engine pdfroff "$file" | zathura - ;;
+    *.md|*.mkd) pandoc -t pdf --pdf-engine pdfroff "$file" | zathura - &>/dev/null & ;;
     *) echo 'unknown' ;;
 esac

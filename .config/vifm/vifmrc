@@ -194,6 +194,9 @@ filextype *.djvu,*.pdf
 	\ xdg-open %c %i &,
 	\ {View in apvlv}
 	\ apvlv,
+filextype *.md,*.mkd
+	\ {View in zathura}
+	\ open-file %f %i - &,
 filextype *.pdf
 	\ xpdf,
 fileviewer *.pdf

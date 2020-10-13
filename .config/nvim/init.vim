@@ -430,8 +430,6 @@ silent! tnoremap <A-l>                 <C-\><C-N><C-w><Right>
 " < and > don't loose selection when changing indentation
 		vnoremap >                     >gv
 		vnoremap <                     <gv
-		vnoremap J                     :m '>+1<CR>gv=gv
-		vnoremap K                     :m '<-2<CR>gv=gv
 
 " Clear current search highlighting
 		nnoremap <leader><leader>l     :nohlsearch<CR>
@@ -442,7 +440,8 @@ silent! tnoremap <A-l>                 <C-\><C-N><C-w><Right>
 " Open terminal
 		nnoremap <leader><leader>m     :belowright 10split term://zsh<CR>
 
-		nnoremap <leader>. :lcd %:p:h<CR>
+		nnoremap <leader>.             :execute 'lcd' dir#git_root()<CR>
+"		nnoremap <leader>.             :lcd %:p:h<CR>
 
 " => Bookmarks --------------------------------------------------------------------------------------------------- {{{1
 
