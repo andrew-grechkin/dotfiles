@@ -10,12 +10,13 @@ shift
 
 git-in-repo && {
 	if [[ -n "$(git rev-parse --verify "$COMMIT^2" 2>/dev/null)" ]]; then
-		git show "$COMMIT" "$@"
+		# git --no-pager show "$COMMIT" "$@"
+		# echo
+		git --no-pager m-log "$COMMIT"
 		echo
-		git m-log "$COMMIT"
-		echo
-		git m-diff "$COMMIT"
+		git --no-pager show --first-parent --color=always -b "$COMMIT" "$@"
+		# git m-diff "$COMMIT"
 	else
-		git show "$COMMIT" "$@"
+		git --no-pager show "$COMMIT" "$@"
 	fi
 } 2> /dev/null

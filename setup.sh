@@ -24,7 +24,6 @@ ln -sf "$WORKDIR/.config/fontconfig/conf.d"                            ~/.config
 ln -sf "$WORKDIR/.config/git"                                          ~/.config/
 ln -sf "$WORKDIR/.config/i3"                                           ~/.config/
 ln -sf "$WORKDIR/.config/mpv"                                          ~/.config/
-ln -sf "$WORKDIR/.config/npm"                                          ~/.config/
 ln -sf "$WORKDIR/.config/nvim/"*                                       ~/.config/nvim
 ln -sf "$WORKDIR/.config/perlcriticrc"                                 ~/.config/
 ln -sf "$WORKDIR/.config/perltidyrc"                                   ~/.config/
@@ -43,6 +42,8 @@ ln -sf "$WORKDIR/.config/zsh"                                          ~/.config
 ln -sf "$WORKDIR/.local/bin"                                           ~/.local/
 ln -sf "$WORKDIR/.local/share/vim-dict"                                ~/.local/share/
 ln -sf "$WORKDIR/.local/share/vim-plug"                                ~/.local/share/
+
+[ -f "$HOME/.config/npm" ] || cp -r "$WORKDIR/.config/npm"             ~/.config/
 
 chmod -R u=rwX,go-rwx "$WORKDIR/.ssh"
 

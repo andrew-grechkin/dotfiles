@@ -252,7 +252,7 @@ filetype *.wv
 
 filextype *.3gp,
 	\*.as[fx],*.avi,*.dat,*.divx,*.fl[icv],*.lrv,*.m2v,*.m4v,*.mkv,*.mov,*.mp4,*.mpeg,*.mpg,*.mts,
-	\*.ogv,*.qt,*.r[am],*.ts,*.vob,*.webm,*.wmv
+	\*.ogv,*.qt,*.r[am],*.vob,*.webm,*.wmv
 	\ {View using mpv}
 	\ mpv %f %i &,
 	\ {View using ffplay}
@@ -261,7 +261,7 @@ filextype *.3gp,
 	\ mplayer,
 fileviewer *.3gp,
 	\*.as[fx],*.avi,*.dat,*.divx,*.fl[icv],*.lrv,*.m2v,*.m4v,*.mkv,*.mov,*.mp4,*.mpeg,*.mpg,*.mts,
-	\*.ogv,*.qt,*.r[am],*.ts,*.vob,*.webm,*.wmv
+	\*.ogv,*.qt,*.r[am],*.vob,*.webm,*.wmv
 	\ mediainfo,
 	\ ffprobe -pretty %c 2>&1,
 
@@ -626,7 +626,7 @@ set classify+=' ::*.doc,,*.docx::, ::*.xls,,*.xls[mx]::, ::*.ppt,,*.ppt
 set classify+=' ::*.7z,,*.ace,,*.arj,,*.bz2,,*.cpio,,*.dz,,*.gz,,*.jar,,*.lzh,,*.lzma,,*.rar,,*.rz,,*.tar,,*.taz,,*.tb2,,*.tbz,,*.tbz2,,*.tgz,,*.tlz,,*.trz,,*.txz,,*.tz,,*.tz2,,*.zst,,*.tzst,,*.xz,,*.z,,*.zip,,*.zoo::, ::*.deb::, ::*.rpm::'
 set classify+=' ::*.bmp,,*.gif,,*.jpeg,,*.jpg,,*.ico,,*.png,,*.ppm,,*.tga,,*.tif,,*.tiff,,*.xbm,,*.xcf,,*.xpm,,*.xspf,,*.xwd,,*.svg,,*.svgz::'
 set classify+=' ::*.aac,,*.anx,,*.asf,,*.au,,*.axa,,*.flac,,*.m2a,,*.m4a,,*.mid,,*.midi,,*.mp3,,*.mpc,,*.oga,,*.ogg,,*.ogx,,*.ra,,*.ram,,*.rm,,*.spx,,*.wav,,*.wma,,*.ac3::'
-set classify+=' ::*.avi,,*.ts,,*.axv,,*.divx,,*.m2v,,*.m4p,,*.m4v,,.mka,,*.mkv,,*.mov,,*.mp4,,*.lrv,,*.flv::'
+set classify+=' ::*.avi,,*.axv,,*.divx,,*.m2v,,*.m4p,,*.m4v,,.mka,,*.mkv,,*.mov,,*.mp4,,*.lrv,,*.flv::'
 set classify+=' ::*.mp4v,,*.mpeg,,*.mpg,,*.nuv,,*.ogv,,*.pbm,,*.pgm,,*.qt,,*.vob,,*.wmv,,*.xvid::'
 set classify+=' ::*.htm,,*.html,,**.[msx]html,,*.mht,,*.xml::'
 set classify+=' ::*.diff,,*.patch::'
