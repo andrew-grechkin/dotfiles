@@ -77,12 +77,12 @@ endif
 
 " => Preload ----------------------------------------------------------------------------------------------------- {{{1
 
-let g:man_hardwrap = 1
-
 " let g:loaded_netrw             = 1                                             " Disable netrw (spellcheck unable to download files)
 " let g:loaded_netrwPlugin       = 1
 " let g:loaded_netrwSettings     = 1
 " let g:loaded_netrwFileHandlers = 1
+
+let g:man_hardwrap = 1
 
 " man: ft-perl-syntax
 let perl_include_pod           = 0
@@ -91,9 +91,17 @@ let perl_no_extended_vars      = 1
 let perl_fold                  = 1
 let perl_nofold_packages       = 1
 
+let g:python_host_prog  = '/usr/bin/python2'
+let g:python3_host_prog = '/usr/bin/python3'
+
+let g:airline_highlighting_cache = 1
+
 let g:tmux_navigator_no_mappings = 1
 
 let g:Hexokinase_highlighters = [ 'backgroundfull' ]
+let g:signify_vcs_cmds = {
+	\ 'git':      'git diff --no-color --no-ext-diff -U0 -- %f',
+	\ }
 
 let VIM_PLUG_URL      = 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
 let VIM_CREATE_DIR    = ':silent !mkdir -p '. VIM_CACHE_HOME . '/autoload'
@@ -191,13 +199,11 @@ call plug#begin('~/.cache/vim/plugged')
 	endif
 	if has('nvim') || v:version >= 800                                         " These plugins demand modern vim or neovim
 		Plug 'dense-analysis/ale'                                              " Async syntax checker
-		Plug 'unblevable/quick-scope'
 		Plug 'easymotion/vim-easymotion'                                       " Better move commands
 		Plug 'ervandew/supertab'
 		Plug 'junegunn/vim-peekaboo'                                           " Preview registers
 		Plug 'lambdalisue/suda.vim'                                            " run sudo from vim
 		Plug 'majutsushi/tagbar'
-		Plug 'mhinz/vim-startify'
 		Plug 'masukomi/vim-markdown-folding'
 		Plug 'pedrohdz/vim-yaml-folds'
 		Plug 'mhinz/vim-signify'                                               " Git status/modifications of the file
@@ -249,6 +255,8 @@ call plug#begin('~/.cache/vim/plugged')
 " 		Plug 'xolox/vim-misc'
 " 		Plug 'xolox/vim-easytags'
 " 		Plug 'jiangmiao/auto-pairs'
+"		Plug 'mhinz/vim-startify'                                              " startify is slow!
+"		Plug 'unblevable/quick-scope'
 " 		""" perl autocomplete (not working properly)
 " 		Plug 'chumakd/perlomni.vim'
 " 		Plug 'Shougo/deoplete.nvim'
