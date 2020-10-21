@@ -34,15 +34,20 @@ fi
 
 # => PATH prepare ------------------------------------------------------------------------------------------------ {{{1
 
-[[ -n "$GOPATH"          ]] && [[ -d "$GOPATH"          ]] && _appendvar PATH "$GOPATH/bin"
-[[ -n "$GEM_HOME"        ]] && [[ -d "$GEM_HOME"        ]] && _appendvar PATH "$GEM_HOME/bin"
-[[ -n "$HOMEBREW_PREFIX" ]] && [[ -d "$HOMEBREW_PREFIX" ]] && _prependvar PATH "$HOMEBREW_PREFIX/bin"
-[[ -n "$HOMEBREW_PREFIX" ]] && [[ -d "$HOMEBREW_PREFIX" ]] && _prependvar PATH "$HOMEBREW_PREFIX/sbin"
-[[ -n "$PERLBREW_PATH"         ]] && _prependvar PATH "$PERLBREW_PATH"
-[[ -d "$HOME/.local/bin"       ]] && _prependvar PATH "$HOME/.local/bin"
-[[ -d "$HOME/.local/scripts"   ]] && _prependvar PATH "$HOME/.local/scripts"
-[[ -d "$HOME/.cache/bin"       ]] && _prependvar PATH "$HOME/.cache/bin"
-export PATH
+typeset -U PATH path
+[[ -n "$GOPATH"          ]] && [[ -d "$GOPATH"          ]] && path+=("$GOPATH/bin")
+[[ -n "$GEM_HOME"        ]] && [[ -d "$GEM_HOME"        ]] && path+=("$GEM_HOME/bin")
+[[ -n "$HOMEBREW_PREFIX" ]] && [[ -d "$HOMEBREW_PREFIX" ]] && path=("$HOMEBREW_PREFIX/bin"  "${path[@]}")
+[[ -n "$HOMEBREW_PREFIX" ]] && [[ -d "$HOMEBREW_PREFIX" ]] && path=("$HOMEBREW_PREFIX/sbin" "${path[@]}")
+[[ -n "$PERLBREW_PATH"                                  ]] && path=("$PERLBREW_PATH"        "${path[@]}")
+[[ -d "$HOME/.local/bin"                                ]] && path=("$HOME/.local/bin"      "${path[@]}")
+[[ -d "$HOME/.local/scripts"                            ]] && path=("$HOME/.local/scripts"  "${path[@]}")
+[[ -d "$HOME/.cache/bin"                                ]] && path=("$HOME/.cache/bin"      "${path[@]}")
+
+# => Use zsh help search ----------------------------------------------------------------------------------------- {{{1
+
+(( $+aliases[run-help] )) && unalias run-help
+autoload -Uz run-help
 
 # => show profiler ----------------------------------------------------------------------------------------------- {{{1
 

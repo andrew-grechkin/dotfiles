@@ -3,7 +3,7 @@
 
 zmodload -i zsh/complist
 
-unsetopt FLOWCONTROL
+unsetopt FLOW_CONTROL
 unsetopt LIST_BEEP
 unsetopt MENU_COMPLETE                                                         # do not autoselect the first completion entry
 setopt   ALWAYS_TO_END

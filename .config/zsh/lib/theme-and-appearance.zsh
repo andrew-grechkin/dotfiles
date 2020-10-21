@@ -12,8 +12,8 @@ autoload -U colors && colors
 
 if [[ "$DISABLE_LS_COLORS" != "true" ]]; then
 	# For GNU ls, we use the default ls color theme. They can later be overwritten by themes.
-	if [[ -z "$LS_COLORS" ]]; then
-		(( $+commands[dircolors] )) && eval "$(dircolors -b ~/.config/shell/dircolors.conf)"
+	if [[ -z "$LS_COLORS" ]] && (( $+commands[dircolors] )); then
+		eval "$(dircolors -b ~/.config/shell/dircolors.conf)"
 	fi
 
 	ls --color -d . &>/dev/null && alias ls='ls --color=tty' || { ls -G . &>/dev/null && alias ls='ls -G' }

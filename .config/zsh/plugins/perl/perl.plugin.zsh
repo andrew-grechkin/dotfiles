@@ -49,9 +49,9 @@ function activate-local-perl() {
 }
 
 function export-perl5lib() {
-	_prependvar PERL5LIB "$HOME/git/booking/pakket/lib"
-	_prependvar PERL5LIB "./lib"
-	export PERL5LIB
+	typeset -gUT PERL5LIB perl5lib
+	perl5lib=("$HOME/git/booking/pakket/lib" ${perl5lib[@]})
+	perl5lib=("./lib" ${perl5lib[@]})
 }
 
 # => main -------------------------------------------------------------------------------------------------------- {{{1

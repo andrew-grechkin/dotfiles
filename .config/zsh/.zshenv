@@ -15,22 +15,6 @@ function source-file() {
 	done
 }
 
-function _prependvar() {
-	local CURRENT_VALUE=${(P)1}
-	case ":${CURRENT_VALUE}:" in
-		*:"$2":*) ;;
-		*) eval "$1=${2}${CURRENT_VALUE:+:$CURRENT_VALUE}" ;;
-	esac
-}
-
-function _appendvar() {
-	local CURRENT_VALUE=${(P)1}
-	case ":${CURRENT_VALUE}:" in
-		*:"$2":*) ;;
-		*) eval "$1=${CURRENT_VALUE:+$CURRENT_VALUE:}$2" ;;
-	esac
-}
-
 # => include common environment ---------------------------------------------------------------------------------- {{{1
 
 source-file "$XDG_CONFIG_HOME/shell/env"

@@ -41,9 +41,8 @@ antigen theme grand
 #antigen theme gnzh
 
 # antigen puts a lot of junk into PATH so save PATH before and restore it after
-local SAVEPATH=$PATH
+local savepath=(${path[@]})
 
 antigen apply                                                                  # Tell antigen that you're done
 
-PATH=$SAVEPATH
-export PATH
+path=(${savepath[@]})
