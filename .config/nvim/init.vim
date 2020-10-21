@@ -203,7 +203,7 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'ervandew/supertab'
 		Plug 'junegunn/vim-peekaboo'                                           " Preview registers
 		Plug 'lambdalisue/suda.vim'                                            " run sudo from vim
-		Plug 'majutsushi/tagbar'
+"		Plug 'majutsushi/tagbar'
 		Plug 'masukomi/vim-markdown-folding'
 		Plug 'pedrohdz/vim-yaml-folds'
 		Plug 'mhinz/vim-signify'                                               " Git status/modifications of the file
