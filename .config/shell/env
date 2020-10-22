@@ -1,8 +1,9 @@
-# vim: syntax=zsh foldmethod=marker
+# vim: filetype=sh foldmethod=marker
 
 export       XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 export        XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 export         XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+
 export           TMUX_TMPDIR="$XDG_RUNTIME_DIR"
 export                  LESS='-x4 -iRSw'
 
@@ -23,8 +24,10 @@ export        GEM_SPEC_CACHE="$GEM_HOME/spec"
 export                GOPATH="$XDG_CACHE_HOME/go"
 export            PYLINTHOME="$XDG_CACHE_HOME/pylint.d"
 
-[[ -f "$XDG_CONFIG_HOME/nvim/init.vim" ]] && export MYVIMRC="$XDG_CONFIG_HOME/nvim/init.vim"
-[[ -f "$XDG_CONFIG_HOME/nvim/init.vim" ]] && export VIMINIT="source $MYVIMRC"
+[[ -f "$XDG_CONFIG_HOME/nvim/init.vim" ]] && {
+	export MYVIMRC="$XDG_CONFIG_HOME/nvim/init.vim"
+	export VIMINIT="source $MYVIMRC"
+}
 [[ -f "$XDG_CONFIG_HOME/wgetrc"        ]] && export  WGETRC="$XDG_CONFIG_HOME/wgetrc"
 
 # => make necessary dirs ----------------------------------------------------------------------------------------- {{{1

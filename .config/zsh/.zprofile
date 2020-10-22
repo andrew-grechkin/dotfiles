@@ -1,8 +1,8 @@
-# vim: syntax=zsh foldmethod=marker
+# vim: filetype=zsh foldmethod=marker
 
 [[ -n "$ZSH_TRACE" ]] && echo ".config/zsh/.zprofile: $$"
 
-if tty &>/dev/null; then
+[[ -n "$is_tty" ]] && {
 	source-file "$XDG_CONFIG_HOME/shell/profile"
 	source-file "$XDG_CONFIG_HOME/shell/profile.work"
-fi
+}

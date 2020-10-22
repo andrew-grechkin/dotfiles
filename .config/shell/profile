@@ -1,9 +1,9 @@
-# vim: syntax=zsh foldmethod=marker
+# vim: filetype=sh foldmethod=marker
 
 if [[ -z "$TMUX" ]]; then
-	export DOTPROFILE_EXECUTED="login"
+	typeset -Hg dotprofile_executed="login"
 else
-	export DOTPROFILE_EXECUTED="tmux"
+	typeset -Hg dotprofile_executed="tmux"
 fi
 
 # => SSH agent --------------------------------------------------------------------------------------------------- {{{1

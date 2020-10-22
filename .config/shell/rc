@@ -1,9 +1,10 @@
-# vim: syntax=zsh foldmethod=marker
+# vim: filetype=sh foldmethod=marker
 
 export                 LANG=${LANG:-en_US.utf8}
 export         LESSHISTFILE=-
 
 # => set PATH ---------------------------------------------------------------------------------------------------- {{{1
+
 if [[ "$(hostname)" = "home" ]]; then
 	_prependvar PATH "/volume1/@appstore/ffmpeg/bin"
 fi

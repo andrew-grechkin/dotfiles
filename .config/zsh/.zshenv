@@ -1,4 +1,4 @@
-# vim: syntax=zsh foldmethod=marker
+# vim: filetype=zsh foldmethod=marker
 
 [[ -n "$ZSH_TRACE" ]] && echo ".config/zsh/.zshenv: $$"
 
@@ -36,3 +36,5 @@ ZSH_COMPDUMP=$XDG_CACHE_HOME/zcompdump-${ZSH_VERSION}
 typeset -AHg DIRSTACK
 DIRSTACK['file']="$XDG_CACHE_HOME/z_dirs"
 DIRSTACK['size']=20
+
+tty &>/dev/null && typeset -Hg is_tty=1

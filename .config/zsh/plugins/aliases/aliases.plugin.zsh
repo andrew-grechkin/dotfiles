@@ -1,4 +1,4 @@
-# vim: syntax=zsh foldmethod=marker
+# vim: foldmethod=marker
 # Based on https://github.com/robbyrussell/oh-my-zsh
 
 # => ls ---------------------------------------------------------------------------------------------------------- {{{1
@@ -14,11 +14,11 @@ alias lsblk='lsblk -o NAME,FSTYPE,LABEL,UUID,SIZE,FSUSE%,RO,TYPE,MOUNTPOINT'
 
 alias -g S='| sort'
 alias -g H='| head'
-alias -g L="| less"
-alias -g LL="2>&1 | less"
+alias -g L='| less'
+alias -g LL='2>&1 | less'
 
-alias -g NE="2> /dev/null"
-alias -g NUL="&>/dev/null"
+alias -g NE='2>/dev/null'
+alias -g NUL='&>/dev/null'
 
 alias dud=' du -d 1 -h'
 alias duf=' du -sh *'

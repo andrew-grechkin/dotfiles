@@ -1,4 +1,4 @@
-# vim: syntax=zsh foldmethod=marker
+# vim: filetype=zsh foldmethod=marker
 
 [[ -n "$ZSH_TRACE" ]] && echo ".config/zsh/.zshrc: $$"
 
