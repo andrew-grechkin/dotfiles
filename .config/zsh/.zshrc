@@ -5,6 +5,8 @@
 source-file "$XDG_CONFIG_HOME/shell/rc"
 source-file "$XDG_CONFIG_HOME/shell/rc.work"
 
+[[ -d "$HOME/.cache/bin"                                ]] && path=("$HOME/.cache/bin"           "${path[@]}")
+
 # => Install antigen --------------------------------------------------------------------------------------------- {{{1
 
 function install-antigen() {

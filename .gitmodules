@@ -1,6 +1,6 @@
 [submodule "submodules/private"]
 	path = submodules/private
-	url = ssh://home/volume1/service/git/dotfiles-private.git
+	url = ssh://home.ams/volume1/service/git/dotfiles-private.git
 [submodule "submodules/secret"]
 	path = submodules/secret
-	url = ssh://home/volume1/service/git/dotfiles-secret.git
+	url = ssh://home.ams/volume1/service/git/dotfiles-secret.git
