@@ -3,11 +3,10 @@
 use v5.28;
 use strict;
 use warnings;
-use autodie qw(:all);
+use autodie;
 use utf8;
 use experimental qw(declared_refs refaliasing signatures);
 
-use Carp;
 use Path::Tiny;
 
 my \%state = path('.')->visit(
