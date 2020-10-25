@@ -1,0 +1,108 @@
+#!/usr/bin/env perl
+
+# download latest available Bing photo of the day
+
+use v5.28;
+use strict;
+use warnings;
+use autodie;
+use utf8;
+use open ':std', ':encoding(UTF-8)';
+use experimental qw(declared_refs refaliasing signatures);
+
+use Carp;
+use English qw(-no_match_vars);
+
+use JSON::PP;
+use LWP::Simple;
+use Path::Tiny;
+use YAML::Tiny ();
+
+use constant {
+    'ARCHIVE_PATH' => 'HPImageArchive.aspx',
+    'BASE_URL'     => 'http://www.bing.com',
+    'OUTPUT_DIR'   => path(qw(~ pictures bing)),
+    'MARKETS'      => {
+        'de-DE' => undef,
+        'en-AU' => undef,
+        'en-CA' => undef,
+        'en-IN' => undef,
+        'en-NZ' => undef,
+        'en-UK' => undef,
+        'en-US' => undef,
+        'es-ES' => undef,
+        'fr-FR' => undef,
+        'ja-JP' => undef,
+        'zh-CN' => undef,
+    },
+    'PARAM_FORMAT' => 'format=js',
+    'PARAM_SKIP'   => 'idx=',
+    'PARAM_LIMIT'  => 'n=',
+    'PARAM_MARKET' => 'mkt=',
+};
+
+my $json = JSON::PP->new;
+$json->boolean_values(0, 1);
+$json->utf8(1);
+
+foreach my $market (sort keys MARKETS()->%*) {
+    for (my ($skip, $limit) = (0, 5); $skip <= 10; $skip += $limit) {
+        say 'Skip: ', $skip;
+        my $info = _fetch_info($market, $limit, $skip);
+
+        _fetch_images($market, $info->{'images'}->@*);
+    }
+}
+
+sub _fetch_info ($market, $limit, $skip) {
+    my $params = '?' . join ( ## no tidy
+        '&', PARAM_FORMAT(),
+        "${\PARAM_MARKET}${market}",
+        "${\PARAM_LIMIT}${limit}",
+        "${\PARAM_SKIP}${skip}",
+    );
+
+    my $archive_url = join ('/', BASE_URL(), ARCHIVE_PATH()) . $params;
+    say 'Archive url: ', $archive_url;
+
+    my $payload = get($archive_url)
+        or croak("Failed to retrieve $archive_url: $! $@");
+
+    return $json->decode($payload);
+}
+
+sub _fetch_images ($market, @descriptors) {
+    foreach my $descriptor (@descriptors) {
+        my $dir = OUTPUT_DIR()->child($market);
+        $dir->mkpath;
+        my $title        = $descriptor->{'copyright'} =~ s{\s+[(] © .* [)]}{}xmsgr || $descriptor->{'title'};
+        my $name         = "[$descriptor->{'startdate'}] $title";
+        my $jpg_filename = $dir->child($name . '.jpg');
+        my $yml_filename = $dir->child($name . '.yml');
+        $jpg_filename->exists
+            and next;
+
+        my $image_url = BASE_URL() . $descriptor->{'url'};
+        say 'Fetching: ', $image_url;
+        say 'To:       ', $jpg_filename;
+        $yml_filename->spew(YAML::Tiny::Dump($descriptor));
+
+        my $status = getstore($image_url, $jpg_filename->stringify);
+        if ($status == 200) {
+            say 'HTTP Response OK';
+            my $size = -s $jpg_filename;
+            if ($size > 0) {
+                say "Retrieved $size bytes.";
+            } elsif ($size == 0) {
+                say 'Seems we have retrieved a zero-byte image';
+            }
+        } else {
+            say "HTTP Response: $status";
+        }
+        sleep 1;
+    }
+
+    return;
+}
+
+__END__

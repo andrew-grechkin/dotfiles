@@ -1,0 +1,64 @@
+#!/usr/bin/env perl
+
+use v5.28;
+use strict;
+use warnings;
+use autodie qw(:all);
+use utf8;
+use experimental qw(declared_refs refaliasing signatures);
+
+use Digest::SHA qw(sha256_hex);
+use Path::Tiny;
+
+my \%state = path('.')->visit(
+    sub {
+        my ($path, $state) = @_;
+        $path->is_file
+            and push ($state->{'files'}->@*, $path);
+    },
+    {recurse => 1},
+);
+
+$state{'files'}
+    or return;
+
+my %by_size;
+foreach my $path ($state{'files'}->@*) {
+    my $stat = $path->stat;
+    push ($by_size{$stat->size}->@*, [$path, $stat]);
+}
+undef %state;
+
+my %by_checksum;
+foreach my $size (keys %by_size) {
+    my \@paths = $by_size{$size};
+    @paths > 1
+        or next;
+
+    push ($by_checksum{sha256_hex($_->[0]->slurp_raw)}->@*, $_) foreach @paths;
+}
+undef %by_size;
+
+foreach my $cs (keys %by_checksum) {
+    my \@paths = $by_checksum{$cs};
+
+    @paths > 1
+        or next;
+
+    @paths = sort {$a->[1]->mtime <=> $b->[1]->mtime || $a->[0] cmp $b->[0]} @paths;
+
+    my $main_path = shift @paths;
+    foreach my $path (@paths) {
+        $main_path->[1]->dev == $path->[1]->dev && $main_path->[1]->ino == $path->[1]->ino and do {
+
+            # say 'Already linked: ', join (' ', $main_path->[0], $path->[0]);
+            next;
+        };
+
+        say 'Files are equal: ', join (' ', $main_path->[0], $path->[0]);
+        $path->[0]->remove;
+        link ($main_path->[0], $path->[0]);
+    }
+}
+
+__END__
