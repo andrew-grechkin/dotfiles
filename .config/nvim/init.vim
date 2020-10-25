@@ -299,7 +299,7 @@ set laststatus=2                                                               "
 
 " => Colors and Fonts -------------------------------------------------------------------------------------------- {{{1
 
-if exists('+termguicolors')
+if has('nvim') && exists('+termguicolors')
 	set termguicolors
 endif
 
@@ -508,7 +508,9 @@ augroup END
 
 augroup SettingsByBufType
 	autocmd!
+if has('nvim')
 	autocmd TermEnter * setlocal scrolloff=0
+endif
 	autocmd BufEnter * if (winnr('$') == 1 && (&buftype ==# 'quickfix' || &buftype ==# 'loclist')) | bd | endif
 	autocmd BufEnter * if (
 			\ &buftype ==# 'nofile' ||
