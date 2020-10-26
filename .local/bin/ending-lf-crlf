@@ -1,0 +1,17 @@
+#!/usr/bin/env perl
+# man: PerlIO
+
+use v5.28;
+use autodie;
+use strict;
+use utf8;
+use warnings;
+
+binmode STDOUT, ':unix:crlf';
+
+while (defined (my $line = <>)) {
+    chomp ($line);
+    say $line;
+}
+
+__END__
