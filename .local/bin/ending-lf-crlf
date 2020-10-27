@@ -3,6 +3,7 @@
 
 use v5.28;
 use autodie;
+use open ':std', 'IO' => ':locale';
 use strict;
 use utf8;
 use warnings;
@@ -11,6 +12,7 @@ binmode (STDOUT, ':crlf');
 
 while (defined (my $line = <>)) {
     chomp ($line);
+} continue {
     say $line;
 }
 

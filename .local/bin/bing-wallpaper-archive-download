@@ -4,7 +4,7 @@
 
 use v5.28;
 use autodie;
-use open ':std', ':encoding(utf-8-strict)';
+use open ':std', 'IO' => ':locale';
 use strict;
 use utf8;
 use warnings;
@@ -85,7 +85,7 @@ sub _fetch_images ($market, @descriptors) {
         my $image_url = BASE_URL() . $descriptor->{'url'};
         say 'Fetching: ', $image_url;
         say 'To:       ', $jpg_filename;
-        $yml_filename->spew(YAML::Tiny::Dump($descriptor));
+        $yml_filename->spew_utf8(YAML::Tiny::Dump($descriptor));
 
         my $status = getstore($image_url, $jpg_filename->stringify);
         if ($status == 200) {
