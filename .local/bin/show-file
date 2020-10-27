@@ -43,6 +43,9 @@ function body() {
 		|| true
 		exit 0;
 	elif echo "$TYPE" | grep 'image/' &>/dev/null; then
+		FILE=$(basename "$1")
+		YAML_FILE="${FILE%%.jpg}.yml"
+		[[ -r "$YAML_FILE" ]] && cat "$YAML_FILE"
 		COLS=$(tput cols)
 		COLS=${COLS:-120}
 		{ chafa --clear -c 240 -s "${COLS}x${COLS}" "$1"; } \

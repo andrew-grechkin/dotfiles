@@ -3,11 +3,11 @@
 # download latest available Bing photo of the day
 
 use v5.28;
-use strict;
-use warnings;
 use autodie;
+use open ':std', ':encoding(utf-8-strict)';
+use strict;
 use utf8;
-use open ':std', ':encoding(UTF-8)';
+use warnings;
 use experimental qw(declared_refs refaliasing signatures);
 
 use Carp;

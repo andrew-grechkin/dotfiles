@@ -8,7 +8,7 @@ use strict;
 use utf8;
 use warnings;
 
-binmode STDIN, ':unix:crlf';
+binmode (STDIN, ':crlf');
 
 while (defined (my $line = <>)) {
     chomp ($line);

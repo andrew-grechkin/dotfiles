@@ -280,7 +280,7 @@ fileviewer *.htm,*.html
 
 " => File associations: Images ----------------------------------------------------------------------------------- {{{1
 
-filextype *.bmp,*.gif,*.jpg,*.jpeg,*.png,*.xpm,*.svg
+filextype *.bmp,*.gif,*.jp2,*.jpg,*.jpeg,*.png,*.xpm,*.svg
 	\ {Open with xdg-open}
 	\ xdg-open %c %i &,
 	\ {View in vimiv}
@@ -289,7 +289,7 @@ filextype *.bmp,*.gif,*.jpg,*.jpeg,*.png,*.xpm,*.svg
 	\ sxiv,
 	\ {View in gpicview}
 	\ gpicview,
-fileviewer *.bmp,*.gif,*.jpg,*.jpeg,*.png,*.xpm,*.svg
+fileviewer *.bmp,*.gif,*.jp2,*.jpg,*.jpeg,*.png,*.xpm,*.svg
 	\ chafa --clear -c 240 -s %pwx%ph %c,
 	\ mediainfo,
 	\ identify -verbose,
@@ -624,7 +624,7 @@ set classify+=' ::/^copying|license$/::, ::.git/,,*.git/::'
 set classify+=' ::*.fb2,,*.epub,,*.djvu::, ::*.pdf::'
 set classify+=' ::*.doc,,*.docx::, ::*.xls,,*.xls[mx]::, ::*.ppt,,*.pptx::'
 set classify+=' ::*.7z,,*.ace,,*.arj,,*.bz2,,*.cpio,,*.dz,,*.gz,,*.jar,,*.lzh,,*.lzma,,*.rar,,*.rz,,*.tar,,*.taz,,*.tb2,,*.tbz,,*.tbz2,,*.tgz,,*.tlz,,*.trz,,*.txz,,*.tz,,*.tz2,,*.zst,,*.tzst,,*.xz,,*.z,,*.zip,,*.zoo::, ::*.deb::, ::*.rpm::'
-set classify+=' ::*.bmp,,*.gif,,*.jpeg,,*.jpg,,*.ico,,*.png,,*.ppm,,*.tga,,*.tif,,*.tiff,,*.xbm,,*.xcf,,*.xpm,,*.xspf,,*.xwd,,*.svg,,*.svgz::'
+set classify+=' ::*.bmp,,*.gif,,*.jp2,,*.jpeg,,*.jpg,,*.ico,,*.png,,*.ppm,,*.tga,,*.tif,,*.tiff,,*.xbm,,*.xcf,,*.xpm,,*.xspf,,*.xwd,,*.svg,,*.svgz::'
 set classify+=' ::*.aac,,*.anx,,*.asf,,*.au,,*.axa,,*.flac,,*.m2a,,*.m4a,,*.mid,,*.midi,,*.mp3,,*.mpc,,*.oga,,*.ogg,,*.ogx,,*.ra,,*.ram,,*.rm,,*.spx,,*.wav,,*.wma,,*.ac3::'
 set classify+=' ::*.avi,,*.axv,,*.divx,,*.m2v,,*.m4p,,*.m4v,,.mka,,*.mkv,,*.mov,,*.mp4,,*.lrv,,*.flv::'
 set classify+=' ::*.mp4v,,*.mpeg,,*.mpg,,*.nuv,,*.ogv,,*.pbm,,*.pgm,,*.qt,,*.vob,,*.wmv,,*.xvid::'
