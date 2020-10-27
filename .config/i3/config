@@ -30,6 +30,7 @@ bindsym $mod+Ctrl+b       restart
 
 bindsym $mod+Shift+q      kill
 bindsym $mod+F4           kill
+bindsym Mod1+F4           kill
 
 # => focus the parent / child container -------------------------------------------------------------------------- {{{1
 
@@ -136,6 +137,8 @@ workspace $ws1            output $left_mon
 workspace $ws2            output $left_mon
 workspace $ws3            output $left_mon
 workspace $ws4            output $left_mon
+workspace $ws5            output $left_mon
+workspace $ws6            output $left_mon
 workspace $ws7            output $center_mon
 workspace $ws8            output $center_mon
 workspace $ws9            output $center_mon
