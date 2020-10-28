@@ -1,19 +1,24 @@
 #!/usr/bin/env perl
 
 use v5.28;
-use strict;
-use warnings;
 use autodie;
+use open ':std', 'IO' => ':locale';
+use strict;
 use utf8;
+use warnings;
 use experimental qw(declared_refs refaliasing signatures);
 
+use Encode qw(decode);
 use Path::Tiny;
 
 my \%state = path('.')->visit(
     sub {
         my ($path, $state) = @_;
         $path->is_file
-            and push ($state->{'files'}->@*, $path);
+            or return;
+
+        $path = path(decode('UTF-8', $path->stringify, Encode::FB_CROAK));
+        push ($state->{'files'}->@*, $path);
     },
     {recurse => 1},
 );
@@ -32,7 +37,10 @@ foreach my $path ($state{'files'}->@*) {
         or next;
 
     my $new_dir = $parent->child("$year-$month");
-    $new_dir->mkpath;
+    $new_dir->exists or do {
+        say 'Creating directory: ', $new_dir;
+        $new_dir->mkpath;
+    };
 
     my $new_path = $new_dir->child($name);
     $path->move($new_path);

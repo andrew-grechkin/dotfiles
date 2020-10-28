@@ -1,64 +1,226 @@
 #!/usr/bin/env perl
 
 use v5.28;
-use strict;
-use warnings;
 use autodie;
+use open ':std', 'IO' => ':locale';
+use strict;
 use utf8;
+use warnings;
 use experimental qw(declared_refs refaliasing signatures);
 
+use Carp;
+use Digest::MD5 qw(md5_hex);
 use Digest::SHA qw(sha256_hex);
+use Encode qw(decode);
+use File::Map qw(map_file);
+use List::Util qw(all);
 use Path::Tiny;
 
-my \%state = path('.')->visit(
-    sub {
-        my ($path, $state) = @_;
-        $path->is_file
-            and push ($state->{'files'}->@*, $path);
-    },
-    {recurse => 1},
+use Getopt::Long qw(:config auto_version);
+use Pod::Usage;
+
+use constant {
+    'DEFAULT_MIN_SIZE'      => 1_024,
+    'PARTIAL_CHECKSUM_SIZE' => 1 * 1_024 * 1_024,
+};
+
+our $VERSION = 1;
+my %options = (
+    'MIN_SIZE' => DEFAULT_MIN_SIZE(),
+    'VERBOSE'  => 0,
+    'RECURSE'  => 1,
 );
 
-$state{'files'}
-    or return;
+GetOptions(
+    'min|m=i'    => \$options{'MIN_SIZE'},
+    'recurse|r!' => \$options{'RECURSE'},
+    'verbose|v'  => \$options{'VERBOSE'},
+    'help'       => \(my $help),
+) or die ('Unable to process command line options');
 
-my %by_size;
-foreach my $path ($state{'files'}->@*) {
-    my $stat = $path->stat;
-    push ($by_size{$stat->size}->@*, [$path, $stat]);
+if ($help) {
+    pod2usage(
+        -verbose => 99,
+        exitval  => 0,
+    );
 }
-undef %state;
 
-my %by_checksum;
-foreach my $size (keys %by_size) {
-    my \@paths = $by_size{$size};
-    @paths > 1
-        or next;
+@ARGV
+    or push (@ARGV, '.');
 
-    push ($by_checksum{sha256_hex($_->[0]->slurp_raw)}->@*, $_) foreach @paths;
+say {*STDERR} 'Gathering files';
+my %by_dev_size;
+my $files_amount = 0;
+foreach my $root (@ARGV) {
+    path($root)->visit(
+        sub {
+            my ($path) = @_;
+            $path->is_file
+                or return;
+
+            my $stat = $path->stat;
+            _is_valid_file($path, $stat)
+                or return;
+
+            # explicitly use utf-8 encoding (fix encoding of path returned by visit)
+            $path = path(decode('UTF-8', $path->stringify, Encode::FB_CROAK));
+
+            push ($by_dev_size{sprintf ('d(%d)s(%d)', $stat->dev, $stat->size)}->@*, [$path, $stat]);
+            ++$files_amount;
+        },
+        {
+            'recurse'         => $options{'RECURSE'},
+            'follow_symlinks' => 1,
+        },
+    );
 }
-undef %by_size;
+say {*STDERR} 'Gathering files finished: ', $files_amount;
 
-foreach my $cs (keys %by_checksum) {
-    my \@paths = $by_checksum{$cs};
+my $counter = 0;
+my $amount  = scalar (%by_dev_size);
+my @order   = sort { ## no critic [BuiltinFunctions::RequireSimpleSortBlock]
+    my ($stat_a, $stat_b) = ($by_dev_size{$a}->[0][1], $by_dev_size{$b}->[0][1]);
+    $stat_a->dev <=> $stat_b->dev || $stat_a->size <=> $stat_b->size
+} keys %by_dev_size;
+foreach my $key (@order) {
+    $counter++;
+    my \@paths = $by_dev_size{$key};
+    my $size = $paths[0]->[1]->size;
 
-    @paths > 1
-        or next;
+    $options{'VERBOSE'} || @paths > 1
+        and say {*STDERR}
+        sprintf ('Processing bucket  (%d/%d/%3d) %s', $counter, scalar (%by_dev_size), scalar (@paths), $key);
+    my $grouping = {%by_dev_size{$key}};
+    if (PARTIAL_CHECKSUM_SIZE() < $size) {
+        $grouping = _regroup(
+            $grouping,
+            'name'     => 'p',
+            'counter'  => $counter,
+            'amount'   => $amount,
+            'callback' => sub($path) {
+                map_file(my $map, $path->[0]);
+                return md5_hex(substr ($map, 0, PARTIAL_CHECKSUM_SIZE()));
+            },
+        );
+    }
+    $grouping = _regroup(
+        $grouping,
+        'name'     => 'c',
+        'counter'  => $counter,
+        'amount'   => $amount,
+        'callback' => sub($path) {
+            map_file(my $map, $path->[0]);
+            return sha256_hex($map);
+        },
+    );
+
+    foreach my $key (keys $grouping->%*) {
+        $options{'VERBOSE'}
+            and say {*STDERR}
+            sprintf ('Checksum subbucket (%d/%d/%3d) %s', $counter, scalar (%by_dev_size), scalar (@paths), $key);
+        _process_identical_checksums($key, $grouping->{$key}->@*);
+    }
+}
+
+sub _is_valid_file ($path, $stat) {
+    $stat->size < $options{'MIN_SIZE'}
+        and return;
+    return 1;
+}
+
+sub _regroup ($current, %params) {
+    my \%current = $current;
+    my %regrouped;
+    foreach my $key (keys %current) {
+        my \@paths = $current{$key};
+        (@paths < 2 || all {$paths[0]->[1]->ino == $_->[1]->ino} @paths) and do {
+            $options{'VERBOSE'}
+                and say {*STDERR}
+                sprintf ('Skipping bucket:  (%d/%d/%3d) %s', $params{'counter'}, $params{'amount'}, scalar (@paths),
+                $key);
+            next;
+        };
+
+        foreach my $path (@paths) {
+            my $value = $params{'callback'}->($path);
+            push ($regrouped{"${key}$params{name}($value)"}->@*, $path);
+        }
+    }
+
+    return \%regrouped;
+}
+
+sub _process_identical_checksums ($checksum, @paths) {
+    @paths > 1 or do {
+        say {*STDERR} sprintf ("\tSkipping checksum: %s", $checksum) if $options{'VERBOSE'};
+        return;
+    };
 
     @paths = sort {$a->[1]->mtime <=> $b->[1]->mtime || $a->[0] cmp $b->[0]} @paths;
 
     my $main_path = shift @paths;
     foreach my $path (@paths) {
-        $main_path->[1]->dev == $path->[1]->dev && $main_path->[1]->ino == $path->[1]->ino and do {
-
-            # say 'Already linked: ', join (' ', $main_path->[0], $path->[0]);
+        $main_path->[1]->ino == $path->[1]->ino and do {
+            say {*STDERR} 'Already linked: ', join (' ', $main_path->[0], $path->[0]) if $options{'VERBOSE'};
             next;
         };
-
-        say 'Files are equal: ', join (' ', $main_path->[0], $path->[0]);
-        $path->[0]->remove;
-        link ($main_path->[0], $path->[0]);
+        _do_hardlink($main_path->[0], $path->[0]);
     }
+
+    return;
+}
+
+sub _do_hardlink ($path, $new_path) {
+    my $message = join (' <- ', $path, $new_path);
+    say "\tHardlinking: $message";
+
+    my $backup = path($new_path . '.hardlinker');
+    my $succeed;
+    eval {
+        $new_path->move($backup);
+        $succeed = link ($path, $new_path);
+        return $succeed;
+    } or do {
+        chomp (my $error = $@ || 'zombie error');
+        croak("Unable to hardlink files $message: $error");
+    };
+
+    $succeed
+        and $backup->remove;
+
+    return;
 }
 
 __END__
+
+=head1 NAME
+
+hardlinker
+
+=head1 DESCRIPTION
+
+Detect and hardlink all identical files in given folders.
+
+=head1 SYNOPSIS
+
+hardlinker [options] [dir ...]
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--no-recurse>
+
+Do not process any subfolders
+
+=item B<--verbose>
+
+Increase verbosity
+
+=item B<--min>
+
+Minimum size of file to process (default: 1024 bytes)
+
+=back
+
+=cut
