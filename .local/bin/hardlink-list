@@ -1,0 +1,75 @@
+#!/usr/bin/env perl
+
+use v5.28;
+use autodie;
+use open ':std', 'IO' => ':locale';
+use strict;
+use utf8;
+use warnings;
+use experimental qw(declared_refs refaliasing signatures);
+
+use Encode qw(decode);
+use Path::Tiny;
+use JSON::PP;
+use YAML::Tiny ();
+
+use Getopt::Long qw(:config auto_version);
+use Pod::Usage;
+
+our $VERSION = 1;
+my %options = (
+    'OUTPUT' => '',
+);
+
+GetOptions(
+    'output|o=s' => \$options{'OUTPUT'},
+    'help'       => \(my $help),
+) or die ('Unable to process command line options');
+
+if ($help) {
+    pod2usage(
+        -verbose => 99,
+        exitval  => 0,
+    );
+}
+
+@ARGV
+    or push (@ARGV, '.');
+
+my %files;
+my $files_amount = 0;
+foreach my $root (@ARGV) {
+    path($root)->visit(
+        sub {
+            my ($path) = @_;
+            $path->is_file && !-l $path
+                or return;
+
+            my $stat = $path->stat;
+            $path = decode('UTF-8', $path->stringify, Encode::FB_CROAK);
+
+            push ($files{sprintf ('d(%d)i(%d)', $stat->dev, $stat->ino)}->@*, $path);
+            ++$files_amount;
+        },
+        {
+            'recurse'         => 1,
+            'follow_symlinks' => 0,
+        },
+    );
+}
+
+my @result = sort {scalar $a->@* <=> scalar $b->@*} grep {$_->@* > 1} values %files;
+
+if ($options{'OUTPUT'} eq 'json') {
+    my $json = JSON::PP->new;
+    $json->utf8(1);
+    print $json->encode(\@result);
+} elsif ($options{'OUTPUT'} eq 'yaml') {
+    print YAML::Tiny::Dump(\@result);
+} else {
+    foreach my $paths (@result) {
+        say join (';', map {"'$_'"} $paths->@*);
+    }
+}
+
+__END__

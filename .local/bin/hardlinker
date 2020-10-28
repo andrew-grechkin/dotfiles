@@ -55,7 +55,7 @@ foreach my $root (@ARGV) {
     path($root)->visit(
         sub {
             my ($path) = @_;
-            $path->is_file
+            $path->is_file && !-l $path
                 or return;
 
             my $stat = $path->stat;
@@ -70,7 +70,7 @@ foreach my $root (@ARGV) {
         },
         {
             'recurse'         => $options{'RECURSE'},
-            'follow_symlinks' => 1,
+            'follow_symlinks' => 0,
         },
     );
 }

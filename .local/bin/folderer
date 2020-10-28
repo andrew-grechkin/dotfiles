@@ -14,13 +14,16 @@ use Path::Tiny;
 my \%state = path('.')->visit(
     sub {
         my ($path, $state) = @_;
-        $path->is_file
+        $path->is_file && !-l $path
             or return;
 
         $path = path(decode('UTF-8', $path->stringify, Encode::FB_CROAK));
         push ($state->{'files'}->@*, $path);
     },
-    {recurse => 1},
+    {
+        'recurse'         => 1,
+        'follow_symlinks' => 0,
+    },
 );
 
 $state{'files'}
