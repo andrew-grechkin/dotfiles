@@ -59,6 +59,10 @@ foreach my $root (@ARGV) {
 }
 
 my @result = sort {scalar $a->@* <=> scalar $b->@*} grep {$_->@* > 1} values %files;
+foreach my $group (@result) {
+    my \@paths= $group;
+    @paths = sort @paths;
+}
 
 if ($options{'OUTPUT'} eq 'json') {
     my $json = JSON::PP->new;

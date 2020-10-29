@@ -3,7 +3,7 @@ if plugin#is_loaded('vim-grepper')
 	silent! let g:grepper.highlight   = 1
 	silent! let g:grepper.jump        = 0
 	silent! let g:grepper.quickfix    = 1
-	silent! let g:grepper.dir         = 'cwd'
+	silent! let g:grepper.dir         = 'repo'
 	silent! let g:grepper.repo        = ['.git', '.hg', '.svn', '.cache']
 	silent! let g:grepper.stop        = 255
 	silent! let g:grepper.tools       = ['git', 'rg', 'ag', 'ack', 'ack-grep', 'grep']
@@ -11,8 +11,8 @@ if plugin#is_loaded('vim-grepper')
 	silent! let g:grepper.rg.grepprg .= ' --hidden --smart-case'
 
 	" Start Grepper prompt
-	nnoremap <leader>g         :Grepper -dir cwd<CR>
-	nnoremap <leader><leader>g :Grepper -dir repo<CR>
+	nnoremap <leader>g         :Grepper -dir repo<CR>
+	nnoremap <leader><leader>g :Grepper -dir cwd<CR>
 	" Search for the current word
 	nnoremap <leader>*         :Grepper -cword -noprompt<CR>
 	" Search for the current selection or {motion} (see text-objects)

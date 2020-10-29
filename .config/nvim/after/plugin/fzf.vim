@@ -3,6 +3,6 @@
 command! FilesCurrentDir  execute 'Files' getcwd()
 command! FilesProject     execute 'Files' dir#git_root()
 
-noremap <C-p>             :FilesCurrentDir<CR>
-noremap <C-t>             :FilesProject<CR>
+noremap <C-p>             :FilesProject<CR>
+noremap <C-t>             :FilesCurrentDir<CR>
 noremap <leader><leader>b :Buffers<CR>
