@@ -31,6 +31,7 @@ antigen bundle zsh-users/zsh-syntax-highlighting                               #
 # => Default repo bundles load last ------------------------------------------------------------------------------ {{{1
 
 antigen bundle aliases
+antigen bundle arch
 antigen bundle autosuggestions-key-bindings
 antigen bundle dircycle
 
