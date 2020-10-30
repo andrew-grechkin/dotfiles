@@ -12,30 +12,36 @@ use Carp;
 use Digest::MD5 qw(md5_hex);
 use Digest::SHA qw(sha256_hex);
 use Encode qw(decode);
-use File::Map qw(map_file);
+use Getopt::Long qw(:config auto_version bundling);
 use List::Util qw(all);
+use Pod::Usage;
+
+use File::Map qw(map_file);
 use Path::Tiny;
 
-use Getopt::Long qw(:config auto_version);
-use Pod::Usage;
+our $VERSION = 2;
 
 use constant {
     'DEFAULT_MIN_SIZE'      => 1_024,
     'PARTIAL_CHECKSUM_SIZE' => 1 * 1_024 * 1_024,
+    'FS_ENCODING'           => 'UTF-8',
 };
 
-our $VERSION = 1;
 my %options = (
+    'APPLY'    => 0,
+    'FOLLOW'   => 0,
     'MIN_SIZE' => DEFAULT_MIN_SIZE(),
+    'RECURSE'  => 0,
     'VERBOSE'  => 0,
-    'RECURSE'  => 1,
 );
 
 GetOptions(
-    'min|m=i'    => \$options{'MIN_SIZE'},
-    'recurse|r!' => \$options{'RECURSE'},
-    'verbose|v'  => \$options{'VERBOSE'},
+    'apply|a'    => \$options{'APPLY'},
     'help'       => \(my $help),
+    'min|m=i'    => \$options{'MIN_SIZE'},
+    'follow|f'   => \$options{'FOLLOW'},
+    'recurse|r'  => \$options{'RECURSE'},
+    'verbose|v+' => \$options{'VERBOSE'},
 ) or die ('Unable to process command line options');
 
 if ($help) {
@@ -48,13 +54,18 @@ if ($help) {
 @ARGV
     or push (@ARGV, '.');
 
-say {*STDERR} 'Gathering files';
-my %by_dev_size;
+### Gather files
+
+$options{'VERBOSE'} > 1
+    and say {*STDERR} 'Gathering files';
+
+my %by_dev_ino;
 my $files_amount = 0;
 foreach my $root (@ARGV) {
     path($root)->visit(
         sub {
             my ($path) = @_;
+
             $path->is_file && !-l $path
                 or return;
 
@@ -62,63 +73,90 @@ foreach my $root (@ARGV) {
             _is_valid_file($path, $stat)
                 or return;
 
-            # explicitly use utf-8 encoding (fix encoding of path returned by visit)
-            $path = path(decode('UTF-8', $path->stringify, Encode::FB_CROAK));
-
-            push ($by_dev_size{sprintf ('d(%d)s(%d)', $stat->dev, $stat->size)}->@*, [$path, $stat]);
             ++$files_amount;
+            my \%it = $by_dev_ino{sprintf ('d(%d)i(%d)', $stat->dev, $stat->ino)}[0] //= {'stat' => $stat};
+            push ($it{'paths'}->@*, decode('UTF-8', $path->stringify, Encode::FB_CROAK));
         },
         {
             'recurse'         => $options{'RECURSE'},
-            'follow_symlinks' => 0,
+            'follow_symlinks' => $options{'FOLLOW'},
         },
     );
 }
-say {*STDERR} 'Gathering files finished: ', $files_amount;
+
+$options{'VERBOSE'} > 1
+    and say {*STDERR} 'Gathering files finished: ', $files_amount;
+
+### Regroup files by dev + size
+
+my $by_dev_size = _regroup(
+    \%by_dev_ino,
+    'new_key' => sub ($, $value, $) {
+        return sprintf ('d(%d)s(%d)', $value->{'stat'}->dev, $value->{'stat'}->size);
+    },
+);
+
+### Prepare order by dev and file size
+
+my @order = sort { ## no critic [BuiltinFunctions::RequireSimpleSortBlock]
+    my ($stat_a, $stat_b) = ($by_dev_size->{$a}->[0]{'stat'}, $by_dev_size->{$b}->[0]{'stat'});
+    $stat_a->dev <=> $stat_b->dev || $stat_a->size <=> $stat_b->size
+} keys $by_dev_size->%*;
+
+### Process every size group
 
 my $counter = 0;
-my $amount  = scalar (%by_dev_size);
-my @order   = sort { ## no critic [BuiltinFunctions::RequireSimpleSortBlock]
-    my ($stat_a, $stat_b) = ($by_dev_size{$a}->[0][1], $by_dev_size{$b}->[0][1]);
-    $stat_a->dev <=> $stat_b->dev || $stat_a->size <=> $stat_b->size
-} keys %by_dev_size;
+my $amount  = scalar @order;
 foreach my $key (@order) {
     $counter++;
-    my \@paths = $by_dev_size{$key};
-    my $size = $paths[0]->[1]->size;
+    my \@items = $by_dev_size->{$key};
+    my $size = $items[0]->{'stat'}->size;
 
-    $options{'VERBOSE'} && @paths > 1
-        and say {*STDERR}
-        sprintf ('Processing bucket  (%d/%d/%3d) %s', $counter, scalar (%by_dev_size), scalar (@paths), $key);
-    my $grouping = {%by_dev_size{$key}};
+    $options{'VERBOSE'} > 2 || ($options{'VERBOSE'} && @items > 1)
+        and say {*STDERR} sprintf ('Processing bucket  (%d/%d/%d) %s', $counter, $amount, scalar @items, $key);
+
+    my $group = {$by_dev_size->%{$key}};
     if (PARTIAL_CHECKSUM_SIZE() < $size) {
-        $grouping = _regroup(
-            $grouping,
-            'name'     => 'p',
-            'counter'  => $counter,
-            'amount'   => $amount,
-            'callback' => sub($path) {
-                map_file(my $map, $path->[0]);
-                return md5_hex(substr ($map, 0, PARTIAL_CHECKSUM_SIZE()));
+        $group = _regroup(
+            $group,
+            'state' => {
+                'counter' => $counter,
+                'amount'  => $amount,
+            },
+            'is_valid' => sub ($, $value, $) {
+                $value->@* > 1;
+            },
+            'new_key' => sub ($key, $value, $) {
+                $value->{'partial_checksum'} or do {
+                    map_file(my $map, $value->{'paths'}[0]);
+                    $value->{'partial_checksum'} = md5_hex(substr ($map, 0, PARTIAL_CHECKSUM_SIZE()));
+                };
+                return sprintf ('%sp(%s)', $key, $value->{'partial_checksum'});
             },
         );
     }
-    $grouping = _regroup(
-        $grouping,
-        'name'     => 'c',
-        'counter'  => $counter,
-        'amount'   => $amount,
-        'callback' => sub($path) {
-            map_file(my $map, $path->[0]);
-            return sha256_hex($map);
+    $group = _regroup(
+        $group,
+        'state' => {
+            'counter' => $counter,
+            'amount'  => $amount,
+        },
+        'is_valid' => sub ($, $value, $) {
+            $value->@* > 1;
+        },
+        'new_key' => sub ($key, $value, $s) {
+            $value->{'checksum'} or do {
+                map_file(my $map, $value->{'paths'}[0]);
+                $value->{'checksum'} = sha256_hex($map);
+            };
+            return sprintf ('%sc(%s)', $key, $value->{'checksum'});
         },
     );
 
-    foreach my $key (keys $grouping->%*) {
-        $options{'VERBOSE'}
-            and say {*STDERR}
-            sprintf ('Checksum subbucket (%d/%d/%3d) %s', $counter, scalar (%by_dev_size), scalar (@paths), $key);
-        _process_identical_checksums($key, $grouping->{$key}->@*);
+    foreach my $key (keys $group->%*) {
+        $options{'VERBOSE'} > 1
+            and say {*STDERR} sprintf ('Checksum subbucket (%d/%d/%d) %s', $counter, $amount, scalar @items, $key);
+        _process_identical_checksums($key, $group->{$key}->@*);
     }
 }
 
@@ -129,42 +167,37 @@ sub _is_valid_file ($path, $stat) {
 }
 
 sub _regroup ($current, %params) {
-    my \%current = $current;
-    my %regrouped;
-    foreach my $key (keys %current) {
-        my \@paths = $current{$key};
-        (@paths < 2 || all {$paths[0]->[1]->ino == $_->[1]->ino} @paths) and do {
-            $options{'VERBOSE'}
-                and say {*STDERR}
-                sprintf ('Skipping bucket:  (%d/%d/%3d) %s', $params{'counter'}, $params{'amount'}, scalar (@paths),
-                $key);
-            next;
-        };
+    my $state = $params{'state'} // {};
+    my %result;
+    foreach my $key (keys $current->%*) {
+        my $value = $current->{$key};
+        $params{'is_valid'} && !$params{'is_valid'}->($key, $value, $state)
+            and next;
 
-        foreach my $path (@paths) {
-            my $value = $params{'callback'}->($path);
-            push ($regrouped{"${key}$params{name}($value)"}->@*, $path);
+        foreach my $file ($value->@*) {
+            my $new_key = $params{'new_key'}->($key, $file, $state);
+            push ($result{$new_key}->@*, $file);
         }
     }
 
-    return \%regrouped;
+    return \%result;
 }
 
-sub _process_identical_checksums ($checksum, @paths) {
-    @paths > 1 or do {
-        say {*STDERR} sprintf ("\tSkipping checksum: %s", $checksum) if $options{'VERBOSE'};
+sub _process_identical_checksums ($checksum, @inodes) {
+    @inodes > 1 or do {
+        say {*STDERR} ('Skipping subbucket ', $checksum) if $options{'VERBOSE'} > 1;
         return;
     };
 
-    @paths = sort {$a->[1]->mtime <=> $b->[1]->mtime || $a->[0] cmp $b->[0]} @paths;
+    @inodes = sort { ## no critic [BuiltinFunctions::ProhibitReverseSortBlock]
+        $a->{'stat'}->mtime <=> $b->{'stat'}->mtime
+            || $b->{'paths'}->@* <=> $a->{'paths'}->@*
+    } @inodes;
 
-    my $main_path = shift @paths;
-    foreach my $path (@paths) {
-        $main_path->[1]->ino == $path->[1]->ino and do {
-            say {*STDERR} 'Already linked: ', join (' ', $main_path->[0], $path->[0]) if $options{'VERBOSE'};
-            next;
-        };
-        _do_hardlink($main_path->[0], $path->[0]);
+    my $main_inode = shift @inodes;
+    my $main_path  = $main_inode->{'paths'}[0];
+    foreach my $inode (@inodes) {
+        _do_hardlink($main_path, path($_)) foreach $inode->{'paths'}->@*;
     }
 
     return;
@@ -174,19 +207,21 @@ sub _do_hardlink ($path, $new_path) {
     my $message = join (' <- ', $path, $new_path);
     say 'Hardlinking: ', $message;
 
-    my $backup = path($new_path . '.hardlinker');
-    my $succeed;
-    eval {
-        $new_path->move($backup);
-        $succeed = link ($path, $new_path);
-        return $succeed;
-    } or do {
-        chomp (my $error = $@ || 'zombie error');
-        croak("Unable to hardlink files $message: $error");
-    };
+    if (!$options{'DRY_RUN'}) {
+        my $backup = path($new_path . '.hardlinker');
+        my $succeed;
+        eval {
+            $new_path->move($backup);
+            $succeed = link ($path, $new_path);
+            return $succeed;
+        } or do {
+            chomp (my $error = $@ || 'zombie error');
+            croak("Unable to hardlink files $message: $error");
+        };
 
-    $succeed
-        and $backup->remove;
+        $succeed
+            and $backup->remove;
+    }
 
     return;
 }
@@ -209,9 +244,13 @@ hardlinker [options] [dir ...]
 
 =over 4
 
-=item B<--no-recurse>
+=item B<--apply>
 
-Do not process any subfolders
+Do real changes on file system
+
+=item B<--recurse>
+
+Process subfolders
 
 =item B<--verbose>
 
