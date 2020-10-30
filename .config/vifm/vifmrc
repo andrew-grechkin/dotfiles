@@ -126,6 +126,7 @@ command! diff   vimdiff %f %F
 
 " search
 command! vgrep  vim "+grep %a"
+command! hlinks hardlinks %c %M
 
 " pack
 command! p      tar -cvaf   %c.tzst %f
@@ -139,6 +140,7 @@ command! unp    archive-extract-here %c
 
 " checksum
 command! sha    find %c -type f -print0 | sort -z | xargs --null sha256sum -b > %c.sha256
+
 
 " => File associations ------------------------------------------------------------------------------------------- {{{1
 
@@ -280,7 +282,7 @@ fileviewer *.htm,*.html
 
 " => File associations: Images ----------------------------------------------------------------------------------- {{{1
 
-filextype *.bmp,*.gif,*.jp2,*.jpg,*.jpeg,*.png,*.xpm,*.svg
+filextype *.bmp,*.gif,*.jp2,*.jpg,*.jpeg,*.png,*.xpm,*.svg,*.tif
 	\ {Open with xdg-open}
 	\ xdg-open %c %i &,
 	\ {View in vimiv}
@@ -289,7 +291,7 @@ filextype *.bmp,*.gif,*.jp2,*.jpg,*.jpeg,*.png,*.xpm,*.svg
 	\ sxiv,
 	\ {View in gpicview}
 	\ gpicview,
-fileviewer *.bmp,*.gif,*.jp2,*.jpg,*.jpeg,*.png,*.xpm,*.svg
+fileviewer *.bmp,*.gif,*.jp2,*.jpg,*.jpeg,*.png,*.xpm,*.svg,*.tif
 	\ chafa --clear -c 240 -s %pwx%ph %c,
 	\ mediainfo,
 	\ identify -verbose,

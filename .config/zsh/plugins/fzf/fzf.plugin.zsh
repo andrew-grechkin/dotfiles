@@ -62,6 +62,7 @@ export FZF_FILE_BINDS=(
 	--bind 'ctrl-b:execute((show-dir {} || binwalk {}) | $PAGER > /dev/tty 2>&1)'
 	--bind 'ctrl-t:execute((show-dir {} || sha1sum {}) | $PAGER > /dev/tty 2>&1)'
 	--bind 'ctrl-g:execute((show-dir {} || md5sum {}) | $PAGER > /dev/tty 2>&1)'
+	--bind 'ctrl-alt-d:execute(rm -i {+} < /dev/tty > /dev/tty)+abort'
 )
 export FZF_FILE_PREVIEW=(
 	--preview-window=right:78:hidden
@@ -207,6 +208,11 @@ zle -N fzf-detect-widget
 
 # bind to alt-space
 bindkey '^[ ' fzf-detect-widget
+
+function fzf-hardlinks() {
+	command hardlinks "$@" \
+	| fzf --reverse "${FZF_MULTI_OPTIONS[@]}"
+}
 
 # => completion overrides ---------------------------------------------------------------------------------------- {{{1
 
