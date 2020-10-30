@@ -87,7 +87,7 @@ foreach my $key (@order) {
     my \@paths = $by_dev_size{$key};
     my $size = $paths[0]->[1]->size;
 
-    $options{'VERBOSE'} || @paths > 1
+    $options{'VERBOSE'} && @paths > 1
         and say {*STDERR}
         sprintf ('Processing bucket  (%d/%d/%3d) %s', $counter, scalar (%by_dev_size), scalar (@paths), $key);
     my $grouping = {%by_dev_size{$key}};
@@ -172,7 +172,7 @@ sub _process_identical_checksums ($checksum, @paths) {
 
 sub _do_hardlink ($path, $new_path) {
     my $message = join (' <- ', $path, $new_path);
-    say "\tHardlinking: $message";
+    say 'Hardlinking: ', $message;
 
     my $backup = path($new_path . '.hardlinker');
     my $succeed;

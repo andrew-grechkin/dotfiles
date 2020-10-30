@@ -1,0 +1,58 @@
+#!/usr/bin/env perl
+
+use v5.28;
+use autodie;
+use open ':std', 'IO' => ':locale';
+use strict;
+use utf8;
+use warnings;
+use experimental qw(declared_refs refaliasing signatures);
+
+use Encode qw(decode);
+use Path::Tiny;
+
+our $VERSION = 1;
+my %options = (
+    'VERBOSE' => 1,
+    'DRY_RUN' => 0,
+);
+
+my \%state = path('.')->visit(
+    sub {
+        my ($path, $state) = @_;
+        $path->is_file && !-l $path
+            or return;
+
+        $path = path(decode('UTF-8', $path->stringify, Encode::FB_CROAK));
+        my ($need_rename, $new_path) = _check($path);
+        if ($need_rename) {
+            say 'Renaming: ', $new_path;
+            $options{'DRY_RUN'}
+                or $path->move($new_path);
+        }
+    },
+    {
+        'recurse'         => 1,
+        'follow_symlinks' => 0,
+    },
+);
+
+sub _check($path) {
+    my $nm       = qr{(.*?)\s+$}x;
+    my $em       = qr{([.]jpg|[.]yml)}x;
+    my $parent   = $path->parent;
+    my $name     = $path->basename;
+    my $basename = $path->basename($em);
+    if ($basename =~ $nm) {
+        $options{'VERBOSE'}
+            and say 'Found:    ', $path->stringify;
+
+        my ($ext)     = $name     =~ $em;
+        my ($newname) = $basename =~ $nm;
+        return 1, $parent->child($newname . $ext);
+    }
+
+    return 0, undef;
+}
+
+__END__
