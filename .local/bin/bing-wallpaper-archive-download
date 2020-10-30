@@ -21,7 +21,7 @@ use YAML::Tiny ();
 use constant {
     'ARCHIVE_PATH' => 'HPImageArchive.aspx',
     'BASE_URL'     => 'http://www.bing.com',
-    'OUTPUT_DIR'   => path(qw(~ pictures bing)),
+    'OUTPUT_DIR'   => path('.'),
     'MARKETS'      => {
         'de-DE' => undef,
         'en-AU' => undef,
