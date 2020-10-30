@@ -2,7 +2,7 @@
 
 # => exports ----------------------------------------------------------------------------------------------------- {{{1
 
-export        PERLTIDY="$XDG_CONFIG_HOME/perltidyrc"
+# export        PERLTIDY="$XDG_CONFIG_HOME/perltidyrc"
 export      PERLCRITIC="$XDG_CONFIG_HOME/perlcriticrc"
 export PERL_CPANM_HOME="$XDG_CACHE_HOME/cpanm"
 export   PERLBREW_HOME="$XDG_DATA_HOME/perlbrew"

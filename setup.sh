@@ -16,6 +16,7 @@ ln -s  "$WORKDIR/.ssh"                                                 ~/
 ln -sf "$WORKDIR/.xprofile"                                            ~/
 [ -z "$ZDOTDIR" ] && ln -sf "$WORKDIR/.zshenv"                         ~/
 [ -z "$MYVIMRC" ] && ln -sf "$WORKDIR/.config/nvim/init.vim"           ~/.vimrc
+ln -sf "$WORKDIR/.config/perltidyrc"                                   ~/.perltidyrc
 
 
 ln -sf "$WORKDIR/.config/alacritty"                                    ~/.config/
@@ -26,7 +27,6 @@ ln -sf "$WORKDIR/.config/i3"                                           ~/.config
 ln -sf "$WORKDIR/.config/mpv"                                          ~/.config/
 ln -sf "$WORKDIR/.config/nvim/"*                                       ~/.config/nvim
 ln -sf "$WORKDIR/.config/perlcriticrc"                                 ~/.config/
-ln -sf "$WORKDIR/.config/perltidyrc"                                   ~/.config/
 ln -sf "$WORKDIR/.config/rofi"                                         ~/.config/
 ln -sf "$WORKDIR/.config/shell"                                        ~/.config/
 ln -sf "$WORKDIR/.config/sxhkd"                                        ~/.config/
