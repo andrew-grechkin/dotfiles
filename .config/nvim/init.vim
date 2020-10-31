@@ -237,10 +237,10 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'shumphrey/fugitive-gitlab.vim'                                   " fugitive Gitlab module
 		Plug 'tmux-plugins/vim-tmux', {'for': 'tmux'}                          " Vim plugin for .tmux.conf
 		Plug 'tpope/vim-rhubarb'                                               " fugitive Github module
+		Plug 'vimwiki/vimwiki'                                                 " Personal wiki
 	endif
 " 	if 0                                                                       " These plugins are disabled
 " 		Plug 'fatih/vim-go', {'for': 'go'}
-" 		Plug 'vimwiki/vimwiki'                                                 " Personal wiki
 " 		Plug 'chrisbra/csv.vim'
 " 		Plug 'guns/xterm-color-table.vim', {'on': 'XtermColorTable'}
 " 		Plug 'flazz/vim-colorschemes'                                          " Huge set of color schemes

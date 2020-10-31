@@ -78,8 +78,8 @@ foreach my $root (@ARGV) {
             push ($it{'paths'}->@*, decode('UTF-8', $path->stringify, Encode::FB_CROAK));
         },
         {
-            'recurse'         => $options{'RECURSE'},
             'follow_symlinks' => $options{'FOLLOW'},
+            'recurse'         => $options{'RECURSE'},
         },
     );
 }
@@ -207,7 +207,7 @@ sub _do_hardlink ($path, $new_path) {
     my $message = join (' <- ', $path, $new_path);
     say 'Hardlinking: ', $message;
 
-    if (!$options{'DRY_RUN'}) {
+    if ($options{'APPLY'}) {
         my $backup = path($new_path . '.hardlinker');
         my $succeed;
         eval {

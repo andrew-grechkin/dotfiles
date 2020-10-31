@@ -4,5 +4,5 @@ set -Eeuo pipefail
 
 for FILE in "$@"; do
 	FILENAMEFULL=$(basename "$FILE")
-	command gpg --encrypt --output "./${FILENAMEFULL}.gpg" "$FILE"
+	command gpg --encrypt --recipient 27DAEE512BCA39EB --recipient CDBA7E3E844B6508 --output "./${FILENAMEFULL}.gpg" "$FILE"
 done

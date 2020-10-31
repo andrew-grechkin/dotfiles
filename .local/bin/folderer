@@ -9,7 +9,20 @@ use warnings;
 use experimental qw(declared_refs refaliasing signatures);
 
 use Encode qw(decode);
+use Getopt::Long qw(:config auto_version bundling);
 use Path::Tiny;
+
+our $VERSION = 1;
+
+my %options = (
+    'FOLLOW'  => 0,
+    'RECURSE' => 0,
+);
+
+GetOptions(
+    'follow|f'  => \$options{'FOLLOW'},
+    'recurse|r' => \$options{'RECURSE'},
+) or die ('Unable to process command line options');
 
 my \%state = path('.')->visit(
     sub {
@@ -21,8 +34,8 @@ my \%state = path('.')->visit(
         push ($state->{'files'}->@*, $path);
     },
     {
-        'recurse'         => 1,
-        'follow_symlinks' => 0,
+        'follow_symlinks' => $options{'FOLLOW'},
+        'recurse'         => $options{'RECURSE'},
     },
 );
 
