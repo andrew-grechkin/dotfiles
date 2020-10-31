@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -Euo pipefail
+
+{
+	GIT_LIST=(git ls-files -co --exclude-standard)
+#	GIT_LIST=(git ls-tree -r --name-only HEAD)
+	RG__LIST=(rg --hidden --files)
+
+	"${GIT_LIST[@]}" \
+	|| "${RG__LIST[@]}" \
+	|| _fzf_compgen_helper . 'f'
+} 2>/dev/null

@@ -65,28 +65,6 @@ function _start_ssh_agent() {
 #	fi
 }
 
-# => fzf --------------------------------------------------------------------------------------------------------- {{{1
-
-function _fzf_compgen_helper() {
-	local EXCLUDE_FOLDERS_FD=('.cache' '.git' '.m2' '.snapshots' '.steam' '.vim' 'Steam' 'dosdevices' '/media/nfs/' '/proc/' '/sys/' 'tmp')
-	local CMD1=(fd -HL --type "$2" . "$1" "${EXCLUDE_FOLDERS_FD[@]/#/-E=}")
-	local CMD2=(find "$1" -type "$2")
-	local FILT=(grep -v -F '/.git')
-
-    "${CMD1[@]}" \
-    || "${CMD2[@]}" | "${FILT[@]}"
-} 2>/dev/null
-
-function _fzf_command_helper() {
-	local GIT_LIST=(git ls-files -co --exclude-standard)
-#	local GIT_LIST=(git ls-tree -r --name-only HEAD)
-	local RG__LIST=(rg --hidden --files)
-
-    "${GIT_LIST[@]}" \
-    || "${RG__LIST[@]}" \
-    || _fzf_compgen_helper . 'f'
-} 2>/dev/null
-
 # => kubectl ----------------------------------------------------------------------------------------------------- {{{1
 
 function kpatch() {
@@ -103,7 +81,7 @@ function gen-cdpath() {
 
 	local IFS=:
 	export CDPATH="${DIRS[*]}"
-    unset -f gen-cdpath
+	unset -f gen-cdpath
 } &> /dev/null
 
 gen-cdpath

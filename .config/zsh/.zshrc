@@ -5,7 +5,14 @@
 source-file "$XDG_CONFIG_HOME/shell/rc"
 source-file "$XDG_CONFIG_HOME/shell/rc.work"
 
-[[ -d "$HOME/.cache/bin"                                ]] && path=("$HOME/.cache/bin"           "${path[@]}")
+typeset -U PATH path
+[[ -d "$HOME/.cache/bin"                                ]] && path+=("$HOME/.cache/bin")
+[[ -d "$HOME/.cache/fzf/bin"                            ]] && path+=("$HOME/.cache/fzf/bin")
+[[ -d "$HOME/.local/usr/bin"                            ]] && path+=("$HOME/.local/usr/bin")
+[[ -n "$GOPATH"          ]] && [[ -d "$GOPATH"          ]] && path+=("$GOPATH/bin")
+[[ -n "$GEM_HOME"        ]] && [[ -d "$GEM_HOME"        ]] && path+=("$GEM_HOME/bin")
+
+export HISTFILE=$XDG_CONFIG_HOME/z_history
 
 # => Install antigen --------------------------------------------------------------------------------------------- {{{1
 
@@ -36,15 +43,14 @@ fi
 
 # => PATH prepare ------------------------------------------------------------------------------------------------ {{{1
 
-typeset -U PATH path
-[[ -n "$GOPATH"          ]] && [[ -d "$GOPATH"          ]] && path+=("$GOPATH/bin")
-[[ -n "$GEM_HOME"        ]] && [[ -d "$GEM_HOME"        ]] && path+=("$GEM_HOME/bin")
 [[ -n "$HOMEBREW_PREFIX" ]] && [[ -d "$HOMEBREW_PREFIX" ]] && path=("$HOMEBREW_PREFIX/bin"       "${path[@]}")
 [[ -n "$HOMEBREW_PREFIX" ]] && [[ -d "$HOMEBREW_PREFIX" ]] && path=("$HOMEBREW_PREFIX/sbin"      "${path[@]}")
 [[ -n "$PERLBREW_PATH"                                  ]] && path=("${(ps/:/)PERLBREW_PATH[@]}" "${path[@]}")
 [[ -d "$HOME/.local/bin"                                ]] && path=("$HOME/.local/bin"           "${path[@]}")
 [[ -d "$HOME/.local/scripts"                            ]] && path=("$HOME/.local/scripts"       "${path[@]}")
 [[ -d "$HOME/.cache/bin"                                ]] && path=("$HOME/.cache/bin"           "${path[@]}")
+
+export PATH
 
 # => Use zsh help search ----------------------------------------------------------------------------------------- {{{1
 

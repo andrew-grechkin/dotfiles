@@ -46,7 +46,7 @@ if plugin#is_loaded('ale')
 	let g:ale_perl_perl_options         = '-cw -Ilib'
 	let g:ale_perl_perlcritic_showrules = 1
 
-	let g:ale_sh_shellcheck_dialect = 'b:is_bash'
+	let g:ale_sh_shellcheck_dialect = 'bash'
 
 	nmap <silent> tt <Plug>(ale_fix)
 endif
