@@ -508,7 +508,7 @@ augroup END
 
 augroup SettingsByBufType
 	autocmd!
-if has('nvim')
+if has('nvim-0.4')
 	autocmd TermEnter * setlocal scrolloff=0
 endif
 	autocmd BufEnter * if (winnr('$') == 1 && (&buftype ==# 'quickfix' || &buftype ==# 'loclist')) | bd | endif

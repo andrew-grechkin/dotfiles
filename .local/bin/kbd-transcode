@@ -1,15 +1,13 @@
 #!/usr/bin/env perl
 
 use v5.28;
-use strict;
-use warnings;
 use autodie;
-use utf8;
 use diagnostics;
+use open ':std', 'IO' => ':encoding(UTF-8)';
+use strict;
+use utf8;
+use warnings;
 use experimental qw(declared_refs refaliasing signatures smartmatch);
-
-binmode STDIN, ':encoding(UTF8)';
-binmode STDOUT, ':encoding(UTF8)';
 
 sub convert ($map_in, $map_out, @chars) {
     $map_in && $map_out
@@ -25,7 +23,7 @@ sub convert ($map_in, $map_out, @chars) {
     return @updated;
 }
 
-my $input = <>;
+my $input   = <>;
 my @chars   = split (m//, $input // '');
 my %key_map = (
     'en' => q{F<DULT~;PBQRKVYJGHCNEA{WXIO}SM">Zf,dult`;pbqrkvyjghcnea[wxio]sm'.z},
