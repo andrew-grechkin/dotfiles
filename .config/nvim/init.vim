@@ -177,6 +177,7 @@ call plug#begin('~/.cache/vim/plugged')
 	Plug 'nelstrom/vim-visual-star-search'
 	Plug 'andrew-grechkin/vim-rooter'                                          " Cwd if file is in git repo should be repo root
 	Plug 'Raimondi/delimitMate'
+	Plug 'chrisbra/unicode.vim'
 	Plug 'vim-airline/vim-airline'                                             " Most informative status line
 "	Plug 'vim-airline/vim-airline-themes'                                      " Status line themes
 	Plug 'vifm/vifm.vim'

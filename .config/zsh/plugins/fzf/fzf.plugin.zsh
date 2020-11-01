@@ -209,11 +209,6 @@ zle -N fzf-detect-widget
 # bind to alt-space
 bindkey '^[ ' fzf-detect-widget
 
-function fzf-hardlinks() {
-	command hardlinks "$@" \
-	| fzf --reverse "${FZF_MULTI_OPTIONS[@]}"
-}
-
 # => completion overrides ---------------------------------------------------------------------------------------- {{{1
 
 bindkey '^_' _complete_help

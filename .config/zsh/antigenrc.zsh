@@ -27,6 +27,7 @@ antigen bundle tmux
 antigen bundle zsh-users/zsh-autosuggestions                                   # Fish-like auto suggestions
 antigen bundle zsh-users/zsh-completions                                       # Extra zsh completions
 antigen bundle zsh-users/zsh-syntax-highlighting                               # Syntax highlighting bundle.
+antigen bundle MichaelAquilina/zsh-you-should-use
 
 # => Default repo bundles load last ------------------------------------------------------------------------------ {{{1
 

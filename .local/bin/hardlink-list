@@ -48,7 +48,8 @@ foreach my $root (@ARGV) {
             my $stat = $path->stat;
             $path = decode('UTF-8', $path->stringify, Encode::FB_CROAK);
 
-            push ($files{sprintf ('d(%d)i(%d)', $stat->dev, $stat->ino)}->@*, $path);
+            my \%it = $files{sprintf ('d(%d)i(%d)', $stat->dev, $stat->ino)} //= {'stat' => $stat};
+            push ($it{'paths'}->@*, $path);
             ++$files_amount;
         },
         {
@@ -58,15 +59,16 @@ foreach my $root (@ARGV) {
     );
 }
 
-my @result = sort {scalar $a->@* <=> scalar $b->@*} grep {$_->@* > 1} values %files;
+my @result
+    = map {$_->{'paths'}} sort {$a->{'stat'}->size <=> $b->{'stat'}->size} grep {$_->{'paths'}->@* > 1} values %files;
+
 foreach my $group (@result) {
-    my \@paths= $group;
+    my \@paths = $group;
     @paths = sort @paths;
 }
 
 if ($options{'OUTPUT'} eq 'json') {
     my $json = JSON::PP->new;
-    $json->utf8(1);
     print $json->encode(\@result);
 } elsif ($options{'OUTPUT'} eq 'yaml') {
     print YAML::Tiny::Dump(\@result);
