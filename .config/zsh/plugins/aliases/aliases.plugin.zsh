@@ -69,11 +69,15 @@ fi
 
 # => misc -------------------------------------------------------------------------------------------------------- {{{1
 
+alias xa='xargs -d "\n" -ri'
 alias fm='vifm . .'
-alias fix-agent='eval $(tmux showenv -s SSH_AUTH_SOCK)'
 alias dd='dd oflag=sync status=progress'
 alias :q='exit'
 alias :qa='exit'
+
+alias fix-agent='eval $(tmux showenv -s SSH_AUTH_SOCK)'
+
+alias each-hl='hardlink-list -o json | jq -r ".[][0]" | xargs -d "\n" -ri fzf-hardlinks {}'
 
 # => flibusta library -------------------------------------------------------------------------------------------- {{{1
 
