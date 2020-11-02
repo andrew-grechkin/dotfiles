@@ -69,7 +69,7 @@ fi
 
 # => misc -------------------------------------------------------------------------------------------------------- {{{1
 
-alias xa='xargs -d "\n" -ri'
+alias -g xa='xargs -d "\n" -ri'
 alias fm='vifm . .'
 alias dd='dd oflag=sync status=progress'
 alias :q='exit'

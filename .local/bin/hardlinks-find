@@ -1,0 +1,5 @@
+#!/bin/bash
+
+set -Euo pipefail
+
+find "${2:-.}" -xdev -samefile "$1"

@@ -23,8 +23,8 @@ toc: true
 
 ## Working
 
-- Hour 1
-- Hour 2
+- Hour 1...2
+- Hour 2---4
 
 ## Lunch
 

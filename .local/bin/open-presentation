@@ -5,6 +5,6 @@ set -Eeuo pipefail
 file=$(readlink -f "$1")
 
 case "$1" in
-	*.md|*.mkd|*.mdwiki) pandoc -f markdown -t beamer <(cat "$file") -o /tmp/presentation.pdf && cat /tmp/presentation.pdf | zathura - &>/dev/null & ;;
+	*.md|*.mkd|*.mdwiki) pandoc -f markdown+smart -t beamer <(cat "$file") -o /tmp/presentation.pdf && cat /tmp/presentation.pdf | zathura - &>/dev/null & ;;
     *) echo 'unknown' ;;
 esac
