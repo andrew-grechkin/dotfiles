@@ -103,6 +103,10 @@ let g:signify_vcs_cmds = {
 	\ 'git':      'git diff --no-color --no-ext-diff -U0 -- %f',
 	\ }
 
+let g:vimwiki_list = [
+	\{'path': '~/.local/share/wiki', 'syntax': 'markdown', 'ext': '.mdwiki'},
+\]
+
 let VIM_PLUG_URL      = 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
 let VIM_CREATE_DIR    = ':silent !mkdir -p '. VIM_CACHE_HOME . '/autoload'
 let VIM_PLUG_DOWNLOAD = ':silent !curl -sfLo ' . VIM_CACHE_HOME . '/autoload/plug.vim ' . VIM_PLUG_URL
@@ -200,7 +204,7 @@ call plug#begin('~/.cache/vim/plugged')
 	endif
 	if has('nvim') || v:version >= 800                                         " These plugins demand modern vim or neovim
 		Plug 'dense-analysis/ale'                                              " Async syntax checker
-		Plug 'easymotion/vim-easymotion'                                       " Better move commands
+"		Plug 'easymotion/vim-easymotion'                                       " Better move commands
 		Plug 'ervandew/supertab'
 		Plug 'junegunn/vim-peekaboo'                                           " Preview registers
 		Plug 'lambdalisue/suda.vim'                                            " run sudo from vim
@@ -355,7 +359,7 @@ set formatoptions=tcqj                                                         "
 
 " => Copy & paste ------------------------------------------------------------------------------------------------ {{{1
 
-set clipboard=unnamed,unnamedplus                                              " Copy into system clipboard (*, +) registers
+set clipboard=unnamedplus                                                      " Copy into system clipboard (*, +) registers
 
 "vnoremap <C-c>                         "*y :let @+=@*<CR>
 "vmap <C-c>                             y
