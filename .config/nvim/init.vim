@@ -206,7 +206,7 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'dense-analysis/ale'                                              " Async syntax checker
 "		Plug 'easymotion/vim-easymotion'                                       " Better move commands
 		Plug 'ervandew/supertab'
-		Plug 'junegunn/vim-peekaboo'                                           " Preview registers
+"		Plug 'junegunn/vim-peekaboo'                                           " Preview registers
 		Plug 'lambdalisue/suda.vim'                                            " run sudo from vim
 "		Plug 'majutsushi/tagbar'
 		Plug 'masukomi/vim-markdown-folding'
@@ -236,6 +236,7 @@ call plug#begin('~/.cache/vim/plugged')
 	if empty($KDEHOME)                                                         " Install these pluggins only at work remote machines
 		Plug 'junegunn/fzf', {'dir': '~/.cache/fzf', 'do': './install --bin'}
 	else                                                                       " Install these pluggins only on personal machines
+		Plug 'szw/vim-g'
 		Plug 'inkarkat/vim-localrc'
 		Plug 'mgrabovsky/vim-cuesheet'
 		Plug 'ryanoasis/vim-devicons'
@@ -254,7 +255,6 @@ call plug#begin('~/.cache/vim/plugged')
 " 		Plug 'jceb/vim-hier'
 " 		Plug 'mhinz/vim-grepper', {'on': ['Grepper', '<Plug>(GrepperOperator)']} " Grep integration
 " 		Plug 'neoclide/coc.nvim', {'do': { -> coc#util#install()}}             " Language Server support
-" 		Plug 'samoshkin/vim-mergetool'
 " 		Plug 'tpope/vim-vinegar'
 " 		Plug 'vim-vdebug/vdebug'
 " 		Plug 'xolox/vim-misc'

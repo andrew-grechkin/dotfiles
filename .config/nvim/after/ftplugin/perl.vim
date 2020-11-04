@@ -31,5 +31,7 @@ vnoremap <silent> <buffer> tt         :!perltidy -q<CR>
 nnoremap <silent> <buffer> K          :Perldoc <C-R>=expand("<cword>")<CR><CR>gg
 vnoremap <silent> <buffer> K          y:Perldoc <C-R>=escape(@",'/\')<CR><CR>gg
 nnoremap <silent> <buffer> <leader>ct :!ctags -R .<CR>
+nnoremap <silent> <buffer> gz         :!zeal "perl:<cword>"&<CR><CR>
+vnoremap <silent> <buffer> gz         y:!zeal "perl:<C-R>=escape(@",'/\')<CR>"&<CR>
 
 let b:man_default_sections = '3,2'
