@@ -100,7 +100,7 @@ let g:tmux_navigator_no_mappings = 1
 
 let g:Hexokinase_highlighters = [ 'backgroundfull' ]
 let g:signify_vcs_cmds = {
-	\ 'git':      'git diff --no-color --no-ext-diff -U0 -- %f',
+	\ 'git':      'git diff --no-color --no-ext-diff -U0 --ignore-space-change -- %f',
 	\ }
 
 let g:vimwiki_list = [
@@ -188,8 +188,6 @@ call plug#begin('~/.cache/vim/plugged')
 	Plug 'rodjek/vim-puppet'                                                   " For Puppet syntax highlighting
 	Plug 'vim-ruby/vim-ruby', {'for': 'ruby'}                                  " For Facts, Ruby functions, and custom providers
 	Plug 'pearofducks/ansible-vim'
-	Plug 'vim-perl/vim-perl'
-	Plug 'c9s/perlomni.vim'
 "	Plug '~/.local/share/vim-plug/trackperlvars', {'for': 'perl'}
 "	Plug '~/.local/share/vim-plug/perlart',       {'for': 'perl'}
 	if has('nvim-0.4') && has('python3')

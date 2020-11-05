@@ -145,6 +145,9 @@ command! sha    find %c -type f -print0 | sort -z | xargs --null sha256sum -b > 
 command! encrypt gpg-encrypt %f
 command! decrypt gpg-decrypt %f
 
+" processing
+command! hardlinker hardlinker -av
+
 " => File associations ------------------------------------------------------------------------------------------- {{{1
 
 " The file type is for the default programs to be used with a file extension.
@@ -185,9 +188,9 @@ filextype *.fb2,*.xml,*.gpx,*.xsd
 	\ {Open with Kate}
 	\ kate     %f %i &,
 	\ {Reformat xml}
-	\ reformat-fb2 %f %i &,
+	\ reformat %f,
 	\ {Reformat hard xml}
-	\ reformat2-fb2 %f %i &,
+	\ reformat2-fb2 %f,
 
 " => File associations: Djvu, Pdf -------------------------------------------------------------------------------- {{{1
 " cat helps to properly show djvu over nfs volumes
@@ -314,7 +317,7 @@ filetype *.json
 	\ {View json}
 	\ jq -CS --indent 4 < %c | less -r,
 	\ {Reformat json}
-	\ reformat-json %f %i &,
+	\ reformat %f,
 fileviewer *.json
 	\ jq -CS --indent 4 < %f,
 

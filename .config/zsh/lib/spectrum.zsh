@@ -35,3 +35,44 @@ function spectrum_bls() {
 		print -P -- "$code: %{$BG[$code]%}$ZSH_SPECTRUM_TEXT%{$reset_color%}"
 	done
 }
+
+# => test terminal ----------------------------------------------------------------------------------------------- {{{1
+# url: https://misc.flogisoft.com/bash/tip_colors_and_formatting
+
+function test-terminal() {
+	COLS=$(tput cols)
+	awk -v cols="$COLS" 'BEGIN{
+		p="/\\/\\/\\/\\/\\";
+		s="";
+		for (colnum = 0; colnum<cols; colnum+=10) {
+			s=s p;
+		}
+		for (colnum = 0; colnum<cols; colnum++) {
+			r = 255-(colnum*255/(cols-1));
+			g = (colnum*510/(cols-1));
+			b = (colnum*255/(cols-1));
+			if (g>255) g = 510-g;
+			printf "\033[48;2;%d;%d;%dm", r,g,b;
+			printf "\033[38;2;%d;%d;%dm", 255-r,255-g,255-b;
+			printf "%s\033[0m", substr(s,colnum+1,1);
+		}
+		printf "\n";
+	}'
+
+	echo -ne \\e\[1\;3\;4:3\;5\;53\;38\;2\;255\;127\;0\;58\;2\;0\;48\;255\;48\;2\;255\;0\;{0..255..8}mX \\e\[0m\\n
+
+	echo -e "normal"
+	echo -e "\e[1mbold\e[0m"
+	echo -e "\e[3mitalic\e[0m"
+	echo -e "\e[3m\e[1mbold italic\e[0m"
+	echo -e "\e[4munderline\e[0m"
+	echo -e "\e[4:0m underline none\e[0m"
+	echo -e "\e[4:1m underline normal\e[0m"
+	echo -e "\e[4:2m underline double\e[0m"
+	echo -e "\e[4:3m underline curly\e[0m"
+	echo -e "\e[4:4m underline dotted\e[0m"
+	echo -e "\e[4:5m underline dashed\e[0m"
+	echo -e "\e[9mstrikethrough\e[0m"
+	echo -e "\e[31mHello World\e[0m"
+	echo -e "\x1B[31mHello World\e[0m"
+}

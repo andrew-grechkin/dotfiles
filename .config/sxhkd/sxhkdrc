@@ -41,6 +41,11 @@ super + s
 super + w
 	exo-open --launch TerminalEmulator "htop"
 
+super + 9
+	$HOME/.local/bin/passgen
+super + 0
+	$HOME/.local/bin/touchpad-toggle
+
 XF86AudioPlay
 	cmus-remote --pause
 XF86Battery

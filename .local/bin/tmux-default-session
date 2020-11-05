@@ -3,4 +3,4 @@
 set -Eeuo pipefail
 
 command tmux -f "$XDG_CONFIG_HOME/tmux/config" \
-	new-session \; split-window \; split-window \; split-window \; select-layout main-vertical \; swap-pane -d -t \{left\}
+	new-session \; split-window \; split-window \; select-layout main-vertical \; swap-pane -d -t \{left\}

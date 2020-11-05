@@ -2,6 +2,10 @@
 
 set -Euo pipefail
 
-PASSWD=$(tr -dc '[:alnum:]|!@#$%&-\?\*\^\(\){}[]\\\|' < /dev/urandom | dd count=24 bs=1 2>/dev/null)
+PATH="$(dirname "$0"):$PATH"
 
-echo "$PASSWD"
+tr -dc '[:print:]' < /dev/urandom \
+| dd count=24 bs=1 2>/dev/null \
+| clipcopy
+
+notify-send -i dialog-password 'Password' 'Generated and copied to the clipboard'

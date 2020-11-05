@@ -2,8 +2,7 @@
 
 set -Euo pipefail
 
-DN=$(dirname "$0")
-PATH=$DN:$PATH
+PATH="$(dirname "$0"):$PATH"
 DATETIME=$(date --rfc-3339=ns)
 
 CODEPAGE=$1

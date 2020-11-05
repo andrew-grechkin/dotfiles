@@ -11,6 +11,6 @@ PIPE_PATH="${1:-/tmp/endless-stream}"
 
 while true; do
 	[[ -p "$PIPE_PATH" ]] && {
-		tr -dc '[:alnum:]|!@#$%&-\?\*\^\(\){}[]\\\|\n' < /dev/urandom | pv -qL 30 > "$PIPE_PATH" 2>/dev/null
+		tr -dc '[:print:]\n' < /dev/urandom | pv -qL 30 > "$PIPE_PATH" 2>/dev/null
 	}
 done

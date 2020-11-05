@@ -2,8 +2,7 @@
 
 use v5.28;
 use autodie;
-use diagnostics;
-use open ':std', 'IO' => ':encoding(UTF-8)';
+use open ':std', 'IO' => ':locale';
 use strict;
 use utf8;
 use warnings;

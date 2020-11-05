@@ -72,7 +72,7 @@ hi Search           guifg=#000000 guibg=#9F8762
 hi SignColumn       guifg=#A6E22E guibg=#232526
 hi SpecialChar      guifg=#F92672                             gui=bold
 hi SpecialComment   guifg=#999999
-hi Special          guifg=#66D9EF guibg=bg                    gui=italic
+hi Special          guifg=#66D9EF                             gui=italic
 if has('spell')
 	hi SpellBad                   guibg=#382020 guisp=#FF0000 gui=undercurl
 	hi SpellCap                   guibg=#382020 guisp=#7070F0 gui=undercurl

@@ -2,10 +2,10 @@
 
 set -Eeuo pipefail
 
-DN=$(dirname "$0")
-PATH=$DN:$PATH
+DIR="$(dirname "$0")"
+PATH="$DIR:$PATH"
 
-chosen="$(perl "${HOME}/.local/bin/grep-emoji" | LC_ALL=en_US.utf8 fzf)"
+chosen="$(perl "${DIR}/grep-emoji" | LC_ALL="en_US.UTF-8" fzf)"
 
 [[ "$chosen" != "" ]] || exit
 

@@ -2,8 +2,9 @@
 
 set -Eeuo pipefail
 
-DN=$(dirname "$0")
-PATH=$DN:$PATH
+PATH="$(dirname "$0"):$PATH"
 
-command git reflog expire --all --expire=now \
-&& nice git gc --prune=now --aggressive
+git-in-repo && {
+	git reflog expire --all --expire=now \
+	&& nice git gc --prune=now --aggressive
+}

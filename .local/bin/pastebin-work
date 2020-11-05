@@ -2,10 +2,9 @@
 
 set -Eeuo pipefail
 
-DN=$(dirname "$0")
-PATH=$DN:$PATH
+PATH="$(dirname "$0"):$PATH"
 
-DOMAIN_PARTS=(paste . booking . com)
+DOMAIN_PARTS=(paste . book ing . com)
 DOMAIN=$(printf "%s" "${DOMAIN_PARTS[@]}")
 CMD=(
 	curl --noproxy "$DOMAIN" -s

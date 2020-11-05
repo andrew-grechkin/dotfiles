@@ -1,0 +1,19 @@
+#!/usr/bin/env perl
+
+use v5.28;
+use strict;
+use warnings;
+
+my $name = 'SynPS/2 Synaptics TouchPad';
+
+my $output = `xinput list-props '$name'`;
+
+my ($enabled) = $output =~ m{Device\sEnabled .*:\s*(\d)}x;
+
+system (qw(xinput set-prop), $name, 'Device Enabled', !$enabled) == 0
+    or die 'Unable to toggle touchpad';
+
+system(qw(notify-send -i dialog-password), $name, !$enabled ? 'Is enabled' : 'Is disabled') == 0
+    or warn qq{Can't send desktop notification};
+
+__END__

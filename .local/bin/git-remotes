@@ -2,8 +2,7 @@
 
 set -Eeuo pipefail
 
-DN=$(dirname "$0")
-PATH=$DN:$PATH
+PATH="$(dirname "$0"):$PATH"
 
 git-in-repo && {
 	git remote

@@ -2,7 +2,7 @@
 
 set -Eeuo pipefail
 
-DN=$(dirname "$0")
-PATH=$DN:$PATH
+PATH="$(dirname "$0"):$PATH"
 
-git-log-all-graph | fzf-git-log "$@"
+git-log-all-graph \
+| fzf-git-log "$@"

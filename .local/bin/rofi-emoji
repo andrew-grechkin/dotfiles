@@ -2,8 +2,7 @@
 
 set -Eeuo pipefail
 
-DN=$(dirname "$0")
-PATH=$DN:$PATH
+PATH="$(dirname "$0"):$PATH"
 
 chosen="$(perl "${HOME}/.local/bin/grep-emoji" | LC_ALL=en_US.utf8 rofi -dmenu -i -p Emoji)"
 

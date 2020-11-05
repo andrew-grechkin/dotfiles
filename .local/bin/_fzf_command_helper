@@ -2,6 +2,8 @@
 
 set -Euo pipefail
 
+PATH="$(dirname "$0"):$PATH"
+
 {
 	GIT_LIST=(git ls-files -co --exclude-standard)
 #	GIT_LIST=(git ls-tree -r --name-only HEAD)

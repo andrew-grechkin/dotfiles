@@ -15,23 +15,27 @@ use Path::Tiny;
 our $VERSION = 1;
 
 my %options = (
+    'APPLY'   => 0,
     'FOLLOW'  => 0,
     'RECURSE' => 0,
 );
 
 GetOptions(
+    'apply|a'   => \$options{'APPLY'},
     'follow|f'  => \$options{'FOLLOW'},
     'recurse|r' => \$options{'RECURSE'},
+    'match|m'   => \(my $match),
 ) or die ('Unable to process command line options');
+
+$match //= qr{(\d{4}-\d{2})-\d{2}};
 
 my \%state = path('.')->visit(
     sub {
         my ($path, $state) = @_;
-        $path->is_file && !-l $path
+        $path->is_file
             or return;
 
-        $path = path(decode('UTF-8', $path->stringify, Encode::FB_CROAK));
-        push ($state->{'files'}->@*, $path);
+        push ($state->{'files'}->@*, path(decode('UTF-8', $path->stringify, Encode::FB_CROAK)));
     },
     {
         'follow_symlinks' => $options{'FOLLOW'},
@@ -44,22 +48,28 @@ $state{'files'}
 
 foreach my $path ($state{'files'}->@*) {
     my $parent = $path->parent;
-    $parent->basename =~ m{(\d{4})-(\d{2})}
+
+    # check if already moved
+    $parent->basename =~ $match
         and next;
 
     my $name = $path->basename;
-    my ($year, $month, $day) = $name =~ m{\[(\d{4})-(\d{2})-(\d{2})\]};
-    $year && $month && $day
-        or next;
+    if ($name =~ $match) {
+        next unless $1;
 
-    my $new_dir = $parent->child("$year-$month");
-    $new_dir->exists or do {
-        say 'Creating directory: ', $new_dir;
-        $new_dir->mkpath;
-    };
+        my $new_dir = $parent->child($1);
+        if ($options{'APPLY'}) {
+            $new_dir->exists or do {
+                say 'Creating directory: ', $new_dir;
+                $new_dir->mkpath;
+            };
+        }
 
-    my $new_path = $new_dir->child($name);
-    $path->move($new_path);
+        my $new_path = $new_dir->child($name);
+        say 'Moving: ', join (' -> ', $path, $new_path);
+        $options{'APPLY'}
+            and $path->move($new_path);
+    }
 }
 
 __END__

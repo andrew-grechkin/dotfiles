@@ -3,4 +3,4 @@
 set -Eeuo pipefail
 
 command kubectl get pods 2>/dev/null \
-	| grep -v '^NAME'
+| grep -v '^NAME'

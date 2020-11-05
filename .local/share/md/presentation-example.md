@@ -17,28 +17,47 @@ toc: true
 ## Breakfast
 
 - Eat eggs
-- Drink coffee
+- ~~Drink coffee~~
 
 # In the afternoon
 
 ## Working
 
-- Hour 1...2
+- Hour ^1^...~2~
 - Hour 2---4
+
+> a *lot* of work
+>
+> and **even** more
+>
+> **and _even_** more
+
+```perl
+use v5.28;
+use strict;
+use warnings;
+
+our $VERSION = 1;
+exit 42;
+```
 
 ## Lunch
 
+***
 - Sandwich
-- Drink tea
+- Drink `tea`
+
+---
 
 # In the evening
 
 ## Dinner
 
-- Eat spaghetti
-- Drink wine
+| Order  |   Food    | Price of the food |
+|--------|:---------:|------------------:|
+| First  | Spaghetti |              10 € |
+| Second |   Wine    |              20 € |
 
----
 
 ```{r, cars, fig.cap="A scatterplot.", echo=FALSE}
 plot(cars)

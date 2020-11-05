@@ -14,15 +14,15 @@ my $path = path($ARGV[0])->absolute;
 $path->exists
     or die "File does not exists: $path";
 
-if ($path =~ m/.json$/xms) {
-    my $file = $path->parent->child($path->basename =~ s/.json$/.yaml/xmsr);
+if ($path =~ m{[.]json$}x) {
+    my $file = $path->sibling($path->basename =~ s{[.]json$}{.yaml}xr);
     $file->exists
         and die "File already exists: $file";
     my $json = JSON::PP->new;
     $json->boolean_values(0, 1);
     YAML::Tiny->new($json->decode($path->slurp_utf8))->write($file->absolute);
-} elsif ($path =~ m/.ya?ml$/xms) {
-    my $file = $path->parent->child($path->basename =~ s/.ya?ml$/.json/xmsr);
+} elsif ($path =~ m{[.]ya?ml$}x) {
+    my $file = $path->sibling($path->basename =~ s{[.]ya?ml$}{.json}xr);
     $file->exists
         and die "File already exists: $file";
     my $yaml_decoded = YAML::Tiny->read($path)->[0];

@@ -10,20 +10,18 @@ use Errno qw(ENOENT);
 use Path::Tiny;
 
 my %handlers = (
-
-    # 'MULTIPLE' => {
-    # 'suffix'  => '.tar.gz',
-    # 'handler' => sub {
-    # my ($outfile, @items) = @_;
-    # system ('tar', 'vczf', $outfile, map {$_->stringify} @items);
-    # },
-    # },
     'MULTIPLE' => {
         'suffix'  => '.tzst',
         'handler' => sub {
             my ($outfile, @items) = @_;
             system ('tar', 'vcf', $outfile, '--zstd', map {$_->stringify} @items);
         },
+
+        # 'suffix'  => '.tar.gz',
+        # 'handler' => sub {
+        # my ($outfile, @items) = @_;
+        # system ('tar', 'vczf', $outfile, map {$_->stringify} @items);
+        # },
     },
 );
 

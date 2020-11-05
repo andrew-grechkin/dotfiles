@@ -2,8 +2,7 @@
 
 set -Eeuo pipefail
 
-DN=$(dirname "$0")
-PATH="$DN:$PATH"
+PATH="$(dirname "$0"):$PATH"
 
 xclip -o -sel p 2>/dev/null | kbd-transcode | clipcopy
 

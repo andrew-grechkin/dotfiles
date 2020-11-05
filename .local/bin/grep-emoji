@@ -2,21 +2,22 @@
 
 use v5.28;
 use autodie;
-use open ':std', ':encoding(utf-8-strict)';
+use open ':std', ':encoding(UTF-8)';
 use strict;
 use utf8;
 use warnings;
 
 use English qw(-no_match_vars);
 
-unshift (@ARGV, '/usr/share/unicode/emoji/emoji-test.txt');
+my $match = qr{[#]\s (?<emoji>\S+) \sE\d+ [.] \d+\s (?<name>.*)}x;
 
+unshift (@ARGV, '/usr/share/unicode/emoji/emoji-test.txt');
 while (my $line = <>) {
     chomp $line;
-    $line && substr ($line, 0, 1) ne '#'
+    $line && length($line) && substr ($line, 0, 1) ne '#'
         or next;
 
-    if ($line =~ m{[#]\s (?<emoji>\S+) \sE\d+ [.] \d+\s (?<name>.*)}x) {
+    if ($line =~ $match) {
         say $LAST_PAREN_MATCH{'emoji'}, ' > ', $LAST_PAREN_MATCH{'name'};
     }
 }

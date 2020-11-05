@@ -80,3 +80,13 @@ sub extension($path) {
 }
 
 __END__
+
+=head1 NAME
+
+renamer
+
+=SINOPSIS
+
+    renamer --match='<book-title>(.*)</book-title>' **/*.fb2 -a
+
+=cut

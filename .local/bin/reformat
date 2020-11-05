@@ -1,0 +1,39 @@
+#!/bin/bash
+
+set -uo pipefail
+
+DATETIME=$(date --rfc-3339=ns)
+
+for FILE in "$@"; do
+	REALPATH=$(readlink -nf "$FILE")
+	FULLNAME=$(basename "$REALPATH")
+	EXTENSION="${FULLNAME##*.}"
+	# FILENAME="${FULLNAME%.*}"
+
+	case "$EXTENSION" in
+		fb2|xml)
+			CMD=(xmllint --format -)
+			;;
+		json)
+			CMD=(jq -S --indent 4 '.')
+			;;
+		*)
+			unset CMD
+	esac
+
+	[[ -n "${CMD[*]}" ]] || continue
+
+	echo "Linting file: '$REALPATH'"
+
+	OUTPATH="${REALPATH}.${DATETIME}.linted"
+	# shellcheck disable=SC2002
+	if cat "${REALPATH}" | "${CMD[@]}" > "$OUTPATH" 2>/dev/null; then
+		FILESIZE=$(command stat -c %s "$1")
+		[[ -f "$OUTPATH" ]] && (( FILESIZE > 0 )) && stat "$OUTPATH" &>/dev/null && {
+			mv -f "${OUTPATH}" "${REALPATH}"
+		}
+	else
+		echo "Wrong file: '$FILE'"
+		rm -f "${OUTPATH}"
+	fi
+done
