@@ -11,8 +11,9 @@ mkdir -p ~/.local/share/tig
 SCRIPT=$(realpath -s "$0")
 WORKDIR=$(dirname "$SCRIPT")
 
-ln -sf "$WORKDIR/.pam_environment"                                     ~/
+ln -s  "$WORKDIR/.gnupg"                                               ~/
 ln -s  "$WORKDIR/.ssh"                                                 ~/
+ln -sf "$WORKDIR/.pam_environment"                                     ~/
 ln -sf "$WORKDIR/.xprofile"                                            ~/
 [ -z "$ZDOTDIR" ] && ln -sf "$WORKDIR/.zshenv"                         ~/
 [ -z "$MYVIMRC" ] && ln -sf "$WORKDIR/.config/nvim/init.vim"           ~/.vimrc

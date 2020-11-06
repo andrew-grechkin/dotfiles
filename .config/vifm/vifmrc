@@ -277,7 +277,7 @@ fileviewer *.3gp,
 
 filextype *.html,*.htm,*.mht
 	\ {Open with default browser}
-	\ exo-open --launch WebBrowser %f &,
+	\ exo-open --launch WebBrowser %f %i &,
 	\ {Open with dwb}
 	\ dwb %f %i &,
 filetype *.html,*.htm

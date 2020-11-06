@@ -370,6 +370,10 @@ let &t_SI .= "\<Esc>[?2004h"
 let &t_EI .= "\<Esc>[?2004l"
 inoremap <special> <expr> <Esc>[200~ xterm#begin_paste()
 
+" => Commands ---------------------------------------------------------------------------------------------------- {{{1
+
+	command! Force866 :edit! ++enc=cp866 | set ff=unix | set fileencoding=utf-8
+
 " => Keys remap -------------------------------------------------------------------------------------------------- {{{1
 
 ":noremap <F12> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<' . synIDattr(synID(line("."),col("."),0),"name") . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>

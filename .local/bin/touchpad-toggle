@@ -13,7 +13,7 @@ my ($enabled) = $output =~ m{Device\sEnabled .*:\s*(\d)}x;
 system (qw(xinput set-prop), $name, 'Device Enabled', !$enabled) == 0
     or die 'Unable to toggle touchpad';
 
-system(qw(notify-send -i dialog-password), $name, !$enabled ? 'Is enabled' : 'Is disabled') == 0
+system(qw(notify-send -i dialog-positive), $name, !$enabled ? 'Is enabled' : 'Is disabled') == 0
     or warn qq{Can't send desktop notification};
 
 __END__

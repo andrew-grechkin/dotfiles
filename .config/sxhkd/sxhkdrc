@@ -41,9 +41,9 @@ super + s
 super + w
 	exo-open --launch TerminalEmulator "htop"
 
-super + 9
+super + F11
 	$HOME/.local/bin/passgen
-super + 0
+super + F12
 	$HOME/.local/bin/touchpad-toggle
 
 XF86AudioPlay
