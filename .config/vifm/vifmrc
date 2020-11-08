@@ -142,11 +142,12 @@ command! unp    archive-extract-here %c
 command! sha    find %c -type f -print0 | sort -z | xargs --null sha256sum -b > %c.sha256
 
 " encrypt/decrypt
-command! encrypt gpg-encrypt %f
-command! decrypt gpg-decrypt %f
+command! encrypt gpg-encrypt
+command! decrypt gpg-decrypt
 
 " processing
 command! hardlinker hardlinker -av
+
 
 " => File associations ------------------------------------------------------------------------------------------- {{{1
 
@@ -289,12 +290,14 @@ fileviewer *.htm,*.html
 " => File associations: Images ----------------------------------------------------------------------------------- {{{1
 
 filextype *.bmp,*.gif,*.jp2,*.jpg,*.jpeg,*.png,*.xpm,*.svg,*.tif
+	\ {View in sxiv}
+	\ sxiv %f %c:h %i &,
 	\ {Open with xdg-open}
 	\ xdg-open %c %i &,
 	\ {View in vimiv}
 	\ vimiv    %c %i &,
-	\ {View in sxiv}
-	\ sxiv,
+	\ {View in pqiv}
+	\ pqiv -i %f %c:h %i &,
 	\ {View in gpicview}
 	\ gpicview,
 fileviewer *.bmp,*.gif,*.jp2,*.jpg,*.jpeg,*.png,*.xpm,*.svg,*.tif
@@ -357,6 +360,9 @@ filetype *.torrent
 fileviewer *.torrent
 	\ dump_torrent -v,
 
+filetype *.gpg
+	\ {Decrypt}
+	\ gpg-decrypt,
 fileviewer *.gpg
 	\ gpg --decrypt,
 
@@ -490,9 +496,12 @@ filetype *[^/],.*[^/]
 	\ {Compress}
 	\ archive-create %f,
 
+filetype *[^/$|.gpg$],.*[^/$|.gpg$]
+	\ {Encrypt}
+	\ gpg-encrypt %f,
 filetype *[^/$|.asc$|.sig$],.*[^/$|.asc$|.sig$]
-	\ {Sign the file}
-	\ gpg --detach-sign,
+	\ {Sign}
+	\ gpg-sign %f,
 
 filetype */,.*/
 	\ {Show dir}

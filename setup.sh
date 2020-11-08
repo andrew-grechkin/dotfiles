@@ -26,6 +26,7 @@ ln -sf "$WORKDIR/.config/fontconfig/conf.d"                            ~/.config
 ln -sf "$WORKDIR/.config/git"                                          ~/.config/
 ln -sf "$WORKDIR/.config/i3"                                           ~/.config/
 ln -sf "$WORKDIR/.config/mpv"                                          ~/.config/
+ln -sf "$WORKDIR/.config/mutt"                                         ~/.config/
 ln -sf "$WORKDIR/.config/nvim/"*                                       ~/.config/nvim
 ln -sf "$WORKDIR/.config/perlcriticrc"                                 ~/.config/
 ln -sf "$WORKDIR/.config/rofi"                                         ~/.config/

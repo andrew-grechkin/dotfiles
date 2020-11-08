@@ -1,0 +1,63 @@
+# vim: filetype=neomuttrc
+
+# Default index colors:
+color index         white    default '.*'
+color index_author  green    default '.*'
+color index_subject color231 default '.*'
+color index_flags   color49  default '.*'
+
+# For new mail:
+color index         brightyellow black "~N"
+color index_author  brightred    black "~N"
+color index_subject brightcyan   black "~N"
+
+# Header colors:
+color header blue          default ".*"
+color header brightcyan    default "^(Subject)"
+color header brightmagenta default "^(From)"
+color header brightwhite   default "^(CC|BCC)"
+
+color attachment        white         default
+color bold              black         default
+color error             red           default
+color hdrdefault        brightgreen   default
+color indicator         brightblack   white
+color markers           red           white
+color message           cyan          default
+color normal            brightyellow  default
+color normal            default       default
+color normal            default       default
+color quoted            green         default
+color quoted1           blue          default
+color quoted2           cyan          default
+color quoted3           yellow        default
+color quoted4           red           default
+color quoted5           brightred     default
+color search            brightmagenta default
+color sidebar_divider   color50       default
+color sidebar_highlight color231      color36
+color sidebar_indicator color231      color24
+color sidebar_new       color231      default
+color sidebar_unread    brightyellow  default
+color signature         brightgreen   default
+color status            white         color24
+color tilde             black         default
+color underline         black         default
+
+color body brightred    default "[\-\.+_a-zA-Z0-9]+@[\-\.a-zA-Z0-9]+" # Email addresses
+color body brightblue   default "(https?|ftp)://[\-\.,/%~_:?&=\#a-zA-Z0-9]+" # URL
+color body green        default "\`[^\`]*\`" # Green text between ` and `
+color body brightblue   default "^# \.*" # Headings as bold blue
+color body brightcyan   default "^## \.*" # Subheadings as bold cyan
+color body brightgreen  default "^### \.*" # Subsubheadings as bold green
+color body yellow       default "^(\t| )*(-|\\*) \.*" # List items as yellow
+color body brightcyan   default "[;:][-o][)/(|]" # emoticons
+color body brightcyan   default "[;:][)(|]" # emoticons
+color body brightcyan   default "[ ][*][^*]*[*][ ]?" # more emoticon?
+color body brightcyan   default "[ ]?[*][^*]*[*][ ]" # more emoticon?
+color body red          default "(BAD signature)"
+color body cyan         default "(Good signature)"
+color body brightblack  default "^gpg: Good signature .*"
+color body brightyellow default "^gpg: "
+color body brightyellow red     "^gpg: BAD signature from.*"
+color body red          default "([a-z][a-z0-9+-]*://(((([a-z0-9_.!~*'();:&=+$,-]|%[0-9a-f][0-9a-f])*@)?((([a-z0-9]([a-z0-9-]*[a-z0-9])?)\\.)*([a-z]([a-z0-9-]*[a-z0-9])?)\\.?|[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+)(:[0-9]+)?)|([a-z0-9_.!~*'()$,;:@&=+-]|%[0-9a-f][0-9a-f])+)(/([a-z0-9_.!~*'():@&=+$,-]|%[0-9a-f][0-9a-f])*(;([a-z0-9_.!~*'():@&=+$,-]|%[0-9a-f][0-9a-f])*)*(/([a-z0-9_.!~*'():@&=+$,-]|%[0-9a-f][0-9a-f])*(;([a-z0-9_.!~*'():@&=+$,-]|%[0-9a-f][0-9a-f])*)*)*)?(\\?([a-z0-9_.!~*'();/?:@&=+$,-]|%[0-9a-f][0-9a-f])*)?(#([a-z0-9_.!~*'();/?:@&=+$,-]|%[0-9a-f][0-9a-f])*)?|(www|ftp)\\.(([a-z0-9]([a-z0-9-]*[a-z0-9])?)\\.)*([a-z]([a-z0-9-]*[a-z0-9])?)\\.?(:[0-9]+)?(/([-a-z0-9_.!~*'():@&=+$,]|%[0-9a-f][0-9a-f])*(;([-a-z0-9_.!~*'():@&=+$,]|%[0-9a-f][0-9a-f])*)*(/([-a-z0-9_.!~*'():@&=+$,]|%[0-9a-f][0-9a-f])*(;([-a-z0-9_.!~*'():@&=+$,]|%[0-9a-f][0-9a-f])*)*)*)?(\\?([-a-z0-9_.!~*'();/?:@&=+$,]|%[0-9a-f][0-9a-f])*)?(#([-a-z0-9_.!~*'();/?:@&=+$,]|%[0-9a-f][0-9a-f])*)?)[^].,:;!)? \t\r\n<>\"]"
