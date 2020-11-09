@@ -103,7 +103,8 @@ let g:signify_vcs_cmds = {
 	\ 'git':      'git diff --no-color --no-ext-diff -U0 --ignore-space-change -- %f',
 	\ }
 
-let g:vimwiki_list = [
+let g:vimwiki_table_mappings = 0
+let g:vimwiki_list           = [
 	\{'path': '~/.local/share/wiki', 'syntax': 'markdown', 'ext': '.mdwiki'},
 \]
 

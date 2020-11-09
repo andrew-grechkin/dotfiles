@@ -41,6 +41,9 @@ super + s
 super + w
 	exo-open --launch TerminalEmulator "htop"
 
+super + shift + n
+	exo-open --launch TerminalEmulator "$HOME/.local/bin/create-note"
+
 super + F11
 	$HOME/.local/bin/passgen
 super + F12

@@ -4,6 +4,6 @@ source "~/.config/mutt/common.muttrc"
 source "~/.config/mutt/binds.muttrc"
 source "~/.config/mutt/colors.muttrc"
 
-source "~/.config/mutt/accounts/1-andrew.grechkin@gmail.com.muttrc"
+source "~/.config/mutt-accounts/1-andrew.grechkin@gmail.com.muttrc"
 
 macro index,pager i1 '<sync-mailbox><enter-command>source ~/.config/mutt/accounts/1-andrew.grechkin@gmail.com.muttrc<enter><change-folder>!<enter>;<check-stats>' "switch to andrew.grechkin@gmail.com"
