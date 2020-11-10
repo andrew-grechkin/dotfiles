@@ -36,7 +36,6 @@ ln -sf "$WORKDIR/.config/systemd"                                      ~/.config
 ln -sf "$WORKDIR/.config/tigrc"                                        ~/.config/
 ln -sf "$WORKDIR/.config/tmux"                                         ~/.config/
 ln -sf "$WORKDIR/.config/vifm"                                         ~/.config/
-ln -sf "$WORKDIR/.config/user-dirs.dirs"                               ~/.config/
 ln -sf "$WORKDIR/.config/yamllint"                                     ~/.config/
 ln -sf "$WORKDIR/.config/zathura"                                      ~/.config/
 ln -sf "$WORKDIR/.config/zsh"                                          ~/.config/
