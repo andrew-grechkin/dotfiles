@@ -7,6 +7,7 @@ mkdir -p ~/.config/nvim
 mkdir -p ~/.config/xfce4
 mkdir -p ~/.local/share
 mkdir -p ~/.local/share/tig
+mkdir -p ~/{desktop,documents,downloads,music,pictures,public,templates,videos}
 
 SCRIPT=$(realpath -s "$0")
 WORKDIR=$(dirname "$SCRIPT")
@@ -18,7 +19,6 @@ ln -sf "$WORKDIR/.xprofile"                                            ~/
 [ -z "$ZDOTDIR" ] && ln -sf "$WORKDIR/.zshenv"                         ~/
 [ -z "$MYVIMRC" ] && ln -sf "$WORKDIR/.config/nvim/init.vim"           ~/.vimrc
 ln -sf "$WORKDIR/.config/perltidyrc"                                   ~/.perltidyrc
-
 
 ln -sf "$WORKDIR/.config/alacritty"                                    ~/.config/
 ln -sf "$WORKDIR/.config/compton.conf"                                 ~/.config/
@@ -36,6 +36,7 @@ ln -sf "$WORKDIR/.config/systemd"                                      ~/.config
 ln -sf "$WORKDIR/.config/tigrc"                                        ~/.config/
 ln -sf "$WORKDIR/.config/tmux"                                         ~/.config/
 ln -sf "$WORKDIR/.config/vifm"                                         ~/.config/
+ln -sf "$WORKDIR/.config/user-dirs.dirs"                               ~/.config/
 ln -sf "$WORKDIR/.config/yamllint"                                     ~/.config/
 ln -sf "$WORKDIR/.config/zathura"                                      ~/.config/
 ln -sf "$WORKDIR/.config/zsh"                                          ~/.config/
