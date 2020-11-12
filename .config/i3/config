@@ -113,6 +113,9 @@ bindsym $mod+7            workspace $ws7
 bindsym $mod+Tab          workspace next
 bindsym $mod+Shift+Tab    workspace prev
 
+bindsym $altmod+Tab       workspace next
+bindsym $altmod+Shift+Tab workspace prev
+
 # => move workspaces to other monitor ---------------------------------------------------------------------------- {{{1
 
 bindsym $mod+Shift+Ctrl+h move workspace to output left
