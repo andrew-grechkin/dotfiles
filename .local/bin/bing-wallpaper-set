@@ -1,6 +1,8 @@
 #!/usr/bin/env perl
 
-# download latest available Bing photo of the day and set as wallpaper
+# ABSTRACT: Download latest available Bing photo of the day and set as wallpaper
+
+# Prereqs (Arch): pacman -S feh perl-net-http
 
 use v5.28;
 use autodie;
@@ -11,41 +13,25 @@ use warnings;
 use experimental qw(declared_refs refaliasing signatures);
 
 use Carp;
-use English qw(-no_match_vars);
+use File::Path qw(make_path);
+use File::Spec;
+use JSON::PP qw(decode_json);
 use List::Util qw(shuffle);
 
-use JSON::PP;
 use LWP::Simple;
-use Path::Tiny;
 
 use constant {
     'ARCHIVE_PATH' => 'HPImageArchive.aspx',
     'BASE_URL'     => 'http://www.bing.com',
-    'OUTPUT_DIR'   => path($ENV{'XDG_RUNTIME_DIR'} // '/tmp')->child('bing-wallpaper-set'),
-    'MARKETS'      => {
-        'de-DE' => undef,
-        'en-AU' => undef,
-        'en-CA' => undef,
-        'en-IN' => undef,
-        'en-NZ' => undef,
-        'en-UK' => undef,
-        'en-US' => undef,
-        'es-ES' => undef,
-        'fr-FR' => undef,
-        'ja-JP' => undef,
-        'zh-CN' => undef,
-    },
-    'MARKET'       => 'en-UK',
+    'OUTPUT_DIR'   => File::Spec->catfile($ENV{'XDG_RUNTIME_DIR'} || '/tmp', 'bing-wallpaper-set'),
+    'MARKETS'      => [qw(de-DE en-AU en-CA en-IN en-NZ en-UK en-US es-ES fr-FR ja-JP zh-CN)],
     'PARAM_FORMAT' => 'format=js',
     'PARAM_SKIP'   => 'idx=',
     'PARAM_LIMIT'  => 'n=',
     'PARAM_MARKET' => 'mkt=',
 };
 
-my $json = JSON::PP->new;
-$json->boolean_values(0, 1);
-
-my $market = shuffle keys MARKETS()->%*;
+my $market = shuffle MARKETS()->@*;
 my $info   = _fetch_info($market);
 my $path   = _fetch_image($market, $info->{'images'}[0]);
 _set_wallpaper($path);
@@ -68,29 +54,24 @@ sub _fetch_info ($market, $limit = 1, $skip = 0) {
     my $payload = get($archive_url)
         or croak("Failed to retrieve $archive_url: $! $@");
 
-    return $json->decode($payload);
+    return decode_json($payload);
 }
 
 sub _fetch_image ($market, $descriptor) {
-    OUTPUT_DIR->mkpath();
-    my $jpg_path = Path::Tiny->tempfile(
-        'DIR'      => OUTPUT_DIR(),
-        'SUFFIX'   => '.jpg',
-        'TEMPLATE' => 'bing-image-of-the-day-XXXXXXXX',
-        'UNLINK'   => 0,
-    );
+    make_path(OUTPUT_DIR());
+    my $jpg_path = File::Spec->catfile(OUTPUT_DIR(), "image-of-the-day-$market.jpg");
 
     my $image_url = BASE_URL() . $descriptor->{'url'};
     say 'Fetching: ', $image_url;
     say 'To:       ', $jpg_path;
 
-    getstore($image_url, $jpg_path->stringify);
+    getstore($image_url, $jpg_path);
 
     return $jpg_path;
 }
 
 sub _set_wallpaper($path) {
-    system (qw(feh --no-fehbg --bg-scale), $path->stringify) == 0
+    system (qw(feh --no-fehbg --bg-scale), $path) == 0
         or croak('Unable to set wallpaper: ', $path);
 
     return;

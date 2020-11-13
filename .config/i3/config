@@ -220,7 +220,7 @@ exec --no-startup-id picom -b
 
 # => set background image ---------------------------------------------------------------------------------------- {{{1
 
-exec_always --no-startup-id perl ~/.local/bin/bing-wallpaper-set > ~/bla
+exec_always --no-startup-id ~/.local/bin/bing-wallpaper-set
 # exec --no-startup-id feh --no-fehbg --bg-scale ~/.local/share/backgrounds/current.jpg
 
 # => ------------------------------------------------------------------------------------------------------------- {{{1
