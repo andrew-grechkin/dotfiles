@@ -202,13 +202,9 @@ mode "resize" {
 
 bindsym $mod+Ctrl+h       mode "resize"
 
-# => set background image ---------------------------------------------------------------------------------------- {{{1
+# => layout ------------------------------------------------------------------------------------------------------ {{{1
 
-exec --no-startup-id feh --no-fehbg --bg-scale ~/.local/share/backgrounds/current.jpg
-
-# => composite manager ------------------------------------------------------------------------------------------- {{{1
-
-exec --no-startup-id compton -b
+exec_always --no-startup-id ~/.cargo/bin/i3-auto-layout
 
 # => Simple X hotkey daemon -------------------------------------------------------------------------------------- {{{1
 
@@ -217,6 +213,15 @@ exec --no-startup-id sxhkd
 # => rebind keys ------------------------------------------------------------------------------------------------- {{{1
 
 exec --no-startup-id xmodmap -e "keycode 127 = Insert"
+
+# => composite manager ------------------------------------------------------------------------------------------- {{{1
+
+exec --no-startup-id picom -b
+
+# => set background image ---------------------------------------------------------------------------------------- {{{1
+
+exec_always --no-startup-id perl ~/.local/bin/bing-wallpaper-set > ~/bla
+# exec --no-startup-id feh --no-fehbg --bg-scale ~/.local/share/backgrounds/current.jpg
 
 # => ------------------------------------------------------------------------------------------------------------- {{{1
 

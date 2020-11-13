@@ -22,7 +22,18 @@ function _lock() {
 }
 
 function list-options() {
-	options=("lock" "i3-lock" "logout" "suspend" "hibernate" "hybrid" "reboot" "systemctl-reboot" "poweroff" "systemctl-poweroff")
+	options=(
+		"lock"
+		"i3-lock"
+		"logout"
+		"suspend"
+		"hibernate"
+		"hybrid"
+		"reboot/restart"
+		"reboot/restart-systemctl"
+		"poweroff/shutdown"
+		"poweroff/shutdown-systemctl"
+	)
 
 	printf '%s\n' "${options[@]}"
 }
@@ -47,17 +58,17 @@ function action() {
 		hybrid)
 			_lock && systemctl hybrid-sleep
 			;;
-		reboot)
-			xfce4-session-logout -f --reboot || systemctl reboot
-			;;
-		systemctl-reboot)
+		reboot/restart-systemctl)
 			systemctl reboot
 			;;
-		poweroff)
-			xfce4-session-logout -f --halt   || systemctl poweroff
+		reboot*)
+			xfce4-session-logout -f --reboot || systemctl reboot
 			;;
-		systemctl-poweroff)
+		poweroff/shutdown-systemctl)
 			systemctl poweroff
+			;;
+		poweroff*)
+			xfce4-session-logout -f --halt   || systemctl poweroff
 			;;
 		*help)
 			echo "Usage: $0 {lock|logout|suspend|hibernate|hybrid|reboot|poweroff}"
