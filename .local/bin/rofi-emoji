@@ -4,11 +4,9 @@ set -Eeuo pipefail
 
 PATH="$(dirname "$0"):$PATH"
 
-chosen="$(perl "${HOME}/.local/bin/grep-emoji" | LC_ALL=en_US.utf8 rofi -dmenu -i -p Emoji)"
+chosen="$(grep-emoji | LC_ALL='en_US.UTF-8' rofi -dmenu -i -p Emoji | sed 's/ > .*//')"
 
-[ "$chosen" != "" ] || exit
-
-# shellcheck disable=2001
-emoji=$(echo "$chosen" | sed "s/ > .*//")
-
-echo -n "$emoji" | clipcopy && notify-send "$emoji copied to clipboard"
+[[ -n "${chosen}" ]] && {
+	echo -n "${chosen}" | clipcopy \
+	&& notify-send -i dialog-password "${chosen}" 'Copied to the clipboard'
+}

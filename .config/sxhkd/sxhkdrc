@@ -13,10 +13,12 @@ super + BackSpace
 	$HOME/.local/bin/rofi-exit
 super + control + l
 	$HOME/.local/bin/rofi-exit lock
-super + shift + e
+super + control + e
 	$HOME/.local/bin/rofi-emoji
-super + shift + s
+super + control + s
 	$HOME/.local/bin/rofi-gopass
+super + control + u
+	$HOME/.local/bin/rofi-unicode
 super + c
 	rofi -show calc -modi "calc:qalc +u8" -no-show-match -no-sort
 super + d
