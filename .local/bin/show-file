@@ -67,6 +67,10 @@ function footer() {
 		pygmentize -O style=monokai -f console256 -g "$1" \
 		|| bat --style=numbers --color=always "$1" \
 		|| cat "$1"
+		(( FILESIZE > 255)) && return
+		echo
+		hexdump -C "$1" \
+		|| true
 	else
 		cat "$1"
 	fi

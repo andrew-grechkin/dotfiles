@@ -3,12 +3,13 @@
 
 use v5.28;
 use autodie;
-use open ':std', 'IN' => ':crlf :locale', 'IO' => ':locale';
+use open ':std', 'IN' => ':crlf :encoding(UTF-8)', 'OUT' => ':locale';
 use strict;
 use utf8;
 use warnings;
 
-binmode (STDIN, ':crlf');
+# by some kind of a bug open pragma with ':crlf' is not applied to STDIN
+binmode (STDIN, ':pop :crlf :encoding(UTF-8)');
 
 while (defined (my $line = <>)) {
     chomp ($line);

@@ -1,6 +1,1 @@
 # One liner
-
-```
-/usr/bin/lsblk -lp | awk '$6 ~ /part/ && NF < 7 {print $1, "(" $4 ")"}'
-/usr/bin/lsblk -lp | perl -aE '$F[5] =~ m/part/ && say $F[0], " (", $F[3], ")"'
-```

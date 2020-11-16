@@ -352,7 +352,7 @@ set autoindent smartindent                                                     "
 set noexpandtab smarttab shiftwidth=4 softtabstop=4 tabstop=4
 set noshiftround
 
-set formatoptions=tcqj                                                         " More intuitive autoformatting
+set formatoptions=tcqjl                                                        " More intuitive autoformatting
 
 "set linebreak                                                                  " Soft word wrap
 

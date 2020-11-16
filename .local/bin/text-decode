@@ -3,7 +3,7 @@
 
 use v5.28;
 use autodie;
-use open ':std', 'OUT' => ':locale';
+use open ':locale';
 use strict;
 use utf8;
 use warnings;
