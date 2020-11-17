@@ -5,22 +5,22 @@ use autodie;
 use open ':locale';
 use strict;
 use utf8;
-use warnings;
+use warnings 'FATAL' => qw(utf8);
 use experimental qw(declared_refs refaliasing signatures smartmatch);
 
-sub convert ($map_in, $map_out, @chars) {
-    $map_in && $map_out
-        or return @chars;
-
-    my @updated;
-    foreach my $char (@chars) {
-        my $pos = index ($map_in, $char);
-        $pos < 0
-            ? push (@updated, $char)
-            : push (@updated, substr ($map_out, $pos, 1));
-    }
-    return @updated;
-}
+# sub convert ($map_in, $map_out, @chars) {
+# $map_in && $map_out
+# or return @chars;
+#
+# my @updated;
+# foreach my $char (@chars) {
+# my $pos = index ($map_in, $char);
+# $pos < 0
+# ? push (@updated, $char)
+# : push (@updated, substr ($map_out, $pos, 1));
+# }
+# return @updated;
+# }
 
 my $input   = <>;
 my @chars   = split (m//, $input // '');
@@ -41,15 +41,18 @@ foreach my $char (@chars) {
         and last;
 }
 
-print join ('', convert($map_in, $map_out, @chars));
+## no critic [BuiltinFunctions::ProhibitStringyEval,ErrorHandling::RequireCheckingReturnValueOfEval,Lax::ProhibitStringyEval::ExceptForRequire]
+eval "print \$input =~ tr[$map_in][$map_out]r; 1";
+
+# print join ('', convert($map_in, $map_out, @chars));
 
 # test
-#my @enchars = split (m//, $key_map{'en'});
-#my @entoru = convert($key_map{'en'}, $key_map{'ru'}, @enchars);
-#my @rutoen = convert($key_map{'ru'}, $key_map{'en'}, @entoru);
-#unless (@enchars ~~ @rutoen) {
-#say @enchars;
-#say @rutoen;
-#say @entoru;
-#die 'Wrong sets';
-#}
+# my @enchars = split (m//, $key_map{'en'});
+# my @entoru  = convert($key_map{'en'}, $key_map{'ru'}, @enchars);
+# my @rutoen  = convert($key_map{'ru'}, $key_map{'en'}, @entoru);
+# unless (@enchars ~~ @rutoen) {
+# say @enchars;
+# say @rutoen;
+# say @entoru;
+# die 'Wrong sets';
+# }

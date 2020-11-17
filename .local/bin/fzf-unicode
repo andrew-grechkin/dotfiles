@@ -4,7 +4,7 @@ set -Eeuo pipefail
 
 PATH="$(dirname "$0"):$PATH"
 
-chosen="$(grep-unicode | LC_ALL='en_US.UTF-8' fzf | perl -CSDL -aE 'print chr hex $F[0]; exit')"
+chosen="$(grep-unicode | LC_ALL='en_US.UTF-8' fzf | perl -C -aE 'print chr hex $F[0]; exit')"
 
 [[ -n "${chosen}" ]] && {
 	echo -n "${chosen}" | clipcopy \
