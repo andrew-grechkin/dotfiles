@@ -162,6 +162,7 @@ assign [class="Atom"]                 $ws8
 
 # => force floating windows -------------------------------------------------------------------------------------- {{{1
 
+for_window [class="floating"]                               floating enable
 for_window [class="Catfish"]                                floating enable
 for_window [class="Gnome-calculator"]                       floating enable
 for_window [class="Qalculate-gtk"]                          floating enable
@@ -204,7 +205,7 @@ bindsym $mod+Ctrl+h       mode "resize"
 
 # => layout ------------------------------------------------------------------------------------------------------ {{{1
 
-exec_always --no-startup-id ~/.cargo/bin/i3-auto-layout
+exec --no-startup-id ~/.cargo/bin/i3-auto-layout
 
 # => Simple X hotkey daemon -------------------------------------------------------------------------------------- {{{1
 

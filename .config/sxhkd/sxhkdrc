@@ -23,7 +23,7 @@ super + s
 super + t
 	alacritty --command tmux -f "$XDG_CONFIG_HOME/tmux/config"
 super + u
-    $HOME/.local/bin/rofi-unicode
+	alacritty --class 'Alacritty,floating' --command "$HOME/.local/bin/fzf-select" unicode
 super + w
 	alacritty --command "htop"
 super +  F12
@@ -44,14 +44,16 @@ super + control + F12
 
 super + shift + Return
 	exo-open --launch TerminalEmulator "$HOME/.local/bin/tmux-default-session"
+super + shift + c
+	qalculate-gtk
 super + shift + n
-	alacritty --command "$HOME/.local/bin/create-note"
+	alacritty --class 'Alacritty,floating' --command "$HOME/.local/bin/create-note"
 super + shift + r
 	exo-open --launch FileManager
 super + shift + s
 	catfish
 super + shift + u
-	$HOME/.local/bin/rofi-emoji
+	alacritty --class 'Alacritty,floating' --command "$HOME/.local/bin/fzf-select" emoji
 super + shift + v
 	$HOME/.local/bin/play-clipboard-url
 

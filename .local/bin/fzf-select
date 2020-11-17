@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -Eeuo pipefail
+
+PATH="$(dirname "$0"):$PATH"
+
+case "$1" in
+	emoji)   CHOSEN="$(grep-emoji | LC_ALL='en_US.UTF-8' fzf | sed 's/ > .*//')";;
+	unicode) CHOSEN="$(grep-unicode | LC_ALL='en_US.UTF-8' fzf | perl -C -aE 'print chr hex $F[0]; exit')";;
+	*)       exit;;
+esac
+
+[[ -n "${CHOSEN}" ]] && {
+	echo -n "${CHOSEN}" | clipcopy \
+	&& notify-send -i dialog-password "${CHOSEN}" 'Copied to the clipboard'
+}
