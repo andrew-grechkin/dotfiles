@@ -20,13 +20,13 @@ function arch-mirrors-update() {
 
 # => pacman + fzf ------------------------------------------------------------------------------------------------ {{{1
 
-function arch-available() {
+function arch-install() {
 	pacman -Slq \
 	| fzf --multi --preview 'cat <(pacman -Si {1}) <(pacman -Fl {1} | awk "{print \$2}")' \
 	| xargs -ro sudo pacman -S
 }
 
-function arch-installed() {
+function arch-remove() {
 	pacman -Qq \
 	| fzf --multi --preview "pacman -Qi {1}" \
 	| xargs -ro sudo pacman -Rns
