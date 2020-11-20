@@ -1,0 +1,11 @@
+[Unit]
+Description=Set Bing picture of the day as wallpaper
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+AccuracySec=1s
+RandomizedDelaySec=30s
+
+[Install]
+WantedBy=timers.target

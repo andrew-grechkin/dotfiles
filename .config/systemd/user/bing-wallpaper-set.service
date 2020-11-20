@@ -1,0 +1,9 @@
+[Unit]
+Description=Bing picture of the day
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/perl "%h/.local/bin/bing-wallpaper-set"
+
+[Install]
+WantedBy=default.target

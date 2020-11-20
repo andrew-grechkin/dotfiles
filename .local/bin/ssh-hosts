@@ -5,12 +5,26 @@ set -Eeuo pipefail
 function ssh_config_parsed_hosts() {
 	local SSH_CONF=(~/.ssh/config ~/.ssh/config.d/* /etc/ssh/ssh_config)
 	# shellcheck disable=2016
-	command perl -mList::Util=uniq -nE 'm/[*?%#]/x and next; if (m/^.*host(?:name|\s)+(.*)/i) {push @hosts, split(m{\s|,}, $1 =~ s/"//gr)}; END {say for uniq sort @hosts}' "${SSH_CONF[@]}"
+	command perl -wnE '
+		m/[*?%#]/x and next;
+		if (m/^.*host(?:name|\s)+(.*)/i) {
+			push(@R, split(m/\s|,/, $1 =~ s/"//gr))
+		};
+		END {say for @R}
+	' "${SSH_CONF[@]}"
 }
 
 function ssh_known_parsed_hosts() {
 	local SSH_KNOWN=(~/.ssh/known_hosts ~/.cache/ssh-known-hosts.work)
-	command grep -oE '^[[a-z0-9.,:-]+' <(cat "${SSH_KNOWN[@]}") | tr ',' '\n' | tr -d '[' | awk '{print $1 " " $1}'
+	# command grep -oE '^[[a-z0-9.,:-]+' <(cat "${SSH_KNOWN[@]}") | tr ',' '\n' | tr -d '[' | awk '{print $1 " " $1}'
+	perl -wlnE '
+		length && !m/\s*#/
+			and push (@R,
+				map +(/^\[?([[:alpha:]][[:alnum:]\-]*\.[[:alnum:]\.\-]+)(?:\]:.*)?$/),
+				map split(/,/), (split/\s+/)[0]
+			);
+		END {say for @R}
+	' "${SSH_KNOWN[@]}" 2>/dev/null
 }
 
 function ssh_hosts_parsed_hosts() {
@@ -21,4 +35,4 @@ command cat <(
 	ssh_config_parsed_hosts
 	ssh_known_parsed_hosts
 	ssh_hosts_parsed_hosts
-) | awk '{if (length($2) > 0) {print $2} else {print $1}}' | sort -u
+) | sort -u

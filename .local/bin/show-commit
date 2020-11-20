@@ -1,11 +1,16 @@
 #!/bin/bash
 
-set -Eeuo pipefail
+set -Eeo pipefail
 
 PATH="$(dirname "$0"):$PATH"
-COMMIT="$1"
 
-shift
+if [[ -n "$1" ]]; then
+	COMMIT="$1"
+	shift
+else
+	COMMIT="$(git rev-parse HEAD)"
+fi
+SHOW_OPTIONS=(--color=always --show-signature -b)
 
 git-in-repo && {
 	if [[ -n "$(git rev-parse --verify "$COMMIT^2" 2>/dev/null)" ]]; then
@@ -13,9 +18,8 @@ git-in-repo && {
 		# echo
 		git --no-pager m-log "$COMMIT"
 		echo
-		git --no-pager show --first-parent --color=always -b "$COMMIT" "$@"
+		SHOW_OPTIONS+=(--first-parent)
 		# git m-diff "$COMMIT"
-	else
-		git --no-pager show "$COMMIT" "$@"
 	fi
+	git --no-pager show "${SHOW_OPTIONS[@]}" "$COMMIT" "$@"
 } 2> /dev/null
