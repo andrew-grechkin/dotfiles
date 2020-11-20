@@ -4,9 +4,11 @@ set -Eeuo pipefail
 
 PATH="$(dirname "$0"):$PATH"
 
+UNICODE_BIND="ctrl-o:execute(xdg-open \"https://unicode-table.com/en/\$(echo {} | grep -o '^[[:xdigit:]]\{4,\}')\" &>/dev/null)"
+
 case "$1" in
 	emoji)   CHOSEN="$(grep-emoji | LC_ALL='en_US.UTF-8' fzf | sed 's/ > .*//')";;
-	unicode) CHOSEN="$(grep-unicode | LC_ALL='en_US.UTF-8' fzf | perl -C -aE 'print chr hex $F[0]; exit')";;
+	unicode) CHOSEN="$(grep-unicode | LC_ALL='en_US.UTF-8' fzf --no-multi --bind="$UNICODE_BIND" | perl -C -aE 'print chr hex $F[0]; exit')";;
 	*)       exit;;
 esac
 

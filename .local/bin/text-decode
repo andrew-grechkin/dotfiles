@@ -3,10 +3,10 @@
 
 use v5.28;
 use autodie;
-use open ':locale';
+use open ':std', 'OUT' => ':locale';
 use strict;
 use utf8;
-use warnings;
+use warnings 'FATAL' => 'utf8';
 
 use Getopt::Long qw(:config auto_version);
 
@@ -20,14 +20,14 @@ $codepage
     or die ('Please provide --codepage option');
 
 @ARGV
-    or unshift (@ARGV, '-');
+    or push (@ARGV, '-');
 
 while (my $ARGV = shift) {
     my $fh = *STDIN;
     $ARGV eq '-'
         or open ($fh, '<', $ARGV);
 
-    binmode ($fh, ":crlf:encoding($codepage)");
+    binmode ($fh, ":raw :crlf :encoding($codepage)");
 
     while (defined (my $line = <$fh>)) {
         chomp ($line);

@@ -5,7 +5,7 @@ use autodie;
 use open ':std', ':encoding(UTF-8)';
 use strict;
 use utf8;
-use warnings FATAL => qw(utf8);
+use warnings 'FATAL' => qw(utf8);
 
 push (@ARGV, '/usr/share/unicode/UnicodeData.txt');
 
@@ -22,8 +22,5 @@ while (my $line = <>) {
     my $code   = hex $data[0];
     my $symbol = $data[1] eq '<control>' ? '\\u' . $data[0] : chr ($code);
 
-    say sprintf (
-        '%-8s %-8s %-20s %s',
-        $data[0], $symbol, $data[1], $data[10] ? "($data[10])" : '',
-    );
+    say sprintf ('%-8s %-8s %-20s %s', $data[0], $symbol, $data[1], $data[10] ? "($data[10])" : '');
 }

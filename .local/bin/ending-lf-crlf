@@ -3,18 +3,20 @@
 
 use v5.28;
 use autodie;
-use open ':std', 'OUT' => ':crlf :encoding(UTF-8)', 'IN' => ':locale';
+use open ':std', 'OUT' => ':crlf';
 use strict;
 use utf8;
 use warnings;
 
-# by some kind of a bug open pragma with ':crlf' is not applied to STDOUT
-binmode (STDOUT, ':pop :crlf :encoding(UTF-8)');
+BEGIN {
+    # by some kind of a bug open pragma with ':crlf' is not applied to STDOUT
+    binmode (STDOUT, ':raw :crlf');
+}
 
-while (defined (my $line = <>)) {
-    chomp ($line);
+while (<>) { ## no critic [Freenode::WhileDiamondDefaultAssignment]
+    chomp;
 } continue {
-    say $line;
+    say;
 }
 
 __END__

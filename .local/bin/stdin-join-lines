@@ -1,10 +1,17 @@
-#!/usr/bin/env perl
+#!/usr/bin/env -S perl -n
 
-use v5.16;
+use v5.28;
 use strict;
 use warnings;
 
-print join (' ', map {chomp; length $_ ? $_ : +()} <>); ## no critic [InputOutput::ProhibitJoinedReadline]
+## no critic [Variables::ProhibitPunctuationVars, Variables::RequireLocalizedPunctuationVars]
+
+BEGIN {
+    $\ = undef;
+}
+
+chomp;
+print;
 
 __END__
 
