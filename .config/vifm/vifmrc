@@ -471,6 +471,12 @@ filetype *.encfs
 	\ {Mount with encfs}
 	\ FUSE_MOUNT2|encfs %PARAM %DESTINATION_DIR %FOREGROUND,
 
+" => File associations: ansible role ----------------------------------------------------------------------------- {{{1
+
+filetype main.yaml
+	\ {Execute ansible role}
+	\ bash -c "ANSIBLE_FORCE_COLOR=True ansible-role %d:h -i ~/git/private/ansible-arch/roles/private/hosts --hosts localhost -K | less -r",
+
 " => Default file execution -------------------------------------------------------------------------------------- {{{1
 
 " Open all other files with default system programs (you can also remove all

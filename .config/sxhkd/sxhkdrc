@@ -36,7 +36,7 @@ super + control + l
 super + control + F1
 	xkill
 super + control + F5
-	$HOME/.local/bin/bing-wallpaper-set
+	$HOME/.local/bin/bing-wallpaper
 super + control + F12
 	$HOME/.local/bin/touchpad-toggle
 

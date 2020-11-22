@@ -22,12 +22,12 @@ function arch-mirrors-update() {
 
 function arch-install() {
 	pacman -Slq \
-	| fzf --multi --preview 'cat <(pacman -Si {1}) <(pacman -Fl {1} | awk "{print \$2}")' \
+	| fzf --reverse --multi --bind 'tab:toggle-out,shift-tab:toggle-in' --preview 'cat <(pacman -Si {1}) <(pacman -Fl {1} | awk "{print \$2}")' \
 	| xargs -ro sudo pacman -S
 }
 
 function arch-remove() {
-	pacman -Qq \
-	| fzf --multi --preview "pacman -Qi {1}" \
+	pacman -Qqe \
+	| fzf --reverse --multi --bind 'tab:toggle-out,shift-tab:toggle-in' --preview "pacman -Qi {1}" \
 	| xargs -ro sudo pacman -Rns
 }
