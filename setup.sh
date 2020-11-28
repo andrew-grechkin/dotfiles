@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/bash -x
 
 mkdir -p ~/.cache
 mkdir -p ~/.cache/bin

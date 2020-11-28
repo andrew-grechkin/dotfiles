@@ -18,6 +18,19 @@ function arch-mirrors-update() {
 	sudo reflector --country Netherlands --latest 8 --protocol http --protocol https --sort rate --save /etc/pacman.d/mirrorlist
 }
 
+function arch-upgrade() {
+	pushd ~/git/private/ansible-arch &>/dev/null
+	ansible-playbook playbooks/upgrade.yaml -i hosts -l arch -K
+#	ansible-playbook playbooks/upgrade.yaml --connection=local -i localhost, -K
+	popd &>/dev/null
+}
+
+function arch-upgrade-all() {
+	pushd ~/git/private/ansible-arch &>/dev/null
+	ansible-playbook playbooks/upgrade.yaml -i roles/private/hosts -K
+	popd &>/dev/null
+}
+
 # => pacman + fzf ------------------------------------------------------------------------------------------------ {{{1
 
 function arch-install() {

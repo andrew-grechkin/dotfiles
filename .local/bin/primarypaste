@@ -14,10 +14,10 @@ case "$OSTYPE" in
 		cat /dev/primary
 		;;
 	*)
-		if [[ -n "$(command -v xclip)" ]]; then
-			xclip -o -sel p 2>/dev/null
-		elif [[ -n "$(command -v xsel)" ]]; then
+		if [[ -n "$(command -v xsel)" ]]; then
 			xsel --primary --output 2>/dev/null
+		elif [[ -n "$(command -v xclip)" ]]; then
+			xclip -o -sel p 2>/dev/null
 		else
 			echo "primarypaste: Platform $OSTYPE not supported or xclip/xsel not installed" >&2
 			exit 1
