@@ -13,7 +13,7 @@ antigen bundle cpanm
 antigen bundle fzf
 antigen bundle gnupg
 antigen bundle grep
-antigen bundle linuxbrew
+# antigen bundle linuxbrew
 antigen bundle perl
 antigen bundle rsync
 antigen bundle ssh
@@ -27,7 +27,7 @@ antigen bundle tmux
 antigen bundle zsh-users/zsh-autosuggestions                                   # Fish-like auto suggestions
 antigen bundle zsh-users/zsh-completions                                       # Extra zsh completions
 antigen bundle zsh-users/zsh-syntax-highlighting                               # Syntax highlighting bundle.
-antigen bundle MichaelAquilina/zsh-you-should-use
+# antigen bundle MichaelAquilina/zsh-you-should-use
 
 # => Default repo bundles load last ------------------------------------------------------------------------------ {{{1
 

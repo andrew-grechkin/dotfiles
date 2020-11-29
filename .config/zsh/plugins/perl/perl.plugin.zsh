@@ -1,4 +1,4 @@
-# vim: syntax=zsh foldmethod=marker
+# vim: filetype=zsh foldmethod=marker
 
 # => exports ----------------------------------------------------------------------------------------------------- {{{1
 
@@ -16,11 +16,12 @@ alias perlverbose='export PERL5OPT="-MCarp=verbose"'
 # => functions --------------------------------------------------------------------------------------------------- {{{1
 
 function enable-perlbrew() {
-	if [[ ! -d "$PERLBREW_ROOT" ]]; then
+	[[ -d "$PERLBREW_ROOT" ]] || {
 		NEED_PERLBREW_INIT=1
+		mkdir -p "$PERLBREW_ROOT"
 		perlbrew init
 		perlbrew install-cpanm
-	fi
+	}
 
 	# make system perl available for perlbrew
 	[[ -d "$PERLBREW_ROOT/perls/system/bin"      ]] || mkdir -p            "$PERLBREW_ROOT/perls/system/bin"
@@ -30,7 +31,7 @@ function enable-perlbrew() {
 	source-file "$PERLBREW_ROOT/etc/bashrc"
 	source-file "$PERLBREW_ROOT/etc/perlbrew-completion.bash"
 
-	if [[ "$NEED_PERLBREW_INIT" == 1 ]]; then
+	if (( $NEED_PERLBREW_INIT )); then
 		perlbrew lib create system@default
 		perlbrew switch system@default
 	fi
@@ -40,8 +41,10 @@ function activate-local-perl() {
 	local PERL_LOCAL=${1:-$HOME/.local/usr}
 	if [[ ":$PERL5LIB:" != *":$PERL_LOCAL/lib/perl5:"* ]]; then
 		# install local::lib if necessary
-		[[ -e "$PERL_LOCAL/lib/perl5/local/lib.pm" ]] || echo "Preparing Perl local environment in: $PERL_LOCAL"
-		[[ -e "$PERL_LOCAL/lib/perl5/local/lib.pm" ]] || cpanm -nqf --local-lib="$PERL_LOCAL" local::lib
+		[[ -e "$PERL_LOCAL/lib/perl5/local/lib.pm" ]] || {
+			echo "Preparing Perl local environment in: $PERL_LOCAL"
+			cpanm -nqf --local-lib="$PERL_LOCAL" local::lib
+		}
 
 		# enable local::lib environment
 		eval "$(perl -I "$PERL_LOCAL/lib/perl5/" -Mlocal::lib="$PERL_LOCAL")"
@@ -56,10 +59,10 @@ function export-perl5lib() {
 
 # => main -------------------------------------------------------------------------------------------------------- {{{1
 
-if [[ -n "$(command -v perlbrew)" ]]; then                                     # perlbrew is the preferred way of managing perl and libraries
+if (( $+commands[perlbrew] )); then                                            # perlbrew is the preferred way of managing perl and libraries
 	enable-perlbrew
 else                                                                           # fallback onto local::lib if perlbrew is not available but cpanm is
-	[[ -n "$(command -v cpanm)" ]] && activate-local-perl
+	(( $+commands[cpanm] )) && activate-local-perl
 fi
 
 export-perl5lib

@@ -28,7 +28,7 @@ use constant {
 my %options = (
     'HELP'       => 0,
     'MARKET'     => 'de-DE,en-AU,en-CA,en-IN,en-NZ,en-UK,en-US,es-ES,fr-FR,ja-JP,zh-CN',
-    'OUTPUT_DIR' => File::Spec->catfile($ENV{'XDG_RUNTIME_DIR'} || '/tmp', 'bing-wallpaper-set'),
+    'OUTPUT_DIR' => File::Spec->catfile('/var/tmp', 'bing-wallpaper'),
     'SET'        => 0,
     'VERBOSE'    => 0,
 );

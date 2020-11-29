@@ -1,0 +1,25 @@
+# Piping
+
+* Pipe STDIN from file
+```zsh
+clipcopy < path/to/file
+```
+* Pipe STDIN from heredox (type end-word for stop reading)
+```zsh
+clipcopy <<'END'
+```
+* Pipe STDIN from string
+```zsh
+clipcopy <<<'arbitrary string'
+```
+
+# [Process substitution](http://zsh.sourceforge.net/Doc/Release/Expansion.html#Process-Substitution)
+
+* Connect output of the other process with /dev/fd file (when application doesn't support read from STDIN)
+```zsh
+clipcopy <(ping -c 4 localhost)
+```
+* Connect output of the other process with temporary file (if application need seek through data)
+```zsh
+clipcopy =(ping -c 4 localhost)
+```

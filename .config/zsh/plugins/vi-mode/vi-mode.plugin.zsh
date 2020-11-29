@@ -138,8 +138,9 @@ bindkey          '\ed'  kill-word
 bindkey -M vicmd '\ed'  kill-word
 bindkey          '\et'  transpose-words
 bindkey -M vicmd '\et'  transpose-words
-bindkey          '^x^e' edit-command-line
 bindkey          '^xu'  undo
+bindkey          '^xv'  edit-command-line
+bindkey          '^x^e' edit-command-line
 
 # => Mode indicator ---------------------------------------------------------------------------------------------- {{{1
 
