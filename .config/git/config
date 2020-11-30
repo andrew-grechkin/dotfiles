@@ -1,5 +1,5 @@
 [alias]
-	bleach   = !"f(){ git fall; git br | perl -alE 'm/: gone]/ && $F[0] ne \"*\" && system(qq(git branch -d $F[0]))'; }; f"
+	bleach   = !"f(){ git fall; git br | perl -alE 'm/: gone]/ && $F[0] ne \"*\" && system(qq(git branch -D $F[0]))'; }; f"
 	br       = branch -vv
 	br-name  = !"git rev-parse --abbrev-ref HEAD"
 	br-redo  = !"git rebase -i `git merge-base master HEAD`"
