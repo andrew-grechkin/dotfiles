@@ -19,7 +19,7 @@ super + o
 super + r
 	alacritty --command zsh -c "vifm $HOME $HOME"
 super + s
-	$HOME/.local/bin/rofi-gopass
+	$HOME/.local/bin/rofi-pass
 super + t
 	alacritty --command tmux -f "$XDG_CONFIG_HOME/tmux/config"
 super + u
