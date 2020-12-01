@@ -37,7 +37,7 @@ my %options = (
 
 GetOptions(
     'apply|a'    => \$options{'APPLY'},
-    'help'       => \(my $help),
+    'help|h'     => \(my $help),
     'min|m=i'    => \$options{'MIN_SIZE'},
     'follow|f'   => \$options{'FOLLOW'},
     'recurse|r'  => \$options{'RECURSE'},

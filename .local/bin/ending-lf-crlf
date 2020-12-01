@@ -13,7 +13,7 @@ BEGIN {
     binmode (STDOUT, ':raw :crlf');
 }
 
-while (<>) { ## no critic [Freenode::WhileDiamondDefaultAssignment]
+while (<<>>) { ## no critic [Freenode::WhileDiamondDefaultAssignment]
     chomp;
 } continue {
     say;

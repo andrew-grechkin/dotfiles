@@ -9,7 +9,7 @@ use warnings 'FATAL' => qw(utf8);
 
 push (@ARGV, '/usr/share/unicode/UnicodeData.txt');
 
-while (my $line = <>) {
+while (my $line = <<>>) {
     chomp ($line);
     $line && length ($line) && substr ($line, 0, 1) ne '#'
         or next;

@@ -109,7 +109,7 @@ my %options = (
 );
 
 GetOptions(
-    'help'       => \(my $help),
+    'help|h'     => \(my $help),
     'verbose|v+' => \$options{'VERBOSE'},
 ) or die ('Unable to process command line options');
 

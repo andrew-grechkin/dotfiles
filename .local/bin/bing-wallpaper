@@ -35,7 +35,7 @@ my %options = (
 
 GetOptions(
     'directory|d=s' => \$options{'OUTPUT_DIR'},
-    'help'          => \$options{'HELP'},
+    'help|h'        => \$options{'HELP'},
     'market|m=s'    => \$options{'MARKET'},
     'set|s'         => \$options{'SET'},
     'verbose|v+'    => \$options{'VERBOSE'},
@@ -138,6 +138,7 @@ sub _set_wallpaper($path) {
                 d.writeConfig("Image", "file://$path");
         }
         END_KDE_SCRIPT
+
         # d.writeConfig("FillMode", 1);
 
         my @cmd = (

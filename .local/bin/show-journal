@@ -37,7 +37,7 @@ my $c_to_sev = {
 
 my $json = JSON::PP->new->utf8(0);
 
-while (defined (my $j = <>)) {
+while (defined (my $j = <<>>)) {
 	chomp($j);
 	next unless $j;
 
