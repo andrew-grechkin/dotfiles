@@ -29,11 +29,13 @@ else
 	echo -n "$USERNAME" | primarycopy
 	if [[ "$1" == "--pass" ]]; then
 		{
+			gpg --card-status &>/dev/null
 			pass show --clip "$2" &>/dev/null \
 			&& notify-send "Password copied to clipboard" "$2" -i dialog-password
 		} || notify-send "Something went wrong" "Error: $?" -i dialog-password
 	elif [[ "$1" == "--otp" ]]; then
 		{
+			gpg --card-status &>/dev/null
 			pass otp code --clip "$2" &>/dev/null \
 			&& notify-send "OTP code copied to clipboard" "$2" -i dialog-password
 		} || notify-send "Something went wrong" "Error: $?" -i dialog-password
