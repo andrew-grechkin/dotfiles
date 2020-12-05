@@ -1,0 +1,118 @@
+#!/usr/bin/env perl
+
+use v5.28;
+use autodie;
+use open ':locale';
+use strict;
+use utf8;
+use warnings;
+use experimental qw(declared_refs refaliasing signatures);
+
+use Carp;
+use IPC::Open2;
+
+our $VERSION = 1;
+
+sub main() {
+    chomp (my @installed_depend   = `pacman -Qqd`);
+    chomp (my @installed_explicit = `pacman -Qqe`);
+    chomp (my @available          = `pacman -Slq`);
+
+    my %available = map {$_ => undef} @available;
+    delete @available{@installed_depend, @installed_explicit};
+
+    my @list;
+    push @list, map {[$_, 'installed         ', $_]} @installed_depend;
+    push @list, map {[$_, 'installed explicit', $_]} @installed_explicit;
+    push @list, map {[$_, 'available         ', $_]} keys %available;
+
+    @list = sort {$a->[0] cmp $b->[0]} @list;
+
+    my ($fzf_pid, $fzf_out, $fzf_in) = _start_fzf();
+
+    _spew_to_fzf($fzf_in, \@list);
+
+    my \@output = _wait_fzf($fzf_pid, $fzf_out);
+    foreach my $line (@output) {
+        my ($package) = split m/\s/, $line;
+        say _trim($package);
+    }
+
+    return 0;
+}
+
+## no critic [ValuesAndExpressions::RequireInterpolationOfMetachars, ValuesAndExpressions::ProhibitImplicitNewlines]
+sub _start_fzf() {
+    local %ENV = %ENV;
+    delete $ENV{FZF_DEFAULT_OPTS};
+
+    my @cmd = (
+        'fzf', '--with-nth', '2..',
+        '--multi',
+        '--bind',           'tab:toggle-out,shift-tab:toggle-in',
+        '--bind',           'ctrl-d:page-down',
+        '--bind',           'ctrl-u:page-up',
+        '--bind',           'f1:toggle-preview',
+        '--bind',           'f2:toggle-preview-wrap',
+        '--bind',           'home:top',
+        '--bind',           'ctrl-alt-i:execute(sudo pacman -S {+1} </dev/tty >/dev/tty)+abort',
+        '--bind',           'ctrl-alt-d:execute(sudo pacman -Rs {+1} </dev/tty >/dev/tty)+abort',
+        '--header',         'Ctrl-Alt-I: install; Ctrl-Alt-D: remove',
+        '--preview-window', 'right:50%:wrap', '--preview',
+        q{
+            if [[ {2} == "available" ]]; then
+                cat <(pacman -Si {1}) <(pacman -Fl {1} | awk '{print $2}')
+            else
+                cat <(pacman -Qi {1}) <(pacman -Ql {1} | awk '{print $2}')
+            fi
+        },
+    );
+
+    my $pid = open2(my $chld_out, my $chld_in, @cmd);
+    binmode ($_, ':encoding(UTF-8)') foreach $chld_in, $chld_out;
+    return $pid, $chld_out, $chld_in;
+}
+
+sub _spew_to_fzf ($in, $list) {
+    foreach my $package ($list->@*) {
+        say {$in} sprintf ('%s %s %s', $package->@*);
+    }
+    close $in;
+
+    return;
+}
+
+sub _wait_fzf ($pid, $out) {
+    my @output = <$out>;
+
+    waitpid ($pid, 0)
+        or carp "Unable to wait for fzf to finish: $!";
+
+    @output = map _trim($_), @output;
+
+    return \@output;
+}
+
+sub _trim ($str) {
+    chomp ($str);
+    return $str =~ s{\A\s+|\s+\z}{}xgr;
+}
+
+exit main();
+
+__END__
+
+=head1 NAME
+
+pac
+
+=head1 DESCRIPTION
+
+A simple wrapper around Arch linux package manager 'pacman' empowered by fzf.
+Allows to quickly install/uninstall packages and get information.
+
+=head1 SYNOPSIS
+
+pac
+
+=cut

@@ -11,7 +11,7 @@ use Path::Tiny;
 use constant {
     'SUPPORTED' => [{
             'suffix'  => qr{[.]tar$}x,
-            'command' => ['tar', '-xvf', \&_get_filename],
+            'command' => ['tar', '-xvf', \&_get_filename, '--directory', \&_get_basename],
         },
         {
             'suffix'  => qr{[.]tar.bz2$ | [.]tbz2$ | [.]tbz$ | [.]tz2$}x,
@@ -70,6 +70,10 @@ use constant {
             'command' => ['unzip', '-O', 'cp866', '-d', \&_get_basename, \&_get_filename],
         },
         {
+            'suffix'  => qr{[.]eml$}x,
+            'command' => ['munpack', '-f', \&_get_filename, '-C', '.'],
+        },
+        {
             'suffix'  => qr{[.]7z$ | [.]rar$ | [.]zip$}x,
             'command' => [
                 '7z', 'x', '-y',
@@ -79,12 +83,6 @@ use constant {
                 },
                 '--',
                 \&_get_filename,
-            ],
-        },
-        {
-            'suffix'  => qr{[.]eml$}x,
-            'command' => [
-                'munpack', '-f', \&_get_filename, '-C', '.',
             ],
         },
     ],
