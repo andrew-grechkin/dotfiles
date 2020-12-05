@@ -17,28 +17,32 @@ super + o
 #super + p
 #	exo-open --launch TerminalEmulator "profanity"
 super + r
-	alacritty --command zsh -c "vifm $HOME $HOME"
+	alacritty -e zsh -c "vifm $HOME $HOME"
 super + s
 	$HOME/.local/bin/rofi-pass
 super + t
-	alacritty --command tmux -f "$XDG_CONFIG_HOME/tmux/config"
+	alacritty -e tmux -f "$XDG_CONFIG_HOME/tmux/config"
 super + u
-	alacritty --class 'Alacritty,floating' --command "$HOME/.local/bin/fzf-select" unicode
+	alacritty --class 'Alacritty,floating' -e "$HOME/.local/bin/fzf-select" unicode
 super + w
-	alacritty --command "htop"
-super +  F12
+	alacritty -e "htop"
+
+super + F11
+	$HOME/.local/bin/touchpad-toggle
+super + F12
 	$HOME/.local/bin/passgen
 
 # => ------------------------------------------------------------------------------------------------------------- {{{1
 
 super + control + l
 	$HOME/.local/bin/rofi-exit lock
-super + control + F1
-	xkill
 super + control + F5
 	$HOME/.local/bin/bing-wallpaper -s
-super + control + F12
-	$HOME/.local/bin/touchpad-toggle
+
+# => ------------------------------------------------------------------------------------------------------------- {{{1
+
+control + alt + Esc
+	xkill
 
 # => ------------------------------------------------------------------------------------------------------------- {{{1
 

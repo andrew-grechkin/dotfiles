@@ -23,8 +23,8 @@ my %options = (
 GetOptions(
     'apply|a'   => \$options{'APPLY'},
     'follow|f'  => \$options{'FOLLOW'},
-    'recurse|r' => \$options{'RECURSE'},
     'match|m'   => \(my $match),
+    'recurse|r' => \$options{'RECURSE'},
 ) or die ('Unable to process command line options');
 
 $match //= qr{(\d{4}-\d{2})-\d{2}};
@@ -55,7 +55,8 @@ foreach my $path ($state{'files'}->@*) {
 
     my $name = $path->basename;
     if ($name =~ $match) {
-        next unless $1;
+        $1
+            or next;
 
         my $new_dir = $parent->child($1);
         if ($options{'APPLY'}) {

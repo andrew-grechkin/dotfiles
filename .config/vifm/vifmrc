@@ -644,7 +644,7 @@ mark s ~/.local/share                            nvim
 
 set classify=' ::../::, :dir:/, :exe:, :reg:, :link:'
 set classify+=' ::*.sh::, ::*.cpp::, ::*.c::, ::*.hpp::, ::*.pl,,*.pm::, ::*.rb::, ::*.go::'
-set classify+=' ::/^copying|license$/::, ::.git/,,*.git/::'
+set classify+='© ::/^copying|license$/::, ::.git/,,*.git/::'
 set classify+=' ::*.fb2,,*.epub,,*.djvu::, ::*.pdf::'
 set classify+=' ::*.doc,,*.docx::, ::*.xls,,*.xls[mx]::, ::*.ppt,,*.pptx::'
 set classify+=' ::*.7z,,*.ace,,*.arj,,*.bz2,,*.cpio,,*.dz,,*.gz,,*.jar,,*.lzh,,*.lzma,,*.rar,,*.rz,,*.tar,,*.taz,,*.tb2,,*.tbz,,*.tbz2,,*.tgz,,*.tlz,,*.trz,,*.txz,,*.tz,,*.tz2,,*.zst,,*.tzst,,*.xz,,*.z,,*.zip,,*.zoo::, ::*.deb::, ::*.rpm::'

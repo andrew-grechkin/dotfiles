@@ -4,8 +4,10 @@ use v5.28;
 use strict;
 use warnings;
 
-# non core
+# core
 use JSON::PP;
+
+# non core
 use Path::Tiny;
 use YAML::Tiny;
 

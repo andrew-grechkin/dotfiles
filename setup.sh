@@ -16,8 +16,8 @@ ln -s  "$WORKDIR/.gnupg"                                               ~/
 ln -s  "$WORKDIR/.ssh"                                                 ~/
 ln -sf "$WORKDIR/.pam_environment"                                     ~/
 ln -sf "$WORKDIR/.xprofile"                                            ~/
-[ -z "$ZDOTDIR" ] && ln -sf "$WORKDIR/.zshenv"                         ~/
-[ -z "$MYVIMRC" ] && ln -sf "$WORKDIR/.config/nvim/init.vim"           ~/.vimrc
+[[ -z "$ZDOTDIR" ]] && ln -sf "$WORKDIR/.zshenv"                       ~/
+[[ -z "$MYVIMRC" ]] && ln -sf "$WORKDIR/.config/nvim/init.vim"         ~/.vimrc
 ln -sf "$WORKDIR/.config/perltidyrc"                                   ~/.perltidyrc
 
 ln -sf "$WORKDIR/.config/alacritty"                                    ~/.config/
@@ -45,9 +45,9 @@ ln -sf "$WORKDIR/.local/bin"                                           ~/.local/
 ln -sf "$WORKDIR/.local/share/vim-dict"                                ~/.local/share/
 ln -sf "$WORKDIR/.local/share/vim-plug"                                ~/.local/share/
 
-[ -f "$HOME/.config/npm" ] || cp -r "$WORKDIR/.config/npm"             ~/.config/
+[[ -f "$HOME/.config/npm" ]] || cp -r "$WORKDIR/.config/npm"           ~/.config/
 
 chmod -R u=rwX,go-rwx "$WORKDIR/.ssh"
 
-[ -x 'submodules/private/setup.sh' ] && echo 'Execution private/setup' && (exec 'submodules/private/setup.sh')
-[ -x 'submodules/secret/setup.sh' ]  && echo 'Execution secret/setup'  && (exec 'submodules/secret/setup.sh')
+[[ -x 'submodules/private/setup.sh' ]] && echo 'Execution private/setup' && (exec 'submodules/private/setup.sh')
+[[ -x 'submodules/secret/setup.sh' ]]  && echo 'Execution secret/setup'  && (exec 'submodules/secret/setup.sh')
