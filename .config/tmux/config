@@ -4,8 +4,7 @@
 
 # TERM options (https://copr.fedorainfracloud.org/coprs/panagiotiss/tmux/)
 set  -g default-terminal   'tmux-256color'                                     # support 256 colors and HOME, END ...
-set -ga terminal-overrides ',*256col*:Tc'                                      # true colous support
-set -ga terminal-overrides ',alacritty:Tc'
+set -ga terminal-overrides ',*256col*:Tc,alacritty:Tc'                         # true colous support
 set -as terminal-overrides ',*256col*:Smulx=\E[4::%p1%dm'                      # support all types of underlines
 set -as terminal-overrides ',*256col*:Setulc=\E[58::2::%p1%{65536}%/%d::%p1%{256}%/%{255}%&%d::%p1%{255}%&%d%;m'  # underline colors
 # set -as terminal-overrides ',*:sitm=\E[3m'                                     # italics support

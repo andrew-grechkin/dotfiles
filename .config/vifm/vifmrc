@@ -379,6 +379,10 @@ fileviewer *.doc
 fileviewer *.docx
 	\ docx2txt.pl %c -,
 
+filextype *.ttf
+	\ {Open with fontforge}
+	\ fontforge %c %i &,
+
 " => File associations: IsoMount --------------------------------------------------------------------------------- {{{1
 
 filetype *.iso,*.mdf,*.nrg

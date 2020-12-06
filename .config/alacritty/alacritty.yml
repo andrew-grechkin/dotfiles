@@ -99,11 +99,11 @@ font:
     #   - (macOS) Menlo
     #   - (Linux/BSD) monospace
     #   - (Windows) Consolas
-    family: DejaVuSansMono Nerd Font
-    #family: DejaVuSansMono Nerd Font
+    # family: DejaVu Sans Mono Nerd
+    family: JetBrains Mono Nerd
 
     # The `style` can be specified to pick a specific face.
-    style: Book
+    style: Regular
 
   # Bold font face
   bold:
@@ -125,7 +125,7 @@ font:
     #family: monospace
 
     # The `style` can be specified to pick a specific face.
-    style: Oblique
+    style: Italic
 
   # Bold italic font face
   bold_italic:
@@ -136,7 +136,7 @@ font:
     #family: monospace
 
     # The `style` can be specified to pick a specific face.
-    style: Bold Oblique
+    style: Bold Italic
 
   # Point size
   size: 9.0
