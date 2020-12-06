@@ -99,11 +99,15 @@ font:
     #   - (macOS) Menlo
     #   - (Linux/BSD) monospace
     #   - (Windows) Consolas
-    # family: DejaVu Sans Mono Nerd
-    family: JetBrains Mono Nerd
+    # family: Cascadia Code
+    # family: DejaVu Sans Mono
+    family: DejaVu Sans Mono Nerd
+    # family: Fira Code
+    # family: JetBrains Mono
+    # family: JetBrains Mono Nerd
 
     # The `style` can be specified to pick a specific face.
-    style: Regular
+    # style: Regular
 
   # Bold font face
   bold:

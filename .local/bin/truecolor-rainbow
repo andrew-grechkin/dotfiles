@@ -4,7 +4,7 @@
 
 use v5.28;
 use strict;
-use warnings;
+use warnings FATAL => qw(utf8);
 
 ## no critic [ValuesAndExpressions::ProhibitMagicNumbers, ValuesAndExpressions::ProhibitEscapedCharacters]
 print "256 color mode\n\n";

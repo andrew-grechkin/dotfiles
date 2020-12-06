@@ -5,7 +5,7 @@ use autodie;
 use open ':locale';
 use strict;
 use utf8;
-use warnings;
+use warnings FATAL => qw(utf8);
 use experimental qw(declared_refs refaliasing signatures);
 
 use Carp;

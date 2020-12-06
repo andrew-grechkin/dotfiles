@@ -1,9 +1,12 @@
 #!/usr/bin/env perl
 
 use v5.28;
+use autodie;
+use open ':locale';
 use strict;
-use warnings;
-use autodie qw(:all);
+use utf8;
+use warnings FATAL => qw(utf8);
+use experimental qw(declared_refs refaliasing signatures);
 
 use Carp;
 use Errno qw(ENOENT);
@@ -14,7 +17,8 @@ my %handlers = (
         'suffix'  => '.tzst',
         'handler' => sub {
             my ($outfile, @items) = @_;
-            system ('tar', 'vcf', $outfile, '--zstd', map {$_->stringify} @items);
+            system ('tar', '-vcf', $outfile, '--zstd', map {$_->stringify} @items) == 0
+                or croak "Unable to execute compress command: $!";
         },
 
         # 'suffix'  => '.tar.gz',

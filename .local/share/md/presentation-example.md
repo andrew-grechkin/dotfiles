@@ -35,7 +35,7 @@ toc: true
 ```perl
 use v5.28;
 use strict;
-use warnings;
+use warnings FATAL => qw(utf8);
 
 our $VERSION = 1;
 exit 42;

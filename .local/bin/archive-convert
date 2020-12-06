@@ -1,14 +1,16 @@
 #!/usr/bin/env perl
 
 use v5.28;
-use autodie qw(:all);
+use autodie;
+use open ':locale';
 use strict;
-use warnings;
+use utf8;
+use warnings FATAL => qw(utf8);
+use experimental qw(declared_refs refaliasing signatures);
 
 use Carp;
 use Path::Tiny;
 
-## no critic [RegularExpressions::ProhibitComplexRegexes]
 use constant {
     'SUPPORTED' => [{
             'suffix' => qr{[.]tar$}x,
@@ -74,7 +76,8 @@ sub extract {
     my @command = map {ref $_ eq 'CODE' ? $_->($file, $basename, $arc, $extract_path) : $_} $arc->{'command'}->@*;
     say join (' ', @command);
 
-    system (@command);
+    system (@command) == 0
+        or croak "Unable to execute extract command: $!";
 
     return 1;
 }
@@ -107,7 +110,9 @@ foreach my $file (map {path($_)} @ARGV) {
         $outfile->exists
             and die "File already exists: $outfile";
 
-        system ('tar', 'caf', $outfile, '--directory', $extract_path, map {$_->basename} $extract_path->children);
+        system ('tar', 'caf', $outfile, '--directory', $extract_path, map {$_->basename} $extract_path->children) == 0
+            or croak "Unable to execute compress command: $!";
+
         last;
     }
 

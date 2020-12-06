@@ -6,7 +6,7 @@ use autodie;
 use open ':std', IN => ':crlf';
 use strict;
 use utf8;
-use warnings;
+use warnings FATAL => qw(utf8);
 
 BEGIN {
     # by some kind of a bug open pragma with ':crlf' is not applied to STDIN

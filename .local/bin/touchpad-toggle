@@ -2,7 +2,7 @@
 
 use v5.28;
 use strict;
-use warnings;
+use warnings FATAL => qw(utf8);
 
 my $name = 'SynPS/2 Synaptics TouchPad';
 
