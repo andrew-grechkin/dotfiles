@@ -54,6 +54,7 @@ sub _start_fzf() {
         '--bind',           'ctrl-u:page-up',
         '--bind',           'f1:toggle-preview',
         '--bind',           'f2:toggle-preview-wrap',
+        '--bind',           'f3:toggle-sort',
         '--bind',           'home:top',
         '--bind',           'ctrl-alt-i:execute(sudo pacman -S {+1} </dev/tty >/dev/tty)+abort',
         '--bind',           'ctrl-alt-d:execute(sudo pacman -Rs {+1} </dev/tty >/dev/tty)+abort',

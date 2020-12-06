@@ -15,14 +15,15 @@ use File::Path qw(make_path);
 use File::Spec;
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
 use JSON::PP ();
-use List::Util qw(shuffle);
+use List::Util qw(shuffle uniq);
 use Pod::Usage;
 
-our $VERSION = 2;
+our $VERSION = 2.1;
 
 use constant {
-    'URL_BASE' => 'http://www.bing.com',
-    'URL_PATH' => 'HPImageArchive.aspx',
+    'URL_BASE'        => 'http://www.bing.com',
+    'URL_PATH'        => 'HPImageArchive.aspx',
+    'PREFERRED_FONTS' => {map {$_ => undef} 'Noto Sans CJK JP', 'Source Han Sans', 'DejaVu Sans'},
 };
 
 my %options = (
@@ -119,7 +120,7 @@ sub _process_image ($path, $descriptor) {
     my @cmd = (
         qw(convert -fill white -pointsize 28 -gravity NorthWest -draw),
         "text 0,0 '$descriptor->{'copyright'}'",
-        '-family', 'Noto Sans CJK JP',
+        '-family', _find_font_family($descriptor->{'copyright'}),
         $path,     $path,
     );
     system (@cmd) == 0
@@ -127,7 +128,15 @@ sub _process_image ($path, $descriptor) {
     return;
 }
 
-sub _set_wallpaper($path) {
+sub _find_font_family ($text) {
+    my $charcodes = $text =~ s/(.)/sprintf '%04X ', ord $1/gre;
+    chomp (my @families = `fc-list --format '%{family[0]}\n' ':style=Regular:charset=$charcodes'`);
+    @families = sort {-exists (PREFERRED_FONTS()->{$a}) + exists (PREFERRED_FONTS()->{$b}) or $a cmp $b} uniq @families;
+
+    return $families[0];
+}
+
+sub _set_wallpaper ($path) {
     if (lc $ENV{'XDG_CURRENT_DESKTOP'} eq 'kde') {
         my $script = <<~"END_KDE_SCRIPT";
         var Desktops = desktops();
