@@ -7,6 +7,19 @@ source-file "$XDG_CONFIG_HOME/shell/rc.work"
 
 export HISTFILE=$XDG_CONFIG_HOME/z_history
 
+# => PATH prepare (tail) ----------------------------------------------------------------------------------------- {{{1
+
+typeset -U PATH path
+[[ -d "$HOME/.local/bin"                                ]] && path+=("$HOME/.local/bin")
+[[ -d "$HOME/.local/scripts"                            ]] && path+=("$HOME/.local/scripts")
+[[ -d "$HOME/.local/usr/bin"                            ]] && path+=("$HOME/.local/usr/bin")
+[[ -d "$HOME/.cache/bin"                                ]] && path+=("$HOME/.cache/bin")
+[[ -d "$HOME/.cache/fzf/bin"                            ]] && path+=("$HOME/.cache/fzf/bin")
+[[ -n "$GOPATH"          ]] && [[ -d "$GOPATH"          ]] && path+=("$GOPATH/bin")
+[[ -n "$GEM_HOME"        ]] && [[ -d "$GEM_HOME"        ]] && path+=("$GEM_HOME/bin")
+
+export PATH
+
 # => Install antigen --------------------------------------------------------------------------------------------- {{{1
 
 function install-antigen() {

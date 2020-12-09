@@ -8,7 +8,7 @@ use utf8;
 use warnings FATAL => qw(utf8);
 use experimental qw(declared_refs refaliasing signatures);
 
-use Encode;
+use Encode qw(decode);
 use List::Util qw(uniq);
 
 our $VERSION = 1;

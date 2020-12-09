@@ -12,38 +12,35 @@ use experimental qw(declared_refs refaliasing signatures);
 
 use Carp;
 use English qw(-no_match_vars);
+use JSON::PP ();
 
-use JSON::PP;
-use LWP::Simple;
-use Path::Tiny;
-use YAML::Tiny ();
+BEGIN {
+    eval {
+        require LWP::Simple;
+        require Path::Tiny;
+        require URI;
+        require YAML::Tiny;
+    } or do {
+        say 'Please install modules: LWP::Simple Path::Tiny YAML::Tiny';
+        exit 2;
+    };
+}
+
+our $VERSION = 1.1;
 
 use constant {
-    'ARCHIVE_PATH' => 'HPImageArchive.aspx',
-    'BASE_URL'     => 'http://www.bing.com',
-    'OUTPUT_DIR'   => path('.'),
-    'MARKETS'      => {
-        'de-DE' => undef,
-        'en-AU' => undef,
-        'en-CA' => undef,
-        'en-IN' => undef,
-        'en-NZ' => undef,
-        'en-UK' => undef,
-        'en-US' => undef,
-        'es-ES' => undef,
-        'fr-FR' => undef,
-        'ja-JP' => undef,
-        'zh-CN' => undef,
-    },
+    'URL_BASE'     => 'http://www.bing.com',
+    'URL_PATH'     => 'HPImageArchive.aspx',
+    'OUTPUT_DIR'   => Path::Tiny::path('.'),
+    'MARKETS'      => {map {$_ => undef} qw(de-DE en-AU en-CA en-IN en-NZ en-UK en-US es-ES fr-FR ja-JP zh-CN)},
     'PARAM_FORMAT' => 'format=js',
     'PARAM_SKIP'   => 'idx=',
     'PARAM_LIMIT'  => 'n=',
     'PARAM_MARKET' => 'mkt=',
 };
 
-my $json = JSON::PP->new;
+my $json = JSON::PP->new->utf8(1);
 $json->boolean_values(0, 1);
-$json->utf8(1);
 
 foreach my $market (sort keys MARKETS()->%*) {
     for (my ($skip, $limit) = (0, 5); $skip <= 10; $skip += $limit) {
@@ -55,18 +52,18 @@ foreach my $market (sort keys MARKETS()->%*) {
 }
 
 sub _fetch_info ($market, $limit, $skip) {
-    my $params = '?' . join ( ## no tidy
-        '&', PARAM_FORMAT(),
-        "${\PARAM_MARKET}${market}",
-        "${\PARAM_LIMIT}${limit}",
-        "${\PARAM_SKIP}${skip}",
+    my $url = URI->new_abs(URL_PATH(), URL_BASE());
+    $url->query_form({
+            'format' => 'js',
+            'idx'    => $skip,
+            'n'      => $limit,
+            'mkt'    => $market,
+        },
     );
+    say 'Archive url: ', $url;
 
-    my $archive_url = join ('/', BASE_URL(), ARCHIVE_PATH()) . $params;
-    say 'Archive url: ', $archive_url;
-
-    my $payload = get($archive_url)
-        or croak("Failed to retrieve $archive_url: $! $@");
+    my $payload = LWP::Simple::get($url)
+        or croak("Failed to retrieve $url: $! $@");
 
     return $json->decode($payload);
 }
@@ -82,12 +79,12 @@ sub _fetch_images ($market, @descriptors) {
         $jpg_filename->exists
             and next;
 
-        my $image_url = BASE_URL() . $descriptor->{'url'};
+        my $image_url = URL_BASE() . $descriptor->{'url'};
         say 'Fetching: ', $image_url;
         say 'To:       ', $jpg_filename;
         $yml_filename->spew_utf8(YAML::Tiny::Dump($descriptor));
 
-        my $status = getstore($image_url, $jpg_filename->stringify);
+        my $status = LWP::Simple::getstore($image_url, $jpg_filename->stringify);
         if ($status == 200) {
             say 'HTTP Response OK';
             my $size = -s $jpg_filename;

@@ -18,12 +18,24 @@ use JSON::PP ();
 use List::Util qw(shuffle uniq);
 use Pod::Usage;
 
-our $VERSION = 2.1;
+BEGIN {
+    eval {
+        require HTTP::Request;
+        require LWP::UserAgent;
+        require URI;
+    } or do {
+        say 'Please install modules: HTTP::Request LWP::UserAgent URI';
+        exit 2;
+    };
+}
+
+our $VERSION = 2.2;
 
 use constant {
     'URL_BASE'        => 'http://www.bing.com',
     'URL_PATH'        => 'HPImageArchive.aspx',
-    'PREFERRED_FONTS' => {map {$_ => undef} 'Noto Sans CJK JP', 'Source Han Sans', 'DejaVu Sans'},
+    'PREFERRED_FONTS' => {map {$_ => undef} 'DejaVu Serif', 'DejaVu Sans', 'Noto Sans CJK JP', 'Source Han Sans'},
+    'AGENT'           => LWP::UserAgent->new(timeout => 10),
 };
 
 my %options = (
@@ -34,49 +46,47 @@ my %options = (
     'VERBOSE'    => 0,
 );
 
-GetOptions(
-    'directory|d=s' => \$options{'OUTPUT_DIR'},
-    'help|h'        => \$options{'HELP'},
-    'market|m=s'    => \$options{'MARKET'},
-    'set|s'         => \$options{'SET'},
-    'verbose|v+'    => \$options{'VERBOSE'},
-) or croak 'Unable to process command line options';
+sub main() {
+    _parse_options();
 
-if ($options{'HELP'}) {
-    pod2usage(
-        -verbose => 99,
-        exitval  => 0,
-    );
-    exit;
-}
+    AGENT()->env_proxy;
 
-eval {
-    require HTTP::Request;
-    require LWP::UserAgent;
-    require URI;
-} or do {
-    say 'Please install modules: HTTP::Request, LWP::UserAgent, URI';
-    exit 2;
-};
+    my $market = (shuffle split (m/,/, $options{'MARKET'}))[0];
+    my $info   = _fetch_info($market);
+    my $path   = _fetch_image($market, $info->{'images'}[0]);
 
-my $UA = LWP::UserAgent->new(timeout => 10);
-$UA->env_proxy;
-
-my $market = (shuffle split (m/,/, $options{'MARKET'}))[0];
-my $info   = _fetch_info($market);
-my $path   = _fetch_image($market, $info->{'images'}[0]);
-
-if ($options{'SET'}) {
-    if ($ENV{'XDG_CURRENT_DESKTOP'}) {
-        _set_wallpaper($path);
-    } else {
-        carp 'Unable to determine current desktop session';
+    if ($options{'SET'}) {
+        if ($ENV{'XDG_CURRENT_DESKTOP'}) {
+            _set_wallpaper($path);
+        } else {
+            carp 'Unable to determine current desktop session';
+        }
     }
-}
 
-exit;
+    return 0;
+}
 
 # => ------------------------------------------------------------------------------------------------------------- {{{1
+
+sub _parse_options() {
+    GetOptions(
+        'directory|d=s' => \$options{'OUTPUT_DIR'},
+        'help|h'        => \$options{'HELP'},
+        'market|m=s'    => \$options{'MARKET'},
+        'set|s'         => \$options{'SET'},
+        'verbose|v+'    => \$options{'VERBOSE'},
+    ) or croak 'Unable to process command line options';
+
+    if ($options{'HELP'}) {
+        pod2usage(
+            -verbose => 99,
+            exitval  => 0,
+        );
+        exit;
+    }
+
+    return;
+}
 
 sub _fetch_info ($market, $limit = 1, $skip = 0) {
     my $url = URI->new_abs(URL_PATH(), URL_BASE());
@@ -90,7 +100,7 @@ sub _fetch_info ($market, $limit = 1, $skip = 0) {
 
     say 'Archive url: ', $url->as_string;
 
-    my $response = $UA->request(HTTP::Request->new(GET => $url));
+    my $response = AGENT()->request(HTTP::Request->new(GET => $url));
     $response->is_success
         or croak("Failed to retrieve $url: ", $response->status_line);
 
@@ -106,7 +116,7 @@ sub _fetch_image ($market, $descriptor) {
     say 'Fetching:    ', $url->as_string;
     say 'To:          ', $jpg_path;
 
-    my $response = $UA->request(HTTP::Request->new(GET => $url));
+    my $response = AGENT()->request(HTTP::Request->new(GET => $url));
     $response->is_success
         or croak("Failed to retrieve $url: ", $response->status_line);
 
@@ -117,11 +127,13 @@ sub _fetch_image ($market, $descriptor) {
 }
 
 sub _process_image ($path, $descriptor) {
+    my $family = _find_font_family($descriptor->{'copyright'});
+    say 'Applying:    ', $descriptor->{'copyright'};
+    say 'Font family: ', $family;
     my @cmd = (
         qw(convert -fill white -pointsize 28 -gravity NorthWest -draw),
         "text 0,0 '$descriptor->{'copyright'}'",
-        '-family', _find_font_family($descriptor->{'copyright'}),
-        $path,     $path,
+        '-family', $family, $path, $path,
     );
     system (@cmd) == 0
         or carp 'Unable to process image';
@@ -174,6 +186,8 @@ sub _save_raw_file ($path, $content) {
     close $fh;
     return;
 }
+
+exit main();
 
 __END__
 
