@@ -9,6 +9,7 @@ for GIT_DIR in "$WD"/**/.git; do
 
 	echo -e '\033[0;33m'"Gc $REPO"'\033[0m'
 
+	git -C "$REPO" bleach
 	git -C "$REPO" reflog expire --all --expire=now \
 	&& nice git -C "$REPO" gc --prune=now --aggressive
 done

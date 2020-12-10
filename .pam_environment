@@ -1,4 +1,4 @@
-# vim: syntax=conf foldmethod=marker
+# vim: filetype=conf foldmethod=marker
 
 # => defaults ---------------------------------------------------------------------------------------------------- {{{1
 
@@ -35,7 +35,7 @@ XAUTHORITY          DEFAULT="${XDG_RUNTIME_DIR}/Xauthority"
 
 # => kde --------------------------------------------------------------------------------------------------------- {{{1
 
-#KDEWM               DEFAULT="/usr/bin/i3"
+# KDEWM               DEFAULT="/usr/bin/i3"
 KDEHOME             DEFAULT="${XDG_CONFIG_HOME}/kde"
 
 # => misc -------------------------------------------------------------------------------------------------------- {{{1

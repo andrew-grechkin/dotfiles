@@ -30,6 +30,7 @@
 	up       = pull --no-tags
 	what     = whatchanged --show-signature
 	pub      = !"git push -u origin $(git br-name) -o merge_request.create -o merge_request.remove_source_branch"
+	puba     = !"git push -u origin $(git br-name) -o merge_request.create -o merge_request.remove_source_branch -o merge_request.merge_when_pipeline_succeeds"
 	unpub    = !"git push origin :$(git br-name)"
 	untag    = !"git push origin :$(git describe --exact-match --tags)"
 	m-span   = !"f(){ C=${2-\"$(git br-name)\"}; A=$(git log -1 $C --merges --pretty=format:%P); echo ${A/ /$1}; }; f"
