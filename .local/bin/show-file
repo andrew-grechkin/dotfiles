@@ -46,10 +46,13 @@ function body() {
 		FILE=$(basename "$1")
 		YAML_FILE="${FILE%%.jpg}.yml"
 		[[ -r "$YAML_FILE" ]] && cat "$YAML_FILE"
-		COLS=$(tput cols)
-		COLS=${COLS:-120}
-		{ chafa --clear -c 240 -s "${COLS}x${COLS}" "$1"; } \
-		|| true
+		FILESIZE=$2
+		(( FILESIZE < 10000000)) && {
+			COLS=$(tput cols)
+			COLS=${COLS:-120}
+			{ chafa --clear -c 240 -s "${COLS}x${COLS}" "$1"; } \
+			|| true
+		}
 		exit 0;
 	else
 		echo
