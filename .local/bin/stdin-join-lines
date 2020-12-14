@@ -1,4 +1,4 @@
-#!/usr/bin/env -S perl -nl -00
+#!/usr/bin/env -S perl -n
 
 use v5.28;
 use strict;
@@ -10,10 +10,12 @@ BEGIN {
     $\ = undef;
 }
 
+chomp;
+
 s{^\s*|\s*$}{}g;
 
 length && do {
-    $. != 0
+    $. > 1
         and print ' ';
     print;
 };
