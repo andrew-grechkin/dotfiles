@@ -4,6 +4,7 @@
 	br-name  = !"git rev-parse --abbrev-ref HEAD"
 	br-redo  = !"git rebase -i `git merge-base master HEAD`"
 	bush     = !"f(){ while true; do git push && break; git pull --no-tags --rebase || break; done }; f"
+	cl       = clone --filter=blob:none
 	co       = checkout
 	compress = !"git-compress"
 	d        = diff -b

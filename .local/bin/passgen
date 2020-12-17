@@ -4,7 +4,7 @@ set -Euo pipefail
 
 PATH="$(dirname "$0"):$PATH"
 
-tr -dc '[:print:]' < /dev/urandom \
+tr -dc '[:graph:]' < /dev/urandom \
 | dd count=24 bs=1 2>/dev/null \
 | clipcopy
 
