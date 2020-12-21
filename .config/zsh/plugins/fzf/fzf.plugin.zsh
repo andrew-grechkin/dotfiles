@@ -31,7 +31,7 @@ function _fzf_comprun() {
 	shift
 
 	case "$command" in
-		cd)           fzf "$@" --preview 'tree -C {} | head -200' ;;
+		cd)           fzf "$@" --preview 'tree -Chp -L 2 {} | head -200' ;;
 		export|unset) fzf "$@" --preview "eval 'echo \$'{}" ;;
 		ssh)          fzf "$@" --preview 'dig {}' ;;
 		*)            fzf "$@" ;;
@@ -47,13 +47,11 @@ export FZF_ALT_C_COMMAND='_fzf_compgen_helper . d'
 # => Setup options ----------------------------------------------------------------------------------------------- {{{1
 
 export FZF_DEFAULT_BINDS=(
-	--bind 'ctrl-d:page-down'
-	--bind 'ctrl-u:page-up'
-	--bind 'f1:toggle-preview'
-	--bind 'f2:toggle-preview-wrap'
-	--bind 'tab:accept'
+	--bind 'ctrl-d:page-down,ctrl-u:page-up'
+	--bind 'f1:toggle-preview,f2:toggle-preview-wrap,f12:toggle-sort'
+	--bind 'tab:accept,shift-tab:accept'
 	--bind 'home:top'
-	--bind 'ctrl-y:execute-silent(echo -n {} | clipcopy)+abort'
+	--bind 'ctrl-y:execute-silent(echo -n {} | clipcopy)'
 )
 export FZF_FILE_BINDS=(
 	--bind 'f3:execute((show-dir {} || show-file {} ) | $PAGER > /dev/tty 2>&1)'
@@ -65,8 +63,13 @@ export FZF_FILE_BINDS=(
 	--bind 'ctrl-alt-d:execute(rm -i {+} < /dev/tty > /dev/tty)+abort'
 )
 export FZF_FILE_PREVIEW=(
-	--preview-window=right:78:hidden
+	--preview-window=right:40%:wrap:hidden
 	--preview="{ show-dir {} || show-file {} } 2>&1 | head -n 100"
+)
+
+export FZF_NO_MULTI_OPTIONS=(
+	--no-multi
+	--bind 'tab:accept,shift-tab:accept'
 )
 
 export FZF_MULTI_OPTIONS=(
@@ -74,8 +77,8 @@ export FZF_MULTI_OPTIONS=(
 	--bind 'tab:toggle-out,shift-tab:toggle-in'
 )
 
-export FZF_DEFAULT_OPTS=$(printf " '%s'" '--no-multi' ${FZF_DEFAULT_BINDS[@]} ${FZF_FILE_BINDS[@]} ${FZF_FILE_PREVIEW[@]})
-export FZF_MULTI_OPTS=$(printf " '%s'" ${FZF_MULTI_OPTIONS[@]})
+export FZF_DEFAULT_OPTS=$(printf " '%s'" ${FZF_NO_MULTI_OPTIONS[@]} ${FZF_DEFAULT_BINDS[@]} ${FZF_FILE_BINDS[@]} ${FZF_FILE_PREVIEW[@]})
+export   FZF_MULTI_OPTS=$(printf " '%s'" ${FZF_MULTI_OPTIONS[@]})
 
 export FZF_CTRL_T_OPTS="$FZF_DEFAULT_OPTS $FZF_MULTI_OPTS"
 # export FZF_CTRL_R_OPTS=""
@@ -106,7 +109,7 @@ function _fzf_complete_docker() {
 }
 
 function _fzf_complete_docker_post() {
-	awk '{print $1}'
+	perl -aE '@F && print($F[0]) && (eof() or print " ")'
 }
 
 # => kubectl ----------------------------------------------------------------------------------------------------- {{{1
@@ -126,7 +129,7 @@ function _fzf_complete_kubectl() {
 }
 
 function _fzf_complete_kubectl_post() {
-	awk '{print $1}'
+	_fzf_complete_docker_post
 }
 
 # => git completion ---------------------------------------------------------------------------------------------- {{{1
@@ -171,25 +174,25 @@ function fzf-detect-widget() {
 			RESULT=$(fzf-git-files | stdin-join-lines)
 			;;
 		docker+( )rmi* | docker*-f* | docker*\ run*)
-			RESULT=$(docker-images | fzf --reverse "${FZF_MULTI_OPTIONS[@]}" | awk '{print $1}' | stdin-join-lines)
+			RESULT=$(docker-images | fzf --reverse "${FZF_MULTI_OPTIONS[@]}" | _fzf_complete_docker_post)
 			;;
 		docker+( )start* | docker*stop* | docker*rm* | docker*exec* | docker*kill*)
-			RESULT=$(docker-containers | fzf --reverse "${FZF_MULTI_OPTIONS[@]}" | awk '{print $1}' | stdin-join-lines)
+			RESULT=$(docker-containers | fzf --reverse "${FZF_MULTI_OPTIONS[@]}" | _fzf_complete_docker_post)
 			;;
 		docker*( ))
-			RESULT=$(docker-commands | fzf --reverse | awk '{print $1}' | stdin-join-lines)
+			RESULT=$(docker-commands | fzf --reverse | _fzf_complete_docker_post)
 			;;
 		(kubectl|k)+( )(exec\ *\ -c\ |logs\ *-c\ ))
-			RESULT=$(kubectl-containers | fzf --reverse "${FZF_MULTI_OPTIONS[@]}" | awk '{print $1}' | stdin-join-lines)
+			RESULT=$(kubectl-containers | fzf --reverse "${FZF_MULTI_OPTIONS[@]}" | _fzf_complete_kubectl_post)
 			;;
 		(kubectl|k)+( )(exec|logs)\ *)
-			RESULT=$(kubectl-pods | fzf --reverse "${FZF_MULTI_OPTIONS[@]}" | awk '{print $1}' | stdin-join-lines)
+			RESULT=$(kubectl-pods | fzf --reverse "${FZF_MULTI_OPTIONS[@]}" | _fzf_complete_kubectl_post)
 			;;
 		(kubectl|k)*( ))
-			RESULT=$(kubectl-commands | fzf --reverse -n 1 | awk '{print $1}' | stdin-join-lines)
+			RESULT=$(kubectl-commands | fzf --reverse -n 1 | _fzf_complete_kubectl_post)
 			;;
 		ssh*( ))
-			RESULT=$(ssh-hosts | fzf --reverse -n 1 | awk '{print $1}' | stdin-join-lines)
+			RESULT=$(ssh-hosts | fzf --reverse -n 1 | _fzf_complete_docker_post)
 			;;
 		*( )cd+( )*)
 			RESULT=$(_fzf_compgen_dir "$(pwd)" | fzf | stdin-join-lines)
@@ -199,7 +202,7 @@ function fzf-detect-widget() {
 			;;
 	esac
 	if [[ -n $RESULT ]]; then
-		LBUFFER=$(echo "$LBUFFER" | sed -e 's/[[:space:]]*$/ /g')
+		LBUFFER=$(echo "$LBUFFER" | sed -e 's/[[:space:]]+$/ /g')
 		LBUFFER+=$RESULT
 	fi
 }
