@@ -8,6 +8,7 @@ function ssh-use-openssh-agent() {
 }
 
 function ssh-use-gnome-agent() {
+	/usr/bin/gnome-keyring-daemon --start --components=pkcs11,secrets,ssh
 	export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/keyring/ssh"
 }
 
