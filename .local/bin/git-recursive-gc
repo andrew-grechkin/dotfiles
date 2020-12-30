@@ -11,5 +11,6 @@ for GIT_DIR in "$WD"/**/.git; do
 
 	git -C "$REPO" bleach
 	git -C "$REPO" reflog expire --all --expire=now \
-	&& nice git -C "$REPO" gc --prune=now --aggressive
+	&& nice git -C "$REPO" gc --keep-largest-pack "$@"
+	# && nice git -C "$REPO" gc --prune=now --aggressive
 done
