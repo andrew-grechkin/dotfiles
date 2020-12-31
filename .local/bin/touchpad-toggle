@@ -1,19 +1,36 @@
 #!/usr/bin/env perl
 
 use v5.28;
+use autodie;
 use strict;
 use warnings FATAL => qw(utf8);
 
-my $name = 'SynPS/2 Synaptics TouchPad';
+use Carp;
+use List::Util qw(first);
 
-my $output = `xinput list-props '$name'`;
+sub main {
+    my $name   = _detect_name() // 'undefinded';
+    my $output = `xinput list-props '$name'`;
 
-my ($enabled) = $output =~ m{Device\sEnabled .*:\s*(\d)}x;
+    my ($enabled) = $output =~ m{Device\sEnabled .*:\s*(\d)}x;
 
-system (qw(xinput set-prop), $name, 'Device Enabled', !$enabled) == 0
-    or die 'Unable to toggle touchpad';
+    system (qw(xinput set-prop), $name, 'Device Enabled', !$enabled) == 0
+        or croak 'Unable to toggle touchpad';
 
-system(qw(notify-send -i dialog-positive), $name, !$enabled ? 'Is enabled' : 'Is disabled') == 0
-    or warn qq{Can't send desktop notification};
+    my $result = system (qw(notify-send -i dialog-positive), $name, !$enabled ? 'Is enabled' : 'Is disabled');
+    $result == 0
+        or carp qq{Can't send desktop notification};
+
+    return $result;
+}
+
+sub _detect_name {
+    state $names = ['DLL079F:01 044E:120B', 'SynPS/2 Synaptics TouchPad'];
+
+    my $devices = `xinput`;
+    return first {$devices =~ m/$_/} $names->@*;
+}
+
+exit main();
 
 __END__
