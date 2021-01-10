@@ -20,6 +20,7 @@ antigen bundle ssh
 antigen bundle sudo
 antigen bundle systemd
 antigen bundle tmux
+antigen bundle yandex-cloud
 
 # => External bundles -------------------------------------------------------------------------------------------- {{{1
 

@@ -18,8 +18,8 @@ use Module::Load;
 use Pod::Usage;
 
 eval {
-    autoload File::Map, qw(map_file); ## no critic [Modules::RequireExplicitInclusion]
-    autoload Path::Tiny; ## no critic [Modules::RequireExplicitInclusion]
+    autoload File::Map, qw(map_file);
+    autoload Path::Tiny;
     1;
 } or do {
     chomp (my $error = $@ || 'zombie error');
@@ -43,88 +43,107 @@ my %options = (
     'VERBOSE'  => 0,
 );
 
-GetOptions(
-    'apply|a'    => \$options{'APPLY'},
-    'help|h'     => \(my $help),
-    'min|m=i'    => \$options{'MIN_SIZE'},
-    'follow|f'   => \$options{'FOLLOW'},
-    'recurse|r'  => \$options{'RECURSE'},
-    'verbose|v+' => \$options{'VERBOSE'},
-) or die ('Unable to process command line options');
+sub main {
+    GetOptions(
+        'apply|a'    => \$options{'APPLY'},
+        'help|h'     => \(my $help),
+        'min|m=i'    => \$options{'MIN_SIZE'},
+        'follow|f'   => \$options{'FOLLOW'},
+        'recurse|r'  => \$options{'RECURSE'},
+        'verbose|v+' => \$options{'VERBOSE'},
+    ) or croak 'Unable to process command line options';
 
-if ($help) {
-    pod2usage(
-        -verbose => 99,
-        exitval  => 0,
-    );
-}
+    if ($help) {
+        pod2usage(
+            -verbose => 99,
+            exitval  => 0,
+        );
+    }
 
-@ARGV
-    or push (@ARGV, '.');
+    @ARGV
+        or push (@ARGV, '.');
 
 ### Gather files
 
-$options{'VERBOSE'} > 1
-    and say {*STDERR} 'Gathering files';
+    $options{'VERBOSE'} > 1
+        and say {*STDERR} 'Gathering files';
 
-my %by_dev_ino;
-my $files_amount = 0;
-foreach my $root (@ARGV) {
-    path($root)->visit(
-        sub {
-            my ($path) = @_;
+    my %by_dev_ino;
+    my $files_amount = 0;
+    foreach my $root (@ARGV) {
+        path($root)->visit(
+            sub {
+                my ($path) = @_;
 
-            $path->is_file && !-l $path
-                or return;
+                $path->is_file && !-l $path
+                    or return;
 
-            my $stat = $path->stat;
-            _is_valid_file($path, $stat)
-                or return;
+                my $stat = $path->stat;
+                _is_valid_file($path, $stat)
+                    or return;
 
-            ++$files_amount;
-            my \%it = $by_dev_ino{sprintf ('d(%d)i(%d)', $stat->dev, $stat->ino)}[0] //= {'stat' => $stat};
-            push ($it{'paths'}->@*, decode('UTF-8', $path->stringify, Encode::FB_CROAK));
-        },
-        {
-            'follow_symlinks' => $options{'FOLLOW'},
-            'recurse'         => $options{'RECURSE'},
-        },
-    );
-}
+                ++$files_amount;
+                my \%it = $by_dev_ino{sprintf ('d(%d)i(%d)', $stat->dev, $stat->ino)}[0] //= {'stat' => $stat};
+                push ($it{'paths'}->@*, decode('UTF-8', $path->stringify, Encode::FB_CROAK));
+            },
+            {
+                'follow_symlinks' => $options{'FOLLOW'},
+                'recurse'         => $options{'RECURSE'},
+            },
+        );
+    }
 
-$options{'VERBOSE'} > 1
-    and say {*STDERR} 'Gathering files finished: ', $files_amount;
+    $options{'VERBOSE'} > 1
+        and say {*STDERR} 'Gathering files finished: ', $files_amount;
 
 ### Regroup files by dev + size
 
-my $by_dev_size = _regroup(
-    \%by_dev_ino,
-    'new_key' => sub ($, $value, $) {
-        return sprintf ('d(%d)s(%d)', $value->{'stat'}->dev, $value->{'stat'}->size);
-    },
-);
+    my $by_dev_size = _regroup(
+        \%by_dev_ino,
+        'new_key' => sub ($, $value, $) {
+            return sprintf ('d(%d)s(%d)', $value->{'stat'}->dev, $value->{'stat'}->size);
+        },
+    );
 
 ### Prepare order by dev and file size
 
-my @order = sort { ## no critic [BuiltinFunctions::RequireSimpleSortBlock]
-    my ($stat_a, $stat_b) = ($by_dev_size->{$a}->[0]{'stat'}, $by_dev_size->{$b}->[0]{'stat'});
-    $stat_a->dev <=> $stat_b->dev || $stat_a->size <=> $stat_b->size
-} keys $by_dev_size->%*;
+    my @order = sort { ## no critic [BuiltinFunctions::RequireSimpleSortBlock]
+        my ($stat_a, $stat_b) = ($by_dev_size->{$a}->[0]{'stat'}, $by_dev_size->{$b}->[0]{'stat'});
+        $stat_a->dev <=> $stat_b->dev || $stat_a->size <=> $stat_b->size
+    } keys $by_dev_size->%*;
 
 ### Process every size group
 
-my $counter = 0;
-my $amount  = scalar @order;
-foreach my $key (@order) {
-    $counter++;
-    my \@items = $by_dev_size->{$key};
-    my $size = $items[0]->{'stat'}->size;
+    my $counter = 0;
+    my $amount  = scalar @order;
+    foreach my $key (@order) {
+        $counter++;
+        my \@items = $by_dev_size->{$key};
+        my $size = $items[0]->{'stat'}->size;
 
-    $options{'VERBOSE'} > 2 || ($options{'VERBOSE'} && @items > 1)
-        and say {*STDERR} sprintf ('Processing bucket  (%d/%d/%d) %s', $counter, $amount, scalar @items, $key);
+        $options{'VERBOSE'} > 2 || ($options{'VERBOSE'} && @items > 1)
+            and say {*STDERR} sprintf ('Processing bucket  (%d/%d/%d) %s', $counter, $amount, scalar @items, $key);
 
-    my $group = {$by_dev_size->%{$key}};
-    if (PARTIAL_CHECKSUM_SIZE() < $size) {
+        my $group = {$by_dev_size->%{$key}};
+        if (PARTIAL_CHECKSUM_SIZE() < $size) {
+            $group = _regroup(
+                $group,
+                'state' => {
+                    'counter' => $counter,
+                    'amount'  => $amount,
+                },
+                'is_valid' => sub ($, $value, $) {
+                    $value->@* > 1;
+                },
+                'new_key' => sub ($key, $value, $) {
+                    $value->{'partial_checksum'} or do {
+                        map_file(my $map, $value->{'paths'}[0]);
+                        $value->{'partial_checksum'} = md5_hex(substr ($map, 0, PARTIAL_CHECKSUM_SIZE()));
+                    };
+                    return sprintf ('%sp(%s)', $key, $value->{'partial_checksum'});
+                },
+            );
+        }
         $group = _regroup(
             $group,
             'state' => {
@@ -134,38 +153,23 @@ foreach my $key (@order) {
             'is_valid' => sub ($, $value, $) {
                 $value->@* > 1;
             },
-            'new_key' => sub ($key, $value, $) {
-                $value->{'partial_checksum'} or do {
+            'new_key' => sub ($key, $value, $s) {
+                $value->{'checksum'} or do {
                     map_file(my $map, $value->{'paths'}[0]);
-                    $value->{'partial_checksum'} = md5_hex(substr ($map, 0, PARTIAL_CHECKSUM_SIZE()));
+                    $value->{'checksum'} = sha256_hex($map);
                 };
-                return sprintf ('%sp(%s)', $key, $value->{'partial_checksum'});
+                return sprintf ('%sc(%s)', $key, $value->{'checksum'});
             },
         );
-    }
-    $group = _regroup(
-        $group,
-        'state' => {
-            'counter' => $counter,
-            'amount'  => $amount,
-        },
-        'is_valid' => sub ($, $value, $) {
-            $value->@* > 1;
-        },
-        'new_key' => sub ($key, $value, $s) {
-            $value->{'checksum'} or do {
-                map_file(my $map, $value->{'paths'}[0]);
-                $value->{'checksum'} = sha256_hex($map);
-            };
-            return sprintf ('%sc(%s)', $key, $value->{'checksum'});
-        },
-    );
 
-    foreach my $key (keys $group->%*) {
-        $options{'VERBOSE'} > 1
-            and say {*STDERR} sprintf ('Checksum subbucket (%d/%d/%d) %s', $counter, $amount, scalar @items, $key);
-        _process_identical_checksums($key, $group->{$key}->@*);
+        foreach my $key (keys $group->%*) {
+            $options{'VERBOSE'} > 1
+                and say {*STDERR} sprintf ('Checksum subbucket (%d/%d/%d) %s', $counter, $amount, scalar @items, $key);
+            _process_identical_checksums($key, $group->{$key}->@*);
+        }
     }
+
+    return 0;
 }
 
 sub _is_valid_file ($path, $stat) {
@@ -199,7 +203,7 @@ sub _process_identical_checksums ($checksum, @inodes) {
 
     @inodes = sort { ## no critic [BuiltinFunctions::ProhibitReverseSortBlock]
         $a->{'stat'}->mtime <=> $b->{'stat'}->mtime
-            || $b->{'paths'}->@* <=> $a->{'paths'}->@*
+            or $b->{'paths'}->@* <=> $a->{'paths'}->@*
     } @inodes;
 
     my $main_inode = shift @inodes;
@@ -233,6 +237,8 @@ sub _do_hardlink ($path, $new_path) {
 
     return;
 }
+
+exit main();
 
 __END__
 

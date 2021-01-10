@@ -11,6 +11,8 @@ function arch-remove-orphans() {
 }
 
 function arch-update() {
+	export all_proxy='http://ddsm.ams:8888'
+	export http_proxy='http://ddsm.ams:8888'
 	trizen -Syu --noconfirm --noedit --needed
 }
 
