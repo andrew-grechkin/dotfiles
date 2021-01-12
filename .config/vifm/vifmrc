@@ -289,7 +289,7 @@ fileviewer *.htm,*.html
 
 " => File associations: Images ----------------------------------------------------------------------------------- {{{1
 
-filextype *.bmp,*.gif,.*.icon,*.icon,*.jp2,*.jpg,*.jpeg,*.png,*.xpm,*.svg,*.tif
+filextype *.bmp,*.dng,*.gif,.*.ico,*.icon,*.jp2,*.jpg,*.jpeg,*.png,*.xpm,*.svg,*.tif
 	\ {View in sxiv}
 	\ sxiv %f %c:h %i &,
 	\ {Open with xdg-open}
@@ -300,7 +300,7 @@ filextype *.bmp,*.gif,.*.icon,*.icon,*.jp2,*.jpg,*.jpeg,*.png,*.xpm,*.svg,*.tif
 	\ pqiv -i %f %c:h %i &,
 	\ {View in gpicview}
 	\ gpicview,
-fileviewer *.bmp,*.gif,.*.icon,*.icon,*.jp2,*.jpg,*.jpeg,*.png,*.xpm,*.svg,*.tif
+fileviewer *.bmp,*.dng,*.gif,.*.ico,*.icon,*.jp2,*.jpg,*.jpeg,*.png,*.xpm,*.svg,*.tif
 	\ chafa --clear -c 240 -s %pwx%ph %c,
 	\ mediainfo,
 	\ identify -verbose,
@@ -407,7 +407,7 @@ fileviewer *.tar,
 	\ tar taf %c &,
 
 filetype *.zip
-	\ {Mount with fuse-p7zip}
+	\ {Mount with fuse3-p7zip}
 	\ FUSE_MOUNT|mount-zip %SOURCE_FILE %DESTINATION_DIR,
 filetype *.7z,
 	\*.dsl.dz,*.tar,*.a,*.so,lib*.so.*,*.zip,*.ova,*.sfs,
@@ -417,7 +417,7 @@ filetype *.7z,
 	\*.tar.bz2,*.tbz2,*.tbz,*.tz2,*.tar.gz,*.tgz,*.taz,*.tar.lz,*.tlzip,*.tar.lzma,*.tlzma,*.tlz,
 	\*.tar.lzop,*.tlzo,*.tlzop,*.tar.xz,*.txz,*.tar.zst,*.tzst,*.tar.Z,*.taZ,
 	\*.bz2,*.gz,*.lz,*.lzma,*.lzop,*.xz,*.zst,*.Z
-	\ {Mount with fuse-p7zip}
+	\ {Mount with fuse3-p7zip}
 	\ FUSE_MOUNT|fuse3-p7zip %SOURCE_FILE %DESTINATION_DIR,
 	\ {Extract here...}
 	\ archive-extract-here %f,

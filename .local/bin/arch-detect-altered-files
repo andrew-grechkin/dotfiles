@@ -1,0 +1,107 @@
+#!/usr/bin/env perl
+
+# ABSTRACT: Detect all extra files in Arch linux system folders
+
+use v5.28;
+use autodie;
+use open ':locale';
+use strict;
+use utf8;
+use warnings FATAL => qw(utf8);
+use experimental qw(declared_refs refaliasing signatures);
+
+use Carp;
+use Encode qw(decode);
+use English qw(-no_match_vars);
+use JSON::PP;
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+use List::Util qw(first max);
+use Pod::Usage;
+
+eval {
+    require Path::Tiny;
+    1;
+} or do {
+    die 'Please install Path::Tiny (pacman -S perl-path-tiny)', "\n";
+};
+
+use constant {
+    'FOLDERS' => [qw(/boot /etc /opt /srv /usr /var)],
+};
+
+our $VERSION = 1;
+
+my %options = (
+    'VERBOSE' => 0,
+);
+
+GetOptions(
+    'help|h'     => \(my $help),
+    'verbose|v+' => \$options{'VERBOSE'},
+) or die ('Unable to process command line options');
+
+if ($help) {
+    pod2usage(
+        -verbose => 99,
+        exitval  => 0,
+    );
+}
+
+_print(_altered_files());
+
+sub _altered_files() {
+    my %files;
+    foreach my $file (`pacman -Qkk 2>/dev/null`) {
+        chomp $file;
+        my ($type, $package, $path, $issue) = $file =~ m{([^:]+): ([^:]+): ([[:print:]]+) ([(] .+ [)])$}x;
+        $package && $path
+            or next;
+
+         say $package, ' ', $type;
+        my \@issues = $files{_trim($package)}{_trim($path)} //= [];
+        push (@issues, _trim_par(_trim($issue)));
+    }
+    return \%files;
+}
+
+sub _print ($data_ref) {
+    my $json = JSON::PP->new->pretty(1)->canonical(1);
+    print $json->encode($data_ref);
+    return;
+}
+
+sub _trim ($str) {
+    return $str =~ s{^\s+|\s+$}{}gr;
+}
+
+sub _trim_par ($str) {
+    return $str =~ s{^[(]|[)]$}{}grx;
+}
+
+__END__
+
+=head1 NAME
+
+arch-detect-extra-files
+
+=head1 DESCRIPTION
+
+Detect all extra files in Arch linux system folders.
+This can help to find and backup manual configuration or remove undesired changes made on system.
+Increasing verbosity level allows to unfold well known categories.
+
+=head1 SYNOPSIS
+
+arch-detect-extra-files [options]
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--verbose>
+
+Increase verbosity
+
+=back
+
+=cut
