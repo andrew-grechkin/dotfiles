@@ -352,7 +352,13 @@ filetype *.asc,*.sig
 	\ {Check signature}
 	\ !!gpg --verify,
 
-fileviewer *.pem
+fileviewer *.pem,*.crt
+	\ openssl x509 -inform PEM -in %f -text
+
+filetype *.key
+	\ {Convert to p12}
+	\ certtool --to-p12 --load-privkey %c --outfile %c.p12,
+fileviewer *.key
 	\ openssl x509 -inform PEM -in %f -text
 
 filetype *.torrent

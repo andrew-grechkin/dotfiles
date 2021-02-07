@@ -5,10 +5,10 @@
 use v5.28;
 use autodie;
 use open ':locale';
-use strict;
 use utf8;
+use warnings;
 use warnings FATAL => qw(utf8);
-use experimental qw(declared_refs refaliasing signatures);
+use experimental qw(unicode_strings declared_refs refaliasing signatures);
 
 use Carp;
 use English qw(-no_match_vars);
@@ -72,8 +72,8 @@ sub _fetch_images ($market, @descriptors) {
     foreach my $descriptor (@descriptors) {
         my $dir = OUTPUT_DIR()->child($market);
         $dir->mkpath;
-        my $title        = $descriptor->{'copyright'} =~ s{\s+[(] © .* [)]}{}xmsgr || $descriptor->{'title'};
-        my $name         = "[$descriptor->{'startdate'}] $title";
+        my $title        = $descriptor->{'copyright'}            =~ s{\s+[(] © .* [)]}{}xmsgr || $descriptor->{'title'};
+        my $name         = "[$descriptor->{'startdate'}] $title" =~ s{/}{-}xgr;
         my $jpg_filename = $dir->child($name . '.jpg');
         my $yml_filename = $dir->child($name . '.yml');
         $jpg_filename->exists

@@ -2,8 +2,9 @@
 
 # video: https://www.youtube.com/watch?v=fVnmYzJfy5s
 
-use v5.16;
-use strict;
+use v5.28;
+use autodie;
+use warnings;
 use warnings FATAL => qw(utf8);
 
 use Code::ART;

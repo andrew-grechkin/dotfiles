@@ -3,8 +3,8 @@
 use v5.28;
 use autodie;
 use open ':std', ':encoding(UTF-8)';
-use strict;
 use utf8;
+use warnings;
 use warnings 'FATAL' => qw(utf8);
 
 use English qw(-no_match_vars);

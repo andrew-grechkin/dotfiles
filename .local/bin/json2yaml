@@ -1,7 +1,8 @@
 #!/usr/bin/env perl
 
 use v5.28;
-use strict;
+use autodie;
+use warnings;
 use warnings FATAL => qw(utf8);
 
 # core
