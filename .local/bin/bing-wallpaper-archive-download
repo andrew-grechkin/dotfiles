@@ -12,94 +12,88 @@ use experimental qw(unicode_strings declared_refs refaliasing signatures);
 
 use Carp;
 use English qw(-no_match_vars);
-use JSON::PP ();
 
-BEGIN {
-    eval {
-        require LWP::Simple;
-        require Path::Tiny;
-        require URI;
-        require YAML::Tiny;
-    } or do {
-        say 'Please install modules: LWP::Simple Path::Tiny YAML::Tiny';
-        exit 2;
-    };
-}
+use Mojo::File qw(path);
+use Mojo::Util qw(encode);
+use Mojo::URL;
+use Mojo::UserAgent;
+use YAML::Tiny;
 
-our $VERSION = 1.1;
+our $VERSION = 2.0;
 
 use constant {
-    'URL_BASE'     => 'http://www.bing.com',
-    'URL_PATH'     => 'HPImageArchive.aspx',
-    'OUTPUT_DIR'   => Path::Tiny::path('.'),
     'MARKETS'      => {map {$_ => undef} qw(de-DE en-AU en-CA en-IN en-NZ en-UK en-US es-ES fr-FR ja-JP zh-CN)},
+    'OUTPUT_DIR'   => path('.'),
     'PARAM_FORMAT' => 'format=js',
-    'PARAM_SKIP'   => 'idx=',
     'PARAM_LIMIT'  => 'n=',
     'PARAM_MARKET' => 'mkt=',
+    'PARAM_SKIP'   => 'idx=',
+    'UA'           => Mojo::UserAgent->new->max_redirects(2),
+    'URL'          => Mojo::URL->new('http://www.bing.com'),
 };
 
-my $json = JSON::PP->new->utf8(1);
-$json->boolean_values(0, 1);
+sub main() {
+    UA()->proxy->detect;
 
-foreach my $market (sort keys MARKETS()->%*) {
-    for (my ($skip, $limit) = (0, 5); $skip <= 10; $skip += $limit) {
-        say 'Skip: ', $skip;
-        my $info = _fetch_info($market, $limit, $skip);
+    foreach my $market (sort keys MARKETS()->%*) {
+        for (my ($skip, $limit) = (0, 5); $skip <= 10; $skip += $limit) {
+            say 'Skip: ', $skip;
+            my $info = _fetch_info($market, $limit, $skip);
 
-        _fetch_images($market, $info->{'images'}->@*);
+            _fetch_images($market, $info->{'images'}->@*);
+        }
     }
+
+    return 0;
 }
 
 sub _fetch_info ($market, $limit, $skip) {
-    my $url = URI->new_abs(URL_PATH(), URL_BASE());
-    $url->query_form({
-            'format' => 'js',
-            'idx'    => $skip,
-            'n'      => $limit,
-            'mkt'    => $market,
-        },
+    my $url = URL()->clone->path('HPImageArchive.aspx')->query(
+        'format' => 'js',
+        'idx'    => $skip,
+        'n'      => $limit,
+        'mkt'    => $market,
     );
     say 'Archive url: ', $url;
 
-    my $payload = LWP::Simple::get($url)
-        or croak("Failed to retrieve $url: $! $@");
+    my $response = UA()->get($url)->result;
+    $response->is_success
+        or croak("Failed to retrieve '$url': ", join (' ', $response->code, $response->message));
 
-    return $json->decode($payload);
+    return $response->json
+        || croak("Failed to decode json: $! $@");
 }
 
 sub _fetch_images ($market, @descriptors) {
     foreach my $descriptor (@descriptors) {
+        delete $descriptor->{'wp'};
+
         my $dir = OUTPUT_DIR()->child($market);
-        $dir->mkpath;
+        $dir->make_path;
         my $title        = $descriptor->{'copyright'}            =~ s{\s+[(] © .* [)]}{}xmsgr || $descriptor->{'title'};
         my $name         = "[$descriptor->{'startdate'}] $title" =~ s{/}{-}xgr;
         my $jpg_filename = $dir->child($name . '.jpg');
         my $yml_filename = $dir->child($name . '.yml');
-        $jpg_filename->exists
+        -e $jpg_filename
             and next;
 
-        my $image_url = URL_BASE() . $descriptor->{'url'};
+        my $image_url = URL()->clone->path_query($descriptor->{'url'});
         say 'Fetching: ', $image_url;
         say 'To:       ', $jpg_filename;
-        $yml_filename->spew_utf8(YAML::Tiny::Dump($descriptor));
 
-        my $status = LWP::Simple::getstore($image_url, $jpg_filename->stringify);
-        if ($status == 200) {
-            say 'HTTP Response OK';
-            my $size = -s $jpg_filename;
-            if ($size > 0) {
-                say "Retrieved $size bytes.";
-            } elsif ($size == 0) {
-                say 'Seems we have retrieved a zero-byte image';
-            }
-        } else {
-            say "HTTP Response: $status";
-        }
+        my $response = UA()->get($image_url)->result;
+        $response->is_success
+            or croak("Failed to retrieve '$image_url': ", join (' ', $response->code, $response->message));
+
+        YAML::Tiny::DumpFile($yml_filename, $descriptor);
+        $response->save_to($jpg_filename);
+
         sleep 1;
     }
 
     return;
 }
+
+exit main();
 
 __END__
