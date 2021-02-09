@@ -6,4 +6,6 @@ set -Eeo pipefail
 [[ -n "$OS" ]] && [[ "$OS" == "Windows_NT" ]] && exit 1
 
 ### check vpn connected
-(ip route | grep -E 'default\svia\s10' || ip route | grep -E '10\.0\.0\.0.*vpn') &> /dev/null
+{
+	ip route | grep -E 'default\svia\s10' || ip route | grep -E '10\.0\.0\.0.*vpn'
+} &> /dev/null
