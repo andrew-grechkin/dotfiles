@@ -1,0 +1,10 @@
+[Unit]
+Description=Fetch archive
+
+[Service]
+Type=oneshot
+WorkingDirectory=/media/nfs/home/photo/world/bing-peapix/#by-date/2021
+ExecStart=/usr/bin/perl "%h/.local/scripts/peapix-wallpaper-archive-download"
+
+[Install]
+WantedBy=default.target

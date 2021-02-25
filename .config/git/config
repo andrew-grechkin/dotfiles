@@ -100,6 +100,9 @@
 [gui]
 	encoding = utf-8
 
+[init]
+	defaultBranch = master
+
 [help]
 	autocorrect = 1
 

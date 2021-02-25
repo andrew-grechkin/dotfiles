@@ -235,6 +235,9 @@ fileviewer *.aac,*.ac3,*.ape,*.flac,*.m4a,*.m4b,*.mp3,*.og[agx],*.opus,*.spx,*.w
 fileviewer *.mp3
 	\ mp3info,
 
+filetype *.ape,*.flac,*.og[agx],*.wav,*.wv
+	\ {Transcode to MP3}
+	\ for F in %f; do ffmpeg -i "$F" "${F%%.*}".mp3; done
 filetype *.ape
 	\ {Decode to wav}
 	\ mac %c %c:r.wav -d,
@@ -248,8 +251,6 @@ filextype *.kar,*.mid,*.midi
 filetype *.og[agx]
 	\ {Transcode to FLAC}
 	\ ffmpeg -i %c %c:r.flac,
-	\ {Transcode to MP3}
-	\ ffmpeg -i %c %c:r.mp3,
 filetype *.wav
 	\ {Encode to FLAC}
 	\ flac -8 %f,
@@ -412,10 +413,7 @@ fileviewer *.tar,
 	\*.jar,*.war,*.ear,*.oxt,*.apkg,*.lha,*.ar,*.cpio,*.rpm,*.deb,*.udeb,*.mtree,*.xar
 	\ tar taf %c &,
 
-filetype *.zip
-	\ {Mount with fuse3-p7zip}
-	\ FUSE_MOUNT|mount-zip %SOURCE_FILE %DESTINATION_DIR,
-filetype *.7z,
+filetype *.7z,*.zip,
 	\*.dsl.dz,*.tar,*.a,*.so,lib*.so.*,*.zip,*.ova,*.sfs,
 	\*.apk,*.apm,*.ar,*.arj,*.cab,*.chm,*.cpio,*.cramfs,*.deb,*.dll,*.dmg,*.doc,*.esd,*.exe,
 	\*.flv,*.hxs,*.img,*.iso,*.iso,*.jar,*.lib,*.macho,*.msi,*.msp,*.nsis,*.pkg,*.pmd,*.ppt,
@@ -649,6 +647,7 @@ mark r \/                                        home
 mark u ~/.local/usr/
 mark p ~/.local/share/perlbrew                   libs
 mark s ~/.local/share                            nvim
+mark u /run/media/$USER
 
 " => file icons -------------------------------------------------------------------------------------------------- {{{1
 
