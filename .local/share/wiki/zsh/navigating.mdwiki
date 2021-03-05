@@ -27,6 +27,7 @@ bindkey | less
 * Ctrl-e : End of the line
 * Ctrl-u : Delete to beginning
 * Ctrl-k : Delete to end
+* Ctrl-y : Yank deleted text
 
 ### Words
 * Alt-b  : Back one word

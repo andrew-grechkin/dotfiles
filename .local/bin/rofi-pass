@@ -26,6 +26,7 @@ elif [[ $# -lt 2 ]]; then
 	list-pass-files
 else
 	USERNAME=$(basename "$2")
+	gpg --card-status &>/dev/null
 	if [[ "$1" == "--pass" ]]; then
 		{
 			pass show --clip "$2" &>/dev/null \

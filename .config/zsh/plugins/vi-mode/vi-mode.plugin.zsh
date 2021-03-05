@@ -58,33 +58,33 @@ fi
 
 # => ctrl-p, ctrl-n, ctrl-o for navigate history ----------------------------------------------------------------- {{{1
 
-bindkey          '^p'   up-line-or-history
-bindkey          '^n'   down-line-or-history
-bindkey          '^o'   accept-line-and-down-history
-bindkey          '^s'   history-incremental-search-forward
+bindkey          '^P'   up-line-or-history
+bindkey          '^N'   down-line-or-history
+bindkey          '^O'   accept-line-and-down-history
+bindkey          '^S'   history-incremental-search-forward
 
 # => ctrl-d, ctrl-h, ctrl-?, ctrl-w for char and word deletion --------------------------------------------------- {{{1
 
-bindkey          '^d'   delete-char-or-list
-bindkey -M vicmd '^d'   delete-char-or-list
-bindkey          '^h'      backward-delete-char
-bindkey -M vicmd '^h'   vi-backward-delete-char
+bindkey          '^D'   delete-char-or-list
+bindkey -M vicmd '^D'   delete-char-or-list
+bindkey          '^H'      backward-delete-char
+bindkey -M vicmd '^H'   vi-backward-delete-char
 bindkey          '^?'      backward-delete-char
 bindkey -M vicmd '^?'   vi-backward-delete-char
-bindkey          '^w'      backward-kill-word
-bindkey -M vicmd '^w'   vi-backward-kill-word
+bindkey          '^W'      backward-kill-word
+bindkey -M vicmd '^W'   vi-backward-kill-word
 
 # => ctrl-r to perform backward search in history ---------------------------------------------------------------- {{{1
 
-bindkey          '^r'   history-incremental-search-backward
-bindkey -M vicmd '^r'   history-incremental-search-backward
+bindkey          '^R'   history-incremental-search-backward
+bindkey -M vicmd '^R'   history-incremental-search-backward
 
 # => ctrl-b and ctrl-f to move cursor left and right ------------------------------------------------------------- {{{1
 
-bindkey          '^b'   backward-char
-bindkey -M vicmd '^b'   backward-char
-bindkey          '^f'   forward-char
-bindkey -M vicmd '^f'   forward-char
+bindkey          '^B'   backward-char
+bindkey -M vicmd '^B'   backward-char
+bindkey          '^F'   forward-char
+bindkey -M vicmd '^F'   forward-char
 
 # => Home, End, ctrl-a and ctrl-e to move to beginning/end of line ----------------------------------------------- {{{1
 
@@ -96,10 +96,10 @@ if [[ "${terminfo[kend]}" != "" ]]; then
 	bindkey "${terminfo[kend]}"              end-of-line
 	bindkey -M vicmd "${terminfo[kend]}"  vi-end-of-line
 fi
-bindkey          '^a'      beginning-of-line
-bindkey -M vicmd '^a'   vi-beginning-of-line
-bindkey          '^e'      end-of-line
-bindkey -M vicmd '^e'   vi-end-of-line
+bindkey          '^A'      beginning-of-line
+bindkey -M vicmd '^A'   vi-beginning-of-line
+bindkey          '^E'      end-of-line
+bindkey -M vicmd '^E'   vi-end-of-line
 
 # => PageUp, PageDown as home and end ---------------------------------------------------------------------------- {{{1
 
@@ -125,10 +125,12 @@ fi
 
 # => some backports from emacs key bindings ---------------------------------------------------------------------- {{{1
 
-bindkey          '^k'   kill-line
-bindkey -M vicmd '^k'   kill-line
-bindkey          '^u'   backward-kill-line
-bindkey -M vicmd '^u'   backward-kill-line
+bindkey          '^K'   kill-line
+bindkey -M vicmd '^K'   kill-line
+bindkey          '^U'   backward-kill-line
+bindkey -M vicmd '^U'   backward-kill-line
+bindkey          '^Y'   yank
+bindkey -M vicmd '^Y'   yank
 # conflicts with fzf
 #bindkey          '^t'   transpose-chars
 bindkey          '\eb'  backward-word
@@ -138,9 +140,10 @@ bindkey          '\ed'  kill-word
 bindkey -M vicmd '\ed'  kill-word
 bindkey          '\et'  transpose-words
 bindkey -M vicmd '\et'  transpose-words
-bindkey          '^xu'  undo
-bindkey          '^xv'  edit-command-line
-bindkey          '^x^e' edit-command-line
+bindkey          '^Xu'  vi-join
+bindkey          '^Xu'  undo
+bindkey          '^Xv'  edit-command-line
+bindkey          '^X^E' edit-command-line
 
 # => Mode indicator ---------------------------------------------------------------------------------------------- {{{1
 
