@@ -29,7 +29,7 @@ use constant {
     'FOLDERS' => [qw(/boot /etc /opt /srv /usr /var)],
 };
 
-our $VERSION = 1;
+our $VERSION = 1.1;
 
 my %options = (
     'VERBOSE' => 0,
@@ -47,7 +47,11 @@ if ($help) {
     );
 }
 
-_print(_altered_files());
+sub main() {
+    _print(_altered_files());
+
+    return 0;
+}
 
 sub _altered_files() {
     my %files;
@@ -57,7 +61,7 @@ sub _altered_files() {
         $package && $path
             or next;
 
-         say $package, ' ', $type;
+        # say $package, ' ', $type;
         my \@issues = $files{_trim($package)}{_trim($path)} //= [];
         push (@issues, _trim_par(_trim($issue)));
     }
@@ -77,6 +81,8 @@ sub _trim ($str) {
 sub _trim_par ($str) {
     return $str =~ s{^[(]|[)]$}{}grx;
 }
+
+exit main();
 
 __END__
 

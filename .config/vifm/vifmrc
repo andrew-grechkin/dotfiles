@@ -187,9 +187,9 @@ filextype *.chm,*.epub,*.fb2,*.fbz,*.fb2.zip,*.mobi,*.rtf,*.tcr
 
 filextype *.fb2,*.xml,*.gpx,*.xsd
 	\ {Open with Kate}
-	\ kate     %f %i &,
+	\ kate          %f %i &,
 	\ {Reformat xml}
-	\ reformat %f,
+	\ reformat      %f,
 	\ {Reformat hard xml}
 	\ reformat2-fb2 %f,
 
@@ -235,28 +235,31 @@ fileviewer *.aac,*.ac3,*.ape,*.flac,*.m4a,*.m4b,*.mp3,*.og[agx],*.opus,*.spx,*.w
 fileviewer *.mp3
 	\ mp3info,
 
+filetype *.wav
+	\ {Encode to FLAC}
+	\ flac -8 %f,
+filetype *.wav
+	\ {Encode to mp3}
+	\ lame -b 128 -m j -h -V 1 -B 256 -F %c %c:r.mp3,
 filetype *.ape,*.flac,*.og[agx],*.wav,*.wv
 	\ {Transcode to MP3}
 	\ for F in %f; do ffmpeg -i "$F" "${F%%.*}".mp3; done
+filetype *.ape,*.og[agx],*.wav,*.wv
+	\ {Transcode to FLAC}
+	\ for F in %f; do ffmpeg -i "$F" "${F%%.*}".flac; done
 filetype *.ape
 	\ {Decode to wav}
 	\ mac %c %c:r.wav -d,
 filetype *.flac
 	\ {Decode to wav}
 	\ flac -d %f,
+filetype *.wv
+	\ {Decode to wav}
+	\ wvunpack %f,
 filextype *.kar,*.mid,*.midi
 	\ timidity -ig -- %f %i &,
 "filetype *.kar,*.mid,*.midi
 	"\ timidity -inq -- %c,
-filetype *.og[agx]
-	\ {Transcode to FLAC}
-	\ ffmpeg -i %c %c:r.flac,
-filetype *.wav
-	\ {Encode to FLAC}
-	\ flac -8 %f,
-filetype *.wv
-	\ {Decode to wav}
-	\ wvunpack %f,
 
 " => File associations: Video ------------------------------------------------------------------------------------ {{{1
 
@@ -275,9 +278,9 @@ fileviewer *.3gp,
 	\ mediainfo,
 	\ ffprobe -pretty %c 2>&1,
 
-" => File associations: Web -------------------------------------------------------------------------------------- {{{1
+" => File associations: HTML ------------------------------------------------------------------------------------- {{{1
 
-filextype *.html,*.htm,*.mht
+filextype *.html,*.htm,*.mht,*.mhtml
 	\ {Open with default browser}
 	\ exo-open --launch WebBrowser %f %i &,
 	\ {Open with dwb}
@@ -323,7 +326,7 @@ filetype *.json
 	\ {Reformat json}
 	\ reformat %f,
 fileviewer *.json
-	\ jq -CS --indent 4 < %f,
+	\ jq -CS --indent 4 < %c,
 
 filetype *.yaml,*.yml
 	\ {View yaml}
@@ -373,6 +376,10 @@ filetype *.gpg
 fileviewer *.gpg
 	\ gpg --decrypt,
 
+filetype *.base64
+	\ {Decode}
+	\ base64 --decode %c > %c:r &,
+
 " Qt projects
 filextype *.pro
 	\ qtcreator %f &,
@@ -413,8 +420,9 @@ fileviewer *.tar,
 	\*.jar,*.war,*.ear,*.oxt,*.apkg,*.lha,*.ar,*.cpio,*.rpm,*.deb,*.udeb,*.mtree,*.xar
 	\ tar taf %c &,
 
-filetype *.7z,*.zip,
-	\*.dsl.dz,*.tar,*.a,*.so,lib*.so.*,*.zip,*.ova,*.sfs,
+" fuse3-p7zip
+filetype *.7z,
+	\*.dsl.dz,*.tar,*.zip,*.ova,*.sfs,*.a,*.so,lib*.so.*,
 	\*.apk,*.apm,*.ar,*.arj,*.cab,*.chm,*.cpio,*.cramfs,*.deb,*.dll,*.dmg,*.doc,*.esd,*.exe,
 	\*.flv,*.hxs,*.img,*.iso,*.iso,*.jar,*.lib,*.macho,*.msi,*.msp,*.nsis,*.pkg,*.pmd,*.ppt,
 	\*.qcow,*.qcow2,*.qcow2c,*.r00,*.rar,*.raw,*.rpm,*.squashfs,*.swf,*.swm,*.sys,*.vdi,*.vhd,*.vmdk,*.wim,*.xar,*.xls,
@@ -433,27 +441,6 @@ fileviewer *.7z,
 	\*.flv,*.hxs,*.img,*.iso,*.iso,*.jar,*.lib,*.macho,*.msi,*.msp,*.nsis,*.pkg,*.pmd,*.ppt,
 	\*.qcow,*.qcow2,*.qcow2c,*.r00,*.rar,*.raw,*.rpm,*.squashfs,*.swf,*.swm,*.sys,*.vdi,*.vhd,*.vmdk,*.wim,*.xar,*.xls
 	\ 7z l %c &,
-
-"filetype *.rar
-"	\ {Mount with rar2fs}
-"	\ FUSE_MOUNT|rar2fs %SOURCE_FILE %DESTINATION_DIR,
-"fileviewer *.rar
-"	\ unrar v,
-
-"filetype *.zip,
-"	\*.jar,*.war,*.ear,*.oxt,*.apkg
-"	\ {Mount with fuse-zip}
-"	\ FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR,
-"	\ {View contents}
-"	\ zip -sf %c | less,
-"	\ {Extract here...}
-"	\ unar -e 866 %c &,
-"fileviewer *.zip,
-"	\*.jar,*.war,*.ear,*.oxt,*.apkg
-"	\ unzip -l -O 866,
-"fileviewer *.zip,
-"	\*.jar,*.war,*.ear,*.oxt,*.apkg
-"	\ zip -sf,
 
 " => File associations: S3 mount --------------------------------------------------------------------------------- {{{1
 
@@ -516,6 +503,9 @@ filetype *[^/$|.gpg$],.*[^/$|.gpg$]
 filetype *[^/$|.asc$|.sig$],.*[^/$|.asc$|.sig$]
 	\ {Sign}
 	\ gpg-sign %f,
+filetype *[^/$|.base64$],.*[^/$|.base64$]
+	\ {Encode base64}
+	\ base64 %c > %c.base64,
 
 filetype */,.*/
 	\ {Show dir}
@@ -661,6 +651,6 @@ set classify+=' ::*.bmp,,*.gif,,*.jp2,,*.jpeg,,*.jpg,,*.ico,,*.png,,*.ppm,,*.
 set classify+=' ::*.aac,,*.anx,,*.asf,,*.au,,*.axa,,*.flac,,*.m2a,,*.m4a,,*.mid,,*.midi,,*.mp3,,*.mpc,,*.oga,,*.ogg,,*.ogx,,*.ra,,*.ram,,*.rm,,*.spx,,*.wav,,*.wma,,*.ac3::'
 set classify+=' ::*.avi,,*.axv,,*.divx,,*.m2v,,*.m4p,,*.m4v,,.mka,,*.mkv,,*.mov,,*.mp4,,*.lrv,,*.flv::'
 set classify+=' ::*.mp4v,,*.mpeg,,*.mpg,,*.nuv,,*.ogv,,*.pbm,,*.pgm,,*.qt,,*.vob,,*.wmv,,*.xvid::'
-set classify+=' ::*.htm,,*.html,,**.[msx]html,,*.mht,,*.xml::'
+set classify+=' ::*.htm,,*.html,,*.[msx]html,,*.mht,,*.xml::'
 set classify+=' ::*.diff,,*.patch::'
 set classify+=' ::*.img,,*.iso::'
