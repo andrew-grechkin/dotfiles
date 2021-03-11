@@ -283,8 +283,8 @@ fileviewer *.3gp,
 filextype *.html,*.htm,*.mht,*.mhtml
 	\ {Open with default browser}
 	\ exo-open --launch WebBrowser %f %i &,
-	\ {Open with dwb}
-	\ dwb %f %i &,
+	\ {Extract}
+	\ mhtml-parse %c %i &,
 filetype *.html,*.htm
 	\ links,
 	\ lynx,

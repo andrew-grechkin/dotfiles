@@ -1,0 +1,230 @@
+#!/usr/bin/env perl
+
+use v5.28;
+use autodie;
+use open 'IO' => ':raw';
+use utf8;
+use warnings;
+use warnings FATAL => qw(utf8);
+use experimental qw(declared_refs refaliasing signatures);
+
+use Carp;
+use Encode qw(decode encode);
+use English qw(-no_match_vars);
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+use MIME::QuotedPrint;
+use Pod::Usage;
+
+use HTML::Tagset;
+use Mojo::Content::MultiPart;
+use Mojo::Content::Single;
+use Mojo::DOM;
+use Mojo::File qw(path);
+use Mojo::Util qw(b64_decode trim);
+use Mojo::URL;
+
+our $VERSION = 1.00;
+
+my %options = (
+    'HELP'    => 0,
+    'LIST'    => 0,
+    'VERBOSE' => 0,
+);
+
+sub main() {
+    _read_options();
+
+    my $mp         = Mojo::Content::MultiPart->new;
+    my $mp_content = do {local $INPUT_RECORD_SEPARATOR = undef; <>};
+    $mp->parse(sprintf ("Content-Length: %d\r\n", do {use bytes; bytes::length $mp_content}));
+    $mp->parse($mp_content);
+
+    $mp->is_multipart
+        or croak 'This is not a multipart document';
+
+    my %meta;
+
+    if ($mp->headers->header('Subject')) {
+        my $decoded_sbj = MIME::QuotedPrint::decode_qp($mp->headers->header('Subject'));
+        (undef, undef, $meta{'subject'}) = $decoded_sbj =~ m{
+            =[?] ([^?]*)    # "=?"+ charset
+             [?]([bq])      # "?" + encoding
+             [?]([^?]+)     # "?" + data maybe with spcs +
+             [?]=           # "?="
+        }xi;
+        say 'Subject: ', $meta{'subject'};
+    }
+
+    $meta{'start'} = _split_header($mp->headers->content_type)->{'start'};
+
+    my $dir = Mojo::File::tempdir('DIR' => '.');
+    while (my ($index, $part) = each $mp->parts->@*) {
+        _process_part($index, $part, \%meta, $dir);
+    }
+
+    $meta{'main'}
+        or croak 'Unable to determine main html part';
+
+    my $main_file = Mojo::File->new($meta{'by_url'}{$meta{'main'}}{'name'});
+    $meta{'dir'} = $main_file->sibling($main_file->basename('.html') . '.files');
+
+    if (!$options{'LIST'}) {
+        _process_html_parts(\%meta, $dir);
+        rename ($dir, $meta{'dir'});
+    }
+
+    return 0;
+}
+
+sub _read_options() {
+    GetOptions(
+        'help|h'     => \$options{'HELP'},
+        'list|l!'    => \$options{'LIST'},
+        'verbose|v+' => \$options{'VERBOSE'},
+    ) or croak 'Unable to process command line options';
+
+    if ($options{'HELP'}) {
+        pod2usage(
+            -verbose => 99,
+            exitval  => 0,
+        );
+    }
+
+    return;
+}
+
+sub _process_part ($index, $part, $meta_ref, $dir) {
+    my \%meta = $meta_ref;
+    my $headers = $part->headers;
+
+    $headers->content_location
+        or croak 'Unable to determine part url';
+
+    my $url = trim($headers->content_location);
+    my \%info = $meta{'by_url'}{$url} = {
+        'index' => $index,
+        'url'   => $url,
+        _process_headers($headers),
+    };
+
+    if ($meta{'start'} && $headers->header('content-id') && $headers->header('content-id') eq $meta{'start'}) {
+        $info{'main'} = 1;
+    }
+
+    say sprintf ('Found document [%.3d]: %s, %s', $index, $info{'name'}, $url);
+
+    if ($info{'main'} && !$meta{'main'}) {
+        $meta{'main'} = $url;
+    } else {
+        push ($meta{'parts'}->@*, $url);
+    }
+
+    for ($headers->header('content-transfer-encoding')) {
+        my $content;
+        if (defined) {
+            if (m{\bbase64\b}i) {
+                $content = b64_decode($part->asset->slurp);
+            } elsif (m{\bquoted-printable\b}i) {
+                $content = MIME::QuotedPrint::decode($part->asset->slurp);
+            }
+        } else {
+            say {*STDERR} 'Warning: Encoding of ', $info{'name'}, ' file not found - leaving as-is';
+        }
+
+        $content //= $part->asset->slurp;
+        if ($info{'type'} eq 'text/html') {
+            $info{'html'} = $content;
+        } else {
+            $options{'LIST'}
+                or $dir->child($info{'name'})->spurt($content);
+        }
+    }
+
+    return;
+}
+
+sub _process_headers ($headers) {
+    my %info;
+    @info{'type', 'name'} = _split_header($headers->content_type)->@{qw(_anonymous_ name)};
+    if (!$info{'name'} && $headers->content_disposition) {
+        $info{'name'} = _split_header($headers->content_disposition)->{'filename'};
+    }
+    if (!$info{'name'} && $headers->content_location) {
+        $info{'name'} = $headers->content_location;
+        $info{'name'} =~ s{^.*/}{};
+    }
+    $info{'name'}
+        or croak 'Unable to determine part name: <headers>';
+
+    if (!$info{'type'} && $headers->content_location) {
+        $info{'type'} = $info{'name'} =~ m{[.]html?\z}ix ? 'text/html' : '';
+    }
+    return %info;
+}
+
+sub _process_html_parts ($meta_ref, $dir) {
+    my \%meta = $meta_ref;
+
+    my %link_elements = %HTML::Tagset::linkElements; ## no critic [Variables::ProhibitPackageVars]
+    foreach my $url (grep {$meta{'by_url'}{$_}{'html'}} keys $meta{'by_url'}->%*) {
+        my \%info = $meta{'by_url'}{$url};
+
+        my ($charset) = $info{'html'} =~ m{\bmeta\b .* \bcharset="?([\w-]+)}x;
+        $info{'html'} =~ s{(\bmeta\b .* \bcharset="?)($charset)}{$1UTF-8}x;
+        $charset //= 'UTF-8';
+
+        my $dom = Mojo::DOM->new(decode($charset, $info{'html'}, Encode::FB_CROAK));
+
+        foreach my $tag ($dom->find('*')->@*) {
+            my \%attrs = $tag->attr;
+            foreach my $attr (grep {defined $attrs{$_}} $link_elements{$tag->tag}->@*) {
+                my $uri = Mojo::URL->new($attrs{$attr})->to_abs($url);
+                if (exists $meta{'by_url'}{$uri}) {
+                    my \%target = $meta{'by_url'}{$uri};
+                    $attrs{$attr} = $meta{'dir'}->child($target{'name'})->to_string;
+                }
+            }
+        }
+
+        $dir->sibling($info{'name'})->spurt(encode('UTF-8', "$dom"));
+    }
+
+    return;
+}
+
+sub _split_header ($header) {
+    my @fields = split (m/;/, $header);
+    my %result = map {trim($_)}
+        map {my ($k, $v) = split m/=/; ($k, $v) = ('_anonymous_', $k) if !defined $v; $k => $v} @fields;
+    return \%result;
+}
+
+exit main();
+
+__END__
+
+=pod
+
+=head1 NAME
+
+B<mhtml-parse>
+
+=head1 DESCRIPTION
+
+Parse MIME HTML archives (.mht and .mhtml) and extract files
+
+=head1 OPTIONS
+
+=over
+
+=item B<--help>
+
+Print a help message
+
+=item B<-l>, B<--list>
+
+List archive contents.
+
+=back
+
+=cut
