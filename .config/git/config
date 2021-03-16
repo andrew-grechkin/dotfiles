@@ -2,6 +2,7 @@
 	bleach   = !"f(){ git fall; git br | perl -alE 'm/: gone]/ && $F[0] ne \"*\" && system(qq(git branch -D $F[0]))'; }; f"
 	br       = branch -vv
 	br-name  = !"git rev-parse --abbrev-ref HEAD"
+	br-main  = !"git rev-parse --abbrev-ref origin/HEAD 2>&1 | grep -Eho 'trunk$|master$'"
 	br-redo  = !"git rebase -i `git merge-base master HEAD`"
 	bush     = !"f(){ while true; do git push && break; git pull --no-tags --rebase || break; done }; f"
 	cl       = clone --filter=blob:none
@@ -19,13 +20,12 @@
 	lg       = !"fzf-git-log-graph"
 	la       = !"fzf-git-log-all"
 	lag      = !"fzf-git-log-all-graph"
-	main     = !"git rev-parse --abbrev-ref origin/HEAD 2>&1 | grep -Eho 'trunk$|master$'"
-	master   = !"git checkout $(git main)"
+	main     = !"git checkout $(git br-main)"
 	mt       = mergetool
 	mg       = mergetool --gui
 	pall     = !"git-push-all"
-	rv       = !"git diff -b --color=always $(git merge-base $(git main) HEAD 2>/dev/null)...HEAD"
-	rv-dt    = !"git difftool -b -t vimdiff $(git merge-base $(git main) HEAD 2>/dev/null)...HEAD"
+	rv       = !"git diff -b --color=always $(git merge-base $(git br-main) HEAD 2>/dev/null)...HEAD"
+	rv-dt    = !"git difftool -b -t vimdiff $(git merge-base $(git br-main) HEAD 2>/dev/null)...HEAD"
 	sh       = !"show-commit | $PAGER -r"
 	st       = status -b
 	up       = pull --no-tags

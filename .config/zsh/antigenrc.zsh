@@ -13,6 +13,7 @@ antigen bundle cpanm
 antigen bundle fzf
 antigen bundle gnupg
 antigen bundle grep
+antigen bundle kubernetes
 # antigen bundle linuxbrew
 antigen bundle perl
 antigen bundle rsync

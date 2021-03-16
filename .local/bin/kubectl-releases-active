@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -Eeuo pipefail
+
+command kubectl get releases.shipper.booking.com -o json 2>/dev/null \
+| jq -r '.items[] | select(.status.achievedStep.name != "full on") | .metadata.name'

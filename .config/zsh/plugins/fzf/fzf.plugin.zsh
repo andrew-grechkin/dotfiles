@@ -191,6 +191,9 @@ function fzf-detect-widget() {
 		(kubectl|k)*( ))
 			RESULT=$(kubectl-commands | fzf --reverse -n 1 | _fzf_complete_kubectl_post)
 			;;
+		(ksync|kfinish|kabort)*)
+			RESULT=$(kubectl-releases-active | fzf --reverse "${FZF_MULTI_OPTIONS[@]}" | _fzf_complete_kubectl_post)
+			;;
 		ssh*( ))
 			RESULT=$(ssh-hosts | fzf --reverse -n 1 | _fzf_complete_docker_post)
 			;;

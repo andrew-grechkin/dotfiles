@@ -93,12 +93,6 @@ alias      library-run='fb2index_1.0.0_linux_amd64 -http "0.0.0.0:55555" -db "$H
 alias        grab-cd='abcde -xk -1 -o flac                   -a default,cue'
 alias grab-cd-tracks='abcde -xk    -o flac,ogg:"--quality=5" -a default,cue'
 
-# => kubectl ----------------------------------------------------------------------------------------------------- {{{1
-
-alias   k='kubectl'
-alias kga='kubectl get all'
-alias kaf='kubectl apply -f'
-
 # => diff/patch -------------------------------------------------------------------------------------------------- {{{1
 
 alias diffdirs='diff -wBNuar'
