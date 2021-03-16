@@ -2,35 +2,66 @@
 
 use v5.28;
 use autodie;
+use open ':locale';
+use utf8;
 use warnings;
 use warnings FATAL => qw(utf8);
+use experimental qw(signatures);
 
 # core
+use Carp;
 use JSON::PP;
 
 # non core
-use Path::Tiny;
 use YAML::Tiny;
 
-my $path = path($ARGV[0])->absolute;
+sub main() {
+    my @data;
 
-$path->exists
-    or die "File does not exists: $path";
+    if (@ARGV) {
+        foreach my $file (@ARGV) {
+            -e -r $file
+                or croak 'File does not exists: ', $file;
+            push (
+                @data,
+                do {local $/ = undef; open my $fh, '<', $file; <$fh>}, ## no critic [InputOutput::RequireBriefOpen]
+            );
+        }
+    } else {
+        push (@data, do {local $/ = undef; <STDIN>});
+    }
 
-if ($path =~ m{[.]json$}x) {
-    my $file = $path->sibling($path->basename =~ s{[.]json$}{.yaml}xr);
-    $file->exists
-        and die "File already exists: $file";
+    print _convert(@data);
+
+    return 0;
+}
+
+sub _convert (@data) {
+    my $result;
+
     my $json = JSON::PP->new;
     $json->boolean_values(0, 1);
-    YAML::Tiny->new($json->decode($path->slurp_utf8))->write($file->absolute);
-} elsif ($path =~ m{[.]ya?ml$}x) {
-    my $file = $path->sibling($path->basename =~ s{[.]ya?ml$}{.json}xr);
-    $file->exists
-        and die "File already exists: $file";
-    my $yaml_decoded = YAML::Tiny->read($path)->[0];
-    my $json         = JSON::PP->new;
-    $file->spew_utf8($json->pretty->canonical->encode($yaml_decoded));
-} else {
-    die 'Unknown format';
+    $json->utf8(0);
+    foreach my $doc (@data) {
+        eval {
+            $result .= YAML::Tiny::Dump($json->decode($doc));
+            1;
+        } or do {
+            chomp (my $json_error = $@ || 'zombie error');
+            eval {
+                $result .= $json->pretty->canonical->encode($_) foreach YAML::Tiny::Load($doc);
+                1;
+            } or do {
+                chomp (my $yaml_error = $@ || 'zombie error');
+                carp "Unable to parse file as json: $json_error";
+                croak "Unable to parse file as yaml: $yaml_error";
+            };
+        };
+    }
+
+    return $result;
 }
+
+exit main();
+
+__END__
