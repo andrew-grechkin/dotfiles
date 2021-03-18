@@ -1,0 +1,41 @@
+#!/usr/bin/env perl
+
+use v5.28;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings;
+use warnings FATAL => qw(utf8);
+use experimental qw(declared_refs refaliasing signatures);
+
+# core
+use Carp;
+
+sub main() {
+    foreach my $file (@ARGV) {
+        next if $file !~ m/[.]mkv\z/x;
+
+        my $out_file = $file =~ s{[.]mkv\z}{.mp4}xgr;
+        if (-e -r $out_file) {
+            carp 'File already exist, skipping: ', $out_file;
+            next;
+        }
+
+        my @cmd = (
+            qw(ffmpeg -loglevel quiet -stats -fflags +genpts -i),                    "$file",
+            qw(-map 0 -ignore_unknown -c:v copy -c:a copy -sn -movflags +faststart), "$out_file",
+        );
+
+        if (system (@cmd) == 0) {
+            unlink $file;
+        } else {
+            carp "Faled to convert files: @{[@cmd]}";
+        }
+    }
+
+    return 0;
+}
+
+exit main();
+
+__END__
