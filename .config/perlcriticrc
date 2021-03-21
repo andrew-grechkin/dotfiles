@@ -462,7 +462,7 @@ keywords = XXX FIXME BUG REVIEW
 [ControlStructures::ProhibitPostfixControls]
 # Debugging statements go here (DEBUG), etc.
 # allow = DEBUG
-allow = for foreach if
+allow = for foreach if unless
 # flowcontrol = carp cluck confess croak die exit goto warn
 
 [Moose::ProhibitLazyBuild]

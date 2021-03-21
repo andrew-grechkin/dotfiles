@@ -1,0 +1,194 @@
+#!/usr/bin/env perl
+
+use v5.28;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings;
+use warnings FATAL => qw(utf8);
+use experimental qw(declared_refs refaliasing signatures);
+
+# core
+use Carp;
+use Encode qw(decode);
+use English qw(-no_match_vars);
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+use List::Util qw(first);
+use Pod::Usage;
+
+# non core
+use Log::Any qw($log);
+use Log::Any::Adapter ('Stderr', log_level => 'info');
+use Path::Tiny;
+use Mojo::DOM;
+
+use Data::Printer;
+
+our $VERSION = 1.00;
+
+use constant {
+    'FS_ENCODING' => 'UTF-8',
+};
+
+my %options = (
+    'APPLY'   => 0,
+    'HELP'    => 0,
+    'RECURSE' => 1,
+    'VERBOSE' => 0,
+);
+
+sub main() {
+    GetOptions(
+        'apply|a'    => \$options{'APPLY'},
+        'help|h'     => \$options{'HELP'},
+        'recurse|r'  => \$options{'RECURSE'},
+        'verbose|v+' => \$options{'VERBOSE'},
+    ) or croak 'Unable to process command line options';
+
+    if ($options{'HELP'}) {
+        pod2usage(
+            -verbose => 99,
+            exitval  => 0,
+        );
+    }
+
+    @ARGV
+        or push (@ARGV, '.');
+
+    my (\@projects, \%map) = _build_files_map(@ARGV);
+
+    foreach my $project (@projects) {
+        say 'Found project: ', $project;
+        _fix_project($project, \%map);
+    }
+
+    return 0;
+}
+
+sub _fix_project ($project, $map) {
+    my $dom = Mojo::DOM->new($project->slurp_utf8);
+    my $mlt = $dom->find('mlt[root]');
+
+    $mlt->size() == 1
+        or return;
+
+    my $project_root = $project->absolute->parent->stringify;
+    $mlt->first->attr->{'root'} = $project_root;
+    say 'Root: ', $project_root;
+
+    $dom->find('producer')->each(
+        sub ($e, $) {
+            my $resource = $e->find('property[name="resource"]')->first;
+            my $size     = $e->find('property[name="kdenlive:file_size"]')->first;
+            my $hash     = $e->find('property[name="kdenlive:file_hash"]')->first;
+            $resource && $size && $hash
+                or return;
+
+            $size = $size->all_text;
+            $hash = $hash->all_text;
+            if (!exists $map->{$size}) {
+                carp sprintf ('Unable to find resource by size [%s]: %s', $size, $resource);
+                return;
+            }
+
+            my $file = first {$_->hash eq $hash} $map->{$size}->@*;
+            if (!$file) {
+                carp sprintf ('Unable to find resource by hash [%s]: %s', $hash, $resource);
+                return;
+            }
+
+            my $new_resource = $file->path->absolute;
+
+            # my $new_resource = $file->path->absolute->relative($project_root);
+            # say sprintf ("%s \t-> %s", $resource->all_text, $new_resource);
+            $resource->content($new_resource);
+        },
+    );
+
+    $project->sibling($project->basename('.kdenlive') . '.fixed.kdenlive')->spew_utf8("$dom");
+
+    return;
+}
+
+package Resource {
+    use Carp;
+    use Digest::MD5 qw(md5_hex);
+
+    use File::Map qw(map_file);
+
+    use constant {
+        'PARTIAL_CHECKSUM_SIZE' => 1_000_000,
+    };
+
+    sub new ($class, $path) {
+        my %attributes = (
+            'path' => $path,
+            'size' => $path->stat->size,
+        );
+        bless \%attributes, $class;
+        return \%attributes;
+    }
+
+    sub path ($self) {
+        return $self->{'path'};
+    }
+
+    sub size ($self) {
+        return $self->{'size'};
+    }
+
+    sub hash ($self) {
+        $self->{'hash'} //= _calculate_hash($self->path);
+        return $self->{'hash'};
+    }
+
+    sub _calculate_hash ($path) {
+        map_file(my $map, $path);
+
+        if ($path->stat->size > PARTIAL_CHECKSUM_SIZE() * 2) {
+            return md5_hex(substr ($map, 0, PARTIAL_CHECKSUM_SIZE()), substr ($map, -PARTIAL_CHECKSUM_SIZE()));
+        }
+
+        return md5_hex($map);
+    }
+}
+
+sub _build_files_map (@paths) {
+    $log->debug('Gathering files');
+
+    my @projects;
+    my %result;
+    foreach my $folder (@paths) {
+        path($folder)->visit(
+            sub ($path, @) {
+                $path->is_file && !-l $path
+                    or return;
+
+                my $stat = $path->stat;
+                $path = path(decode('UTF-8', $path->stringify, Encode::FB_CROAK));
+
+                $path->absolute =~ m/to delete/
+                    and return;
+
+                if ($path =~ m/[.]kdenlive\z/x && $path !~ m/fixed/ && $path !~ m/backup\d?[.]kdenlive\z/) {
+                    push (@projects, $path);
+                    return;
+                }
+
+                my $file = Resource->new($path);
+                push ($result{$file->size}->@*, $file);
+            },
+            {
+                'follow_symlinks' => $options{'FOLLOW'},
+                'recurse'         => $options{'RECURSE'},
+            },
+        );
+    }
+    $log->debug('Gathering files finished');
+
+    return (\@projects, \%result);
+}
+
+exit main();
+
+__END__

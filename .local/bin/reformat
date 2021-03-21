@@ -11,7 +11,7 @@ for FILE in "$@"; do
 	# FILENAME="${FULLNAME%.*}"
 
 	case "$EXTENSION" in
-		fb2|xml)
+		fb2|xml|kdenlive)
 			CMD=(xmllint --format -)
 			;;
 		json)

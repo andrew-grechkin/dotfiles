@@ -139,6 +139,7 @@ command! rep    convert-archive %c
 command! unp    archive-extract-here %c
 
 " checksum
+command! md     find %c -type f -print0 | sort -z | xargs --null md5sum -b > %c.md5
 command! sha    find %c -type f -print0 | sort -z | xargs --null sha256sum -b > %c.sha256
 
 " encrypt/decrypt
@@ -185,7 +186,7 @@ filextype *.chm,*.epub,*.fb2,*.fbz,*.fb2.zip,*.mobi,*.rtf,*.tcr
 	\ okular   %c %i &,
 	\ cr3      %c %i &,
 
-filextype *.fb2,*.xml,*.gpx,*.xsd
+filextype *.fb2,*.xml,*.gpx,*.xsd,*.kdenlive
 	\ {Open with Kate}
 	\ kate          %f %i &,
 	\ {Reformat xml}
