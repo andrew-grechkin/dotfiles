@@ -29,8 +29,8 @@ GTK2_RC_FILES       DEFAULT="${XDG_CONFIG_HOME}/x11/gtk2rc"
 #XINITRC             DEFAULT="${XDG_CONFIG_HOME}/.config/x11/xinitrc"
 #XSERVERRC           DEFAULT="${XDG_CONFIG_HOME}/x11/xserverrc"
 
-### this might break lightdm
-XAUTHORITY          DEFAULT="${XDG_RUNTIME_DIR}/Xauthority"
+### this might break lightdm (and xrdp)
+#XAUTHORITY          DEFAULT="${XDG_RUNTIME_DIR}/Xauthority"
 #ICEAUTHORITY        DEFAULT="${XDG_RUNTIME_DIR}/ICEauthority"
 
 # => kde --------------------------------------------------------------------------------------------------------- {{{1
