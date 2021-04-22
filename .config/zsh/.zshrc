@@ -15,8 +15,9 @@ typeset -U PATH path
 [[ -d "$HOME/.local/usr/bin"                            ]] && path+=("$HOME/.local/usr/bin")
 [[ -d "$HOME/.cache/bin"                                ]] && path+=("$HOME/.cache/bin")
 [[ -d "$HOME/.cache/fzf/bin"                            ]] && path+=("$HOME/.cache/fzf/bin")
-[[ -n "$GOPATH"          ]] && [[ -d "$GOPATH"          ]] && path+=("$GOPATH/bin")
-[[ -n "$GEM_HOME"        ]] && [[ -d "$GEM_HOME"        ]] && path+=("$GEM_HOME/bin")
+[[ -n "$GOPATH"                ]] && [[ -d "$GOPATH"                ]] && path+=("$GOPATH/bin")
+[[ -n "$GEM_HOME"              ]] && [[ -d "$GEM_HOME"              ]] && path+=("$GEM_HOME/bin")
+[[ -n "$XDG_DATA_HOME/npm/bin" ]] && [[ -d "$XDG_DATA_HOME/npm/bin" ]] && path+=("$XDG_DATA_HOME/npm/bin")
 
 export PATH
 

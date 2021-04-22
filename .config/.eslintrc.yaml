@@ -1,0 +1,44 @@
+---
+env:
+  browser: true
+  es2021: true
+extends:
+  - eslint:recommended
+  - plugin:vue/vue3-recommended
+  - plugin:vue-scoped-css/vue3-recommended
+parserOptions:
+  ecmaVersion: 12
+  sourceType: module
+plugins:
+  - html
+  - vue
+settings:
+  html/html-extensions:
+    - .html
+rules:
+  indent:
+    - error
+    - 4
+  linebreak-style:
+    - error
+    - unix
+  quotes:
+    - error
+    - single
+  semi:
+    - error
+    - never
+  comma-dangle:
+    - error
+    - always-multiline
+  no-unused-vars:
+    - error
+    - vars: local
+      varsIgnorePattern: app
+  key-spacing:
+    - error
+    - mode: minimum
+      align: value
+  vue/html-indent:
+    - error
+    - 4

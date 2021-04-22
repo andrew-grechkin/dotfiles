@@ -3,20 +3,31 @@ if plugin#is_loaded('ale')
 	let g:ale_fix_on_save        = 1                                           " fix files when you save them
 	let g:ale_fix_on_save_ignore = {
 	\   'cpp':        ['clang-format'],
+	\   'html':       ['prettier', 'eslint'],
+	\   'javascript': ['eslint'],
+	\   'json':       ['jq'],
 	\   'perl':       ['perltidy'],
-	\   'typescript': ['tsfmt'],
+	\   'typescript': ['eslint'],
+	\   'vue':        ['prettier', 'eslint'],
+	\   'yaml':       ['prettier'],
 	\}
 	let g:ale_fixers = {
 	\   '*':          ['remove_trailing_lines', 'trim_whitespace'],
 	\   'cpp':        ['clang-format', 'remove_trailing_lines', 'trim_whitespace'],
+	\   'html':       ['remove_trailing_lines', 'trim_whitespace', 'prettier', 'eslint'],
+	\   'javascript': ['remove_trailing_lines', 'trim_whitespace', 'eslint'],
+	\   'json':       ['remove_trailing_lines', 'trim_whitespace', 'jq'],
 	\   'perl':       ['remove_trailing_lines', 'trim_whitespace', 'perltidy'],
-	\   'typescript': ['remove_trailing_lines', 'trim_whitespace', 'tsfmt'],
+	\   'typescript': ['remove_trailing_lines', 'trim_whitespace', 'eslint'],
+	\   'vue':        ['remove_trailing_lines', 'trim_whitespace', 'prettier', 'eslint'],
+	\   'yaml':       ['remove_trailing_lines', 'trim_whitespace', 'prettier'],
 	\}
 
 "	let g:ale_linters_explicit = 1
 	let g:ale_linters          = {
+	\   'html':       ['eslint', 'stylelint'],
 	\   'perl':       ['perl', 'perlcritic', 'perlart'],
-	\   'typescript': ['tslint'],
+	\   'typescript': ['eslint'],
 	\}
 
 	let g:ale_sign_error            = '✘'
@@ -45,8 +56,12 @@ if plugin#is_loaded('ale')
 	let g:ale_perl_perl_executable      = 'perl'
 	let g:ale_perl_perl_options         = '-cw -Ilib'
 	let g:ale_perl_perlcritic_showrules = 1
-
-	let g:ale_sh_shellcheck_dialect = 'bash'
+	" ale_javascript
+	let g:ale_javascript_eslint_options    = '--resolve-plugins-relative-to=$(npm get prefix)/lib'
+	let g:ale_javascript_eslint_use_global = 1
+	" ale_sh
+	let g:ale_sh_shellcheck_dialect        = 'bash'
+	let g:ale_json_jq_options              = '-S --indent 4'
 
 	nmap <silent> tt <Plug>(ale_fix)
 endif
