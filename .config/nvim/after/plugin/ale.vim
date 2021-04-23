@@ -3,6 +3,7 @@ if plugin#is_loaded('ale')
 	let g:ale_fix_on_save        = 1                                           " fix files when you save them
 	let g:ale_fix_on_save_ignore = {
 	\   'cpp':        ['clang-format'],
+	\   'css':        ['prettier'],
 	\   'html':       ['prettier', 'eslint'],
 	\   'javascript': ['eslint'],
 	\   'json':       ['jq'],
@@ -14,6 +15,7 @@ if plugin#is_loaded('ale')
 	let g:ale_fixers = {
 	\   '*':          ['remove_trailing_lines', 'trim_whitespace'],
 	\   'cpp':        ['clang-format', 'remove_trailing_lines', 'trim_whitespace'],
+	\   'css':        ['remove_trailing_lines', 'trim_whitespace', 'prettier'],
 	\   'html':       ['remove_trailing_lines', 'trim_whitespace', 'prettier', 'eslint'],
 	\   'javascript': ['remove_trailing_lines', 'trim_whitespace', 'eslint'],
 	\   'json':       ['remove_trailing_lines', 'trim_whitespace', 'jq'],

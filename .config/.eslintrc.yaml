@@ -42,3 +42,6 @@ rules:
   vue/html-indent:
     - error
     - 4
+  vue/component-definition-name-casing:
+    - warn
+    - kebab-case

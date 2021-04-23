@@ -10,4 +10,4 @@ semi: false
 singleQuote: true
 tabWidth: 4
 trailingComma: all
-# vueIndentScriptAndStyle: true
+vueIndentScriptAndStyle: true

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -Eeuo pipefail
+
+# shellcheck disable=SC2016
+
+jq -r '.devDependencies | to_entries | map([.key, .value] | join("@")) | @sh' package.json \
+| xargs -d "\n" -ri /bin/bash -c 'eval "array=({})"; npm -g install "${array[@]}"'
