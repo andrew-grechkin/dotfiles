@@ -5,6 +5,9 @@ overrides:
   - files: ['*.yaml', '*.yml']
     options:
       tabWidth: 2
+  - files: ['*.html', '*.html.ep']
+    options:
+      parser: html
 printWidth: 120
 semi: false
 singleQuote: true
