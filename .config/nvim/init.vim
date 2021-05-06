@@ -229,6 +229,7 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'janko/vim-test'
 		Plug 'sbdchd/vim-run'
 		Plug 'simnalamburt/vim-mundo', {'on': 'MundoToggle'}                   " Visualize the undo tree
+		Plug 'fatih/vim-go', {'for': 'go'}
 	endif
 	""" checking empty($KDEHOME) here is a weird way to check if this config is used in personal/work environment
 	""" KDEHOME is always defined on personal machines. I need to do something smarter in future
@@ -245,7 +246,6 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'vimwiki/vimwiki'                                                 " Personal wiki
 	endif
 " 	if 0                                                                       " These plugins are disabled
-" 		Plug 'fatih/vim-go', {'for': 'go'}
 " 		Plug 'chrisbra/csv.vim'
 " 		Plug 'guns/xterm-color-table.vim', {'on': 'XtermColorTable'}
 " 		Plug 'flazz/vim-colorschemes'                                          " Huge set of color schemes

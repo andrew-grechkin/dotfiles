@@ -1,24 +1,23 @@
 if plugin#is_loaded('vim-go')
-"" first setup steps:
-""	:GoInstallBinaries
-"
-"let g:go_fmt_command                 = "goimports"
-"let g:go_fmt_fail_silently           = 1
-"let g:go_fmt_autosave                = 1
-"let g:go_fmt_experimental            = 1
-"let g:go_highlight_types             = 1
-"let g:go_highlight_fields            = 1
-"let g:go_highlight_functions         = 1
-"let g:go_highlight_function_calls    = 1
-"let g:go_highlight_operators         = 1
-"let g:go_highlight_extra_types       = 1
-"let g:go_highlight_build_constraints = 1
-"let g:go_highlight_structs           = 1
-"let g:go_highlight_methods           = 1
-"
-""let g:go_play_open_browser           = 0
-""let g:loaded_syntastic_go_gofmt_checker = 0
-"
+	" first setup steps: :GoInstallBinaries
+
+	let g:go_fmt_command                 = 'goimports'
+	let g:go_fmt_fail_silently           = 1
+	let g:go_fmt_autosave                = 1
+	let g:go_fmt_experimental            = 1
+	let g:go_highlight_types             = 1
+	let g:go_highlight_fields            = 1
+	let g:go_highlight_functions         = 1
+	let g:go_highlight_function_calls    = 1
+	let g:go_highlight_operators         = 1
+	let g:go_highlight_extra_types       = 1
+	let g:go_highlight_build_constraints = 1
+	let g:go_highlight_structs           = 1
+	let g:go_highlight_methods           = 1
+
+"let g:go_play_open_browser           = 0
+"let g:loaded_syntastic_go_gofmt_checker = 0
+
 "" run :GoBuild or :GoTestCompile based on the go file
 "function! s:build_go_files()
 "	let l:file = expand('%')
