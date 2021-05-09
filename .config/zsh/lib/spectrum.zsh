@@ -62,6 +62,7 @@ function test-terminal() {
 	echo -ne \\e\[1\;3\;4:3\;5\;53\;38\;2\;255\;127\;0\;58\;2\;0\;48\;255\;48\;2\;255\;0\;{0..255..8}mX \\e\[0m\\n
 
 	echo -e "normal"
+	echo -e "ligatures: != =~ <=> //= ||= >= <="
 	echo -e "\e[1mbold\e[0m"
 	echo -e "\e[3mitalic\e[0m"
 	echo -e "\e[3m\e[1mbold italic\e[0m"
