@@ -13,8 +13,7 @@ plugins:
   - html
   - vue
 settings:
-  html/html-extensions:
-    - .html
+  html/html-extensions: [.html, .html.ep]
 rules:
   indent:
     - error
@@ -27,7 +26,7 @@ rules:
     - single
   semi:
     - error
-    - never
+    - always
   comma-dangle:
     - error
     - always-multiline
@@ -39,6 +38,9 @@ rules:
     - error
     - mode: minimum
       align: value
+  spaced-comment:
+    - error
+    - always
   vue/html-indent:
     - error
     - 4
