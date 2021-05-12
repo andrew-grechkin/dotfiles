@@ -198,6 +198,13 @@ call plug#begin('~/.cache/vim/plugged')
 		let g:ycm_seed_identifiers_with_syntax                  = 1
 "		Plug 'Valloric/YouCompleteMe', {'do': './install.py --clang-completer --system-libclang'}
 		Plug 'Valloric/YouCompleteMe', {'do': './install.py --clangd-completer'}
+		""" Trigger configuration. Using <tab> here together with YouCompleteMe works because of 'supertab' plugin
+		let g:UltiSnipsExpandTrigger       = '<tab>'
+		let g:UltiSnipsListSnippets        = '<A-Space>'
+		let g:UltiSnipsJumpForwardTrigger  = '<tab>'
+		let g:UltiSnipsJumpBackwardTrigger = '<s-tab>'
+		Plug 'SirVer/ultisnips'
+		Plug 'andrew-grechkin/vim-snippets'
 	else
 		let g:ale_completion_enabled = 1
 	endif
@@ -216,13 +223,6 @@ call plug#begin('~/.cache/vim/plugged')
 		let g:ale_lint_on_filetype_changed = 0
 		let g:ale_lint_on_text_changed     = 0
 		let g:ale_lint_on_insert_leave     = 0
-		""" Trigger configuration. Using <tab> here together with YouCompleteMe works because of 'supertab' plugin
-		let g:UltiSnipsExpandTrigger       = '<tab>'
-		let g:UltiSnipsListSnippets        = '<A-Space>'
-		let g:UltiSnipsJumpForwardTrigger  = '<tab>'
-		let g:UltiSnipsJumpBackwardTrigger = '<s-tab>'
-		Plug 'SirVer/ultisnips'
-		Plug 'andrew-grechkin/vim-snippets'
 	endif
 	if has('nvim')                                                             " These plugins demand neovim
 		Plug 'dyng/ctrlsf.vim', {'on': ['CtrlSF','<Plug>CtrlSFPrompt','<Plug>CtrlSFCwordPath','<Plug>CtrlSFVwordExec']} " Global search and replace
