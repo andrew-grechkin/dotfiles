@@ -461,7 +461,11 @@ filetype *.ftp
 	\ {Mount with curlftpfs}
 	\ FUSE_MOUNT2|curlftpfs -o ftp_port=-,,disable_eprt %PARAM %DESTINATION_DIR %FOREGROUND,
 
-" => File associations: encfs mount ------------------------------------------------------------------------------ {{{1
+" => File associations: encrypted fs mount ----------------------------------------------------------------------- {{{1
+
+filetype cryfs.config
+	\ {Mount with cryfs}
+	\ FUSE_MOUNT2|cryfs -c %SOURCE_FILE %d %DESTINATION_DIR %FOREGROUND,
 
 filetype *.encfs
 	\ {Mount with encfs}
@@ -645,7 +649,7 @@ mark u /run/media/$USER
 set classify=' ::../::, :dir:/, :exe:, :reg:, :link:'
 set classify+=' ::*.sh::, ::*.cpp::, ::*.c::, ::*.hpp::, ::*.pl,,*.pm::, ::*.rb::, ::*.go::'
 set classify+='© ::/^copying|license$/::, ::.git/,,*.git/::'
-set classify+=' ::*.fb2,,*.epub,,*.djvu::, ::*.pdf::'
+set classify+=' ::*.fb2,,*.epub,,*.djvu,,*.pdf::'
 set classify+=' ::*.doc,,*.docx::, ::*.xls,,*.xls[mx]::, ::*.ppt,,*.pptx::'
 set classify+=' ::*.7z,,*.ace,,*.arj,,*.bz2,,*.cpio,,*.dz,,*.gz,,*.jar,,*.lzh,,*.lzma,,*.rar,,*.rz,,*.tar,,*.taz,,*.tb2,,*.tbz,,*.tbz2,,*.tgz,,*.tlz,,*.trz,,*.txz,,*.tz,,*.tz2,,*.zst,,*.tzst,,*.xz,,*.z,,*.zip,,*.zoo::, ::*.deb::, ::*.rpm::'
 set classify+=' ::*.bmp,,*.gif,,*.jp2,,*.jpeg,,*.jpg,,*.ico,,*.png,,*.ppm,,*.tga,,*.tif,,*.tiff,,*.xbm,,*.xcf,,*.xpm,,*.xspf,,*.xwd,,*.svg,,*.svgz::'
