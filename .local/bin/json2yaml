@@ -1,19 +1,20 @@
 #!/usr/bin/env perl
 
-use v5.28;
+use v5.34;
 use autodie;
-use open ':locale';
+use open IO => ':raw';
 use utf8;
 use warnings;
 use warnings FATAL => qw(utf8);
-use experimental qw(signatures);
+use experimental qw(signatures try);
 
 # core
 use Carp;
-use JSON::PP;
+use JSON::PP ();
+use Scalar::Util qw(looks_like_number);
 
 # non core
-use YAML::Tiny;
+use YAML::XS ();
 
 sub main() {
     my @data;
@@ -40,23 +41,20 @@ sub _convert (@data) {
     my $result;
 
     my $json = JSON::PP->new;
-    $json->boolean_values(0, 1);
-    $json->utf8(0);
+    $json->utf8(1);
     foreach my $doc (@data) {
-        eval {
-            $result .= YAML::Tiny::Dump($json->decode($doc));
-            1;
-        } or do {
-            chomp (my $json_error = $@ || 'zombie error');
-            eval {
-                $result .= $json->pretty->canonical->encode($_) foreach YAML::Tiny::Load($doc);
-                1;
-            } or do {
-                chomp (my $yaml_error = $@ || 'zombie error');
+        local $YAML::XS::Boolean = 'JSON::PP'; ## no critic [Variables::ProhibitPackageVars]
+        try {
+            $result .= YAML::XS::Dump($json->decode($doc));
+        } catch ($json_error) {
+            try {
+                my @sections = YAML::XS::Load($doc);
+                $result .= $json->pretty->canonical->encode($_) foreach @sections;
+            } catch ($yaml_error) {
                 carp "Unable to parse file as json: $json_error";
                 croak "Unable to parse file as yaml: $yaml_error";
-            };
-        };
+            }
+        }
     }
 
     return $result;

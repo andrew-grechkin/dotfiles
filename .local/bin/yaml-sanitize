@@ -1,0 +1,86 @@
+#!/usr/bin/env perl
+
+use v5.34;
+use autodie;
+use open IO => ':raw';
+use utf8;
+use warnings;
+use warnings FATAL => qw(utf8);
+use experimental qw(declared_refs refaliasing signatures try);
+
+# core
+use Carp;
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+use Pod::Usage;
+use Scalar::Util qw(looks_like_number);
+
+# non core
+use YAML::XS ();
+
+my %options = (
+    'INPLACE' => 0,
+    'HELP'    => 0,
+);
+
+sub main() {
+    GetOptions(
+        'inplace|i' => \$options{'INPLACE'},
+        'help|h'    => \$options{'HELP'},
+    ) or croak 'Unable to process command line options';
+
+    if ($options{'HELP'}) {
+        pod2usage(
+            -verbose => 99,
+            exitval  => 0,
+        );
+    }
+
+    my %data;
+
+    if (@ARGV) {
+        foreach my $file (@ARGV) {
+            -e -r $file
+                or croak 'File does not exists: ', $file;
+            $data{$file} = [YAML::XS::LoadFile($file)];
+        }
+    } else {
+        $data{'-'} = YAML::XS::Load(do {local $/ = undef; <STDIN>});
+    }
+
+    my $result = _sanitize(%data);
+    print $result if $result;
+
+    return 0;
+}
+
+sub _sanitize (%data) {
+    my $result;
+
+    local $YAML::XS::Boolean = 'JSON::PP'; ## no critic [Variables::ProhibitPackageVars]
+    while (my ($file, $doc) = each %data) {
+        try {
+            _fix_section($_) foreach $doc->@*;
+            if ($options{'INPLACE'}) {
+                YAML::XS::DumpFile($file, $doc->@*);
+            } else {
+                $result .= YAML::XS::Dump($doc->@*);
+            }
+        } catch ($yaml_error) {
+            croak "Unable to parse file as yaml: $yaml_error";
+        }
+    }
+
+    return $result;
+}
+
+sub _fix_section ($section) {
+    if (exists $section->{'id'} && looks_like_number($section->{'id'})) {
+        $section->{'id'} = 0 + $section->{'id'};
+    }
+
+    return;
+}
+
+exit main();
+
+__END__

@@ -331,7 +331,9 @@ fileviewer *.json
 
 filetype *.yaml,*.yml
 	\ {View yaml}
-	\ less %c,
+	\ yaml-sanitize %c | less,
+	\ {Sanitize yaml}
+	\ yaml-sanitize -i %c,
 
 filetype *.json,*.yaml,*.yml
 	\ {Convert json <-> yaml}
