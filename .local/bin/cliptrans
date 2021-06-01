@@ -1,0 +1,41 @@
+#!/usr/bin/env perl
+
+use v5.34;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings;
+use warnings FATAL => qw(utf8);
+use experimental qw(declared_refs refaliasing signatures try);
+
+# core
+use Carp;
+use English qw(-no_match_vars);
+
+use Mojo::Util qw(trim);
+
+sub main() {
+    my $clipboard = _encode_clipboard(_read_clipboard());
+    _open_browser($clipboard);
+
+    return 0;
+}
+
+sub _encode_clipboard ($text) {
+    return $text =~ s{&}{\&}xgr;
+}
+
+sub _read_clipboard() {
+    my $stdout = `xsel --clipboard --output 2>/dev/null`;
+    chomp $stdout;
+    return trim $stdout;
+}
+
+sub _open_browser ($text) {
+    my @cmd = ('xdg-open', "https://translate.google.com/?sl=auto&op=translate&text=$text");
+    return system (@cmd) == 0;
+}
+
+exit main();
+
+__END__

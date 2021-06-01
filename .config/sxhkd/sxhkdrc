@@ -27,6 +27,8 @@ super + u
 super + w
 	alacritty -e "htop"
 
+super + F10
+	$HOME/.local/bin/cliptrans
 super + F11
 	$HOME/.local/bin/touchpad-toggle
 super + F12
