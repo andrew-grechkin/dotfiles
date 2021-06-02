@@ -1,7 +1,7 @@
 # vim: filetype=sh foldmethod=marker
 
 function tmux() {
-	local PATH=${PATH}:/opt/usr/bin
+	PATH=${PATH}:/opt/usr/bin
 	command tmux -f "$XDG_CONFIG_HOME/tmux/config" "$@"
 }
 

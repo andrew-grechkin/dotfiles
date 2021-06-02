@@ -8,7 +8,7 @@ if plugin#is_loaded('ale')
 	\   'javascript': ['eslint'],
 	\   'json':       ['jq'],
 	\   'perl':       ['perltidy'],
-	\   'typescript': ['eslint'],
+	\   'typescript': ['prettier', 'eslint'],
 	\   'vue':        ['prettier', 'eslint'],
 	\   'yaml':       ['prettier'],
 	\}
@@ -20,7 +20,7 @@ if plugin#is_loaded('ale')
 	\   'javascript': ['remove_trailing_lines', 'trim_whitespace', 'eslint'],
 	\   'json':       ['remove_trailing_lines', 'trim_whitespace', 'jq'],
 	\   'perl':       ['remove_trailing_lines', 'trim_whitespace', 'perltidy'],
-	\   'typescript': ['remove_trailing_lines', 'trim_whitespace', 'eslint'],
+	\   'typescript': ['remove_trailing_lines', 'trim_whitespace', 'prettier', 'eslint'],
 	\   'vue':        ['remove_trailing_lines', 'trim_whitespace', 'prettier', 'eslint'],
 	\   'yaml':       ['remove_trailing_lines', 'trim_whitespace', 'prettier'],
 	\}
@@ -29,7 +29,7 @@ if plugin#is_loaded('ale')
 	let g:ale_linters          = {
 	\   'html':       ['eslint', 'stylelint'],
 	\   'perl':       ['perl', 'perlcritic', 'perlart'],
-	\   'typescript': ['eslint'],
+	\   'typescript': ['prettier', 'eslint'],
 	\}
 
 	let g:ale_sign_error            = '✘'
@@ -59,8 +59,8 @@ if plugin#is_loaded('ale')
 	let g:ale_perl_perl_options         = '-cw -Ilib'
 	let g:ale_perl_perlcritic_showrules = 1
 	" ale_javascript
-	let g:ale_javascript_eslint_options    = '--resolve-plugins-relative-to=$(npm get prefix)/lib'
-	let g:ale_javascript_eslint_use_global = 1
+"	let g:ale_javascript_eslint_options    = '--resolve-plugins-relative-to=$(npm get prefix)/lib'
+"	let g:ale_javascript_eslint_use_global = 1
 	" ale_sh
 	let g:ale_sh_shellcheck_dialect        = 'bash'
 	let g:ale_json_jq_options              = '-S --indent 4'
