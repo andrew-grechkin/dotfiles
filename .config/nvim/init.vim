@@ -205,24 +205,24 @@ call plug#begin('~/.cache/vim/plugged')
 		let g:UltiSnipsJumpBackwardTrigger = '<s-tab>'
 		Plug 'SirVer/ultisnips'
 		Plug 'andrew-grechkin/vim-snippets'
+		Plug 'ervandew/supertab'
 	else
 		let g:ale_completion_enabled = 1
 	endif
 	if has('nvim') || v:version >= 800                                         " These plugins demand modern vim or neovim
 		Plug 'dense-analysis/ale'                                              " Async syntax checker
-"		Plug 'easymotion/vim-easymotion'                                       " Better move commands
-		Plug 'ervandew/supertab'
-"		Plug 'junegunn/vim-peekaboo'                                           " Preview registers
-		Plug 'lambdalisue/suda.vim'                                            " run sudo from vim
-"		Plug 'majutsushi/tagbar'
-		Plug 'masukomi/vim-markdown-folding'
-		Plug 'pedrohdz/vim-yaml-folds'
-		Plug 'mhinz/vim-signify'                                               " Git status/modifications of the file
 		""" necessary for UltiSnips
 		let g:ale_lint_on_enter            = 0
 		let g:ale_lint_on_filetype_changed = 0
 		let g:ale_lint_on_text_changed     = 0
 		let g:ale_lint_on_insert_leave     = 0
+"		Plug 'easymotion/vim-easymotion'                                       " Better move commands
+		Plug 'junegunn/vim-peekaboo'                                           " Preview registers
+		Plug 'lambdalisue/suda.vim'                                            " run sudo from vim
+		Plug 'majutsushi/tagbar'
+		Plug 'masukomi/vim-markdown-folding'
+		Plug 'pedrohdz/vim-yaml-folds'
+		Plug 'mhinz/vim-signify'                                               " Git status/modifications of the file
 	endif
 	if has('nvim')                                                             " These plugins demand neovim
 		Plug 'dyng/ctrlsf.vim', {'on': ['CtrlSF','<Plug>CtrlSFPrompt','<Plug>CtrlSFCwordPath','<Plug>CtrlSFVwordExec']} " Global search and replace
@@ -236,7 +236,7 @@ call plug#begin('~/.cache/vim/plugged')
 	if empty($KDEHOME)                                                         " Install these pluggins only at work remote machines
 		Plug 'junegunn/fzf', {'dir': '~/.cache/fzf', 'do': './install --bin'}
 	else                                                                       " Install these pluggins only on personal machines
-		Plug 'szw/vim-g'
+		Plug 'szw/vim-g'                                                       " Search on Google
 		Plug 'inkarkat/vim-localrc'
 		Plug 'mgrabovsky/vim-cuesheet'
 		Plug 'ryanoasis/vim-devicons'
