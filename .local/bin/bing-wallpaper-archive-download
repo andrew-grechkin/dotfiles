@@ -17,7 +17,7 @@ use Mojo::File qw(path);
 use Mojo::Util qw(encode);
 use Mojo::URL;
 use Mojo::UserAgent;
-use YAML::Tiny;
+use YAML::XS qw(DumpFile);
 
 our $VERSION = 2.0;
 
@@ -85,7 +85,7 @@ sub _fetch_images ($market, @descriptors) {
         $response->is_success
             or croak("Failed to retrieve '$image_url': ", join (' ', $response->code, $response->message));
 
-        YAML::Tiny::DumpFile($yml_filename, $descriptor);
+        DumpFile($yml_filename, $descriptor);
         $response->save_to($jpg_filename);
 
         sleep 1;
