@@ -1,12 +1,12 @@
 #!/usr/bin/env perl
 
-use v5.28;
+use v5.34;
 use autodie;
 use open ':locale';
 use utf8;
 use warnings;
 use warnings FATAL => qw(utf8);
-use experimental qw(unicode_strings declared_refs refaliasing signatures);
+use experimental qw(declared_refs refaliasing signatures);
 
 use Carp;
 use English qw(-no_match_vars);

@@ -6,7 +6,7 @@ use open ':locale';
 use utf8;
 use warnings;
 use warnings FATAL => qw(utf8);
-use experimental qw(unicode_strings declared_refs refaliasing signatures);
+use experimental qw(declared_refs refaliasing signatures);
 
 use Encode qw(decode);
 use List::Util qw(uniq);

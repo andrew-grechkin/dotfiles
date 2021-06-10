@@ -199,10 +199,10 @@ call plug#begin('~/.cache/vim/plugged')
 "		Plug 'Valloric/YouCompleteMe', {'do': './install.py --clang-completer --system-libclang'}
 		Plug 'Valloric/YouCompleteMe', {'do': './install.py --clangd-completer'}
 		""" Trigger configuration. Using <tab> here together with YouCompleteMe works because of 'supertab' plugin
-		let g:UltiSnipsExpandTrigger       = '<tab>'
+		let g:UltiSnipsExpandTrigger       = '<Tab>'
 		let g:UltiSnipsListSnippets        = '<A-Space>'
-		let g:UltiSnipsJumpForwardTrigger  = '<tab>'
-		let g:UltiSnipsJumpBackwardTrigger = '<s-tab>'
+		let g:UltiSnipsJumpForwardTrigger  = '<Tab>'
+		let g:UltiSnipsJumpBackwardTrigger = '<S-Tab>'
 		Plug 'SirVer/ultisnips'
 		Plug 'andrew-grechkin/vim-snippets'
 		Plug 'ervandew/supertab'
@@ -221,7 +221,6 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'lambdalisue/suda.vim'                                            " run sudo from vim
 		Plug 'majutsushi/tagbar'
 		Plug 'masukomi/vim-markdown-folding'
-		Plug 'pedrohdz/vim-yaml-folds'
 		Plug 'mhinz/vim-signify'                                               " Git status/modifications of the file
 	endif
 	if has('nvim')                                                             " These plugins demand neovim
