@@ -93,6 +93,9 @@
 [fetch]
 	prune = true
 
+[gc]
+	auto = 0
+
 [grep]
 	extendedRegexp = true
 	lineNumber     = true
