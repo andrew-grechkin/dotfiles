@@ -17,23 +17,13 @@ use Scalar::Util qw(looks_like_number);
 # non core
 use YAML::XS ();
 
-my %options = (
-    'INPLACE' => 0,
-    'HELP'    => 0,
-);
+my %options = ('INPLACE' => 0);
 
 sub main() {
     GetOptions(
         'inplace|i' => \$options{'INPLACE'},
-        'help|h'    => \$options{'HELP'},
+        'help|h'    => sub {pod2usage(-verbose => 99, exitval => 0)},
     ) or croak 'Unable to process command line options';
-
-    if ($options{'HELP'}) {
-        pod2usage(
-            -verbose => 99,
-            exitval  => 0,
-        );
-    }
 
     my %data;
 

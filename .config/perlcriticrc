@@ -40,6 +40,8 @@ color-severity-low     = bold cyan
 # Already available in core policy
 [-Freenode::StrictWarnings]
 
+[-Subroutines::ProhibitBuiltinHomonyms]
+
 # Can't find how to mark DSL keywords
 # (Moo{,se} provides has/with/extends/etc., Dancer{,2} provides more)
 # This is problematic
@@ -75,6 +77,13 @@ color-severity-low     = bold cyan
 # => disabled 2 -------------------------------------------------------------------------------------------------- {{{1
 
 [-Bangs::ProhibitCommentedOutCode]
+
+[-Community::Each]
+[-Community::EmptyReturn]
+[-Community::Wantarray]
+[-Freenode::Each]
+[-Freenode::EmptyReturn]
+[-Freenode::Wantarray]
 
 # Specific projects should override this
 [-Documentation::RequirePodSections]
@@ -472,7 +481,7 @@ equivalent_modules = Moo Moo::Role
 max_chain_length = 8
 
 [ValuesAndExpressions::ProhibitMagicNumbers]
-allowed_values = -1 0 1 2 3 4 5 6 7 8 9 10 20 24 30 42 50 60 64 80 90 100 128 180 200 270 303 360 400 401 404 443 500 1000 1900 3600 8080
+allowed_values = -1 0 1 2 3 4 5 6 7 8 9 10 20 24 30 32 42 50 60 64 80 90 100 128 180 200 270 303 360 400 401 404 443 500 1000 1900 3600 8080
 # Kind of literals to allow.
 # Valid values: Binary, Exp, Float, Hex, Octal.
 # allowed_types = Float

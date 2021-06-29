@@ -1,12 +1,14 @@
 #!/usr/bin/env perl
 
-use v5.28;
+# ABSTRACT: Parse MIME HTML archives (.mht and .mhtml) and extract files
+
+use v5.34;
 use autodie;
 use open 'IO' => ':raw';
 use utf8;
 use warnings;
 use warnings FATAL => qw(utf8);
-use experimental qw(declared_refs refaliasing signatures);
+use experimental qw(declared_refs refaliasing signatures try);
 
 use Carp;
 use Encode qw(decode encode);
@@ -23,7 +25,7 @@ use Mojo::File qw(path);
 use Mojo::Util qw(b64_decode trim);
 use Mojo::URL;
 
-our $VERSION = 1.00;
+our $VERSION = 1.01;
 
 my %options = (
     'HELP'    => 0,
@@ -48,8 +50,8 @@ sub main() {
         my $decoded_sbj = MIME::QuotedPrint::decode_qp($mp->headers->header('Subject'));
         (undef, undef, $meta{'subject'}) = $decoded_sbj =~ m{
             =[?] ([^?]*)    # "=?"+ charset
-             [?]([bq])      # "?" + encoding
-             [?]([^?]+)     # "?" + data maybe with spcs +
+             [?] ([bq])     # "?" + encoding
+             [?] ([^?]+)    # "?" + data maybe with spcs +
              [?]=           # "?="
         }xi;
         say 'Subject: ', $meta{'subject'};

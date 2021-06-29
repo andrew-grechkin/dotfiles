@@ -1,0 +1,64 @@
+#!/usr/bin/env perl
+
+use v5.34;
+use autodie;
+use open IO => ':raw';
+use utf8;
+use warnings;
+use warnings FATAL => qw(utf8);
+use experimental qw(signatures try);
+
+# core
+use Carp;
+use JSON::PP ();
+
+# non core
+use YAML::XS ();
+
+sub main() {
+    my @data;
+
+    if (@ARGV) {
+        foreach my $file (@ARGV) {
+            -e -r $file
+                or croak 'File does not exists: ', $file;
+            push (
+                @data,
+                do {local $/ = undef; open my $fh, '<', $file; <$fh>}, ## no critic [InputOutput::RequireBriefOpen]
+            );
+        }
+    } else {
+        push (@data, do {local $/ = undef; <STDIN>});
+    }
+
+    print _convert(@data);
+
+    return 0;
+}
+
+sub _convert (@data) {
+    my $result;
+
+    my $json = JSON::PP->new;
+    $json->utf8(1);
+    foreach my $doc (@data) {
+        local $YAML::XS::Boolean = 'JSON::PP'; ## no critic [Variables::ProhibitPackageVars]
+        try {
+            $result .= YAML::XS::Dump($json->decode($doc));
+        } catch ($json_error) {
+            try {
+                my @sections = YAML::XS::Load($doc);
+                $result .= $json->pretty->canonical->encode($_) foreach @sections;
+            } catch ($yaml_error) {
+                carp "Unable to parse file as json: $json_error";
+                croak "Unable to parse file as yaml: $yaml_error";
+            }
+        }
+    }
+
+    return $result;
+}
+
+exit main();
+
+__END__

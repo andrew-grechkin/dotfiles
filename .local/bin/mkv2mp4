@@ -1,6 +1,8 @@
 #!/usr/bin/env perl
 
-use v5.28;
+# ABSTRACT: Convert mkv files to mp4 with ffmpeg
+
+use v5.34;
 use autodie;
 use open ':locale';
 use utf8;

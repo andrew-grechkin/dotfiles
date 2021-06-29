@@ -2,6 +2,7 @@
     "devDependencies": {
         "@vue/cli": "latest",
         "eslint": "latest",
+        "eslint-plugin-align-assignments": "latest",
         "eslint-plugin-html": "latest",
         "eslint-plugin-vue": "latest",
         "eslint-plugin-vue-scoped-css": "latest",

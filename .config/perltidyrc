@@ -38,7 +38,7 @@
 --space-prototype-paren=0
 
 #--break-at-old-comma-breakpoints
---comma-arrow-breakpoints=0
+#--comma-arrow-breakpoints=0
 #--maximum-fields-per-table=2
 
 --stack-opening-tokens
