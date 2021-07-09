@@ -11,7 +11,7 @@ if plugin#is_loaded('YouCompleteMe')
 "	let g:ycm_register_as_syntastic_checker                 = 0 " default 1
 
 	let g:ycm_error_symbol                                  = '✘'
-	let g:ycm_warning_symbol                                = '❇'
+	let g:ycm_warning_symbol                                = '✱'
 "	let g:ycm_always_populate_location_list                 = 1 " default 0
 
 	let g:ycm_complete_in_comments                          = 1

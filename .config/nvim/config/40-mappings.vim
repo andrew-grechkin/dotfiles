@@ -2,6 +2,9 @@
 
 let mapleader = "\<Space>"                                                     " Map leader key
 
+" Select all
+silent! nnoremap <C-a>                 gg<S-v>G
+
 ":noremap <F12> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<' . synIDattr(synID(line("."),col("."),0),"name") . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
 
 " Fast split navigation

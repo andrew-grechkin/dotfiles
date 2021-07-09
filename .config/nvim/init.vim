@@ -119,7 +119,7 @@ syntax enable
 
 filetype plugin indent on
 
-set complete+=k,kspell                                                         " Complete from include files and from spell if enabled
+set complete+=kspell                                                           " Complete from include files and from spell if enabled
 set shortmess+=c
 set completeopt=menuone,noinsert,noselect,preview
 
@@ -182,3 +182,9 @@ set formatoptions=tcqjl                                                        "
 ":help filetype-overrule
 "vim --startuptime vim.log
 "vim --cmd 'profile start vimrc.profile' --cmd 'profile! file /home/agrechkin/.config/nvim/init.vim'
+
+" dump all globals
+" :redir > variables.vim
+" :let g:
+" :redir END
+" :n variables.vim

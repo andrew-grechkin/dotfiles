@@ -12,9 +12,10 @@ if plugin#is_loaded('vim-grepper')
 
 	" Start Grepper prompt
 	nnoremap <leader>g         :Grepper -dir repo<CR>
-	nnoremap <leader><leader>g :Grepper -dir cwd<CR>
+	nnoremap <leader><leader>g :Grepper -dir file<CR>
 	" Search for the current word
 	nnoremap <leader>*         :Grepper -cword -noprompt<CR>
+	nnoremap <leader><leader>* :Grepper -dir file -cword -noprompt<CR>
 	" Search for the current selection or {motion} (see text-objects)
 	nmap     gs                <Plug>(GrepperOperator)
 	xmap     gs                <Plug>(GrepperOperator)

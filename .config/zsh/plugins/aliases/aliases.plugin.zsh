@@ -28,6 +28,7 @@ alias duf='du -hs *'
 alias cp='cp -i --reflink=auto --sparse=always'
 alias mv='mv -i'
 alias rm='rm -i'
+alias clean-empty-folders='find . -depth -type d -empty -delete'
 
 # => devel ------------------------------------------------------------------------------------------------------- {{{1
 

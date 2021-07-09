@@ -16,39 +16,14 @@ call plug#begin('~/.cache/vim/plugged')
 	Plug 'andrew-grechkin/vim-rooter'                                          " Cwd if file is in git repo should be repo root
 	Plug 'Raimondi/delimitMate'
 	Plug 'chrisbra/unicode.vim'
-	Plug 'vim-airline/vim-airline'                                             " Most informative status line
-"	Plug 'vim-airline/vim-airline-themes'                                      " Status line themes
 	Plug 'vifm/vifm.vim'
 	Plug 'rodjek/vim-puppet'                                                   " For Puppet syntax highlighting
 	Plug 'vim-ruby/vim-ruby', {'for': 'ruby'}                                  " For Facts, Ruby functions, and custom providers
 	Plug 'pearofducks/ansible-vim'
 "	Plug '~/.local/share/vim-plug/trackperlvars', {'for': 'perl'}
 "	Plug '~/.local/share/vim-plug/perlart',       {'for': 'perl'}
-	if has('nvim-0.4') && has('python3')
-		let g:ale_completion_enabled = 0
-		let g:ycm_collect_identifiers_from_comments_and_strings = 1
-		let g:ycm_collect_identifiers_from_tags_files           = 1
-		let g:ycm_seed_identifiers_with_syntax                  = 1
-"		Plug 'Valloric/YouCompleteMe', {'do': './install.py --clang-completer --system-libclang'}
-		Plug 'Valloric/YouCompleteMe', {'do': './install.py --clangd-completer'}
-		""" Trigger configuration. Using <tab> here together with YouCompleteMe works because of 'supertab' plugin
-		let g:UltiSnipsExpandTrigger       = '<Tab>'
-		let g:UltiSnipsListSnippets        = '<A-Space>'
-		let g:UltiSnipsJumpForwardTrigger  = '<Tab>'
-		let g:UltiSnipsJumpBackwardTrigger = '<S-Tab>'
-		Plug 'SirVer/ultisnips'
-		Plug 'andrew-grechkin/vim-snippets'
-		Plug 'ervandew/supertab'
-	else
-		let g:ale_completion_enabled = 1
-	endif
 	if has('nvim') || v:version >= 800                                         " These plugins demand modern vim or neovim
 		Plug 'dense-analysis/ale'                                              " Async syntax checker
-		""" necessary for UltiSnips
-		let g:ale_lint_on_enter            = 0
-		let g:ale_lint_on_filetype_changed = 0
-		let g:ale_lint_on_text_changed     = 0
-		let g:ale_lint_on_insert_leave     = 0
 "		Plug 'easymotion/vim-easymotion'                                       " Better move commands
 		Plug 'junegunn/vim-peekaboo'                                           " Preview registers
 		Plug 'lambdalisue/suda.vim'                                            " run sudo from vim
@@ -56,22 +31,41 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'masukomi/vim-markdown-folding'
 		Plug 'mhinz/vim-signify'                                               " Git status/modifications of the file
 	endif
-	if has('nvim')                                                             " These plugins demand neovim
+	if has('nvim-0.5') && has('python3')                                       " Neovim only
 		Plug 'dyng/ctrlsf.vim', {'on': ['CtrlSF','<Plug>CtrlSFPrompt','<Plug>CtrlSFCwordPath','<Plug>CtrlSFVwordExec']} " Global search and replace
 		Plug 'janko/vim-test'
 		Plug 'sbdchd/vim-run'
 		Plug 'simnalamburt/vim-mundo', {'on': 'MundoToggle'}                   " Visualize the undo tree
 		Plug 'fatih/vim-go', {'for': 'go'}
+		Plug 'RRethy/vim-hexokinase', {'do': 'make hexokinase'}
+		""" LSP
+		Plug 'neovim/nvim-lspconfig'                                           " ~/.config/nvim/after/plugin/nvim-lspconfig.lua
+		Plug 'glepnir/lspsaga.nvim'                                            " ~/.config/nvim/after/plugin/nvim-lspsaga.vim
+		Plug 'nvim-treesitter/nvim-treesitter', { 'do': ':TSUpdate' }
+		""" completion
+		" Plug 'nvim-lua/completion-nvim'
+		" Plug 'kristijanhusak/completion-tags'
+		" Plug 'nvim-treesitter/completion-treesitter'
+		""" UI
+		" Plug folke/lsp-colors.nvim'
+		"""
+		Plug 'kyazdani42/nvim-web-devicons'                                    " lua fork of vim-devicons
+		Plug 'hoob3rt/lualine.nvim'
+		Plug 'SirVer/ultisnips'
+		Plug 'andrew-grechkin/vim-snippets'
+	else
+		Plug 'ryanoasis/vim-devicons'
+"		Plug 'vim-airline/vim-airline'                                         " Most informative status line
+"		Plug 'vim-airline/vim-airline-themes'                                  " Status line themes
 	endif
 	""" checking empty($KDEHOME) here is a weird way to check if this config is used in personal/work environment
 	""" KDEHOME is always defined on personal machines. I need to do something smarter in future
 	if empty($KDEHOME)                                                         " Install these pluggins only at work remote machines
-		" Plug 'junegunn/fzf', {'dir': '~/.cache/fzf', 'do': './install --bin'}
+		Plug 'junegunn/fzf', {'dir': '~/.cache/fzf', 'do': './install --bin'}
 	else                                                                       " Install these pluggins only on personal machines
 		Plug 'szw/vim-g'                                                       " Search on Google
 		Plug 'inkarkat/vim-localrc'
 		Plug 'mgrabovsky/vim-cuesheet'
-		Plug 'ryanoasis/vim-devicons'
 		Plug 'shumphrey/fugitive-gitlab.vim'                                   " fugitive Gitlab module
 		Plug 'tmux-plugins/vim-tmux', {'for': 'tmux'}                          " Vim plugin for .tmux.conf
 		Plug 'tpope/vim-rhubarb'                                               " fugitive Github module
@@ -96,7 +90,6 @@ call plug#begin('~/.cache/vim/plugged')
 " 		""" perl autocomplete (not working properly)
 " 		Plug 'chumakd/perlomni.vim'
 " 		Plug 'Shougo/deoplete.nvim'
-" 		Plug 'RRethy/vim-hexokinase', {'do': 'make hexokinase'}
 " 	endif
 call plug#end()
 
