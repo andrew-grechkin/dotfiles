@@ -2,6 +2,7 @@
 *.antigen-compat
 *.zwc
 .config/mpv/watch_later
+.config/nvim/autoload/plug.vim
 .config/shell/*.work
 .config/systemd/user/chromoting.service
 .config/systemd/user/default.target.wants

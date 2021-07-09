@@ -3,7 +3,6 @@
 mkdir -p ~/.cache
 mkdir -p ~/.cache/bin
 mkdir -p ~/.config
-mkdir -p ~/.config/nvim
 mkdir -p ~/.config/xfce4
 mkdir -p ~/.local/share
 mkdir -p ~/.local/share/tig
@@ -27,7 +26,7 @@ ln -sf "$WORKDIR/.config/git"                                          ~/.config
 ln -sf "$WORKDIR/.config/i3"                                           ~/.config/
 ln -sf "$WORKDIR/.config/mpv"                                          ~/.config/
 ln -sf "$WORKDIR/.config/mutt"                                         ~/.config/
-ln -sf "$WORKDIR/.config/nvim/"*                                       ~/.config/nvim
+ln -sf "$WORKDIR/.config/nvim"                                         ~/.config/
 ln -sf "$WORKDIR/.config/perlcriticrc"                                 ~/.config/
 ln -sf "$WORKDIR/.config/rofi"                                         ~/.config/
 ln -sf "$WORKDIR/.config/shell"                                        ~/.config/
