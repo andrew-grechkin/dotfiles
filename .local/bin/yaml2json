@@ -55,7 +55,6 @@ sub _convert (@data) {
             }
         }
     }
-
     return $result;
 }
 

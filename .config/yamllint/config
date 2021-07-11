@@ -19,7 +19,10 @@ rules:
   empty-lines: enable
   empty-values: disable
   hyphens: enable
-  indentation: enable
+  indentation:
+    spaces: consistent
+    indent-sequences: whatever
+    check-multi-line-strings: false
   key-duplicates: enable
   key-ordering: disable
   line-length: disable
