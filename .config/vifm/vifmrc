@@ -649,7 +649,7 @@ mark u /run/media/$USER
 " => file icons -------------------------------------------------------------------------------------------------- {{{1
 
 set classify=' ::../::, :dir:/, :exe:, :reg:, :link:'
-set classify+=' ::*.sh::, ::*.cpp::, ::*.c::, ::*.hpp::, ::*.pl,,*.pm::, ::*.rb::, ::*.go::'
+set classify+=' ::*.sh::, ::*.cpp::, ::*.c::, ::*.hpp::, ::*.js::, ::*.pl,,*.pm::, ::*.rb::, ::*.go::, ::*.json::, ::*.ts::'
 set classify+='© ::/^copying|license$/::, ::.git/,,*.git/::'
 set classify+=' ::*.fb2,,*.epub,,*.djvu,,*.pdf::'
 set classify+=' ::*.doc,,*.docx::, ::*.xls,,*.xls[mx]::, ::*.ppt,,*.pptx::'
