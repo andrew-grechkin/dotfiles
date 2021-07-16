@@ -38,7 +38,6 @@ else
 	silent! set nrformats=bin,hex                                              " <c-a> and <c-x> support
 	set ruler                                                                  " Display current line # in a corner
 "	set sessionoptions-=options                                                " Do not carry options across sessions
-"	set shortmess=F                                                            " Less verbose file info
 	set showcmd                                                                " Show last command in the status line
 	set sidescroll=1                                                           " Smoother sideways scrolling
 	set tabpagemax=50                                                          " Maximum number of tabs open by -p flag
@@ -79,8 +78,9 @@ set wildmenu                                                                   "
 "set wildmode=longest:full
 set wildignorecase
 set wildignore+=*.a,*.o,*.obj,.git,*~,*.pyc,*.so,*.swp,*.zip,*.exe             " Ignore compiled files
-set wildignore+=*/tmp/*,*/node_modules/*                                       " MacOSX/Linux
-set wildignore+=*\\tmp\\*                                                      " Windows
+set wildignore+=tmp/**,node_modules/**                                         " MacOSX/Linux
+" set wildignore+=*/tmp/*,*/node_modules/*                                       " MacOSX/Linux
+" set wildignore+=*\\tmp\\*                                                      " Windows
 
 set number                                                                     " Enable numbers
 set relativenumber                                                             " Display relative column numbers
@@ -119,7 +119,9 @@ syntax enable
 
 filetype plugin indent on
 
-set complete+=kspell                                                           " Complete from include files and from spell if enabled
+set complete+=k,kspell                                                         " Complete from include files and from spell if enabled
+set shortmess+=c
+set completeopt=menuone,noinsert,noselect
 
 set foldcolumn=2 foldmethod=syntax
 
