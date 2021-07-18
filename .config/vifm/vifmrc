@@ -326,6 +326,8 @@ filetype *.json
 	\ jq -CS --indent 4 < %c | less -r,
 	\ {Reformat json}
 	\ reformat %f,
+	\ {Convert json -> yaml}
+	\ json2yaml %c > %c:r.yaml &,
 fileviewer *.json
 	\ jq -CS --indent 4 < %c,
 
@@ -334,10 +336,8 @@ filetype *.yaml,*.yml
 	\ yaml-sanitize %c | less,
 	\ {Sanitize yaml}
 	\ yaml-sanitize -i %c,
-
-filetype *.json,*.yaml,*.yml
-	\ {Convert json <-> yaml}
-	\ json2yaml %f &,
+	\ {Convert yaml -> json}
+	\ json2yaml %c > %c:r.json &,
 
 filetype *.md5
 	\ {Check MD5 hash sum}
