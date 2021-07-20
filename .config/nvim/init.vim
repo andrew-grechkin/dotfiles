@@ -121,7 +121,7 @@ filetype plugin indent on
 
 set complete+=k,kspell                                                         " Complete from include files and from spell if enabled
 set shortmess+=c
-set completeopt=menuone,noinsert,noselect
+set completeopt=menuone,noinsert,noselect,preview
 
 set foldcolumn=2 foldmethod=syntax
 
