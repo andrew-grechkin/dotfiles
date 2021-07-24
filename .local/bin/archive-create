@@ -1,45 +1,56 @@
 #!/usr/bin/env perl
 
-use v5.28;
+use v5.34;
 use autodie;
 use open ':locale';
 use utf8;
 use warnings;
 use warnings FATAL => qw(utf8);
-use experimental qw(unicode_strings declared_refs refaliasing signatures);
+use experimental qw(declared_refs refaliasing signatures try);
 
-use Carp;
 use Errno qw(ENOENT);
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
 use Path::Tiny;
+use Pod::Usage;
 
-my %handlers = (
-    'MULTIPLE' => {
-        'suffix'  => '.tzst',
-        'handler' => sub {
-            my ($outfile, @items) = @_;
-            system ('tar', '-vcf', $outfile, '--zstd', map {$_->stringify} @items) == 0
-                or croak "Unable to execute compress command: $!";
-        },
+use AnyArchive::Create ();
 
-        # 'suffix'  => '.tar.gz',
-        # 'handler' => sub {
-        # my ($outfile, @items) = @_;
-        # system ('tar', 'vczf', $outfile, map {$_->stringify} @items);
-        # },
-    },
-);
+our $VERSION = 1.000;
 
-my @items = grep {$_->exists} map {path($_)} @ARGV
-    or exit (ENOENT);
+my %options = ('GZ' => 0);
 
-my $basename = $items[0]->basename();
-my $h        = 'MULTIPLE';
+sub main() {
+    GetOptions(
+        'gz'     => \$options{'GZ'},
+        'help|h' => sub {pod2usage(-verbose => 99, exitval => 0)},
+    ) or die "Unable to process command line options\n";
 
-my $outfile = Path::Tiny->cwd->child($basename . $handlers{$h}{'suffix'});
+    my @items  = map  {path($_)} @ARGV;
+    my @absent = grep {!$_->exists} @items;
 
-$outfile->exists
-    and die "File already exists: $outfile";
+    if (@absent) {
+        say {*STDERR} 'Not found:';
+        say {*STDERR} "\t$_" foreach @absent;
+        return ENOENT if @absent;
+    }
 
-$handlers{$h}{'handler'}->($outfile, @items);
+    my $suffix   = $options{'GZ'} ? '.tgz' : '.tzst';
+    my $basename = $items[0]->basename =~ s{[.]\w*$}{}xr;
+    my $archive  = Path::Tiny->cwd->child($basename . $suffix);
+
+    $archive->exists
+        and die "File already exists: $archive\n";
+
+    try {
+        AnyArchive::Create::execute($archive, \@items);
+    } catch ($error) {
+        warn $error; ## no critic [ErrorHandling::RequireCarping]
+        return 1;
+    };
+
+    return 0;
+}
+
+exit main();
 
 __END__

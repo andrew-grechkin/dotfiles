@@ -12,20 +12,19 @@ use Getopt::Long qw(:config auto_version bundling no_ignore_case);
 use Path::Tiny;
 use Pod::Usage;
 
-use AnyArchive::Create  ();
 use AnyArchive::Extract ();
 
 our $VERSION = 1.000;
 
-my %options = ('GZ' => 0);
+my %options = ('HERE' => 0);
 
 sub main() {
     GetOptions(
-        'gz'     => \$options{'GZ'},
-        'help|h' => sub {pod2usage(-verbose => 99, exitval => 0)},
+        'directory|d=s' => \$options{'DIRECTORY'},
+        'help|h'        => sub {pod2usage(-verbose => 99, exitval => 0)},
+        'here'          => \$options{'HERE'},
     ) or die "Unable to process command line options\n";
 
-    my $suffix     = $options{'GZ'} ? '.tgz' : '.tzst';
     my $error_code = 0;
     foreach my $archive (map {path($_)} @ARGV) {
         $archive->exists
@@ -33,14 +32,10 @@ sub main() {
 
         try {
             my $basename    = AnyArchive::Extract::basename($archive);
-            my $destination = Path::Tiny->tempdir('archive-convert-XXXXXXXXXX', 'CLEANUP' => 1);
-            my $new_archive = Path::Tiny->cwd->child($basename . $suffix);
-
-            $new_archive->exists
-                and die "File already exists: $new_archive\n";
+            my $destination = _get_destination($archive, $basename)
+                or next;
 
             AnyArchive::Extract::execute($archive, $destination);
-            AnyArchive::Create::execute($new_archive, [$destination->children], $destination);
         } catch ($error) {
             warn $error; ## no critic [ErrorHandling::RequireCarping]
             $error_code = 1;
@@ -48,6 +43,24 @@ sub main() {
     }
 
     return $error_code;
+}
+
+sub _get_destination ($file, $basename) {
+    return Path::Tiny->cwd if $options{'HERE'};
+
+    my $destination
+        = $options{'DIRECTORY'}
+        ? path($options{'DIRECTORY'})
+        : Path::Tiny->cwd->child($basename);
+
+    if ($destination->exists) {
+        warn "Skipping file '$file'. Destination path $destination already exists\n";
+        return;
+    } else {
+        $destination->mkpath;
+    }
+
+    return $destination;
 }
 
 exit main();

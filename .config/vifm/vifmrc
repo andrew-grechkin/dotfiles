@@ -133,7 +133,7 @@ command! p      tar -cvaf   %c.tzst %f
 command! z      7z a        %c.7z   %f
 
 " repack
-command! rep    convert-archive %c
+command! rep    archive-convert %c
 
 " unpack
 command! unp    archive-extract-here %c
@@ -434,10 +434,12 @@ filetype *.7z,
 	\*.bz2,*.gz,*.lz,*.lzma,*.lzop,*.xz,*.zst,*.Z
 	\ {Mount with fuse3-p7zip}
 	\ FUSE_MOUNT|fuse3-p7zip %SOURCE_FILE %DESTINATION_DIR,
+	\ {Extract to subfolder...}
+	\ archive-extract %f 2>/dev/null,
 	\ {Extract here...}
-	\ archive-extract-here %f,
+	\ archive-extract --here %f 2>/dev/null,
 	\ {Convert to tar.zstd...}
-	\ convert-archive %f &,
+	\ archive-convert %f 2>/dev/null,
 fileviewer *.7z,
 	\*.dsl.dz,*.tar,*.zip,*.ova,*.sfs,
 	\*.apk,*.apm,*.ar,*.arj,*.cab,*.chm,*.cpio,*.cramfs,*.deb,*.dll,*.dmg,*.doc,*.esd,*.exe,

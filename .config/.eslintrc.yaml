@@ -13,13 +13,17 @@ plugins:
   - html
   - vue
   - align-assignments
-settings:
-  html/html-extensions: [.html, .html.ep]
 rules:
+  align-assignments/align-assignments:
+    - 2
+    - requiresOnly: false
+  comma-dangle:
+    - error
+    - always-multiline
   comma-spacing:
     - error
-    - before: false
-      after: true
+    - after: true
+      before: false
   comma-style:
     - error
     - last
@@ -43,6 +47,10 @@ rules:
   indent:
     - error
     - 4
+  key-spacing:
+    - error
+    - align: value
+      mode: minimum
   linebreak-style:
     - error
     - unix
@@ -52,6 +60,10 @@ rules:
     - error
   no-invalid-this:
     - error
+  no-unused-vars:
+    - error
+    - vars: local
+      varsIgnorePattern: app
   no-useless-return:
     - error
   quotes:
@@ -60,26 +72,16 @@ rules:
   semi:
     - error
     - always
-  comma-dangle:
-    - error
-    - always-multiline
-  no-unused-vars:
-    - error
-    - vars: local
-      varsIgnorePattern: app
-  key-spacing:
-    - error
-    - mode: minimum
-      align: value
   spaced-comment:
     - error
     - always
-  align-assignments/align-assignments:
-    - 2
-    - requiresOnly: false
-  vue/html-indent:
-    - error
-    - 4
   vue/component-definition-name-casing:
     - warn
     - kebab-case
+  vue/html-indent:
+    - error
+    - 4
+settings:
+  html/html-extensions:
+    - .html
+    - .html.ep

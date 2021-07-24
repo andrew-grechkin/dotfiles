@@ -4,6 +4,7 @@ mkdir -p ~/.cache
 mkdir -p ~/.cache/bin
 mkdir -p ~/.config
 mkdir -p ~/.config/xfce4
+mkdir -p ~/.local/lib
 mkdir -p ~/.local/share
 mkdir -p ~/.local/share/tig
 mkdir -p ~/{desktop,documents,downloads,music,pictures,public,templates,videos}
@@ -41,6 +42,7 @@ ln -sf "$WORKDIR/.config/zathura"                                      ~/.config
 ln -sf "$WORKDIR/.config/zsh"                                          ~/.config/
 
 ln -sf "$WORKDIR/.local/bin"                                           ~/.local/
+ln -sf "$WORKDIR/.local/lib/perl5"                                     ~/.local/lib/
 ln -sf "$WORKDIR/.local/share/vim-dict"                                ~/.local/share/
 ln -sf "$WORKDIR/.local/share/vim-plug"                                ~/.local/share/
 
