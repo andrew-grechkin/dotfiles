@@ -6,7 +6,7 @@ use open IO => ':raw';
 use utf8;
 use warnings;
 use warnings FATAL => qw(utf8);
-use experimental qw(declared_refs refaliasing signatures try);
+use experimental qw(declared_refs refaliasing signatures);
 
 use List::Util qw(all);
 
@@ -14,10 +14,6 @@ use List::Util qw(all);
 use Mojo::File qw(path);
 
 sub main() {
-
-    @ARGV
-        or push (@ARGV, '/home/agrechkin/tmp/a/1', '/home/agrechkin/tmp/a/2');
-
     @ARGV == 2
         or die "Please provide 2 directories\n";
 
@@ -28,23 +24,31 @@ sub main() {
 
     my (\@left_only, \@right_only, \@diff) = _compare(@dirs, map {$_->list_tree({'hidden' => 1})} @dirs);
 
-    say 'Only in: ', $dirs[0]->to_string;
-    say "\t ",       $_ foreach @left_only;
+    if (@left_only) {
+        say 'Only in: ', $dirs[0]->to_string;
+        say "\t ",       $_ foreach @left_only;
+        say '';
+    }
 
-    say '';
-    say 'Only in: ', $dirs[1]->to_string;
-    say "\t ",       $_ foreach @right_only;
+    if (@right_only) {
+        say 'Only in: ', $dirs[1]->to_string;
+        say "\t ",       $_ foreach @right_only;
+        say '';
+    }
 
-    say '';
-    say 'Differ: ';
-    say "\t ", $_ foreach @diff;
+    if (@diff) {
+        say 'Differ: ';
+        say "\t ", $_ foreach @diff;
+    }
 
     return 0;
 }
 
 sub _compare ($lpath, $rpath, $ltree, $rtree) {
-    my %lhs = $ltree->sort->map(sub ($path) {$path->to_rel($lpath)->to_string, $path->stat})->@*;
-    my %rhs = $rtree->sort->map(sub ($path) {$path->to_rel($rpath)->to_string, $path->stat})->@*;
+    my %lhs = $ltree->grep(sub {!m{[.]git[/]|[@]eaDir[/]}x})
+        ->map(sub ($path) {$path->to_rel($lpath)->to_string, $path->lstat})->@*;
+    my %rhs = $rtree->grep(sub {!m{[.]git[/]|[@]eaDir[/]}x})
+        ->map(sub ($path) {$path->to_rel($rpath)->to_string, $path->lstat})->@*;
 
     my (%left_only, %right_only, %diff);
     foreach my $path (keys %lhs) {
