@@ -25,7 +25,7 @@ function enable-perlbrew() {
 
 	# make system perl available for perlbrew
 	[[ -d "$PERLBREW_ROOT/perls/system/bin"      ]] || mkdir -p            "$PERLBREW_ROOT/perls/system/bin"
-	[[ -h "$PERLBREW_ROOT/perls/system/bin/perl" ]] || ln -s /usr/bin/perl "$PERLBREW_ROOT/perls/system/bin/perl"
+	[[ -h "$PERLBREW_ROOT/perls/system/bin/perl" ]] || ln -s $(command -v perl) "$PERLBREW_ROOT/perls/system/bin/perl"
 
 	# enable perlbrew environment
 	source-file "$PERLBREW_ROOT/etc/bashrc"
