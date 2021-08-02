@@ -21,7 +21,7 @@ if plugin#is_loaded('ale')
 	\   'javascript': ['eslint'],
 	\   'json':       ['fixjson', 'jq'],
 	\   'perl':       ['perltidy'],
-	\   'typescript': ['prettier', 'eslint'],
+	\   'typescript': ['prettier', 'deno', 'tslint', 'xo'],
 	\   'vue':        ['prettier', 'eslint'],
 	\   'yaml':       ['yaml-sanitize', 'prettier'],
 	\}
