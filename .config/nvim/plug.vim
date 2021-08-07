@@ -39,9 +39,9 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'fatih/vim-go', {'for': 'go'}
 		Plug 'RRethy/vim-hexokinase', {'do': 'make hexokinase'}
 		""" LSP
-		Plug 'neovim/nvim-lspconfig'                                           " ~/.config/nvim/after/plugin/nvim-lspconfig.lua
-		Plug 'glepnir/lspsaga.nvim'                                            " ~/.config/nvim/after/plugin/nvim-lspsaga.vim
-		Plug 'nvim-treesitter/nvim-treesitter', { 'do': ':TSUpdate' }
+		" Plug 'neovim/nvim-lspconfig'                                           " ~/.config/nvim/after/plugin/nvim-lspconfig.lua
+		" Plug 'glepnir/lspsaga.nvim'                                            " ~/.config/nvim/after/plugin/nvim-lspsaga.vim
+		" Plug 'nvim-treesitter/nvim-treesitter', { 'do': ':TSUpdate' }
 		""" completion
 		" Plug 'nvim-lua/completion-nvim'
 		" Plug 'kristijanhusak/completion-tags'
@@ -64,7 +64,7 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'junegunn/fzf', {'dir': '~/.cache/fzf', 'do': './install --bin'}
 	else                                                                       " Install these pluggins only on personal machines
 		Plug 'szw/vim-g'                                                       " Search on Google
-		Plug 'inkarkat/vim-localrc'
+		" Plug 'inkarkat/vim-localrc'
 		Plug 'mgrabovsky/vim-cuesheet'
 		Plug 'shumphrey/fugitive-gitlab.vim'                                   " fugitive Gitlab module
 		Plug 'tmux-plugins/vim-tmux', {'for': 'tmux'}                          " Vim plugin for .tmux.conf

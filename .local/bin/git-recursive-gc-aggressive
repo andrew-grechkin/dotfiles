@@ -1,0 +1,15 @@
+#!/usr/bin/env zsh
+
+set -Euo pipefail
+
+WD=${1:-$(pwd)}
+
+for GIT_DIR in "$WD"/**/.git; do
+	REPO=$(dirname "$GIT_DIR")
+
+	echo -e '\033[0;33m'"Gc $REPO"'\033[0m'
+
+	git -C "$REPO" bleach
+	git -C "$REPO" reflog expire --all --expire=now \
+	&& nice git -C "$REPO" gc --prune=now --aggressive "$@"
+done

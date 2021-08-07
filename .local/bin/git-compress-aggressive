@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -Eeuo pipefail
+
+PATH="$(dirname "$0"):$PATH"
+
+git-in-repo && {
+	git reflog expire --all --expire=now \
+	&& nice git gc --prune=now --aggressive "$@"
+}
