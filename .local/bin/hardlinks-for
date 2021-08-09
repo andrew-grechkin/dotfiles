@@ -1,0 +1,42 @@
+#!/usr/bin/env perl
+
+use v5.34;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings;
+use warnings FATAL => qw(utf8);
+use experimental qw(declared_refs refaliasing signatures try);
+
+use Path::Tiny qw(path);
+use JSON::PP;
+
+use constant {'JSON' => JSON::PP->new->pretty,};
+
+sub main() {
+    my %files = map {$_->stat->ino => get_mount_point($_->absolute)} map {path($_)} @ARGV;
+
+    my %links;
+    foreach my $inode (keys %files) {
+        my @cmd = (qw(btrfs inspect-internal inode-resolve), $inode, $files{$inode});
+
+        # say "Executing: @cmd";
+        chomp (my @links = `@cmd`);
+        $links{$inode} = \@links;
+    }
+
+    say JSON()->encode(\%links);
+
+    return 0;
+}
+
+sub get_mount_point ($path) {
+    chomp (my @lines = `findmnt -nT $path`);
+    my ($result) = split (m/\s+/, $lines[0], 2);
+
+    return $result;
+}
+
+exit main();
+
+__END__
