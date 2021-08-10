@@ -71,7 +71,7 @@ sub main {
         my \@items = $by_dev_size{$key};
         my $size = $items[0]{'stat'}->size;
 
-        $log->debugf('Processing bucket  (%d/%d/%d) %s', $counter, $amount, scalar @items, $key);
+        $log->debugf('Processing bucket    (%d/%d/%d) %s', $counter, $amount, scalar @items, $key);
 
         my $group = {%by_dev_size{$key}};
         if (PARTIAL_CHECKSUM_SIZE() < $size) {
@@ -101,7 +101,7 @@ sub main {
         );
 
         foreach my $key (keys $group->%*) {
-            $log->tracef('Checksum subbucket (%d/%d/%d) %s', $counter, $amount, scalar @items, $key);
+            $log->tracef('Checksum subbucket  (%d/%d/%d) %s', $counter, $amount, scalar @items, $key);
             _process_identical_checksums($key, $group->{$key}->@*);
         }
     }

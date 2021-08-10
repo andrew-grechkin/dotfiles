@@ -30,13 +30,34 @@ sub main() {
         'help|h' => sub {pod2usage('-verbose' => 99, 'exitval' => 0)},
     ) or die "Unable to process command line options\n";
 
-    my @inodes = map {path($_)->stat->ino} @ARGV;
+    @ARGV
+        or push (@ARGV, '.');
 
-    my %links;
-    foreach my $inode (@inodes) {
-        my @cmd = (qw(btrfs inspect-internal inode-resolve), $inode, '.');
-        chomp (my @links = `@cmd`);
-        $links{$inode} = [sort map {_find_absolute_path($_)} @links];
+    my %files;
+    foreach my $folder (@ARGV) {
+        path($folder)->visit(
+            sub ($path, $) {
+                $path->is_file && !-l $path
+                    or return;
+
+                my $stat = $path->stat;
+                push (
+                    $files{sprintf ('d(%d)i(%d)', $stat->dev, $stat->ino)}->@*,
+                    decode('UTF-8', $path->stringify, Encode::FB_CROAK),
+                );
+            },
+            {
+                'recurse'         => 1,
+                'follow_symlinks' => 0,
+            },
+        );
+    }
+
+    my %links = %files{grep {$files{$_}->@* > 1} keys %files};
+
+    foreach my $group (values %links) {
+        my \@group = $group;
+        @group = sort @group;
     }
 
     if (!$options{'JSON'} && is_loaded('YAML::XS')) {
@@ -46,16 +67,6 @@ sub main() {
     }
 
     return 0;
-}
-
-sub _find_absolute_path ($volume_path, $path = Path::Tiny::cwd()->absolute) {
-    do {
-        my $absolute_path = $path->child($volume_path);
-        return $absolute_path->absolute->stringify if $absolute_path->exists;
-        $path = $path->parent;
-    } until ($path->is_rootdir); ## no critic [ControlStructures::ProhibitPostfixControls]
-
-    return $volume_path;
 }
 
 exit main();
