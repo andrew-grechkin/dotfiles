@@ -8,10 +8,18 @@ use warnings;
 use warnings FATAL => qw(utf8);
 use experimental qw(declared_refs refaliasing signatures try);
 
-use Path::Tiny qw(cwd path);
-use JSON::PP;
+use Module::Loaded;
 
-use constant {'JSON' => JSON::PP->new->pretty};
+use Path::Tiny qw(cwd path);
+
+BEGIN {
+    eval {
+        require YAML::XS;
+        1;
+    } or do {
+        require JSON::PP;
+    };
+}
 
 sub main() {
     my @inodes = map {path($_)->stat->ino} @ARGV;
@@ -23,18 +31,21 @@ sub main() {
         $links{$inode} = [map {_find_absolute_path($_)} @links];
     }
 
-    say JSON()->encode(\%links);
+    if (is_loaded('YAML::XS')) {
+        say YAML::XS::Dump(\%links);
+    } else {
+        say JSON::PP->new->pretty->encode(\%links);
+    }
 
     return 0;
 }
 
-sub _find_absolute_path ($volume_path) {
-    my $path = cwd()->absolute;
+sub _find_absolute_path ($volume_path, $path = cwd()->absolute) {
     do {
         my $absolute_path = $path->child($volume_path);
         return $absolute_path->absolute->stringify if $absolute_path->exists;
         $path = $path->parent;
-    } until ($path->is_rootdir);
+    } until ($path->is_rootdir); ## no critic [ControlStructures::ProhibitPostfixControls]
     return $volume_path;
 }
 

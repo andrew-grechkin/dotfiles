@@ -505,6 +505,8 @@ filetype *[^/],.*[^/]
 	\ show-file %c | less,
 	\ {Compress}
 	\ archive-create %f,
+	\ {Show hardlins}
+	\ sudo hardlinks-for %f | less,
 
 filetype *[^/$|.gpg$],.*[^/$|.gpg$]
 	\ {Encrypt}
