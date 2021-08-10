@@ -6,9 +6,17 @@ use warnings;
 use warnings FATAL => qw(utf8);
 use experimental qw(declared_refs refaliasing signatures try);
 
+use List::Util qw(sum0);
+
 use Exporter qw(import);
 our @EXPORT_OK = qw(
     adjacent_pairs
+    average
+    compact
+    filter_by
+    group_by
+    partition
+
     difference difference_stable
     difference_by
     symmetric_difference
@@ -27,6 +35,40 @@ sub adjacent_pairs ($array) {
         push (@result, [shift $array->@*, $array->[0]]);
     }
     return \@result;
+}
+
+sub average ($array_ref) {
+    $array_ref->@*
+        or return 0;
+    return sum0($array_ref->@*) / scalar $array_ref->@*;
+}
+
+sub compact ($array_ref) {
+    my @result = grep defined, $array_ref->@*;
+    return \@result;
+}
+
+sub filter_by ($filter, $array_ref) {
+    my @result = grep $filter->($_), $array_ref->@*;
+    return \@result;
+}
+
+sub group_by ($key_extractor, $array_ref) {
+    my %result;
+    foreach my $it ($array_ref->@*) {
+        my $key = $key_extractor->($it) // 'undefined';
+        push ($result{$key}->@*, $it);
+    }
+
+    return \%result;
+}
+
+sub partition ($partitioner, $array_ref) {
+    my (@truthy, @falsy);
+    foreach my $it ($array_ref->@*) {
+        $partitioner->($it) ? push (@truthy, $it) : push (@falsy, $it);
+    }
+    return (\@truthy, \@falsy);
 }
 
 sub difference : prototype($$) {

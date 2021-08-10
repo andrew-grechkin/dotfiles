@@ -1,0 +1,70 @@
+package MyHash::Util;
+
+use v5.34;
+use utf8;
+use warnings;
+use warnings FATAL => qw(utf8);
+use experimental qw(declared_refs refaliasing signatures try);
+
+use Storable qw(dclone);
+
+use Exporter qw(import);
+our @EXPORT_OK = qw(
+    build_data_cache
+    build_reverse_indices
+    compact
+    clean_hash_from_key
+);
+
+sub build_data_cache ($hash_ref, %caches) {
+    my %result;
+
+    while (my ($cache_name, $value_extractor) = each %caches) {
+        foreach my $key (keys $hash_ref->%*) {
+            $result{$cache_name}{$key} = $value_extractor->($hash_ref->{$key}) // 'undefined';
+        }
+    }
+
+    return \%result;
+}
+
+sub build_reverse_indices ($hash_ref, %indices) {
+    my %result;
+
+    while (my ($index_name, $id_extractor) = each %indices) {
+        foreach my $key (keys $hash_ref->%*) {
+            my $id = $id_extractor->($hash_ref->{$key}) // 'undefined';
+            undef $result{$index_name}{$id}{$key};
+        }
+    }
+
+    return \%result;
+}
+
+sub compact ($data) {
+    ref $data eq 'HASH'
+        or return $data;
+
+    while (my ($key, $value) = each $data->%*) {
+        if (!defined $value || (compact($value), ref $value eq 'HASH' && $value->%* == 0)) {
+            delete $data->{$key};
+        }
+    }
+
+    return $data;
+}
+
+sub clean_hash_from_key ($data, $key_to_remove) {
+    if (ref $data eq 'ARRAY') {
+        clean_hash_from_key($_, $key_to_remove) foreach $data->@*;
+    } elsif (ref $data eq 'HASH' || (ref $data) =~ m/::/) {
+        delete $data->{$key_to_remove};
+        clean_hash_from_key($_, $key_to_remove) foreach values $data->%*;
+    }
+
+    return $data;
+}
+
+1;
+
+__END__
