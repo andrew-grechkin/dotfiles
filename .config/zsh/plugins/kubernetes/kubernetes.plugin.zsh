@@ -19,3 +19,7 @@ function ksync() {
 function kfinish() {
 	kubectl --cluster "$(kubectl-management-cluster)" patch -p '{"spec":{"targetStep":2}}' --type="merge" "release.shipper.booking.com/$1"
 }
+
+function kgetimages() {
+	kubectl get pod -l app="$1" -o json | jq '.items[].spec.containers[] | select(.name | contains("app")) | .image'
+}

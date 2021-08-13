@@ -1,0 +1,27 @@
+#!/usr/bin/env zsh
+
+set -Euo pipefail
+
+CWD=${1:-$(pwd)}
+GIT_DIRS=("$CWD"/**/.git)
+
+for DIR in "$CWD"/*(@); do
+	GIT_DIR="$DIR/.git"
+
+	[[ -d "$GIT_DIR" ]] && GIT_DIRS+=("$GIT_DIR")
+done
+
+function process_git_dir() {
+	REPO=$(dirname "$1")
+	shift
+
+	echo -e '\033[0;33m'"Gc $REPO"'\033[0m'
+
+	git -C "$REPO" bleach
+	git -C "$REPO" reflog expire --all --expire=now \
+	&& nice git -C "$REPO" gc --keep-largest-pack "$@"
+}
+
+for GIT_DIR in "${(ou)GIT_DIRS[@]}"; do
+	process_git_dir "$GIT_DIR"
+done

@@ -9,7 +9,8 @@ export HISTFILE=$XDG_CONFIG_HOME/z_history
 
 typeset -U PATH path
 [[ -d "$HOME/.local/bin"                                ]] && path+=("$HOME/.local/bin")
-[[ -d "$HOME/.local/scripts"                            ]] && path+=("$HOME/.local/scripts")
+[[ -d "$HOME/.local/script"                             ]] && path+=("$HOME/.local/script")
+[[ -d "$HOME/.local/private-script"                     ]] && path+=("$HOME/.local/private-script")
 [[ -d "$HOME/.local/usr/bin"                            ]] && path+=("$HOME/.local/usr/bin")
 [[ -d "$HOME/.cache/bin"                                ]] && path+=("$HOME/.cache/bin")
 [[ -d "$HOME/.cache/fzf/bin"                            ]] && path+=("$HOME/.cache/fzf/bin")
