@@ -33,10 +33,17 @@ if plugin#is_loaded('ale')
 	\   'javascript': ['eslint',                    'remove_trailing_lines', 'trim_whitespace'],
 	\   'json':       ['fixjson', 'jq',             'remove_trailing_lines', 'trim_whitespace'],
 	\   'perl':       ['perltidy',                  'remove_trailing_lines', 'trim_whitespace'],
+	\   'python':     [
+	\		'add_blank_lines_for_python_control_statements',
+	\		'isort',
+	\		'black',
+	\	],
 	\   'typescript': [            'eslint',        'remove_trailing_lines', 'trim_whitespace'],
 	\   'vue':        ['prettier', 'eslint',        'remove_trailing_lines', 'trim_whitespace'],
 	\   'yaml':       ['prettier',                  'remove_trailing_lines', 'trim_whitespace'],
 	\}
+	"\		'autoimport',
+	"\		'autoflake',
 
 "	let g:ale_linters_explicit = 1
 	let g:ale_linters          = {

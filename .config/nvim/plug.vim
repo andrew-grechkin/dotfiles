@@ -51,6 +51,8 @@ call plug#begin('~/.cache/vim/plugged')
 		"""
 		Plug 'kyazdani42/nvim-web-devicons'                                    " lua fork of vim-devicons
 		Plug 'hoob3rt/lualine.nvim'
+"		Plug 'Valloric/YouCompleteMe', {'do': './install.py --clang-completer --system-libclang'}
+		Plug 'Valloric/YouCompleteMe', {'do': './install.py --clangd-completer'}
 		Plug 'SirVer/ultisnips'
 		Plug 'andrew-grechkin/vim-snippets'
 	else

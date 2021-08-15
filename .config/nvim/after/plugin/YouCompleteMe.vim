@@ -18,8 +18,8 @@ if plugin#is_loaded('YouCompleteMe')
 	let g:ycm_goto_buffer_command                           = 'new-or-existing-tab'
 
 " necessary for UltiSnips
-	let g:ycm_key_list_select_completion                    = ['<C-n>', '<Down>', '<M-Space>']
-	let g:ycm_key_list_previous_completion                  = ['<C-p>', '<Up>']
+	" let g:ycm_key_list_select_completion                    = ['<C-n>', '<Down>', '<M-Space>']
+	" let g:ycm_key_list_previous_completion                  = ['<C-p>', '<Up>']
 
 "	nnoremap <leader>g :YcmCompleter GoTo<CR>
 "	nnoremap <F9>      :YcmDiags <CR>

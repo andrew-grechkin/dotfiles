@@ -6,5 +6,5 @@ setlocal path+=**
 augroup Python
 	autocmd!
 	" Regenerate tags when saving files
-	autocmd BufWritePost *.py silent! !ctags -R &
+	" autocmd BufWritePost *.py silent! !ctags -R &
 augroup END
