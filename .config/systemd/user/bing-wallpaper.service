@@ -3,7 +3,7 @@ Description=Fetch Bing picture of the day
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/perl "%h/.local/bin/bing-wallpaper"
+ExecStart=/usr/bin/perl "%h/.local/script/bing-wallpaper"
 
 [Install]
 WantedBy=default.target

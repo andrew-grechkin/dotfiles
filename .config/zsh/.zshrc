@@ -54,12 +54,13 @@ fi
 
 # => PATH prepare (head) ----------------------------------------------------------------------------------------- {{{1
 
-[[ -n "$HOMEBREW_PREFIX" ]] && [[ -d "$HOMEBREW_PREFIX" ]] && path=("$HOMEBREW_PREFIX/bin"       "${path[@]}")
-[[ -n "$HOMEBREW_PREFIX" ]] && [[ -d "$HOMEBREW_PREFIX" ]] && path=("$HOMEBREW_PREFIX/sbin"      "${path[@]}")
-[[ -n "$PERLBREW_PATH"                                  ]] && path=("${(ps/:/)PERLBREW_PATH[@]}" "${path[@]}")
-[[ -d "$HOME/.local/bin"                                ]] && path=("$HOME/.local/bin"           "${path[@]}")
-[[ -d "$HOME/.local/scripts"                            ]] && path=("$HOME/.local/scripts"       "${path[@]}")
-[[ -d "$HOME/.cache/bin"                                ]] && path=("$HOME/.cache/bin"           "${path[@]}")
+[[ -n "$HOMEBREW_PREFIX" ]] && [[ -d "$HOMEBREW_PREFIX" ]] && path=("$HOMEBREW_PREFIX/bin"        "${path[@]}")
+[[ -n "$HOMEBREW_PREFIX" ]] && [[ -d "$HOMEBREW_PREFIX" ]] && path=("$HOMEBREW_PREFIX/sbin"       "${path[@]}")
+[[ -n "$PERLBREW_PATH"                                  ]] && path=("${(ps/:/)PERLBREW_PATH[@]}"  "${path[@]}")
+[[ -d "$HOME/.local/bin"                                ]] && path=("$HOME/.local/bin"            "${path[@]}")
+[[ -d "$HOME/.local/script"                             ]] && path=("$HOME/.local/script"         "${path[@]}")
+[[ -d "$HOME/.local/private-script"                     ]] && path=("$HOME/.local/private-script" "${path[@]}")
+[[ -d "$HOME/.cache/bin"                                ]] && path=("$HOME/.cache/bin"            "${path[@]}")
 
 export PATH
 

@@ -16,6 +16,7 @@ antigen bundle grep
 antigen bundle kubernetes
 # antigen bundle linuxbrew
 antigen bundle perl
+antigen bundle python
 antigen bundle rsync
 antigen bundle ssh
 antigen bundle sudo

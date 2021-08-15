@@ -7,7 +7,7 @@ set -Euo pipefail
 CWD=${1:-$(pwd)}
 GIT_DIRS=("$CWD"/**/.git)
 
-for DIR in "$CWD"/*(@); do
+for DIR in "$CWD"/*(@N); do
 	GIT_DIR="$DIR/.git"
 
 	[[ -d "$GIT_DIR" ]] && GIT_DIRS+=("$GIT_DIR")

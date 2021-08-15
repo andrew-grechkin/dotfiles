@@ -5,7 +5,7 @@ Description=v4l2 tee
 Type=simple
 Restart=on-failure
 RestartSec=30
-ExecStart=/usr/bin/bash -c "%h/git/private/dotfiles/submodules/private/.local/scripts/v4l2-tee"
+ExecStart=/usr/bin/bash -c "%h/git/private/dotfiles/submodules/private/.local/private-script/v4l2-tee"
 
 [Install]
 WantedBy=default.target

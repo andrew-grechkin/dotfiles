@@ -221,12 +221,12 @@ exec --no-startup-id picom -b
 
 # => set background image ---------------------------------------------------------------------------------------- {{{1
 
-exec_always --no-startup-id ~/.local/bin/bing-wallpaper-set
+exec_always --no-startup-id ~/.local/script/bing-wallpaper-set
 # exec --no-startup-id feh --no-fehbg --bg-scale ~/.local/share/backgrounds/current.jpg
 
 # => ------------------------------------------------------------------------------------------------------------- {{{1
 
-#exec --no-startup-id xautolock -time 4 -locker "$HOME/.local/bin/i3exit lock"
+#exec --no-startup-id xautolock -time 4 -locker "$HOME/.local/script/i3exit lock"
 #exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 #exec --no-startup-id pamac-tray
 #exec --no-startup-id nm-applet
@@ -247,5 +247,5 @@ exec_always --no-startup-id ~/.local/bin/bing-wallpaper-set
 #bindsym XF86MonBrightnessDown exec xbacklight - 10
 
 # Keyboard brightness controls
-#bindsym XF86KbdBrightnessUp   exec $HOME/.local/bin/kb-light.py +
-#bindsym XF86KbdBrightnessDown exec $HOME/.local/bin/kb-light.py -
+#bindsym XF86KbdBrightnessUp   exec $HOME/.local/script/kb-light.py +
+#bindsym XF86KbdBrightnessDown exec $HOME/.local/script/kb-light.py -

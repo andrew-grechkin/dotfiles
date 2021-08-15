@@ -10,7 +10,7 @@ function install-linuxbrew() {
 	#sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"
 	umask 022
 	mkdir -p "$HOMEBREW_PREFIX"
-	"$HOME/.local/bin/install-linuxbrew"
+	"$HOME/.local/script/install-linuxbrew"
 }
 
 function enable-linuxbrew() {

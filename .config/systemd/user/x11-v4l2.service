@@ -5,7 +5,7 @@ Description=X11 v4l2
 Type=simple
 Restart=on-failure
 RestartSec=30
-ExecStart=/usr/bin/bash -c "%h/git/private/dotfiles/submodules/private/.local/scripts/x11-v4l2"
+ExecStart=/usr/bin/bash -c "%h/git/private/dotfiles/submodules/private/.local/private-script/x11-v4l2"
 
 [Install]
 WantedBy=default.target

@@ -1,7 +1,9 @@
-# vim: syntax=zsh foldmethod=marker
+# vim: filetype=zsh foldmethod=marker
 
 # => aliases ----------------------------------------------------------------------------------------------------- {{{1
 
+alias pyinit='python -m venv '
+alias puse='source venv/bin/activate'
 alias pip-ensure='python -m ensurepip --default-pip'
 alias pip-upgrade='pip freeze | pip install --upgrade -r /dev/stdin'
 

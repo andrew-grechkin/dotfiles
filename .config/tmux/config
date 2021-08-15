@@ -42,15 +42,15 @@ set  -g @emulate-scroll-for-no-mouse-alternate-buffer 'on'                     #
 bind   -n MouseDown2Status  kill-window                                        # middle click on a window name in status bar to kill it
 bind   -n MouseDown2Pane    select-pane \; paste-buffer
 #bind   -n DoubleClick1Pane  select-pane \; select-layout main-vertical \; swap-pane -d -t {left}
-bind   -n DoubleClick1Pane  select-pane \; copy-mode \; send-keys -X select-word \; send-keys -X copy-pipe '~/.local/bin/clipcopy'
+bind   -n DoubleClick1Pane  select-pane \; copy-mode \; send-keys -X select-word \; send-keys -X copy-pipe '~/.local/script/clipcopy'
 
 # => copy mode mouse bindings ------------------------------------------------------------------------------------ {{{1
 
 unbind -T copy-mode-vi MouseDragEnd1Pane                                       # don't exit copy mode on mouse selection
-bind   -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe            '~/.local/bin/clipcopy'
+bind   -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe            '~/.local/script/clipcopy'
 bind   -T copy-mode-vi MouseDown2Pane    send-keys -X copy-selection-and-cancel \; paste-buffer
 bind   -T copy-mode-vi MouseDown3Pane    send-keys -X cancel \; paste-buffer
-bind   -T copy-mode-vi DoubleClick1Pane  select-pane \; send-keys -X select-word \; send-keys -X copy-pipe '~/.local/bin/clipcopy'
+bind   -T copy-mode-vi DoubleClick1Pane  select-pane \; send-keys -X select-word \; send-keys -X copy-pipe '~/.local/script/clipcopy'
 
 # => key bindings ------------------------------------------------------------------------------------------------ {{{1
 ###
@@ -73,7 +73,7 @@ bind      'M-e' new-window -n 'tmux.conf' "sh -c '\${EDITOR:-vim} ~/.config/tmux
 bind      'M-r' source-file ~/.config/tmux/config \; display 'Config reloaded' # reload tmux configuration
 bind      'C-l' send-keys 'C-l' \; run 'sleep 0.1' \; clear-history            # clear shell screen and tmux history buffer
 bind      'C-a' setw synchronize-panes \; display "synchronize-panes is now #{?pane_synchronized,on,off}"
-bind      'C-s' capture-pane -b temp-capture-buffer -S - \; save-buffer -b temp-capture-buffer ~/.cache/tmux.log \; delete-buffer -b temp-capture-buffer \; run-shell "~/.local/bin/pastebin ~/.cache/tmux.log"
+bind      'C-s' capture-pane -b temp-capture-buffer -S - \; save-buffer -b temp-capture-buffer ~/.cache/tmux.log \; delete-buffer -b temp-capture-buffer \; run-shell "~/.local/script/pastebin ~/.cache/tmux.log"
 
 # => window splitting -------------------------------------------------------------------------------------------- {{{1
 
@@ -132,8 +132,8 @@ bind   -T copy-mode-vi 'u'               send-keys -X page-up
 bind   -T copy-mode-vi 'M-u'             send-keys -X page-up
 bind   -T copy-mode-vi 'M-d'             send-keys -X page-down
 bind   -T copy-mode-vi 'v'               send-keys -X begin-selection
-bind   -T copy-mode-vi 'y'               send-keys -X copy-pipe-and-cancel '~/.local/bin/clipcopy'
-bind   -T copy-mode-vi 'Enter'           send-keys -X copy-pipe-and-cancel '~/.local/bin/clipcopy'
+bind   -T copy-mode-vi 'y'               send-keys -X copy-pipe-and-cancel '~/.local/script/clipcopy'
+bind   -T copy-mode-vi 'Enter'           send-keys -X copy-pipe-and-cancel '~/.local/script/clipcopy'
 bind   -T copy-mode-vi 'Escape'          send-keys -X cancel
 
 # => nested sessions support, disables prefix in outer session and send everything to inner ---------------------- {{{1

@@ -89,7 +89,7 @@ export FZF_TMUX=1
 # => ssh (overrides the default one) ----------------------------------------------------------------------------- {{{1
 
 function _fzf_complete_ssh() {
-	_fzf_complete -- "$@" < <(~/.local/bin/ssh-hosts)
+	_fzf_complete -- "$@" < <(~/.local/script/ssh-hosts)
 }
 
 # => docker ------------------------------------------------------------------------------------------------------ {{{1

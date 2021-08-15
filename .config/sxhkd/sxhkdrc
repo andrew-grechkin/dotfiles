@@ -3,7 +3,7 @@
 super + Return
 	exo-open --launch TerminalEmulator
 super + BackSpace
-	$HOME/.local/bin/rofi-exit
+	$HOME/.local/script/rofi-exit
 super + b
 	exo-open --launch WebBrowser
 super + c
@@ -19,27 +19,27 @@ super + o
 super + r
 	alacritty -e zsh -c "vifm $HOME $HOME"
 super + s
-	$HOME/.local/bin/rofi-pass
+	$HOME/.local/script/rofi-pass
 super + t
 	alacritty -e tmux -f "$XDG_CONFIG_HOME/tmux/config"
 super + u
-	alacritty --class 'Alacritty,floating' -e "$HOME/.local/bin/fzf-select" unicode
+	alacritty --class 'Alacritty,floating' -e "$HOME/.local/script/fzf-select" unicode
 super + w
 	alacritty -e "htop"
 
 super + F10
-	$HOME/.local/bin/cliptrans
+	$HOME/.local/script/cliptrans
 super + F11
-	$HOME/.local/bin/touchpad-toggle
+	$HOME/.local/script/touchpad-toggle
 super + F12
-	$HOME/.local/bin/passgen
+	$HOME/.local/script/passgen
 
 # => ------------------------------------------------------------------------------------------------------------- {{{1
 
 super + control + l
-	$HOME/.local/bin/rofi-exit lock
+	$HOME/.local/script/rofi-exit lock
 super + control + F5
-	$HOME/.local/bin/bing-wallpaper -s
+	$HOME/.local/script/bing-wallpaper -s
 
 # => ------------------------------------------------------------------------------------------------------------- {{{1
 
@@ -49,19 +49,19 @@ control + alt + Esc
 # => ------------------------------------------------------------------------------------------------------------- {{{1
 
 super + shift + Return
-	exo-open --launch TerminalEmulator "$HOME/.local/bin/tmux-default-session"
+	exo-open --launch TerminalEmulator "$HOME/.local/script/tmux-default-session"
 super + shift + c
 	qalculate-gtk
 super + shift + n
-	alacritty --class 'Alacritty,floating' --command "$HOME/.local/bin/create-note"
+	alacritty --class 'Alacritty,floating' --command "$HOME/.local/script/create-note"
 super + shift + r
 	exo-open --launch FileManager
 super + shift + s
 	catfish
 super + shift + u
-	alacritty --class 'Alacritty,floating' --command "$HOME/.local/bin/fzf-select" emoji
+	alacritty --class 'Alacritty,floating' --command "$HOME/.local/script/fzf-select" emoji
 super + shift + v
-	$HOME/.local/bin/play-clipboard-url
+	$HOME/.local/script/play-clipboard-url
 
 # => ------------------------------------------------------------------------------------------------------------- {{{1
 
@@ -74,7 +74,7 @@ XF86Calculator
 XF86Display
 	xfce4-display-settings
 XF86Favorites
-	exo-open --launch TerminalEmulator "$HOME/.local/bin/tmux-default-session"
+	exo-open --launch TerminalEmulator "$HOME/.local/script/tmux-default-session"
 XF86HomePage
 	exo-open --launch FileManager
 XF86Launch5
