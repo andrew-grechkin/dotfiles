@@ -15,7 +15,12 @@ if plugin#is_loaded('YouCompleteMe')
 "	let g:ycm_always_populate_location_list                 = 1 " default 0
 
 	let g:ycm_complete_in_comments                          = 1
+	let g:ycm_complete_in_strings                           = 1
 	let g:ycm_goto_buffer_command                           = 'new-or-existing-tab'
+
+	let g:ycm_collect_identifiers_from_comments_and_strings = 1
+	let g:ycm_collect_identifiers_from_tags_files           = 1
+"	let g:ycm_seed_identifiers_with_syntax                  = 1
 
 " necessary for UltiSnips
 	" let g:ycm_key_list_select_completion                    = ['<C-n>', '<Down>', '<M-Space>']

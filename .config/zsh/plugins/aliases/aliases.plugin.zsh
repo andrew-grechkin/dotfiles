@@ -52,6 +52,11 @@ alias j-rotate='sudo journalctl --rotate; sudo journalctl --vacuum-size=1'
 alias        j='sudo journalctl -fb --no-tail --since "1 week ago"      | fzf-journal'
 alias      jte='sudo journalctl -fb --no-tail --since "1 week ago" -p 4 | fzf-journal'
 
+# => perf -------------------------------------------------------------------------------------------------------- {{{1
+
+alias perf-record='sudo perf record -g -a sleep 10'
+alias perf-report='sudo perf report'
+
 # => yum --------------------------------------------------------------------------------------------------------- {{{1
 
 alias yumdt='sudo yum group install "Development Tools"'
