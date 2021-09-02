@@ -110,9 +110,11 @@ set slowfs+=/mnt
 command! reload :write | restart
 
 " create
-command! take   :mkdir %a | cd %a
-command! ln     ln %f:p %D
-command! lns    ln -s %f:p %D
+command! take    :mkdir %a | cd %a
+command! ln      ln %f:p %D
+command! lns     ln -s %f:p %D
+command! cpl     cp -rlv %f:p %D
+command! cprsync rsync-copy-fat %f:p %D
 
 " execute
 command! run    !! ./%c
@@ -649,6 +651,7 @@ mark u ~/.local/usr/
 mark p ~/.local/share/perlbrew                   libs
 mark s ~/.local/share                            nvim
 mark u /run/media/$USER
+mark v ~/.local/share/vault
 
 " => file icons -------------------------------------------------------------------------------------------------- {{{1
 
