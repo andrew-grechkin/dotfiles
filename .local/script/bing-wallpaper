@@ -130,6 +130,7 @@ sub _process_image ($path, $descriptor) {
     my $family = _find_font_family($descriptor->{'copyright'});
     say 'Applying:    ', $descriptor->{'copyright'};
     say 'Font family: ', $family;
+    $descriptor->{'copyright'} =~ s{'}{"}g;
     my @cmd = (
         qw(convert -fill white -pointsize 28 -gravity NorthWest -draw),
         "text 0,0 '$descriptor->{'copyright'}'",
