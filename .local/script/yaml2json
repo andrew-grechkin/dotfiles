@@ -8,11 +8,8 @@ use warnings;
 use warnings FATAL => qw(utf8);
 use experimental qw(signatures try);
 
-# core
-use Carp;
 use JSON::PP ();
 
-# non core
 use YAML::XS ();
 
 sub main() {
@@ -21,7 +18,7 @@ sub main() {
     if (@ARGV) {
         foreach my $file (@ARGV) {
             -e -r $file
-                or croak 'File does not exists: ', $file;
+                or die "File does not exists: $file\n";
             push (
                 @data,
                 do {local $/ = undef; open my $fh, '<', $file; <$fh>}, ## no critic [InputOutput::RequireBriefOpen]
@@ -39,8 +36,7 @@ sub main() {
 sub _convert (@data) {
     my $result;
 
-    my $json = JSON::PP->new;
-    $json->utf8(1);
+    my $json = JSON::PP->new->utf8(1);
     foreach my $doc (@data) {
         local $YAML::XS::Boolean = 'JSON::PP'; ## no critic [Variables::ProhibitPackageVars]
         try {
@@ -50,11 +46,12 @@ sub _convert (@data) {
                 my @sections = YAML::XS::Load($doc);
                 $result .= $json->pretty->canonical->encode($_) foreach @sections;
             } catch ($yaml_error) {
-                carp "Unable to parse file as json: $json_error";
-                croak "Unable to parse file as yaml: $yaml_error";
+                warn "Unable to parse file as json: $json_error\n";
+                die "Unable to parse file as yaml: $yaml_error\n";
             }
-        }
+        } ## no critic [CodeLayout::RequireFinalSemicolon]
     }
+
     return $result;
 }
 

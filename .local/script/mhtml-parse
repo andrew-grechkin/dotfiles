@@ -28,7 +28,6 @@ use Mojo::URL;
 our $VERSION = 1.01;
 
 my %options = (
-    'HELP'    => 0,
     'LIST'    => 0,
     'VERBOSE' => 0,
 );
@@ -80,17 +79,10 @@ sub main() {
 
 sub _read_options() {
     GetOptions(
-        'help|h'     => \$options{'HELP'},
+        'help|h'     => sub {pod2usage('-verbose' => 99, 'exitval' => 0)},
         'list|l!'    => \$options{'LIST'},
         'verbose|v+' => \$options{'VERBOSE'},
     ) or croak 'Unable to process command line options';
-
-    if ($options{'HELP'}) {
-        pod2usage(
-            -verbose => 99,
-            exitval  => 0,
-        );
-    }
 
     return;
 }

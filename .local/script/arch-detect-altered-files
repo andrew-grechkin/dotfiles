@@ -8,22 +8,16 @@ use open ':locale';
 use utf8;
 use warnings;
 use warnings FATAL => qw(utf8);
-use experimental qw(unicode_strings declared_refs refaliasing signatures);
+use experimental qw(declared_refs refaliasing signatures);
 
 use Carp;
 use Encode qw(decode);
 use English qw(-no_match_vars);
-use JSON::PP;
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+use JSON::PP;
 use List::Util qw(first max);
+use Path::Tiny;
 use Pod::Usage;
-
-eval {
-    require Path::Tiny;
-    1;
-} or do {
-    die 'Please install Path::Tiny (pacman -S perl-path-tiny)', "\n";
-};
 
 use constant {
     'FOLDERS' => [qw(/boot /etc /opt /srv /usr /var)],

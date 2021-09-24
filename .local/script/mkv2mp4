@@ -10,16 +10,13 @@ use warnings;
 use warnings FATAL => qw(utf8);
 use experimental qw(declared_refs refaliasing signatures);
 
-# core
-use Carp;
-
 sub main() {
     foreach my $file (@ARGV) {
         next if $file !~ m/[.]mkv\z/x;
 
         my $out_file = $file =~ s{[.]mkv\z}{.mp4}xgr;
         if (-e -r $out_file) {
-            carp 'File already exist, skipping: ', $out_file;
+            warn "File already exist, skipping: $out_file\n";
             next;
         }
 
@@ -31,7 +28,7 @@ sub main() {
         if (system (@cmd) == 0) {
             unlink $file;
         } else {
-            carp "Faled to convert files: @{[@cmd]}";
+            warn "Faled to convert files: @{[@cmd]}\n";
         }
     }
 

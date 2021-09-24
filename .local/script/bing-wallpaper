@@ -8,7 +8,7 @@ use open ':locale';
 use utf8;
 use warnings;
 use warnings FATAL => qw(utf8);
-use experimental qw(unicode_strings declared_refs refaliasing signatures);
+use experimental qw(declared_refs refaliasing signatures);
 
 use Carp;
 use File::Path qw(make_path);

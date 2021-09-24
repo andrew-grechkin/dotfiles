@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # pass integration with rofi
 # copy password for selected account into clipboard and name into primary

@@ -6,7 +6,7 @@ use open ':locale';
 use utf8;
 use warnings;
 use warnings 'FATAL' => qw(utf8);
-use experimental qw(unicode_strings declared_refs refaliasing signatures smartmatch);
+use experimental qw(declared_refs refaliasing signatures smartmatch);
 
 # sub convert ($map_in, $map_out, @chars) {
 # $map_in && $map_out
