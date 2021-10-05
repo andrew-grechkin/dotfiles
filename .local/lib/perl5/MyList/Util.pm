@@ -25,6 +25,8 @@ our @EXPORT_OK = qw(
     intersection_by
     union
     union_by
+
+    combinations
 );
 
 ## no critic (Subroutines::RequireArgUnpacking)
@@ -131,6 +133,33 @@ sub union_by : prototype(&$$) {
     undef $lhs{$code->()} foreach $_[0]->@*;
     return [$_[0]->@*, grep {!exists $lhs{$code->()}} $_[1]->@*];
 }
+
+sub combinations ($array, $k, $state = [], $result = []) {
+    if ($k == 0) {
+        push ($result->@*, $state);
+        return $result;
+    }
+
+    my $length = scalar $array->@*;
+    for (my $i = 0; $i < $length; ++$i) {
+        combinations([$array->@[($i + 1) .. $length - 1]], $k - 1, [$state->@*, $array->[$i]], $result);
+    }
+
+    return $result;
+}
+
+#sub combinations ($list, $k) { # Trusty combination function.
+#    return map { [$_] } @$list if $k <= 1;
+#
+#    my @combinations;
+#    for (my $i = 0; $i + $k <= @$list; ++$i) {
+#        my $current = $list->[$i];
+#        my $rest    = [@$list[($i + 1) .. $#$list]];
+#        push @combinations, [$current, @$_] for combinations($rest, $k - 1);
+#    }
+#
+#    return @combinations;
+#}
 
 1;
 

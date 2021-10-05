@@ -15,6 +15,7 @@ if plugin#is_loaded('ale')
 	let g:ale_echo_msg_format = '(%linter%) %code: %%s'
 	let g:ale_fix_on_save        = 1                                           " fix files when you save them
 	let g:ale_fix_on_save_ignore = {
+	\   'fb2':        ['xmllint'],
 	\   'cpp':        ['clang-format'],
 	\   'css':        ['prettier'],
 	\   'html':       ['prettier', 'eslint'],
@@ -23,10 +24,12 @@ if plugin#is_loaded('ale')
 	\   'perl':       ['perltidy'],
 	\   'typescript': ['prettier', 'deno', 'tslint', 'xo'],
 	\   'vue':        ['prettier', 'eslint'],
+	\   'xml':        ['xmllint'],
 	\   'yaml':       ['yaml-sanitize', 'prettier'],
 	\}
 	let g:ale_fixers = {
 	\   '*':          [                             'remove_trailing_lines', 'trim_whitespace'],
+	\   'fb2':        ['xmllint',                   'remove_trailing_lines', 'trim_whitespace'],
 	\   'cpp':        ['clang-format',              'remove_trailing_lines', 'trim_whitespace'],
 	\   'css':        ['prettier',                  'remove_trailing_lines', 'trim_whitespace'],
 	\   'html':       ['prettier', 'eslint',        'remove_trailing_lines', 'trim_whitespace'],
@@ -40,6 +43,7 @@ if plugin#is_loaded('ale')
 	\	],
 	\   'typescript': [            'eslint',        'remove_trailing_lines', 'trim_whitespace'],
 	\   'vue':        ['prettier', 'eslint',        'remove_trailing_lines', 'trim_whitespace'],
+	\   'xml':        ['xmllint',                   'remove_trailing_lines', 'trim_whitespace'],
 	\   'yaml':       ['prettier',                  'remove_trailing_lines', 'trim_whitespace'],
 	\}
 	"\		'autoimport',

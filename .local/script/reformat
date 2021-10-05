@@ -1,39 +1,161 @@
-#!/usr/bin/env bash
+#!/usr/bin/env perl
 
-set -uo pipefail
+use v5.34;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings;
+use warnings FATAL => qw(utf8);
+use experimental qw(declared_refs refaliasing signatures try);
 
-DATETIME=$(date --rfc-3339=ns)
+use Carp;
+use Digest::SHA qw(sha256_hex);
+use Encode ();
+use English qw(-no_match_vars);
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+use Pod::Usage;
 
-for FILE in "$@"; do
-	REALPATH=$(readlink -nf "$FILE")
-	FULLNAME=$(basename "$REALPATH")
-	EXTENSION="${FULLNAME##*.}"
-	# FILENAME="${FULLNAME%.*}"
+use File::Map qw(map_file);
+use Log::Any qw($log);
+use Log::Any::Adapter ('Stderr', log_level => 'info');
+use Path::Tiny;
 
-	case "$EXTENSION" in
-		fb2|xml|kdenlive)
-			CMD=(xmllint --format -)
-			;;
-		json)
-			CMD=(jq -S --indent 4 '.')
-			;;
-		*)
-			unset CMD
-	esac
+use Data::Printer;
 
-	[[ -n "${CMD[*]}" ]] || continue
+our $VERSION = 1.00;
 
-	echo "Linting file: '$REALPATH'"
+## no critic [ValuesAndExpressions::RequireInterpolationOfMetachars]
+my %types = (
+    '\.fb2$|\.xml$|\.kdenlive$' => sub ($input_file, $output_file) {
+        return join (' ', 'xmllint', '--format', "'$input_file'", '>', "'$output_file'", '2>/dev/null');
+    },
+    '\.json$' => sub ($input_file, $output_file) {
+        return join (' ', 'jq', '-S', '--indent', '2', '.', "'$input_file'", '>', "'$output_file'", '2>/dev/null');
+    },
+    '\.yaml$' => sub ($input_file, $output_file) {
+        return join (' ', 'yaml-sanitize', "'$input_file'", '>', "'$output_file'", '2>/dev/null');
+    },
+);
 
-	OUTPATH="${REALPATH}.${DATETIME}.linted"
-	# shellcheck disable=SC2002
-	if cat "${REALPATH}" | "${CMD[@]}" > "$OUTPATH" 2>/dev/null; then
-		FILESIZE=$(command stat -c %s "$1")
-		[[ -f "$OUTPATH" ]] && (( FILESIZE > 0 )) && stat "$OUTPATH" &>/dev/null && {
-			mv -f "${OUTPATH}" "${REALPATH}"
-		}
-	else
-		echo "Wrong file: '$FILE'"
-		rm -f "${OUTPATH}"
-	fi
-done
+my %options = (
+    'APPLY'   => 0,
+    'FOLLOW'  => 0,
+    'RECURSE' => 0,
+    'VERBOSE' => 0,
+);
+
+sub main {
+    GetOptions(
+        'apply|a'    => \$options{'APPLY'},
+        'follow|f'   => \$options{'FOLLOW'},
+        'help|h'     => sub {pod2usage('-verbose' => 99, 'exitval' => 0)},
+        'recurse|r'  => \$options{'RECURSE'},
+        'verbose|v+' => \$options{'VERBOSE'},
+    ) or croak 'Unable to process command line options';
+
+    $log->{'adapter'}{'log_level'} += $options{'VERBOSE'};
+
+    @ARGV
+        or push (@ARGV, '.');
+
+    ## no critic [CodeLayout::RequireFinalSemicolon]
+    foreach my $file (gather_files()->@*) {
+        foreach my $match (keys %types) {
+            if ($file =~ m/$match/) {
+                my $reformatted = Path::Tiny->tempfile(TEMPLATE => 'reformat-XXXXXXXX');
+                my $command     = $types{$match}->($file, $reformatted);
+                execute($command);
+                if (no_changes_done($file, $reformatted)) {
+                    $log->debugf("Already formatted. Skipping: '%s'", $file);
+                    next;
+                }
+
+                $log->debugf("Processing: '%s'", $file);
+                my $backup = Path::Tiny->tempfile(TEMPLATE => 'reformat-backup-XXXXXXXX');
+                backup_file($file, $backup);
+                try {
+                    copy_content($reformatted, $file) if $options{'APPLY'};
+                    $log->infof("Processed: '%s'", $file);
+                } catch ($error) {
+                    $backup->cached_temp->unlink_on_destroy(0);
+                    $log->errorf("Error occured while writing into: '%s'\nBackup can be found in: '%s'\n%s",
+                        $file, $backup, $error);
+                    exit (1);
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
+sub execute ($command) {
+    ## no critic [Bangs::ProhibitBitwiseOperators, ValuesAndExpressions::ProhibitMagicNumbers, ErrorHandling::RequireCarping]
+    system ($command) == 0 or do {
+        if ($CHILD_ERROR == -1) {
+            die "failed to execute: $!\n";
+        } elsif ($CHILD_ERROR & 127) {
+            die sprintf "child died with signal %d, %s coredump\n", ($CHILD_ERROR & 127),
+                ($CHILD_ERROR & 128) ? 'with' : 'without';
+        }
+        die sprintf ('Command exited with value %d: %s', $CHILD_ERROR >> 8, $command);
+    };
+
+    return;
+}
+
+sub no_changes_done ($file, $output_file) {
+    my $file_digest   = Digest::SHA->new('SHA-256')->addfile(encode($file))->hexdigest;
+    my $output_digest = Digest::SHA->new('SHA-256')->addfile(encode($output_file))->hexdigest;
+    return $file_digest eq $output_digest;
+}
+
+sub backup_file ($source, $dest) {
+    path($source)->copy($dest);
+    $log->debugf("Backup created: '%s'", $dest);
+    return;
+}
+
+sub copy_content ($from, $to) {
+    path($to)->append({'binmode' => ':raw', 'truncate' => 1}, path($from)->slurp_raw);
+    return;
+}
+
+sub decode ($octets) {
+    return Encode::decode('UTF-8', $octets, Encode::FB_CROAK);
+}
+
+sub encode ($characters) {
+    return Encode::encode('UTF-8', $characters, Encode::FB_CROAK);
+}
+
+sub gather_files() {
+    $log->debug('Gathering files');
+
+    my @files;
+    foreach my $it (@ARGV) {
+        my $node = path($it);
+        if ($node->is_file) {
+            push (@files, decode($node->stringify)) if !-l $node;
+            next;
+        }
+        $node->visit(
+            sub ($path, @) {
+                $path->is_file && !-l $node
+                    or return;
+                push (@files, decode($path->stringify));
+            },
+            {
+                'follow_symlinks' => $options{'FOLLOW'},
+                'recurse'         => $options{'RECURSE'},
+            },
+        );
+    }
+    $log->debug('Gathering files finished: ', scalar @files);
+
+    return \@files;
+}
+
+exit main();
+
+__END__

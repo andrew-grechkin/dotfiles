@@ -192,7 +192,7 @@ filextype *.fb2,*.xml,*.gpx,*.xsd,*.kdenlive
 	\ {Open with Kate}
 	\ kate          %f %i &,
 	\ {Reformat xml}
-	\ reformat      %f,
+	\ reformat -a    %f,
 	\ {Reformat hard xml}
 	\ reformat2-fb2 %f,
 
@@ -327,7 +327,7 @@ filetype *.json
 	\ {View json}
 	\ jq -CS --indent 4 < %c | less -r,
 	\ {Reformat json}
-	\ reformat %f,
+	\ reformat -a %f,
 	\ {Convert json -> yaml}
 	\ json2yaml %c > %c:r.yaml &,
 fileviewer *.json
@@ -426,7 +426,7 @@ fileviewer *.tar,
 	\ tar taf %c &,
 
 " fuse3-p7zip
-filetype *.7z,
+filetype *.7z,*.epub,
 	\*.dsl.dz,*.tar,*.zip,*.ova,*.sfs,*.a,*.so,lib*.so.*,
 	\*.apk,*.apm,*.ar,*.arj,*.cab,*.chm,*.cpio,*.cramfs,*.deb,*.dll,*.dmg,*.doc,*.esd,*.exe,
 	\*.flv,*.hxs,*.img,*.iso,*.iso,*.jar,*.lib,*.macho,*.msi,*.msp,*.nsis,*.pkg,*.pmd,*.ppt,
