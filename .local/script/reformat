@@ -27,7 +27,10 @@ our $VERSION = 1.00;
 ## no critic [ValuesAndExpressions::RequireInterpolationOfMetachars]
 my %types = (
     '\.fb2$|\.xml$|\.kdenlive$' => sub ($input_file, $output_file) {
-        return join (' ', 'xmllint', '--format', "'$input_file'", '>', "'$output_file'", '2>/dev/null');
+        $input_file =~ s/"/\\"/g;
+        my $cmd = join (' ', 'xmllint', '--encode', 'UTF-8', '--format', qq("$input_file"), '>', "'$output_file'",
+            '2>/dev/null');
+        return $cmd;
     },
     '\.json$' => sub ($input_file, $output_file) {
         return join (' ', 'jq', '-S', '--indent', '2', '.', "'$input_file'", '>', "'$output_file'", '2>/dev/null');
@@ -152,6 +155,8 @@ sub gather_files() {
         );
     }
     $log->debug('Gathering files finished: ', scalar @files);
+
+    @files = sort @files;
 
     return \@files;
 }
