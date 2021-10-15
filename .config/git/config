@@ -1,6 +1,6 @@
 [alias]
 	b          = branch -vv
-	bleach     = !"f(){ git fall; git b | perl -alE 'm/: gone]/ && $F[0] ne \"*\" && system(qq(git branch -D $F[0]))'; }; f"
+	bleach     = !"f(){ git fall; git b | perl -alE 'm/: gone]/ && $F[0] ne q(*) && system(qq(git branch -D $F[0]))'; }; f"
 	bmain      = !"git rev-parse --abbrev-ref origin/HEAD 2>&1 | grep -Eho 'main$|trunk$|master$'"
 	bname      = !"git rev-parse --abbrev-ref HEAD"
 	bredo      = !"git rebase -i `git merge-base master HEAD`"
@@ -20,11 +20,11 @@
 	la         = !"fzf-git-log-all"
 	lag        = !"fzf-git-log-all-graph"
 	lg         = !"fzf-git-log-graph"
-	lr         = !"fzf-git-reflog"
+	lr         = !"fzf-git-log-reflog"
 	m-diff     = !"f(){ git diff     -b  --color=always `git m-span ... $@`; }; f"
 	m-dt       = !"f(){ git difftool -b -t vimdiff      `git m-span ... $@`; }; f"
 	m-log      = !"f(){ git log          --color=always `git m-span ..  $@`; }; f"
-	m-span     = !"f(){ C=${2-\"$(git bname)\"}; A=$(git log -1 $C --merges --pretty=format:%P); echo ${A/ /$1}; }; f"
+	m-span     = !"f(){ C=${2:-\"$(git bname)\"}; A=$(git log -1 $C --merges --pretty=format:%P); echo ${A/ /$1}; }; f"
 	main       = !"git checkout $(git bmain)"
 	mg         = mergetool --gui
 	mt         = mergetool
@@ -71,7 +71,7 @@
 
 [diff]
 	tool            = fugitive
-	guitool         = meld
+	guitool         = kompare
 	algorithm       = patience
 	colorMoved      = plain
 	colorMovedWS    = ignore-space-change
@@ -121,7 +121,7 @@
 
 [merge]
 	tool          = fugitive
-	guitool       = meld
+	guitool       = kompare
 	conflictstyle = diff3
 
 [mergetool]
