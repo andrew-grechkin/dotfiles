@@ -32,6 +32,10 @@ alias dangling-symlinks='ls -v **/*(-@)'
 alias dangling-symlinks-remove='rm -v **/*(-@)'
 alias remove-empty-folders='find . -depth -type d -empty -delete'
 
+# => git --------------------------------------------------------------------------------------------------------- {{{1
+
+alias cd-root=' cd $(git root)'
+
 # => devel ------------------------------------------------------------------------------------------------------- {{{1
 
 alias gcc-all-defines=' gcc -dM -E - < /dev/null | sort'
