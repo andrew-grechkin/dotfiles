@@ -45,7 +45,11 @@ use constant {
         },
         'Fontconfig cache' => {
             'level' => 2,
-            'match' => qr{\A /var/cache/fontconfig/}x,
+            'match' => qr{\A /var/cache/fontconfig/|/etc/fonts/conf[.]d/}x,
+        },
+        'Haskel modules config' => {
+            'level' => 2,
+            'match' => qr{\A /usr/lib/ghc-\d+[.]\d+[.]\d+/package[.]conf[.]d/}xi,
         },
         'Icons cache' => {
             'level' => 2,
@@ -59,9 +63,17 @@ use constant {
             'level' => 2,
             'match' => qr{\A /var/log/}x,
         },
+        'Man cache' => {
+            'level' => 2,
+            'match' => qr{\A /var/cache/man/}x,
+        },
         'MIME share cache' => {
             'level' => 2,
             'match' => qr{\A /usr/share/mime/}x,
+        },
+        'Mono certs' => {
+            'level' => 2,
+            'match' => qr{\A /usr/share/.mono/(?:new-)?certs/}x,
         },
         'Pacman cache' => {
             'level' => 2,
