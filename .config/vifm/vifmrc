@@ -65,7 +65,7 @@ source $XDG_CONFIG_HOME/vifm/dircolors
 " Format for displaying time in file list. For example: TIME_STAMP_FORMAT=%m/%d-%H:%M
 " See man date or man strftime for details.
 
-set timefmt=%F\ %T
+set timefmt=%F\ %T\ %Z
 
 " Show list of matches on tab completion in command-line mode
 
@@ -98,11 +98,13 @@ set scrolloff=4
 
 " Set custom status line look
 
-set statusline=" Hint: %z%= %A %10u:%-7g %15s %20d "
+set statusline=" %A %d %u:%g%=%T %E %N %t%="
 
 " set millerview
 
-set slowfs+=/mnt
+set slowfs+=/media
+
+set sizefmt=units:iec,precision:2,nospace
 
 " => Commands ---------------------------------------------------------------------------------------------------- {{{1
 " man: https://vifm.info/manual.shtml#Command%20macros
@@ -112,7 +114,6 @@ command! reload :write | restart
 " create
 command! take    :mkdir %a | cd %a
 command! ln      ln %f:p %D
-command! lns     ln -s %f:p %D
 command! cpl     cp -rlv %f:p %D
 command! cprsync rsync-copy-fat %f:p %D
 
