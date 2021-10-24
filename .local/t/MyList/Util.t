@@ -17,6 +17,9 @@ use MyList::Util qw(
     intersection_by
     union
     union_by
+
+    combinations
+    permutations
 );
 
 tests 'MyList::Util::adjacent_pairs' => sub {
@@ -106,6 +109,49 @@ tests 'MyList::Util::union_by' => sub {
     is((union_by {$_} [42], [42]), [42], 'equal arrays');
     is((union_by {$_} [1 .. 5], [3 .. 9]), [1 .. 9], 'intersection exists');
     is((union_by {$_} [1 .. 5], [6 .. 9]), [1 .. 9], 'intersection doesnt exists');
+};
+
+tests 'MyList::Util::combinations' => sub {
+    is(combinations(['a', 'b', 'c', 'd'], 4), [['a', 'b', 'c', 'd']]);
+    is(combinations(['a', 'b', 'c', 'd'], 3), [['a', 'b', 'c'], ['a', 'b', 'd'], ['a', 'c', 'd'], ['b', 'c', 'd']]);
+    is(combinations(['a', 'b', 'c', 'd'], 2), [['a', 'b'], ['a', 'c'], ['a', 'd'], ['b', 'c'], ['b', 'd'], ['c', 'd']]);
+    is(combinations(['a', 'b', 'c', 'd'], 1), [['a'], ['b'], ['c'], ['d']]);
+};
+
+tests 'MyList::Util::permutations' => sub {
+    is(
+        permutations(['a', 'b', 'c']),
+        [['a', 'b', 'c'], ['a', 'c', 'b'], ['c', 'a', 'b'], ['c', 'b', 'a'], ['b', 'c', 'a'], ['b', 'a', 'c']],
+    );
+    is(
+        permutations(['a', 'b', 'c', 'd']),
+        [
+            ['a', 'b', 'c', 'd'],
+            ['a', 'b', 'd', 'c'],
+            ['a', 'd', 'b', 'c'],
+            ['d', 'a', 'b', 'c'],
+            ['d', 'a', 'c', 'b'],
+            ['a', 'd', 'c', 'b'],
+            ['a', 'c', 'd', 'b'],
+            ['a', 'c', 'b', 'd'],
+            ['c', 'a', 'b', 'd'],
+            ['c', 'a', 'd', 'b'],
+            ['c', 'd', 'a', 'b'],
+            ['d', 'c', 'a', 'b'],
+            ['d', 'c', 'b', 'a'],
+            ['c', 'd', 'b', 'a'],
+            ['c', 'b', 'd', 'a'],
+            ['c', 'b', 'a', 'd'],
+            ['b', 'c', 'a', 'd'],
+            ['b', 'c', 'd', 'a'],
+            ['b', 'd', 'c', 'a'],
+            ['d', 'b', 'c', 'a'],
+            ['d', 'b', 'a', 'c'],
+            ['b', 'd', 'a', 'c'],
+            ['b', 'a', 'd', 'c'],
+            ['b', 'a', 'c', 'd'],
+        ],
+    );
 };
 
 done_testing();

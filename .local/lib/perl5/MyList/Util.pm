@@ -4,14 +4,15 @@ use v5.34;
 use utf8;
 use warnings;
 use warnings FATAL => qw(utf8);
-use experimental qw(declared_refs refaliasing signatures try);
 
 use List::Util qw(sum0);
+use Storable qw(dclone);
+
+use experimental qw(declared_refs refaliasing signatures try);
 
 use Exporter qw(import);
 our @EXPORT_OK = qw(
     adjacent_pairs
-    average
     compact
     filter_by
     group_by
@@ -27,9 +28,15 @@ our @EXPORT_OK = qw(
     union_by
 
     combinations
+    permutations
+
+    mean
+    sorted_median
+    sorted_percentile
+    sorted_quantile
 );
 
-## no critic (Subroutines::RequireArgUnpacking)
+## no critic [Subroutines::RequireArgUnpacking, Subroutines::ProhibitSubroutinePrototypes]
 
 sub adjacent_pairs ($array) {
     my @result;
@@ -37,12 +44,6 @@ sub adjacent_pairs ($array) {
         push (@result, [shift $array->@*, $array->[0]]);
     }
     return \@result;
-}
-
-sub average ($array_ref) {
-    $array_ref->@*
-        or return 0;
-    return sum0($array_ref->@*) / scalar $array_ref->@*;
 }
 
 sub compact ($array_ref) {
@@ -160,6 +161,73 @@ sub combinations ($array, $k, $state = [], $result = []) {
 #
 #    return @combinations;
 #}
+
+sub permutations ($array_ref) {
+    my @result;
+    my @d = (-1) x scalar $array_ref->@*;
+
+    do {
+        push (@result, dclone($array_ref));
+    } while (sjt_next_permutation($array_ref, \@d)); ## no critic [ControlStructures::ProhibitPostfixControls]
+
+    return \@result;
+}
+
+sub sjt_next_permutation ($array_ref, $dirs_ref) {
+    my \@array = $array_ref;
+    my $n      = @array;
+    my $id     = -1;
+
+    for (my $i = 0; $i < $n; ++$i) {
+        $id = $i
+            if (0 <= ($i + $dirs_ref->[$i]) && ($i + $dirs_ref->[$i]) < $n)
+            and ($array[$i] gt $array[$i + $dirs_ref->[$i]])
+            and (($id == -1) or ($array[$i] gt $array[$id]));
+    }
+
+    return 0 if $id == -1;                                                     # last permutation
+
+    for (my $i = 0; $i < $n; ++$i) {
+        $dirs_ref->[$i] = -$dirs_ref->[$i] if $array[$i] gt $array[$id];
+    }
+
+    #swap elements AND their directions
+    ($array[$id], $array[$id + $dirs_ref->[$id]]) = ($array[$id + $dirs_ref->[$id]], $array[$id]);
+    my $t = $dirs_ref->[$id];
+    ($dirs_ref->[$id], $dirs_ref->[$id + $t]) = ($dirs_ref->[$id + $t], $dirs_ref->[$id]);
+    return 1;
+}
+
+## no critic [Subroutines::ProhibitExplicitReturnUndef]
+sub mean ($array_ref) {
+    my \@values = $array_ref;
+    return undef      if @values == 0;
+    return $values[0] if @values == 1;
+
+    return sum0(@values) / scalar @values;
+}
+
+sub sorted_median ($array_ref) {
+    my \@values = $array_ref;
+    return undef      if @values == 0;
+    return $values[0] if @values == 1;
+
+    my @middle = @values[int ((@values - 1) / 2) .. int ((0 + @values) / 2)];
+    return mean(\@middle);
+}
+
+sub sorted_percentile ($p, $array_ref) {
+    return sorted_quantile($p / 100, $array_ref);
+}
+
+sub sorted_quantile ($q, $array_ref) {
+    my \@values = $array_ref;
+    return undef      if $q < 0 || 1 < $q || @values == 0;
+    return $values[0] if @values == 1;
+
+    my $index = int ((@values + 1) * $q) - 1;
+    return $index >= 0 ? $values[$index] : undef;
+}
 
 1;
 
