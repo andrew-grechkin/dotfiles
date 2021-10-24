@@ -9,29 +9,39 @@ use warnings FATAL => qw(utf8);
 use experimental qw(declared_refs refaliasing signatures try);
 
 # core
+use Encode ();
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
 use IPC::Open2;
 use Pod::Usage;
 use Scalar::Util qw(looks_like_number);
 
 # non core
+use Log::Any qw($log);
+use Log::Any::Adapter ('Stderr', log_level => 'info');
 use Mojo::DOM qw();
 use Mojo::Util qw(encode trim);
 use Path::Tiny;
 
-my %options = ('INPLACE' => 0);
+my %options = (
+    'INPLACE' => 0,
+    'VERBOSE' => 0,
+);
 
 sub main() {
     GetOptions(
-        'inplace|i' => \$options{'INPLACE'},
         'help|h'    => sub {pod2usage(-verbose => 99, exitval => 0)},
+        'inplace|i' => \$options{'INPLACE'},
+        'verbose|v' => \$options{'VERBOSE'},
     ) or die "Unable to process command line options\n";
 
+    $log->{'adapter'}{'log_level'} += $options{'VERBOSE'};
+
     if (@ARGV) {
-        foreach my $file (@ARGV) {
+        foreach my $file (map {decode($_)} @ARGV) {
             -e -r $file
                 or die "File does not exists: $file\n";
 
+            $log->infof("Processing: '%s'", $file);
             my $octets = process(external_process(path($file)->slurp_raw, 'xmllint', '--encode', 'UTF-8', '-'));
             my $bytes  = encode('UTF-8', process($octets));
             $octets = external_process($bytes, 'xmllint', '--format', '-');
@@ -76,11 +86,12 @@ sub process ($octets) {
     my $dom = Mojo::DOM->new($octets);
     $dom->find('p')->each(
         sub ($it, @) {
-            my $text = trim($it->text);
-            $text =~ s{\A-\s+}{— };
-            $text =~ s{(\A|(?<=[.,?]))\s+-\s+}{ — }gx;
+            my $text = trim($it->content);
             $text =~ s{(\s)+}{$1}g;
             $text =~ s{(\A|(?<![.]))[.]{3}(\z|(?=[^.]))}{…}gx;
+            $text =~ s{\A(?:-|–|—)\s}{— };
+            $text =~ s{(\A|(?<=[.,?!…]))\s(?:-|–|—)\s}{ — }gx;
+            $text =~ s{(\s)(?:–)(\s)}{$1—$2}gx;
             $it->content($text);
         },
     );
@@ -88,6 +99,9 @@ sub process ($octets) {
     return $dom->to_string;
 }
 
+sub decode ($octets) {
+    return Encode::decode('UTF-8', $octets, Encode::FB_CROAK);
+}
 
 exit main();
 

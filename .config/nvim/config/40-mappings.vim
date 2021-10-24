@@ -1,6 +1,9 @@
 " => Keys remap -------------------------------------------------------------------------------------------------- {{{1
 
 let mapleader = "\<Space>"                                                     " Map leader key
+"silent! nnoremap ,,                    rё
+"silent! nnoremap j                     gj
+"silent! nnoremap k                     gk
 
 " Select all
 silent! nnoremap <C-a>                 gg<S-v>G

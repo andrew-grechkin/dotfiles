@@ -34,7 +34,7 @@ hi Delimiter        guifg=#8F8F8F
 hi DiffAdd                        guibg=#203020
 hi DiffChange                     guibg=#303020
 hi DiffDelete       guifg=#960050 guibg=#302020
-hi DiffText                       guibg=#4C4C20               gui=undercurl
+hi DiffText                       guibg=#6C4C20               gui=undercurl
 
 hi Directory        guifg=#A6E22E                             gui=bold
 hi Error            guifg=#D6CB64 guibg=#1E0010
