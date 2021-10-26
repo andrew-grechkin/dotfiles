@@ -48,8 +48,8 @@ control + alt + Esc
 
 # => ------------------------------------------------------------------------------------------------------------- {{{1
 
-super + shift + Return
-	exo-open --launch TerminalEmulator "$HOME/.local/script/tmux-default-session"
+#super + shift + Return
+#	exo-open --launch TerminalEmulator "$HOME/.local/script/tmux-default-session"
 super + shift + c
 	qalculate-gtk
 super + shift + n

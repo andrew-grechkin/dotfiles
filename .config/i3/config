@@ -17,6 +17,7 @@ floating_modifier         $mod
 set $term                 exo-open --launch TerminalEmulator
 
 #bindsym $mod+Return       exec $term
+bindsym $mod+Shift+Return split h; exec alacritty; split v
 
 # => reload the configuration file ------------------------------------------------------------------------------- {{{1
 
