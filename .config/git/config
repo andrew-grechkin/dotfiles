@@ -3,7 +3,7 @@
 	bleach     = !"f(){ git fall; git b | perl -alE 'm/: gone]/ && $F[0] ne q(*) && system(qq(git branch -D $F[0]))'; }; f"
 	bmain      = !"git rev-parse --abbrev-ref origin/HEAD 2>&1 | grep -Eho 'main$|trunk$|master$' || echo 'master'"
 	bname      = !"git rev-parse --abbrev-ref HEAD"
-	bredo      = !"git rebase -i `git merge-base master HEAD`"
+	bredo      = !"git rebase -i `git merge-base $(git bmain) HEAD`"
 	bush       = !"f(){ while true; do git push && break; git pull --no-tags --rebase || break; done }; f"
 	cl         = clone --filter=blob:none
 	co         = checkout
@@ -15,7 +15,7 @@
 	ds         = diff -b --submodule=diff
 	dt         = difftool
 	fall       = fetch --all --prune --prune-tags
-	ha         = !"git --no-pager log --all --color=always --graph --pretty=oneline"
+	ha         = !"git --no-pager log --abbrev-commit --all --color=always --graph --pretty=oneline --topo-order"
 	l          = !"fzf-git-log-branch"
 	la         = !"fzf-git-log-all"
 	lag        = !"fzf-git-log-all-graph"
@@ -24,7 +24,7 @@
 	m-diff     = !"f(){ git diff     -b  --color=always `git m-span ... $@`; }; f"
 	m-dt       = !"f(){ git difftool -b -t vimdiff      `git m-span ... $@`; }; f"
 	m-log      = !"f(){ git log          --color=always `git m-span ..  $@`; }; f"
-	m-span     = !"f(){ C=${2:-\"$(git bname)\"}; A=$(git log -1 $C --merges --pretty=format:%P); echo ${A/ /$1}; }; f"
+	m-span     = !"git-merge-span"
 	main       = !"git checkout $(git bmain)"
 	mg         = mergetool --gui
 	mt         = mergetool
@@ -52,9 +52,6 @@
 	showbranch  = auto
 	status      = auto
 	ui          = auto
-
-[commit]
-	verbose = true
 
 [core]
 	autocrlf     = false
@@ -116,7 +113,7 @@
 
 [log]
 	color    = auto
-	date     = iso
+	date     = iso8601
 	decorate = short
 
 [merge]

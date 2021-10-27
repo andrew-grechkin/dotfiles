@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -Eeuo pipefail
+
+PATH="$(dirname "$0"):$PATH"
+
+git-in-repo && {
+	S=${1:-..}
+	C=${2:-"$(git bname)"}
+	A=$(git log -1 "$C" --merges --pretty="format:%p")
+	echo "${A/ /$S}"
+}
