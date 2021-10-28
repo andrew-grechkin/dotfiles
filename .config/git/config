@@ -21,8 +21,8 @@
 	lag        = !"fzf-git-log-all-graph"
 	lg         = !"fzf-git-log-graph"
 	lr         = !"fzf-git-log-reflog"
-	m-diff     = !"f(){ git diff     -b  --color=always `git m-span ... $@`; }; f"
-	m-dt       = !"f(){ git difftool -b -t vimdiff      `git m-span ... $@`; }; f"
+	m-diff     = !"f(){ git diff     -b  --color=always `git m-span .. $@`; }; f"
+	m-dt       = !"f(){ git difftool -b -t vimdiff      `git m-span .. $@`; }; f"
 	m-log      = !"f(){ git log          --color=always `git m-span ..  $@`; }; f"
 	m-span     = !"git-merge-span"
 	main       = !"git checkout $(git bmain)"
@@ -147,6 +147,9 @@
 [rebase]
 	autosquash = true
 	autostash  = true
+
+[rerere]
+	enabled = true
 
 [tag]
 	sort = version:refname
