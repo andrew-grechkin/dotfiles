@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# url: https://www.youtube.com/watch?v=zB_3FIGRWRU
+
+set -Eeuo pipefail
+
+PATH="$(dirname "$0"):$PATH"
+
+command vim -c ':VimwikiIndex'

@@ -20,6 +20,8 @@ super + r
 	alacritty -e zsh -c "vifm $HOME $HOME"
 super + s
 	$HOME/.local/script/rofi-pass
+super + f
+	$HOME/.local/script/rofi-cheatsheet
 super + t
 	alacritty -e tmux -f "$XDG_CONFIG_HOME/tmux/config"
 super + u
@@ -54,6 +56,8 @@ super + shift + c
 	qalculate-gtk
 super + shift + n
 	alacritty --class 'Alacritty,floating' --command "$HOME/.local/script/create-note"
+super + shift + w
+	alacritty --class 'Alacritty,floating' --command "$HOME/.local/script/open-vim-wiki"
 super + shift + r
 	exo-open --launch FileManager
 super + shift + s

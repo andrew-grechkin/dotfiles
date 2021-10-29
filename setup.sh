@@ -38,10 +38,11 @@ ln -sf "$WORKDIR/.config/yamllint"                                     ~/.config
 ln -sf "$WORKDIR/.config/zathura"                                      ~/.config/
 ln -sf "$WORKDIR/.config/zsh"                                          ~/.config/
 
-ln -sf "$WORKDIR/.local/script"                                        ~/.local/
 ln -sf "$WORKDIR/.local/lib/perl5"                                     ~/.local/lib/
+ln -sf "$WORKDIR/.local/script"                                        ~/.local/
 ln -sf "$WORKDIR/.local/share/vim-dict"                                ~/.local/share/
 ln -sf "$WORKDIR/.local/share/vim-plug"                                ~/.local/share/
+ln -sf "$WORKDIR/.local/share/wiki"                                    ~/.local/share/
 
 [[ -f "$HOME/.config/npm" ]] || cp -r "$WORKDIR/.config/npm"           ~/.config/
 

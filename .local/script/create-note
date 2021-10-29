@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # url: https://www.youtube.com/watch?v=zB_3FIGRWRU
 
 set -Eeuo pipefail

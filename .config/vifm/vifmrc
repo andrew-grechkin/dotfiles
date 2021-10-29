@@ -297,7 +297,7 @@ fileviewer *.htm,*.html
 
 " => File associations: Images ----------------------------------------------------------------------------------- {{{1
 
-filextype *.bmp,*.dng,*.gif,.*.ico,*.icon,*.jp2,*.jpg,*.jpeg,*.png,*.xpm,*.svg,*.tif
+filextype *.bmp,*.dng,*.gif,.*.ico,*.icon,*.jp2,*.jpg,*.jpeg,*.png,*.xpm,*.svg,*.tif,*.thm
 	\ {View in sxiv}
 	\ sxiv %f %c:h %i &,
 	\ {Open with xdg-open}
