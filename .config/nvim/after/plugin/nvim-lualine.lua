@@ -4,7 +4,7 @@ if (not status) then return end
 lualine.setup {
 	options = {
 		icons_enabled = true,
-		theme = 'modus_vivendi',
+		theme = 'modus-vivendi',
 		section_separators = '',
 		component_separators = '',
 		disabled_filetypes = {}

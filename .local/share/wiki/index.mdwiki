@@ -3,3 +3,8 @@
 [Terminal control](terminal/control)
 
 [Zsh](zsh/index)
+
+# vim
+
+Reload vim with different encoding
+`:e ++enc=utf-8`
