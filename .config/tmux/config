@@ -71,9 +71,14 @@ bind   -n 'M-r' select-layout main-vertical \; move-pane -b -s 4 -t 0 \; swap-pa
 
 bind      'M-e' new-window -n 'tmux.conf' "sh -c '\${EDITOR:-vim} ~/.config/tmux/config && tmux source ~/.config/tmux/config && tmux display \"Config reloaded\"'"
 bind      'M-r' source-file ~/.config/tmux/config \; display 'Config reloaded' # reload tmux configuration
-bind      'C-l' send-keys 'C-l' \; run 'sleep 0.1' \; clear-history            # clear shell screen and tmux history buffer
 bind      'C-a' setw synchronize-panes \; display "synchronize-panes is now #{?pane_synchronized,on,off}"
+
+# => buffer operations ------------------------------------------------------------------------------------------- {{{1
+
+bind      'C-l' send-keys 'C-l' \; run 'sleep 0.1' \; clear-history            # clear shell screen and tmux history buffer
 bind      'C-s' capture-pane -b temp-capture-buffer -S - \; save-buffer -b temp-capture-buffer ~/.cache/tmux.log \; delete-buffer -b temp-capture-buffer \; run-shell "~/.local/script/pastebin ~/.cache/tmux.log"
+
+bind   -T copy-mode-vi 'C-l' send-keys -X cancel \; send-keys 'C-l' \; run 'sleep 0.1' \; clear-history
 
 # => window splitting -------------------------------------------------------------------------------------------- {{{1
 

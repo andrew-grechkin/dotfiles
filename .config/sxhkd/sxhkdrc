@@ -60,8 +60,6 @@ super + shift + w
 	alacritty --class 'Alacritty,floating' --command "$HOME/.local/script/open-vim-wiki"
 super + shift + r
 	exo-open --launch FileManager
-super + shift + s
-	catfish
 super + shift + u
 	alacritty --class 'Alacritty,floating' --command "$HOME/.local/script/fzf-select" emoji
 super + shift + v
