@@ -76,6 +76,7 @@ sub _fix_project ($project, $map) {
     $mlt->first->attr->{'root'} = $project_root;
     say 'Root: ', $project_root;
 
+    my $changed = 0;
     $dom->find('producer')->each(
         sub ($e, $) {
             my $resource = $e->find('property[name="resource"]')->first;
@@ -87,25 +88,32 @@ sub _fix_project ($project, $map) {
             $size = $size->all_text;
             $hash = $hash->all_text;
             if (!exists $map->{$size}) {
-                carp sprintf ('Unable to find resource by size [%s]: %s', $size, $resource);
+                $log->warnf('Unable to find resource by size [%s]: %s', $size, $resource->text);
                 return;
             }
 
             my $file = first {$_->hash eq $hash} $map->{$size}->@*;
             if (!$file) {
-                carp sprintf ('Unable to find resource by hash [%s]: %s', $hash, $resource);
+                $log->warnf('Unable to find resource by hash [%s]: %s', $hash, $resource->text);
                 return;
             }
 
             my $new_resource = $file->path->absolute;
-
+            my $relative = $file->path->absolute->relative($project_root);
+            if ($relative !~ m/[.]{2,}/) {
+                $new_resource = $relative;
+            }
             # my $new_resource = $file->path->absolute->relative($project_root);
             # say sprintf ("%s \t-> %s", $resource->all_text, $new_resource);
             $resource->content($new_resource);
+            $changed = 1;
         },
     );
 
-    $project->sibling($project->basename('.kdenlive') . '.fixed.kdenlive')->spew_utf8("$dom");
+    #$project->sibling($project->basename('.kdenlive') . '.fixed.kdenlive')->spew_utf8("$dom");
+    if ($changed && $options{'APPLY'}) {
+        $project->spew_utf8("$dom");
+    }
 
     return;
 }
@@ -170,8 +178,8 @@ sub _build_files_map (@paths) {
                 $path->absolute =~ m/to delete/
                     and return;
 
-                if ($path =~ m/[.]kdenlive\z/x && $path !~ m/fixed/ && $path !~ m/backup\d?[.]kdenlive\z/) {
-                    push (@projects, $path);
+                if ($path =~ m/[.]kdenlive\z/x && $path !~ m/backup\d?[.]kdenlive\z/) {
+                    push (@projects, $path) if $stat->size > 128;
                     return;
                 }
 
