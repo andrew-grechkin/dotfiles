@@ -102,7 +102,7 @@ set statusline=" %A %d %u:%g%=%T %E %N %t%="
 
 " set millerview
 
-set slowfs+=/media
+"set slowfs+=/media
 
 set sizefmt=units:iec,precision:2,nospace
 
@@ -362,14 +362,19 @@ filetype *.asc,*.sig
 	\ {Check signature}
 	\ !!gpg --verify,
 
-fileviewer *.pem,*.crt
+fileviewer *.pem,*.crt,*.csr
 	\ openssl x509 -inform PEM -in %f -text
 
 filetype *.key
 	\ {Convert to p12}
-	\ certtool --to-p12 --load-privkey %c --outfile %c.p12,
+	\ certtool --to-p12 --empty-password --load-privkey %c --outfile %c:r.p12,
+
 fileviewer *.key
 	\ openssl x509 -inform PEM -in %f -text
+
+filetype *.p12
+	\ {Import to GPG}
+	\ gpgsm --import %c
 
 filetype *.torrent
 	\ ktorrent %f &,
