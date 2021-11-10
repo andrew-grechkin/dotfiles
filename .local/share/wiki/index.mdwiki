@@ -1,10 +1,6 @@
-[Perl](perl/index)
+# Topics
 
-[Terminal control](terminal/control)
-
-[Zsh](zsh/index)
-
-# vim
-
-Reload vim with different encoding
-`:e ++enc=utf-8`
+* [Perl](perl/index)
+* [Terminal control](terminal/control)
+* [Zsh](zsh/index)
+* [vim](vim/index)

@@ -1,0 +1,27 @@
+# [Pipelines](https://zsh.sourceforge.io/Doc/Release/Shell-Grammar.html#Simple-Commands-_0026-Pipelines)
+
+## [Redirection](https://zsh.sourceforge.io/Doc/Release/Redirection.html)
+
+* Pipe STDIN from file
+    ```sh
+    clipcopy < path/to/file
+    ```
+* Pipe STDIN from heredox (type end-word for stop reading)
+    ```sh
+    clipcopy <<'END'
+    ```
+* Pipe STDIN from string
+    ```sh
+    clipcopy <<<'arbitrary string'
+    ```
+
+## [Process substitution](http://zsh.sourceforge.net/Doc/Release/Expansion.html#Process-Substitution)
+
+* Connect output of the other process with /dev/fd file (when application doesn't support read from STDIN)
+    ```sh
+    clipcopy <(ping -c 4 localhost)
+    ```
+* Connect output of the other process with temporary file (if application need seek through data)
+    ```sh
+    clipcopy =(ping -c 4 localhost)
+    ```

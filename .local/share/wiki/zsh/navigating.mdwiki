@@ -1,7 +1,7 @@
 # [Navigating command line](http://zsh.sourceforge.net/Doc/Release/Zsh-Line-Editor.html)
 
 ### List all key bindings
-```zsh
+```sh
 bindkey | less
 ```
 
