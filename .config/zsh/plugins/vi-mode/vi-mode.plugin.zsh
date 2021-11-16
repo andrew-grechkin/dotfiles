@@ -1,5 +1,9 @@
 # vim: syntax=zsh foldmethod=marker
 
+# bindkey -l
+# bindkey -M main
+# bindkey
+#
 #key=(
 #    Home     "${terminfo[khome]}"
 #    End      "${terminfo[kend]}"
@@ -45,23 +49,26 @@ bindkey -M vicmd 'v'    edit-command-line
 
 # => Arrow-Up, Arrow-Down ---------------------------------------------------------------------------------------- {{{1
 
-if [[ "${terminfo[kcuu1]}" != "" ]]; then
-	autoload -U up-line-or-beginning-search
-	zle -N up-line-or-beginning-search
-	bindkey "${terminfo[kcuu1]}" up-line-or-beginning-search
-fi
-if [[ "${terminfo[kcud1]}" != "" ]]; then
-	autoload -U down-line-or-beginning-search
-	zle -N down-line-or-beginning-search
-	bindkey "${terminfo[kcud1]}" down-line-or-beginning-search
-fi
+autoload -U up-line-or-beginning-search
+autoload -U down-line-or-beginning-search
+zle -N up-line-or-beginning-search
+zle -N down-line-or-beginning-search
+bindkey          '^P'   up-line-or-beginning-search
+bindkey          '^N'   down-line-or-beginning-search
 
-# => ctrl-p, ctrl-n, ctrl-o for navigate history ----------------------------------------------------------------- {{{1
+# standard bindings are overriden
+#bindkey          '^P'   up-line-or-history
+#bindkey          '^N'   down-line-or-history
 
-bindkey          '^P'   up-line-or-history
-bindkey          '^N'   down-line-or-history
-bindkey          '^O'   accept-line-and-down-history
+[[ -n "${terminfo[kcuu1]}" ]] && bindkey "${terminfo[kcuu1]}" up-line-or-beginning-search
+[[ -n "${terminfo[kcud1]}" ]] && bindkey "${terminfo[kcud1]}" down-line-or-beginning-search
+
+# => ctrl-r, ctrl-s to perform search in history ----------------------------------------------------------------- {{{1
+
+bindkey          '^R'   history-incremental-search-backward
+bindkey -M vicmd '^R'   history-incremental-search-backward
 bindkey          '^S'   history-incremental-search-forward
+bindkey          '^O'   accept-line-and-down-history
 
 # => ctrl-d, ctrl-h, ctrl-?, ctrl-w for char and word deletion --------------------------------------------------- {{{1
 
@@ -73,11 +80,6 @@ bindkey          '^?'      backward-delete-char
 bindkey -M vicmd '^?'   vi-backward-delete-char
 bindkey          '^W'      backward-kill-word
 bindkey -M vicmd '^W'   vi-backward-kill-word
-
-# => ctrl-r to perform backward search in history ---------------------------------------------------------------- {{{1
-
-bindkey          '^R'   history-incremental-search-backward
-bindkey -M vicmd '^R'   history-incremental-search-backward
 
 # => ctrl-b and ctrl-f to move cursor left and right ------------------------------------------------------------- {{{1
 
