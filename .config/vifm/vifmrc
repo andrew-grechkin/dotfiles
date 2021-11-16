@@ -373,6 +373,8 @@ fileviewer *.key
 	\ openssl x509 -inform PEM -in %f -text
 
 filetype *.p12
+	\ {Convert to PEM}
+	\ openssl pkcs12 -in %c -out %c:r.pem -nodes
 	\ {Import to GPG}
 	\ gpgsm --import %c
 
