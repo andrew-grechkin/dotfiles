@@ -1,4 +1,4 @@
-# vim: syntax=dosini foldmethod=marker
+# vim: filetype=dosini foldmethod=marker
 # man: perlcritic
 
 severity = 1

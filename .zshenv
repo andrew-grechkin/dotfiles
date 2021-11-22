@@ -1,4 +1,4 @@
-# vim: syntax=zsh foldmethod=marker
+# vim: filetype=zsh foldmethod=marker
 
 export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
 

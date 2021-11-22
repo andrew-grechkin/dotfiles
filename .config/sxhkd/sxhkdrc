@@ -1,4 +1,4 @@
-# vim: syntax=conf
+# vim: filetype=conf
 
 super + Return
 	exo-open --launch TerminalEmulator

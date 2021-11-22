@@ -1,4 +1,4 @@
-" vim: syntax=vim
+" vim: filetype=vim
 
 highlight clear
 

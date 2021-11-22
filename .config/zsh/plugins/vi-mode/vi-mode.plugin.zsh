@@ -1,4 +1,4 @@
-# vim: syntax=zsh foldmethod=marker
+# vim: filetype=sh foldmethod=marker
 
 # bindkey -l
 # bindkey -M main

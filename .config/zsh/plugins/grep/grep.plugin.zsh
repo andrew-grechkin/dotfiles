@@ -1,4 +1,4 @@
-# vim: syntax=zsh foldmethod=marker
+# vim: filetype=zsh foldmethod=marker
 
 function is-grep-flag-available() {
 	echo | grep $1 "" >/dev/null 2>&1

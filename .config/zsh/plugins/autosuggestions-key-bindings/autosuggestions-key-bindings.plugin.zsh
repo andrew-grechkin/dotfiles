@@ -1,4 +1,4 @@
-# vim: syntax=zsh foldmethod=marker
+# vim: filetype=zsh foldmethod=marker
 
 # => F1, F2 ------------------------------------------------------------------------------------------------------ {{{1
 

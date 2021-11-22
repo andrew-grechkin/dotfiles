@@ -1,4 +1,4 @@
-# vim: syntax=zsh foldmethod=marker
+# vim: filetype=zsh foldmethod=marker
 
 function fix-gpg-tty() {
 	### use systemd-gpgagent as ssh-agent (not working correctly in tmux)

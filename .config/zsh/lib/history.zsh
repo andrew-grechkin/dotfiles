@@ -1,4 +1,4 @@
-# vim: syntax=zsh foldmethod=marker
+# vim: filetype=zsh foldmethod=marker
 # Based on https://github.com/robbyrussell/oh-my-zsh
 
 alias h='history'

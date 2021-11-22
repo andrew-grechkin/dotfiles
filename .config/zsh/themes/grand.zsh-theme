@@ -1,5 +1,5 @@
 # grand ZSH theme
-# vim: syntax=zsh foldmethod=marker
+# vim: filetype=zsh foldmethod=marker
 # url: http://zsh.sourceforge.net/Doc/Release/User-Contributions.html#Version-Control-Information
 # url: https://github.com/zsh-users/zsh/blob/master/Misc/vcs_info-examples
 # url: https://timothybasanov.com/2016/04/23/zsh-prompt-and-vcs_info.html

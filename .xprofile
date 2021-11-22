@@ -1,4 +1,4 @@
-# vim: syntax=sh foldmethod=marker
+# vim: filetype=sh foldmethod=marker
 
 # when lightdm runs this script the ssh agent is not yet started, but I expect it will be started later and create the socket
 

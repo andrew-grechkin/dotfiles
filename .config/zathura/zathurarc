@@ -1,4 +1,4 @@
-# vim: syntax=conf
+# vim: filetype=conf
 # man: zathurarc
 
 set selection-clipboard clipboard
