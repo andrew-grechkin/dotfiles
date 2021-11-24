@@ -38,3 +38,4 @@ nnoremap <silent> <buffer> gz         :!zeal "perl:<cword>"&<CR><CR>
 vnoremap <silent> <buffer> gz         y:!zeal "perl:<C-R>=escape(@",'/\')<CR>"&<CR>
 
 let b:man_default_sections = '3,2'
+set tags+=~/.local/share/vim-dict/perl.ctags

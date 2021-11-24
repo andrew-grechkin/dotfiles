@@ -29,4 +29,14 @@ if plugin#is_loaded('YouCompleteMe')
 "	nnoremap <leader>g :YcmCompleter GoTo<CR>
 "	nnoremap <F9>      :YcmDiags <CR>
 "	nnoremap <F11>     :YcmForceCompileAndDiagnostics <CR>
+
+	" fix stupid YCM problem when pressing Enter is doing nothing
+	inoremap <silent><buffer><expr> <cr>
+		\ pumvisible()
+		\	? empty(v:completed_item)
+		\		? "\<c-y>\<cr>"
+		\		: empty(matchstr(v:completed_item['menu'], 'snip'))
+		\			? "\<c-y>"
+		\			: "\<c-y>\<c-r>=UltiSnips#ExpandSnippetOrJump()<cr>"
+		\	: "\<cr>"
 endif
