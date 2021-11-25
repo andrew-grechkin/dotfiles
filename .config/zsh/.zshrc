@@ -64,6 +64,8 @@ fi
 
 export PATH
 
+WORDCHARS=${WORDCHARS/\/}
+
 # => Use zsh help search ----------------------------------------------------------------------------------------- {{{1
 
 (( $+aliases[run-help] )) && unalias run-help
