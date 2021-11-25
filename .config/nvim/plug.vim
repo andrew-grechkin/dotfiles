@@ -1,15 +1,17 @@
 call plug#begin('~/.cache/vim/plugged')
-	Plug 'junegunn/vim-plug'
 	Plug 'junegunn/fzf.vim'                                                    " Fuzzy search
 	Plug 'junegunn/vim-easy-align'
+	Plug 'junegunn/vim-plug'
 	Plug 'tpope/vim-abolish'
 	Plug 'tpope/vim-fugitive'                                                  " Git support
+	Plug 'tpope/vim-projectionist'
 	Plug 'tpope/vim-repeat'                                                    " Repeat everything
 	Plug 'tpope/vim-surround'                                                  " Better surround commands
 	Plug 'tpope/vim-unimpaired'                                                " Pairs of helpful commands
-"	Plug 'tpope/vim-commentary'                                                " Commenting helpers
+	Plug 'tpope/vim-commentary'                                                " Commenting helpers
+	Plug 'suy/vim-context-commentstring'
 "	Plug 'tomtom/tcomment_vim'                                                 " Commenting helpers
-	Plug 'scrooloose/nerdcommenter', {'on': '<Plug>NERDCommenterToggle'}       " Commenting helpers
+"	Plug 'scrooloose/nerdcommenter', {'on': '<Plug>NERDCommenterToggle'}       " Commenting helpers
 	Plug 'christoomey/vim-tmux-navigator'                                      " Better tmux integration
 	Plug 'mhinz/vim-grepper'                                                   " Grep integration
 	Plug 'nelstrom/vim-visual-star-search'
@@ -18,25 +20,28 @@ call plug#begin('~/.cache/vim/plugged')
 	Plug 'chrisbra/unicode.vim'
 	Plug 'vifm/vifm.vim'
 	Plug 'rodjek/vim-puppet'                                                   " For Puppet syntax highlighting
-	Plug 'vim-ruby/vim-ruby', {'for': 'ruby'}                                  " For Facts, Ruby functions, and custom providers
+"	Plug 'vim-ruby/vim-ruby', {'for': 'ruby'}                                  " For Facts, Ruby functions, and custom providers
 	Plug 'pearofducks/ansible-vim'
 "	Plug '~/.local/share/vim-plug/trackperlvars', {'for': 'perl'}
 "	Plug '~/.local/share/vim-plug/perlart',       {'for': 'perl'}
+	Plug 'janko/vim-test'
+	Plug 'sbdchd/vim-run'
+	Plug 'ryanoasis/vim-devicons'
+	Plug 'vim-airline/vim-airline'                                             " Most informative status line
+	Plug 'vim-airline/vim-airline-themes'                                      " Status line themes
 	if has('nvim') || v:version >= 800                                         " These plugins demand modern vim or neovim
 		Plug 'dense-analysis/ale'                                              " Async syntax checker
 "		Plug 'easymotion/vim-easymotion'                                       " Better move commands
 		Plug 'junegunn/vim-peekaboo'                                           " Preview registers
 		Plug 'lambdalisue/suda.vim'                                            " run sudo from vim
 		Plug 'majutsushi/tagbar'
-		Plug 'masukomi/vim-markdown-folding'
+"		Plug 'masukomi/vim-markdown-folding'
 		Plug 'mhinz/vim-signify'                                               " Git status/modifications of the file
 	endif
 	if has('nvim-0.5') && has('python3')                                       " Neovim only
-		Plug 'dyng/ctrlsf.vim', {'on': ['CtrlSF','<Plug>CtrlSFPrompt','<Plug>CtrlSFCwordPath','<Plug>CtrlSFVwordExec']} " Global search and replace
-		Plug 'janko/vim-test'
-		Plug 'sbdchd/vim-run'
-		Plug 'simnalamburt/vim-mundo', {'on': 'MundoToggle'}                   " Visualize the undo tree
-		Plug 'fatih/vim-go', {'for': 'go'}
+"		Plug 'dyng/ctrlsf.vim', {'on': ['CtrlSF','<Plug>CtrlSFPrompt','<Plug>CtrlSFCwordPath','<Plug>CtrlSFVwordExec']} " Global search and replace
+"		Plug 'simnalamburt/vim-mundo', {'on': 'MundoToggle'}                   " Visualize the undo tree
+"		Plug 'fatih/vim-go', {'for': 'go'}
 		Plug 'RRethy/vim-hexokinase', {'do': 'make hexokinase'}
 		""" LSP
 		" Plug 'neovim/nvim-lspconfig'                                           " ~/.config/nvim/after/plugin/nvim-lspconfig.lua
@@ -48,17 +53,16 @@ call plug#begin('~/.cache/vim/plugged')
 		" Plug 'nvim-treesitter/completion-treesitter'
 		""" UI
 		" Plug folke/lsp-colors.nvim'
-		"""
-		Plug 'kyazdani42/nvim-web-devicons'                                    " lua fork of vim-devicons
-		Plug 'hoob3rt/lualine.nvim'
 "		Plug 'Valloric/YouCompleteMe', {'do': './install.py --clang-completer --system-libclang'}
 		Plug 'Valloric/YouCompleteMe', {'do': './install.py --clangd-completer'}
 		Plug 'SirVer/ultisnips'
 		Plug 'andrew-grechkin/vim-snippets'
+		Plug 'folke/which-key.nvim'
+		"""
+		" Plug 'kyazdani42/nvim-web-devicons'                                    " lua fork of vim-devicons
+		" Plug 'hoob3rt/lualine.nvim'
+		" Plug 'akinsho/bufferline.nvim'
 	else
-		Plug 'ryanoasis/vim-devicons'
-"		Plug 'vim-airline/vim-airline'                                         " Most informative status line
-"		Plug 'vim-airline/vim-airline-themes'                                  " Status line themes
 	endif
 	""" checking empty($KDEHOME) here is a weird way to check if this config is used in personal/work environment
 	""" KDEHOME is always defined on personal machines. I need to do something smarter in future

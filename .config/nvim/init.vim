@@ -53,6 +53,7 @@ set fileformats=unix,dos,mac                                                   "
 set history=10000                                                              " Longest possible command history
 set magic
 set nobackup noswapfile nowritebackup
+set nojoinspaces
 set path=.,
 set tags+=tags;                                                                " Look for a tags file recursively in parent directories
 set pumheight=8                                                                " Maximum height of autocomplete popup window
@@ -73,6 +74,7 @@ runtime plug.vim
 " => UI ---------------------------------------------------------------------------------------------------------- {{{1
 
 set scrolloff=5                                                                " Set 5 lines to the cursor - when moving vertically using j/k
+set sidescrolloff=5
 
 set wildmenu                                                                   " Enhanced command line completion
 "set wildmode=longest:full

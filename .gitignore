@@ -1,5 +1,7 @@
 !.local/script
 *.antigen-compat
+*.spl
+*.sug
 *.zwc
 .config/mpv/watch_later
 .config/nvim/autoload/plug.vim

@@ -1,9 +1,20 @@
+scriptencoding=utf-8
+
 " => Keys remap -------------------------------------------------------------------------------------------------- {{{1
 
 let mapleader = "\<Space>"                                                     " Map leader key
 "silent! nnoremap ,,                    rё
-"silent! nnoremap j                     gj
-"silent! nnoremap k                     gk
+
+" Open the current file in the default program
+        nmap     <leader>x             :!xdg-open %<cr><cr>
+
+" Easy insertion of a trailing ; or , from insert mode
+		imap     ;;                    <Esc>A;<Esc>
+		imap     ,,                    <Esc>A,<Esc>
+
+" When text is wrapped, move by terminal rows, not lines, unless a count is provided
+noremap <silent> <expr> j              (v:count == 0 ? 'gj' : 'j')
+noremap <silent> <expr> k              (v:count == 0 ? 'gk' : 'k')
 
 " Select all
 silent! nnoremap <C-a>                 gg<S-v>G
@@ -70,19 +81,31 @@ silent! tnoremap <A-l>                 <C-\><C-N><C-w><Right>
 		nnoremap <C-PageDown>          :tabnext<CR>
 		nnoremap <C-PageUp>            :tabprevious<CR>
 
+" Yank without jank: http://ddrscott.github.io/blog/2016/yank-without-jank
+		vnoremap  y                    myy`y
+		vnoremap  Y                    myY`y
+
+" Make Y behave like the other capitals (yank till the end of line)
+		nnoremap  Y                    y$
+
 " Black hole deletes
 		nnoremap <leader>d             "_d
 		vnoremap <leader>dd            "_dd
 
+" Paste replace visual selection without copying it
+		vnoremap <leader>P             "_dP
+
 " < and > don't loose selection when changing indentation
-		vnoremap >                     >gv
 		vnoremap <                     <gv
+		vnoremap >                     >gv
+
+" center after operations
+		nnoremap n                     nzzzv
+		nnoremap N                     Nzzzv
+		nnoremap J                     mzJ`z
 
 " Clear current search highlighting
 		nnoremap <leader><leader>l     :nohlsearch<CR>
-
-		nnoremap n                     nzzzv
-		nnoremap N                     Nzzzv
 
 " Open terminal
 		nnoremap <leader><leader>m     :belowright 10split term://zsh<CR>

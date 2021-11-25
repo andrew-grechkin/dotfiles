@@ -1,6 +1,6 @@
 if plugin#is_loaded('vim-commentary')
-"nmap     <C-_>                         gcl
-"vmap     <C-_>                         gcgv
+	nmap     <C-_>                         gcl
+	vmap     <C-_>                         gcgv
 
 "augroup SettingsVimCommentary
 "	autocmd!

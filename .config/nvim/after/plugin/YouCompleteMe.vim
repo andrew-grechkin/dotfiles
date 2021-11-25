@@ -1,4 +1,5 @@
 scriptencoding=utf-8
+
 if plugin#is_loaded('YouCompleteMe')
 	let g:ycm_autoclose_preview_window_after_insertion  = 1
 	let g:ycm_autoclose_preview_window_after_completion = 1
@@ -21,10 +22,6 @@ if plugin#is_loaded('YouCompleteMe')
 	let g:ycm_collect_identifiers_from_comments_and_strings = 1
 	let g:ycm_collect_identifiers_from_tags_files           = 1
 "	let g:ycm_seed_identifiers_with_syntax                  = 1
-
-" necessary for UltiSnips
-	" let g:ycm_key_list_select_completion                    = ['<C-n>', '<Down>', '<M-Space>']
-	" let g:ycm_key_list_previous_completion                  = ['<C-p>', '<Up>']
 
 "	nnoremap <leader>g :YcmCompleter GoTo<CR>
 "	nnoremap <F9>      :YcmDiags <CR>

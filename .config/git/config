@@ -78,7 +78,7 @@
 
 [difftool]
 	prompt        = false
-	trustExitCode = true                                                       # Be able to abort all diffs with ':cq' or ':cquit'
+	trustExitCode = true                                                       # be able to abort all diffs with ':cq' or ':cquit'
 
 [difftool "fugitive"]
 	cmd = vim -f -c "Gdiffsplit!" "$MERGED"
@@ -137,12 +137,14 @@
 
 [pager]
 	branch = false
+	diff   = delta
+	log    = delta
+	reflog = delta
+	sh     = delta
+	show   = delta
 
 [pull]
 	rebase = true
-
-[push]
-	default = simple
 
 [rebase]
 	autosquash = true
@@ -154,8 +156,6 @@
 [tag]
 	sort = version:refname
 
-;[url "https://"]
-;	insteadOf = git://
-
 [include]
 	path = ~/.config/gitconfig.overrides
+	path = ~/.config/git/delta.gitconfig
