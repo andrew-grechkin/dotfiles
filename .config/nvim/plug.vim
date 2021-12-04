@@ -10,7 +10,6 @@ call plug#begin('~/.cache/vim/plugged')
 	Plug 'tpope/vim-unimpaired'                                                " Pairs of helpful commands
 	Plug 'tpope/vim-commentary'                                                " Commenting helpers
 	Plug 'suy/vim-context-commentstring'
-"	Plug 'tomtom/tcomment_vim'                                                 " Commenting helpers
 "	Plug 'scrooloose/nerdcommenter', {'on': '<Plug>NERDCommenterToggle'}       " Commenting helpers
 	Plug 'christoomey/vim-tmux-navigator'                                      " Better tmux integration
 	Plug 'mhinz/vim-grepper'                                                   " Grep integration
