@@ -8,7 +8,6 @@ use warnings;
 use warnings FATAL => qw(utf8);
 use experimental qw(declared_refs refaliasing signatures);
 
-use Carp;
 use IPC::Open2;
 
 our $VERSION = 1;
@@ -87,7 +86,7 @@ sub _wait_fzf ($pid, $out) {
     my @output = <$out>;
 
     waitpid ($pid, 0)
-        or carp "Unable to wait for fzf to finish: $!";
+        or die "Unable to wait for fzf to finish: $!\n";
 
     @output = map _trim($_), @output;
 

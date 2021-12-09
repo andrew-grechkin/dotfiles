@@ -12,12 +12,11 @@ use Getopt::Long qw(:config auto_version bundling no_ignore_case);
 
 our $VERSION = 1;
 
-GetOptions(
-    'codepage|c=s' => \(my $codepage = undef),
-) or die ('Unable to process command line options');
+GetOptions('codepage|c=s' => \(my $codepage = undef))
+    or die "Unable to process command line options\n";
 
 $codepage
-    or die ('Please provide --codepage option');
+    or die "Please provide --codepage option\n";
 
 @ARGV
     or push (@ARGV, '-');

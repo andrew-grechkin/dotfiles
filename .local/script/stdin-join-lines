@@ -1,9 +1,7 @@
 #!/usr/bin/env -S perl -n
 
 use v5.28;
-use autodie;
 use warnings;
-use warnings FATAL => qw(utf8);
 
 ## no critic [Variables::ProhibitPunctuationVars, Variables::RequireLocalizedPunctuationVars]
 

@@ -26,10 +26,10 @@ GetOptions(
     'match|m=s'  => \$options{'MATCH'},
     'name|n'     => \$options{'NAME'},
     'verbose|v+' => \$options{'VERBOSE'},
-) or die ('Unable to process command line options');
+) or die "Unable to process command line options\n";
 
 defined $options{'MATCH'}
-    or die ('Please provide --codepage option');
+    or die "Please provide --codepage option\n";
 
 foreach my $path (map {path($_)} @ARGV) {
     $options{'NAME'} == 0 && !$path->is_file
@@ -52,7 +52,7 @@ foreach my $path (map {path($_)} @ARGV) {
     }
 }
 
-sub by_content($path) {
+sub by_content ($path) {
     my $fh = $path->openr_utf8;
     while (my $line = <$fh>) {
         chomp ($line);
@@ -64,7 +64,7 @@ sub by_content($path) {
     return 0, undef;
 }
 
-sub by_name($path) {
+sub by_name ($path) {
     my $extension = extension($path);
     my $name      = $path->basename($extension);
     if ($name =~ qr/$options{'MATCH'}/) {
@@ -74,7 +74,7 @@ sub by_name($path) {
     return 0, undef;
 }
 
-sub extension($path) {
+sub extension ($path) {
     my ($ext) = $path->basename =~ m{.*((?=[.]tar)?[.][^.]*)}x;
     return $ext // '';
 }

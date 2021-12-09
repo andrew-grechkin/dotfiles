@@ -23,11 +23,15 @@ setlocal complete+=k
 
 setlocal keywordprg=:Man
 command! -nargs=1 Perldoc1 new
+	\| :setlocal buftype=nofile bufhidden=hide noswapfile
 	\| :execute ":r !perl-doc '<args>'"
 	\| :Man!
+	\| :nnoremap <silent> <buffer> <nowait> q :bwipeout!<CR>
 command! -nargs=+ Perldoc new
+	\| :setlocal buftype=nofile bufhidden=hide noswapfile
 	\| :execute ':r !perldoc <args>'
 	\| :Man!
+	\| :nnoremap <silent> <buffer> <nowait> q :bwipeout!<CR>
 
 "nnoremap <silent> <buffer> tt         :%!perltidy -q<CR>
 vnoremap <silent> <buffer> tt         :!perltidy -q<CR>

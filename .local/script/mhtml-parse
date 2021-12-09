@@ -10,7 +10,6 @@ use warnings;
 use warnings FATAL => qw(utf8);
 use experimental qw(declared_refs refaliasing signatures try);
 
-use Carp;
 use Encode qw(decode encode);
 use English qw(-no_match_vars);
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
@@ -41,7 +40,7 @@ sub main() {
     $mp->parse($mp_content);
 
     $mp->is_multipart
-        or croak 'This is not a multipart document';
+        or die "This is not a multipart document\n";
 
     my %meta;
 
@@ -64,7 +63,7 @@ sub main() {
     }
 
     $meta{'main'}
-        or croak 'Unable to determine main html part';
+        or die "Unable to determine main html part\n";
 
     my $main_file = Mojo::File->new($meta{'by_url'}{$meta{'main'}}{'name'});
     $meta{'dir'} = $main_file->sibling($main_file->basename('.html') . '.files');
@@ -82,7 +81,7 @@ sub _read_options() {
         'help|h'     => sub {pod2usage('-verbose' => 99, 'exitval' => 0)},
         'list|l!'    => \$options{'LIST'},
         'verbose|v+' => \$options{'VERBOSE'},
-    ) or croak 'Unable to process command line options';
+    ) or die "Unable to process command line options\n";
 
     return;
 }
@@ -92,7 +91,7 @@ sub _process_part ($index, $part, $meta_ref, $dir) {
     my $headers = $part->headers;
 
     $headers->content_location
-        or croak 'Unable to determine part url';
+        or die "Unable to determine part url\n";
 
     my $url = trim($headers->content_location);
     my \%info = $meta{'by_url'}{$url} = {
@@ -148,7 +147,7 @@ sub _process_headers ($headers) {
         $info{'name'} =~ s{^.*/}{};
     }
     $info{'name'}
-        or croak 'Unable to determine part name: <headers>';
+        or die "Unable to determine part name: <headers>\n";
 
     if (!$info{'type'} && $headers->content_location) {
         $info{'type'} = $info{'name'} =~ m{[.]html?\z}ix ? 'text/html' : '';
