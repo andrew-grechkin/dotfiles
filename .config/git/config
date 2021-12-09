@@ -104,6 +104,7 @@
 
 [init]
 	defaultBranch = master
+	templatedir = ~/.config/git/init-template
 
 [help]
 	autocorrect = 1
