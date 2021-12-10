@@ -85,8 +85,8 @@ silent! tnoremap <A-l>                 <C-\><C-N><C-w><Right>
 		vnoremap  y                    myy`y
 		vnoremap  Y                    myY`y
 
-" Make Y behave like the other capitals (yank till the end of line)
-		nnoremap  Y                    y$
+" Make Y behave like the other capitals (yank till the end of line) standard since nvim 0.6
+"		nnoremap  Y                    y$
 
 " Black hole deletes
 		nnoremap <leader>d             "_d
@@ -103,9 +103,6 @@ silent! tnoremap <A-l>                 <C-\><C-N><C-w><Right>
 		nnoremap n                     nzzzv
 		nnoremap N                     Nzzzv
 		nnoremap J                     mzJ`z
-
-" Clear current search highlighting
-		nnoremap <leader><leader>l     :nohlsearch<CR>
 
 " Open terminal
 		nnoremap <leader><leader>m     :belowright 10split term://zsh<CR>
