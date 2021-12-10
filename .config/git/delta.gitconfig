@@ -5,7 +5,9 @@
 	syntax-theme = "zenburn"
 
 [delta "decorations"]
-	file-decoration-style        = brightcyan ul ol
+	commit-decoration-style      = brightblue ul ol
+	commit-style                 = bold brightcyan
+	file-decoration-style        = brightcyan box
 	file-style                   = bold brightyellow
 	hunk-header-style            = none
 	hunk-header-decoration-style = none
