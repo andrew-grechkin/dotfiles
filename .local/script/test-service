@@ -1,0 +1,89 @@
+#!/usr/bin/env perl
+
+use v5.34;
+use autodie;
+use open IO => ':raw';
+use utf8;
+use warnings;
+use warnings FATAL => qw(utf8);
+use experimental qw(declared_refs refaliasing signatures try);
+
+use Carp;
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+
+use MyHash::Util qw(merge);
+use YAML::XS ();
+
+use Data::Printer;
+
+my %options = ( ## no tidy
+    'VERBOSE' => 0,
+);
+
+use TestService::Action::Mojo;
+
+sub main() {
+    GetOptions(
+        'help|h'     => sub {pod2usage('-verbose' => 99, 'exitval' => 0)},
+        'verbose|v+' => \$options{'VERBOSE'},
+    ) or die "Unable to process command line options\n";
+
+    my \%config = _parse_config(_read_config(@ARGV));
+
+    my %tests_by_type;
+    while (my ($key, $test) = each %config) {
+        my \%common   = $test->{'common'};
+        my \%specific = $test->{'specific'};
+
+        while (my ($name, $action) = each %specific) {
+            my \%full = merge(\%common, $action);
+
+            my $type = $full{'type'}
+                or croak sprintf "Invalid test: %s\n", np %full;
+
+            $tests_by_type{$type}{'plugin'} //= _load_plugin($type);
+            push ($tests_by_type{$type}{'names'}->@*, $name);
+            push ($tests_by_type{$type}{'tests'}->@*, \%full);
+        }
+    }
+
+    foreach my $type (keys %tests_by_type) {
+        my $plugin = $tests_by_type{$type}{'plugin'};
+        my \@results = $plugin->execute($tests_by_type{$type}{'names'}, $tests_by_type{$type}{'tests'});
+    }
+
+    return 0;
+}
+
+sub _load_plugin ($type) {
+    my $package = "TestService::Action::$type";
+
+    eval "require $package" ## no critic [BuiltinFunctions::ProhibitStringyEval]
+        or croak "Unable to load package: $package";
+
+    return $package->can('new')->($package);
+}
+
+sub _read_config (@argv) {
+    my $text;
+
+    if (@argv) {
+        my $file = pop @argv;
+        -e -r $file
+            or die "File does not exist: $file\n";
+        $text = do {local $/ = undef; open my $fh, '<', $file; <$fh>}; ## no critic [InputOutput::RequireBriefOpen]
+    } else {
+        $text = do {local $/ = undef; <STDIN>};
+    }
+
+    return $text;
+}
+
+sub _parse_config ($text) {
+    my @sections = YAML::XS::Load($text);
+    return $sections[0];
+}
+
+exit main();
+
+__END__

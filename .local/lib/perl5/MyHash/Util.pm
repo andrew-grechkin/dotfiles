@@ -14,6 +14,9 @@ our @EXPORT_OK = qw(
     build_reverse_indices
     compact
     clean_hash_from_key
+    merge
+    merge_inplace_left
+    merge_inplace_both
 );
 
 sub build_data_cache ($hash_ref, %caches) {
@@ -63,6 +66,27 @@ sub clean_hash_from_key ($data, $key_to_remove) {
     }
 
     return $data;
+}
+
+sub merge ($lhs, $rhs) {
+    $lhs = dclone($lhs) if ref $lhs;
+    $rhs = dclone($rhs) if ref $rhs;
+    return merge_inplace_both($lhs, $rhs);
+}
+
+sub merge_inplace_left ($lhs, $rhs) {
+    $rhs = dclone($rhs) if ref $rhs;
+    return merge_inplace_both($lhs, $rhs);
+}
+
+sub merge_inplace_both ($lhs, $rhs) {
+    return $rhs if !(ref $lhs eq 'HASH' && ref $rhs eq 'HASH');
+
+    while (my ($key, $value) = each $rhs->%*) {
+        $lhs->{$key} = merge_inplace_both($lhs->{$key}, $value);
+    }
+
+    return $lhs;
 }
 
 1;
