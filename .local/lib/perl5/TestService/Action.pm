@@ -12,6 +12,7 @@ use List::Util qw(zip);
 
 use Mojo::File ();
 
+use Log::Any     ();
 use Data::Dumper ();
 use JSON::PP     ();
 use YAML::XS     ();
@@ -22,6 +23,8 @@ use constant { ## no tidy
     'JSON' => JSON::PP->new->utf8(1)->pretty(1)->canonical(1),
 };
 
+has log => sub {Log::Any->get_logger(category => __PACKAGE__)};
+
 sub execute ($self, $names_ref, $tests_ref) {
     my \@names   = $names_ref;
     my \@tests   = $tests_ref;
@@ -29,13 +32,15 @@ sub execute ($self, $names_ref, $tests_ref) {
 
     foreach (zip \@names, \@tests, \@results) {
         my ($name, \%test, $result) = $_->@*;
-        process_result($name, \%test, $result);
+        $self->process_result($name, \%test, $result);
     }
 
     return \@results;
 }
 
-sub process_result ($test_name, $test, $result) {
+sub process_result ($self, $test_name, $test, $result) {
+    $self->log->tracef('processing result: %s', $test_name);
+
     if ($test->{'save_to'}) {
         my \@save_to = ref $test->{'save_to'} eq 'ARRAY' ? $test->{'save_to'} : [$test->{'save_to'}];
         foreach my $save_to (@save_to) {
