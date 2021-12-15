@@ -491,6 +491,10 @@ filetype main.yaml
 	\ {Execute ansible role}
 	\ bash -c "cd ~/git/private/ansible-arch; ANSIBLE_FORCE_COLOR=True ansible-role %d:h -i ~/git/private/ansible-arch/roles/private/hosts --hosts localhost -K | less -r",
 
+filetype *.svct
+	\ {Execute service-test}
+	\ test-service -vv %c,
+
 " => Default file execution -------------------------------------------------------------------------------------- {{{1
 
 " Open all other files with default system programs (you can also remove all

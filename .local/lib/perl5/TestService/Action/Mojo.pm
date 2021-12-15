@@ -13,7 +13,7 @@ use Mojo::UserAgent;
 use experimental qw(declared_refs refaliasing try);
 
 use constant { ## no tidy
-    'UA' => Mojo::UserAgent->new->max_redirects(2)->request_timeout(10)->tap(sub {$_->proxy->detect}),
+    'UA' => Mojo::UserAgent->new->insecure(1)->max_redirects(2)->request_timeout(10)->tap(sub {$_->proxy->detect}),
 };
 
 sub fetch_data ($self, $tests) {
