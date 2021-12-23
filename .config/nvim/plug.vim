@@ -37,30 +37,41 @@ call plug#begin('~/.cache/vim/plugged')
 "		Plug 'masukomi/vim-markdown-folding'
 		Plug 'mhinz/vim-signify'                                               " Git status/modifications of the file
 	endif
-	if has('nvim-0.5') && has('python3')                                       " Neovim only
+	if has('nvim-0.5')                                                         " Neovim only
 "		Plug 'dyng/ctrlsf.vim', {'on': ['CtrlSF','<Plug>CtrlSFPrompt','<Plug>CtrlSFCwordPath','<Plug>CtrlSFVwordExec']} " Global search and replace
 "		Plug 'simnalamburt/vim-mundo', {'on': 'MundoToggle'}                   " Visualize the undo tree
 "		Plug 'fatih/vim-go', {'for': 'go'}
+		""" coloring
 		Plug 'RRethy/vim-hexokinase', {'do': 'make hexokinase'}
 		""" LSP
 		" Plug 'neovim/nvim-lspconfig'                                           " ~/.config/nvim/after/plugin/nvim-lspconfig.lua
 		" Plug 'glepnir/lspsaga.nvim'                                            " ~/.config/nvim/after/plugin/nvim-lspsaga.vim
 		" Plug 'nvim-treesitter/nvim-treesitter', { 'do': ':TSUpdate' }
-		""" completion
-		" Plug 'nvim-lua/completion-nvim'
-		" Plug 'kristijanhusak/completion-tags'
-		" Plug 'nvim-treesitter/completion-treesitter'
 		""" UI
 		" Plug folke/lsp-colors.nvim'
-"		Plug 'Valloric/YouCompleteMe', {'do': './install.py --clang-completer --system-libclang'}
-		Plug 'Valloric/YouCompleteMe', {'do': './install.py --clangd-completer'}
+		""" snippets
 		Plug 'SirVer/ultisnips'
 		Plug 'andrew-grechkin/vim-snippets'
-		Plug 'folke/which-key.nvim'
+		""" completion
+		if 1
+			let g:loaded_completion = 1
+			Plug 'f3fora/cmp-spell'
+			Plug 'hrsh7th/cmp-buffer'
+			Plug 'hrsh7th/cmp-cmdline'
+			Plug 'hrsh7th/cmp-path'
+			Plug 'quangnguyen30192/cmp-nvim-tags'
+			Plug 'quangnguyen30192/cmp-nvim-ultisnips'
+			" Plug 'uga-rosa/cmp-dictionary'
+			Plug 'hrsh7th/nvim-cmp'
+		else
+"			Plug 'Valloric/YouCompleteMe', {'do': './install.py --clang-completer --system-libclang'}
+			Plug 'Valloric/YouCompleteMe', {'do': './install.py --clangd-completer'}
+		endif
 		"""
 		" Plug 'kyazdani42/nvim-web-devicons'                                    " lua fork of vim-devicons
 		" Plug 'hoob3rt/lualine.nvim'
 		" Plug 'akinsho/bufferline.nvim'
+		Plug 'folke/which-key.nvim'
 	else
 	endif
 	""" checking empty($KDEHOME) here is a weird way to check if this config is used in personal/work environment

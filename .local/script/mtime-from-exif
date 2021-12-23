@@ -1,0 +1,173 @@
+#!/usr/bin/env perl
+
+use v5.34;
+use autodie;
+use utf8;
+use warnings;
+use warnings FATAL => qw(utf8);
+use experimental qw(declared_refs refaliasing signatures try);
+
+use Carp;
+use Encode qw(decode);
+use English qw(-no_match_vars);
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+use Pod::Usage;
+
+use Log::Any qw($log);
+use Log::Any::Adapter ('Stderr', log_level => 'info');
+use Path::Tiny;
+
+use Image::ExifTool;
+use Time::Moment;
+
+use YAML::XS ();
+
+our $VERSION = 1.00;
+
+my %options = (
+    'APPLY'         => 0,
+    'SKIP_ON_ERROR' => 0,
+    'VERBOSE'       => 0,
+);
+
+my @tm_parsers = (
+    sub ($str) {
+        return Time::Moment->from_string($str =~ s{:}{}xgr, 'lenient' => 1);
+    },
+    sub ($str) {
+        $str .= 'Z';
+        return Time::Moment->from_string($str =~ s{:}{}xgr, 'lenient' => 1);
+    },
+);
+
+sub main {
+    GetOptions(
+        'apply|a'    => \$options{'APPLY'},
+        'help|h'     => sub {pod2usage('-verbose' => 99, 'exitval' => 0)},
+        'skip|s'     => \$options{'SKIP_ON_ERROR'},
+        'verbose|v+' => \$options{'VERBOSE'},
+    ) or die "Unable to process command line options\n";
+
+    $log->{'adapter'}{'log_level'} += $options{'VERBOSE'};
+
+    foreach my $path (map {path($_)->absolute} @ARGV) {
+        $log->debugf('Processing: %s', $path);
+
+        try {
+            my $tm = detect_time($path);
+            change_file_mtime($path, $tm);
+        } catch ($e) {
+            my $message = $log->errorf('Unable to process: %s, %s', $path, $e);
+            die "$message\n" unless $options{'SKIP_ON_ERROR'};
+        };
+    }
+
+    return 0;
+}
+
+sub detect_time ($path) {
+    if (my $time_from_name = detect_from_name($path)) {
+        return $time_from_name;
+    }
+
+    my \@times = fetch_exif_times($path);
+
+    my $last_error;
+    foreach my $time_str (@times) {
+        $log->tracef('trying time: %s', $time_str);
+
+        foreach my $parser (@tm_parsers) {
+            try {
+                my $tm = $parser->($time_str);
+                $log->debugf('Detected "%s" from EXIF: %s', $tm, $time_str);
+                return $tm;
+            } catch ($e) {
+                $last_error = $e;
+            }
+        }
+    }
+
+    if (my $time_from_path = detect_from_path($path)) {
+        return $time_from_path;
+    }
+
+    croak 'Unable to detect EXIF creation time';
+}
+
+## no critic [RegularExpressions::ProhibitComplexRegexes]
+sub detect_from_name ($path) {
+    state $regex = qr{
+        \A
+            (?:[[:alnum:]]{3,4})
+            _ (?<date>[[:digit:]]{8})
+            _ (?<time>[[:digit:]]{6})
+            .+
+        \z
+    }x;
+
+    my $result;
+
+    my $filename = $path->basename;
+    if ($filename =~ $regex) {
+        my $tm = $tm_parsers[0]->($LAST_PAREN_MATCH{'date'} . 'T' . $LAST_PAREN_MATCH{'time'} . 'Z');
+        $log->debugf('Detected "%s" from path: %s', $tm, $filename);
+        return $tm;
+    }
+
+    return $result;
+}
+
+sub detect_from_path ($path) {
+    state $regex = qr{
+        \A
+            (?<date>[[:digit:]]{4})
+        \z
+    }x;
+
+    my $result;
+
+    my $path_part = $path->parent->basename;
+    if ($path_part =~ $regex) {
+        my $tm = $tm_parsers[0]->($LAST_PAREN_MATCH{'date'} . '-01-01T00:00:00Z');
+        $log->debugf('Detected "%s" from path: %s', $tm, $path_part);
+        return $tm;
+    }
+
+    return $result;
+}
+
+sub fetch_exif_times ($path) {
+    state @keys = (qw(
+            GPSDateTime
+            DateTimeOriginal
+            CreateDate
+            SubSecCreateDate
+            SubSecDateTimeOriginal
+            SubSecModifyDate
+            ModifyDate
+            GPSDateStamp
+        ),
+    );
+
+    my $exif_tool = Image::ExifTool->new;
+    $exif_tool->Options(Unknown => 1);
+    my \%info = $exif_tool->ImageInfo($path, @keys);
+    $log->tracef(Encode::decode('UTF-8', YAML::XS::Dump(\%info)));
+
+    my @result = grep defined, @info{@keys};
+    return \@result;
+}
+
+sub change_file_mtime ($file, $tm) {
+    if ($options{'APPLY'}) {
+        utime $tm->epoch, $tm->epoch, $file
+            or $log->error('Unable to set file time');
+        $log->debugf('Applied "%s" to: %s', $tm, $file);
+    }
+
+    return;
+}
+
+exit main();
+
+__END__

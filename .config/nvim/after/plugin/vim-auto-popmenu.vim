@@ -1,5 +1,4 @@
-if plugin#is_loaded('YouCompleteMe') | finish | endif
-" if exists('g:loaded_completion') | finish | endif
+if exists('g:loaded_completion') || plugin#is_loaded('YouCompleteMe') | finish | endif
 
 " vim: set noet fenc=utf-8 ff=unix sts=4 sw=4 ts=4 :
 " based on: https://github.com/skywind3000/vim-auto-popmenu.git

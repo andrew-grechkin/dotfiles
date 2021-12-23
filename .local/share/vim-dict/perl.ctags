@@ -54,7 +54,6 @@ $SYSTEM_FD_MAX	/	language:perl
 $UID	/	language:perl
 $WARNING	/	language:perl
 $^CHILD_ERROR_NATIVE	/	language:perl
-$^CHILD_ERROR_NATIVE	/	language:perl
 $^ENCODING	/	language:perl
 $^GLOBAL_PHASE	/	language:perl
 $^LAST_FH	/	language:perl
@@ -79,7 +78,6 @@ $^WIN32_SLOPPY_STAT	/	language:perl
 %OS_ERROR	/	language:perl
 %OVERLOAD	/	language:perl
 %SIG	/	language:perl
-*ARGV	/	language:perl
 @ARG	/	language:perl
 @ARGV	/	language:perl
 @EXPORT	/	language:perl
@@ -263,12 +261,12 @@ TIEHASH	/	language:perl
 TIESCALAR	/	language:perl
 Term	/	language:perl
 Test	/	language:perl
-Test	/	language:perl
 Test2	/	language:perl
 Test::Mojo	/	language:perl
 Text	/	language:perl
 Thread	/	language:perl
 Time	/	language:perl
+TO_JSON	/	language:perl
 UNITCHECK	/	language:perl
 UNIVERSAL	/	language:perl
 UNREAD	/	language:perl
@@ -286,15 +284,12 @@ __FILE__	/	language:perl
 __LINE__	/	language:perl
 __PACKAGE__	/	language:perl
 __SUB__	/	language:perl
-_push_tags	/	language:perl
-_rebuild_cache	/	language:perl
 accept	/	language:perl
 alarm	/	language:perl
 as_heavy	/	language:perl
 atan2	/	language:perl
 autodie	/	language:perl
 autouse	/	language:perl
-base	/	language:perl
 bigint	/	language:perl
 bignum	/	language:perl
 bigrat	/	language:perl
@@ -385,7 +380,6 @@ getservent	/	language:perl
 getsockname	/	language:perl
 getsockopt	/	language:perl
 given	/	language:perl
-given	/	language:perl
 glob	/	language:perl
 gmtime	/	language:perl
 goto	/	language:perl
@@ -412,7 +406,6 @@ local	/	language:perl
 locale	/	language:perl
 localtime	/	language:perl
 lock	/	language:perl
-lock	/	language:perl
 lstat	/	language:perl
 meta_notation	/	language:perl
 mkdir	/	language:perl
@@ -422,9 +415,7 @@ msgrcv	/	language:perl
 msgsnd	/	language:perl
 next	/	language:perl
 open	/	language:perl
-open	/	language:perl
 opendir	/	language:perl
-overload	/	language:perl
 overload	/	language:perl
 overloading	/	language:perl
 pack	/	language:perl
@@ -482,7 +473,6 @@ sleep	/	language:perl
 socket	/	language:perl
 socketpair	/	language:perl
 sort	/	language:perl
-sort	/	language:perl
 splice	/	language:perl
 split	/	language:perl
 sprintf	/	language:perl
@@ -529,7 +519,6 @@ waitpid	/	language:perl
 wantarray	/	language:perl
 warn	/	language:perl
 warnings	/	language:perl
-when	/	language:perl
 when	/	language:perl
 while	/	language:perl
 write	/	language:perl

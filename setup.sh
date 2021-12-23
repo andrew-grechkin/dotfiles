@@ -22,6 +22,7 @@ ln -sf "$WORKDIR/.config/picom.conf"                                   ~/.config
 ln -sf "$WORKDIR/.config/fontconfig/conf.d"                            ~/.config/fontconfig/
 ln -sf "$WORKDIR/.config/git"                                          ~/.config/
 ln -sf "$WORKDIR/.config/i3"                                           ~/.config/
+ln -sf "$WORKDIR/.config/luaformatter"                                 ~/.config/
 ln -sf "$WORKDIR/.config/mpv"                                          ~/.config/
 ln -sf "$WORKDIR/.config/mutt"                                         ~/.config/
 ln -sf "$WORKDIR/.config/nvim"                                         ~/.config/

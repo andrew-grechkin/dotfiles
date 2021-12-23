@@ -15,12 +15,13 @@ if plugin#is_loaded('ale')
 	let g:ale_echo_msg_format = '(%linter%) %code: %%s'
 	let g:ale_fix_on_save        = 1                                           " fix files when you save them
 	let g:ale_fix_on_save_ignore = {
-	\   'fb2':        ['xmllint'],
 	\   'cpp':        ['clang-format'],
 	\   'css':        ['prettier'],
+	\   'fb2':        ['xmllint'],
 	\   'html':       ['prettier', 'eslint'],
 	\   'javascript': ['eslint'],
 	\   'json':       ['fixjson', 'jq'],
+	\   'lua':        ['lua-format'],
 	\   'perl':       ['perltidy'],
 	\   'typescript': ['prettier', 'deno', 'tslint', 'xo'],
 	\   'vue':        ['prettier', 'eslint'],
@@ -29,12 +30,13 @@ if plugin#is_loaded('ale')
 	\}
 	let g:ale_fixers = {
 	\   '*':          [                             'remove_trailing_lines', 'trim_whitespace'],
-	\   'fb2':        ['xmllint',                   'remove_trailing_lines', 'trim_whitespace'],
 	\   'cpp':        ['clang-format',              'remove_trailing_lines', 'trim_whitespace'],
 	\   'css':        ['prettier',                  'remove_trailing_lines', 'trim_whitespace'],
+	\   'fb2':        ['xmllint',                   'remove_trailing_lines', 'trim_whitespace'],
 	\   'html':       ['prettier', 'eslint',        'remove_trailing_lines', 'trim_whitespace'],
 	\   'javascript': ['eslint',                    'remove_trailing_lines', 'trim_whitespace'],
 	\   'json':       ['fixjson', 'jq',             'remove_trailing_lines', 'trim_whitespace'],
+	\   'lua':        ['lua-format',                'remove_trailing_lines', 'trim_whitespace'],
 	\   'perl':       ['perltidy',                  'remove_trailing_lines', 'trim_whitespace'],
 	\   'python':     [
 	\		'add_blank_lines_for_python_control_statements',
