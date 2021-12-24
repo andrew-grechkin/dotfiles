@@ -1,19 +1,7 @@
-local function lsp_highlight_document(client)
-    -- Set autocommands conditional on server_capabilities
-    if client.resolved_capabilities.document_highlight then
-        vim.api.nvim_exec([[
-      augroup lsp_document_highlight
-        autocmd! * <buffer>
-        autocmd CursorHold <buffer> lua vim.lsp.buf.document_highlight()
-        autocmd CursorMoved <buffer> lua vim.lsp.buf.clear_references()
-      augroup END
-    ]], false)
-    end
-end
-
-local function lsp_keymaps(bufnr)
+local function export_buffer_keymaps(bufnr)
     local opts = {noremap = true, silent = true}
     local map = vim.api.nvim_buf_set_keymap
+
     map(bufnr, 'n', '<C-h>', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
     map(bufnr, 'n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
     -- map(bufnr, 'n', '<leader>q', '<cmd>lua vim.diagnostic.setloclist()<CR>', opts)
@@ -52,29 +40,28 @@ M.setup = function()
     end
 
     local config = {
-        virtual_text = true,
-        signs = {active = signs},
-        update_in_insert = true,
-        underline = true,
-        severity_sort = true,
         float = {
             focusable = false,
-            style = 'minimal',
-            source = 'always',
             header = '',
             prefix = '',
+            source = 'always',
+            style = 'minimal',
         },
+        severity_sort = true,
+        signs = {active = signs},
+        underline = true,
+        update_in_insert = true,
+        virtual_text = true,
     }
 
     vim.diagnostic.config(config)
 end
 
 M.on_attach = function(client, bufnr)
-    if client.name == 'tsserver' then
-        client.resolved_capabilities.document_formatting = false
-    end
-    lsp_keymaps(bufnr)
-    lsp_highlight_document(client)
+    -- if client.name == 'tsserver' then
+    --     client.resolved_capabilities.document_formatting = false
+    -- end
+    export_buffer_keymaps(bufnr)
 end
 
 return M

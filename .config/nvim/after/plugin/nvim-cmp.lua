@@ -1,22 +1,10 @@
 -- url: https://github.com/hrsh7th/nvim-cmp
+
 local status, cmp = pcall(require, 'cmp')
 if (not status) then return end
 
 vim.api.nvim_set_var('loaded_completion', true)
 
--- local snip_status_ok, luasnip = pcall(require, "luasnip")
--- if not snip_status_ok then
---   return
--- end
-
--- require("luasnip/loaders/from_vscode").lazy_load()
-
-local check_backspace = function()
-    local col = vim.fn.col '.' - 1
-    return col == 0 or vim.fn.getline('.'):sub(col, col):match '%s'
-end
-
--- find more here: https://www.nerdfonts.com/cheat-sheet
 local kind_icons = {
     Class = '',
     Color = '',
@@ -92,6 +80,7 @@ cmp.setup {
                 dictionary = '[dict]',
                 luasnip = '[snip]',
                 nvim_lua = '[nvim]',
+                nvim_lsp = '[lsp]',
                 path = '[path]',
                 spell = '[spel]',
                 tags = '[tags]',
@@ -102,8 +91,8 @@ cmp.setup {
     },
     sources = {
         {name = 'ultisnips'}, {name = 'dictionary', keyword_length = 2},
-        {name = 'nvim_lua'}, {name = 'tags'}, {name = 'buffer'},
-        {name = 'spell'}, {name = 'path'},
+        {name = 'nvim_lsp'}, {name = 'nvim_lua'}, {name = 'tags'},
+        {name = 'buffer'}, {name = 'spell'}, {name = 'path'},
     },
     confirm_opts = {behavior = cmp.ConfirmBehavior.Replace, select = false},
     documentation = {border = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}},
