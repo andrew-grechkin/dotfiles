@@ -36,6 +36,9 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'majutsushi/tagbar'
 "		Plug 'masukomi/vim-markdown-folding'
 		Plug 'mhinz/vim-signify'                                               " Git status/modifications of the file
+		""" snippets
+		Plug 'SirVer/ultisnips'
+		Plug 'andrew-grechkin/vim-snippets'
 	endif
 	if has('nvim-0.5')                                                         " Neovim only
 "		Plug 'dyng/ctrlsf.vim', {'on': ['CtrlSF','<Plug>CtrlSFPrompt','<Plug>CtrlSFCwordPath','<Plug>CtrlSFVwordExec']} " Global search and replace
@@ -44,20 +47,19 @@ call plug#begin('~/.cache/vim/plugged')
 		""" coloring
 		Plug 'RRethy/vim-hexokinase', {'do': 'make hexokinase'}
 		""" LSP
-		" Plug 'neovim/nvim-lspconfig'                                           " ~/.config/nvim/after/plugin/nvim-lspconfig.lua
+		Plug 'neovim/nvim-lspconfig'                                           " ~/.config/nvim/after/plugin/nvim-lspconfig.lua
+		Plug 'williamboman/nvim-lsp-installer'
 		" Plug 'glepnir/lspsaga.nvim'                                            " ~/.config/nvim/after/plugin/nvim-lspsaga.vim
 		" Plug 'nvim-treesitter/nvim-treesitter', { 'do': ':TSUpdate' }
 		""" UI
 		" Plug folke/lsp-colors.nvim'
-		""" snippets
-		Plug 'SirVer/ultisnips'
-		Plug 'andrew-grechkin/vim-snippets'
 		""" completion
 		if 1
 			let g:loaded_completion = 1
 			Plug 'f3fora/cmp-spell'
 			Plug 'hrsh7th/cmp-buffer'
 			Plug 'hrsh7th/cmp-cmdline'
+			Plug 'hrsh7th/cmp-nvim-lua'
 			Plug 'hrsh7th/cmp-path'
 			Plug 'quangnguyen30192/cmp-nvim-tags'
 			Plug 'quangnguyen30192/cmp-nvim-ultisnips'
@@ -72,7 +74,6 @@ call plug#begin('~/.cache/vim/plugged')
 		" Plug 'hoob3rt/lualine.nvim'
 		" Plug 'akinsho/bufferline.nvim'
 		Plug 'folke/which-key.nvim'
-	else
 	endif
 	""" checking empty($KDEHOME) here is a weird way to check if this config is used in personal/work environment
 	""" KDEHOME is always defined on personal machines. I need to do something smarter in future

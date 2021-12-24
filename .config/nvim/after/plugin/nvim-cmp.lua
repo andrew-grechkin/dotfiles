@@ -18,9 +18,9 @@ end
 
 -- find more here: https://www.nerdfonts.com/cheat-sheet
 local kind_icons = {
-    Class = '',
+    Class = '',
     Color = '',
-    Constant = '',
+    Constant = '',
     Constructor = '',
     Enum = '',
     EnumMember = '',
@@ -29,10 +29,10 @@ local kind_icons = {
     File = '',
     Folder = '',
     Function = '',
-    Interface = '',
+    Interface = 'ﰮ',
     Keyword = '',
     Method = 'm',
-    Module = '',
+    Module = '',
     Operator = '',
     Property = '',
     Reference = '',
@@ -40,7 +40,7 @@ local kind_icons = {
     Struct = '',
     Text = '',
     TypeParameter = '',
-    Unit = '',
+    Unit = '',
     Value = '',
     Variable = '',
 }
@@ -86,16 +86,15 @@ cmp.setup {
     formatting = {
         fields = {'kind', 'abbr', 'menu'},
         format = function(entry, vim_item)
-            -- Kind icons
             vim_item.kind = string.format('%s', kind_icons[vim_item.kind])
-            -- vim_item.kind = string.format('%s %s', kind_icons[vim_item.kind], vim_item.kind) -- This concatonates the icons with the name of the item kind
             vim_item.menu = ({
                 buffer = '[buff]',
                 dictionary = '[dict]',
-                tags = '[tags]',
                 luasnip = '[snip]',
+                nvim_lua = '[nvim]',
                 path = '[path]',
                 spell = '[spel]',
+                tags = '[tags]',
                 ultisnips = '[snip]',
             })[entry.source.name]
             return vim_item
@@ -103,10 +102,10 @@ cmp.setup {
     },
     sources = {
         {name = 'ultisnips'}, {name = 'dictionary', keyword_length = 2},
-        {name = 'tags'}, {name = 'buffer'}, {name = 'spell'}, {name = 'path'},
+        {name = 'nvim_lua'}, {name = 'tags'}, {name = 'buffer'},
+        {name = 'spell'}, {name = 'path'},
     },
     confirm_opts = {behavior = cmp.ConfirmBehavior.Replace, select = false},
-    -- documentation = {border = {'╭', '─', '╮', '│', '╯', '─', '╰', '│'}},
     documentation = {border = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}},
     experimental = {ghost_text = true, native_menu = false},
 }
