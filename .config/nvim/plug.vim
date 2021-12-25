@@ -31,7 +31,7 @@ call plug#begin('~/.cache/vim/plugged')
 	if has('nvim') || v:version >= 800                                         " These plugins demand modern vim or neovim
 		Plug 'dense-analysis/ale'                                              " Async syntax checker
 "		Plug 'easymotion/vim-easymotion'                                       " Better move commands
-		Plug 'junegunn/vim-peekaboo'                                           " Preview registers
+		" Plug 'junegunn/vim-peekaboo'                                           " Preview registers
 		Plug 'lambdalisue/suda.vim'                                            " run sudo from vim
 		Plug 'majutsushi/tagbar'
 "		Plug 'masukomi/vim-markdown-folding'
@@ -41,9 +41,11 @@ call plug#begin('~/.cache/vim/plugged')
 		Plug 'andrew-grechkin/vim-snippets'
 	endif
 	if has('nvim-0.5')                                                         " Neovim only
+		Plug 'nvim-lua/plenary.nvim'
 "		Plug 'dyng/ctrlsf.vim', {'on': ['CtrlSF','<Plug>CtrlSFPrompt','<Plug>CtrlSFCwordPath','<Plug>CtrlSFVwordExec']} " Global search and replace
 "		Plug 'simnalamburt/vim-mundo', {'on': 'MundoToggle'}                   " Visualize the undo tree
 "		Plug 'fatih/vim-go', {'for': 'go'}
+		Plug 'nvim-telescope/telescope.nvim'
 		""" coloring
 		Plug 'RRethy/vim-hexokinase', {'do': 'make hexokinase'}
 		""" LSP
