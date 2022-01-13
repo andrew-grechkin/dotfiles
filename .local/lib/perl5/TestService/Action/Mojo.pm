@@ -38,8 +38,11 @@ sub fetch_data ($self, $tests) {
 sub make_request ($self, $options) {
     my $url    = $self->make_url($options);
     my $verb   = lc ($options->{'verb'} // 'get');
+    my $body   = $options->{'body'};
     my $method = UA()->can($verb =~ m/_p\z/ ? $verb : $verb . '_p')
         or croak $self->log->fatalf('invalid verb: %s', $verb);
+
+    my %body = $options->{'body'} ? (json => $options->{'body'}) : ();
 
     return $method->(
         UA(),
@@ -47,6 +50,7 @@ sub make_request ($self, $options) {
             %{$options->{'headers'} // {}},
             Accept => 'application/json',
         },
+        %body,
     );
 }
 

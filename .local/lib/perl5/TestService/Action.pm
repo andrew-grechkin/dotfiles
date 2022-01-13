@@ -75,7 +75,7 @@ sub get_encoder ($hint) {
 }
 
 sub get_writer ($path) {
-    return sub ($bytes) {return Mojo::File->new($path)->spurt($bytes)}
+    return sub ($bytes) {my $p = Mojo::File->new($path); $p->dirname->make_path; return $p->spurt($bytes)}
         if $path;
     return sub ($text) {say $text if $text};
 }

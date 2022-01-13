@@ -1,7 +1,7 @@
 return {
     settings = {
         Lua = {
-            diagnostics = {globals = {'vim'}},
+            diagnostics = {globals = {'vim', 'mp'}},
             workspace = {
                 library = {
                     [vim.fn.expand('$VIMRUNTIME/lua')] = true,

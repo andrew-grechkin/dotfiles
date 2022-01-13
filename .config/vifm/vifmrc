@@ -393,6 +393,18 @@ filetype *.base64
 	\ {Decode}
 	\ base64 --decode %c > %c:r &,
 
+filetype *.txt
+	\ {Recode from cp866}
+	\ text-recode cp866 %f,
+
+filetype *.txt
+	\ {Recode from cp1251}
+	\ text-recode cp1251 %f,
+
+filetype *.txt
+	\ {Recode from koi8}
+	\ text-recode koi8 %f,
+
 " Qt projects
 filextype *.pro
 	\ qtcreator %f &,

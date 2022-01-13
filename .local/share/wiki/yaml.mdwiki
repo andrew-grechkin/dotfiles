@@ -1,0 +1,147 @@
+## Links
+
+- [Source](https://github.com/lwindolf/lzone-cheat-sheets/blob/master/cheat-sheet/Languages/YAML.md)
+
+- [YAML 1.2 Spec](http://www.yaml.org/spec/1.2/spec.html)
+- [Online YAML Linter (Ruby)](http://www.yamllint.com/)
+- [Online YAML Parser (Python)](http://yaml-online-parser.appspot.com/)
+- [kwalify - YAML schema validator (Ruby)](http://www.kuwata-lab.com/kwalify/)
+
+## Syntax examples
+
+### Scalars
+
+    type-integer: 1
+    type-float: 1.234
+    type-string1: abc
+    type-string2: 'abc'
+    type-string3: "abc"
+    type-bool: false
+    type-date: 2015-04-05
+    undef1: ~
+    undef2: null
+
+Enforcing strings
+
+    b: !str 2015-04-05
+
+### Sequences
+
+#### Simple sequence
+
+    array:
+      - 132
+      - 2.434
+      - 'abc'
+
+#### Sequence of sequences
+
+    my_list_of_lists:
+      - [1, 2, 3]
+      - [4, 5, 6]
+
+### Hashes
+
+Nested hash
+
+    my_hash:
+      subkey:
+        subsubkey1: 5
+        subsubkey2: 6
+      another:
+        somethingelse: 'Important!'
+
+Hash with JSON syntax (mixing is possible)
+
+    my_hash: {nr1: 5, nr2: 6}
+
+### HereDoc (multiline strings)
+
+_Block notation_: Newlines become spaces
+
+    content:
+      Arbitrary free text
+      over multiple lines stopping only
+      after the indentation changes...
+
+_Literal style_: Newlines are preserved
+
+    content: |
+      Arbitrary free text
+      over "multiple lines" stopping
+      after indentation changes...
+
+_+ indicator_: Keep extra newlines after the block
+
+    content: |+
+      Arbitrary free text with newlines after
+
+
+_- indicator_: remove extra newlines after block
+
+    content: |-
+       Arbitrary free text without newlines after it
+
+_folded style_: folded newlines are preserved
+
+     content: >
+       Arbitrary free text
+       over "multiple lines" stopping
+       after indentation changes...
+
+Note that YAML heredocs are the way to escape special characters:
+
+
+     code:
+        url: "https://example.com"        # sub key "url" with value 'https://...'
+
+     code: |-                             # versus key "code" having value 'url: "https://..."'
+        url: "https://example.com"
+
+There is a good online previewer for the different heredoc modes: https://yaml-multiline.info/
+
+### Multiple Documents
+
+     ---
+     content: doc1
+     ---
+     content: doc2
+
+### Content References (Aliases)
+
+     ---
+     values:
+       - &ref Something to reuse
+       - *ref      # Literal "Something to reuse" is inserted here!
+
+### Merging Keys
+
+Imagine some default properties for a hash like these
+
+     default_settings:
+       install:
+         dir: /usr/local
+         owner: root
+       config:
+         enabled: false
+
+Use them in another hash using "<<: *reference"
+
+     # Derive settings for 'my_app' from default and change install::owner
+     # and add further setting "group: my_group"
+
+     my_app_settings:
+       <<: *default_settings
+       install:
+         owner: my_user
+         group: my_group
+
+
+### Complex Mapping
+
+     ---
+     ? - key
+     :
+       - value
+
+Note: key and value can be multiple, complex structures that you could not realize with the hash syntax!

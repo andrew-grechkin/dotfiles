@@ -117,6 +117,8 @@ sub gather_files() {
     foreach my $folder (@ARGV) {
         path($folder)->visit(
             sub ($path, @) {
+                $path !~ m/\@eaDir/
+                    or return;
 
                 $path->is_file && !-l $path
                     or return;
