@@ -72,6 +72,8 @@ color-severity-low     = bold cyan
 [-NamingConventions::ProhibitAmbiguousNames]
 # forbid = abstract bases close contract last left no record right second set
 
+[-ErrorHandling::RequireCarping]
+
 [-ValuesAndExpressions::ProhibitVersionStrings]
 
 # => disabled 2 -------------------------------------------------------------------------------------------------- {{{1
@@ -369,9 +371,6 @@ max_nests = 4
 
 [Moose::ProhibitDESTROYMethod]
 equivalent_modules = Moo Moo::Role
-
-[ErrorHandling::RequireCarping]
-allow_in_main_unless_in_subroutine = 1
 
 [InputOutput::ProhibitBacktickOperators]
 only_in_void_context = 1

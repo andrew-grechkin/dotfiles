@@ -19,39 +19,41 @@ use constant { ## no tidy
 sub fetch_data ($self, $tests) {
     my \@tests = $tests;
 
-    $self->log->debugf('fetching data in parallel: %d', scalar @tests);
+    $self->log->tracef('fetching data in parallel: %d', scalar @tests);
 
     my @promises = map {$self->make_request($_)} @tests;
 
-    my $results;
+    my ($results, $error);
     Mojo::Promise->all(@promises)->then(
         sub (@txs) {
-            $self->log->tracef("tx [%s %s] '%s'", $_->[0]->res->code, $_->[0]->res->message, $_->[0]->req->url)
-                foreach @txs;
-            $results = [map {decode_tx($_->[0])} @txs];
+            $results = [map {$self->decode_tx($_->[0])} @txs];
         },
-    )->wait;
+    )->catch(sub ($err) {
+        chomp $err;
+        $error = $err;
+    })->wait;
 
+    die $error if $error;
     return $results;
 }
 
 sub make_request ($self, $options) {
     my $url    = $self->make_url($options);
-    my $verb   = lc ($options->{'verb'} // 'get');
+    my $verb   = lc($options->{'method'} // $options->{'verb'} // 'get');
     my $body   = $options->{'body'};
     my $method = UA()->can($verb =~ m/_p\z/ ? $verb : $verb . '_p')
         or croak $self->log->fatalf('invalid verb: %s', $verb);
 
+    my %headers = ( ## no tidy
+        Accept => 'application/json',
+        %{$options->{'headers'} // {}},
+    );
     my %body = $options->{'body'} ? (json => $options->{'body'}) : ();
 
-    return $method->(
-        UA(),
-        $url => { ## no tidy
-            %{$options->{'headers'} // {}},
-            Accept => 'application/json',
-        },
-        %body,
-    );
+    $self->log->tracef('rq: %s', $url);
+    return $method->(UA(), $url => \%headers, %body)->catch(sub ($err) {
+        die "$err: $url\n";
+    });
 }
 
 sub make_url ($self, $options) {
@@ -65,10 +67,11 @@ sub make_url ($self, $options) {
     $url->query($options->{'query'})           if $options->{'query'};
     $url->fragment($options->{'fragment'})     if $options->{'fragment'};
 
-    return $url;
+    return $url->to_abs;
 }
 
-sub decode_tx ($tx) {
+sub decode_tx ($self, $tx) {
+    $self->log->debugf("tx [%s %s]: '%s'", $tx->res->code, $tx->res->message, $tx->req->url);
     my $res  = $tx->result;
     my $data = $res->json // {};
 

@@ -13,7 +13,7 @@ use Getopt::Long qw(:config auto_version bundling no_ignore_case);
 
 use Log::Any qw($log);
 use Log::Any::Adapter ('Stderr', log_level => 'notice');
-
+use Mojo::IOLoop;
 use YAML::XS ();
 
 use Data::Printer;
@@ -71,8 +71,8 @@ sub main() {
                     or croak sprintf "Invalid test config, no type: %s\n", np %full_config;
 
                 $tests_by_type{$type}{'plugin'} //= _load_plugin($type);
-                push ($tests_by_type{$type}{'names'}->@*, join ('-', $key, $section_name, $specification_name));
-                push ($tests_by_type{$type}{'tests'}->@*, \%full_config);
+                push($tests_by_type{$type}{'names'}->@*, join('-', $key, $section_name, $specification_name));
+                push($tests_by_type{$type}{'tests'}->@*, \%full_config);
             }
         }
 
@@ -89,7 +89,7 @@ sub _load_plugin ($type) {
     my $package = "TestService::Action::$type";
 
     eval "require $package" ## no critic [BuiltinFunctions::ProhibitStringyEval]
-        or croak "Unable to load package: $package";
+        or croak "Unable to load package: $package $@";
 
     return $package->can('new')->($package);
 }
