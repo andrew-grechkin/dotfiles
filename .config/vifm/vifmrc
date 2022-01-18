@@ -245,7 +245,7 @@ filetype *.wav
 filetype *.wav
 	\ {Encode to mp3}
 	\ lame -b 128 -m j -h -V 1 -B 256 -F %c %c:r.mp3,
-filetype *.ape,*.flac,*.og[agx],*.wav,*.wv
+filetype *.aac,*.ape,*.flac,*.m4a,*.og[agx],*.wav,*.wv
 	\ {Transcode to MP3}
 	\ for F in %f; do ffmpeg -i "$F" "${F%%.*}".mp3; done
 filetype *.ape,*.og[agx],*.wav,*.wv

@@ -1,10 +1,5 @@
 # vim: filetype=sh foldmethod=marker
 
-function tmux() {
-	PATH=${PATH}:/opt/usr/bin
-	command tmux -f "$XDG_CONFIG_HOME/tmux/config" "$@"
-}
-
 # => proxy related ----------------------------------------------------------------------------------------------- {{{1
 
 function disable-proxy() {

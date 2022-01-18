@@ -5,6 +5,10 @@ scriptencoding=utf-8
 let mapleader = "\<Space>"                                                     " Map leader key
 "silent! nnoremap ,,                    rё
 
+" save register on paste over text
+" vnoremap <silent> p p:let @+=@0<CR>:let @"=@0<CR>
+" xnoremap p "_dP
+
 " Easy insertion of a trailing ; or , from insert mode
 		imap     ;;                    <Esc>A;<Esc>
 

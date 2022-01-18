@@ -23,7 +23,7 @@ super + s
 super + f
 	$HOME/.local/script/rofi-cheatsheet
 super + t
-	alacritty -e tmux -f "$XDG_CONFIG_HOME/tmux/config"
+	alacritty -e tmux
 super + u
 	alacritty --class 'Alacritty,floating' -e "$HOME/.local/script/fzf-select" unicode
 super + w
