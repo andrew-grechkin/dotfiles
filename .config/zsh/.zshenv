@@ -43,8 +43,7 @@ export ZDOTDIR=$XDG_CONFIG_HOME/zsh
 
 # => hide all ZSH configuration related environment variables ---------------------------------------------------- {{{1
 
-typeset -Hg ADOTDIR HISTORY_BASE HYPHEN_INSENSITIVE REPORTTIME ZSH_CACHE_DIR ZSH_COMPDUMP
-ADOTDIR=$XDG_CACHE_HOME/antigen
+typeset -Hg HISTORY_BASE HYPHEN_INSENSITIVE REPORTTIME ZSH_CACHE_DIR ZSH_COMPDUMP
 HISTORY_BASE=$XDG_CACHE_HOME/per-directory-history
 HYPHEN_INSENSITIVE=1
 REPORTTIME=10

@@ -25,32 +25,21 @@ typeset -U PATH path
 
 export PATH
 
-# => Install antigen --------------------------------------------------------------------------------------------- {{{1
+# => load library and plugins ------------------------------------------------------------------------------------ {{{1
 
-function install-antigen() {
-	source       "$ZDOTDIR/antigen.zsh"
-	antigen init "$ZDOTDIR/antigenrc.zsh"
-}
+# https://zsh.sourceforge.io/Doc/Release/Completion-System.html#Completion-System
+# https://thevaluable.dev/zsh-completion-guide-examples/
+fpath=("$ZDOTDIR/completion" "${fpath[@]}")
 
-if [[ ! -d "$ADOTDIR" ]]; then
-	echo -n 'Proceed with installing antigen and plugins (y/n/p)? '
-	read choice
-	case "$choice" in
-		y|Y )
-			umask 022
-			install-antigen
-			;;
-		p|P )
-			enable-proxy
-			umask 022
-			install-antigen
-			;;
-		* )
-			;;
-	esac
-else
-	install-antigen
-fi
+files=()
+files+=("$ZDOTDIR/lib"/*.zsh)
+files+=("$ZDOTDIR/lib"/**/*.plugin.zsh)
+files+=("$ZDOTDIR/lib"/**/*.theme.zsh)
+files+=("$ZDOTDIR/3rdparty"/**/*.plugin.zsh)
+
+for FILE in "${files[@]}"; do
+	builtin source "$FILE"
+done
 
 # => PATH prepare (head) ----------------------------------------------------------------------------------------- {{{1
 
