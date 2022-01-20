@@ -7,5 +7,5 @@ set -Eeo pipefail
 
 ### check vpn connected
 {
-	ip route | grep -E 'default\svia\s10' || ip route | grep -E '10\.0\.0\.0.*vpn'
+	ip route | grep -E 'default\sdev\stun' || ip route | grep -E '10\.[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+\s+dev\s+tun'
 } &> /dev/null
