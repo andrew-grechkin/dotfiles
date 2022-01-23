@@ -501,7 +501,7 @@ filetype *.encfs
 
 filetype main.yaml
 	\ {Execute ansible role}
-	\ bash -c "cd ~/git/private/ansible-arch; ANSIBLE_FORCE_COLOR=True ansible-role %d:h -i ~/git/private/ansible-arch/roles/private/hosts --hosts localhost -K | less -r",
+	\ ansible-role localhost %d:h -K --ask-vault-pass | less -r,
 
 filetype *.svct
 	\ {Execute service-test}

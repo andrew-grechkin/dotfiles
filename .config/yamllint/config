@@ -1,18 +1,23 @@
 ---
+extends: default
 yaml-files:
   - '*.yaml'
   - '*.yml'
-  - '.yamllint'
-
+  - .yamllint
 rules:
-  braces: enable
+  braces:
+    forbid: false
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+    min-spaces-inside-empty: -1
+    max-spaces-inside-empty: 0
   brackets: enable
   colons: enable
   commas: enable
   comments:
     level: warning
   # comments-indentation:
-    # level: warning
+  #   level: warning
   document-end: disable
   document-start:
     level: warning

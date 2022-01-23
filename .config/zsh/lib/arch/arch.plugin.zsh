@@ -22,14 +22,14 @@ function arch-mirrors-update() {
 
 function arch-upgrade() {
 	pushd ~/git/private/ansible-arch &>/dev/null
-	ansible-playbook playbooks/upgrade.yaml -i hosts -l arch -K
-#	ansible-playbook playbooks/upgrade.yaml --connection=local -i localhost, -K
+	ansible-playbook playbooks/upgrade.yaml --connection=local -i localhost, -K
+	# ansible-playbook playbooks/upgrade.yaml -i hosts -l arch -K
 	popd &>/dev/null
 }
 
 function arch-upgrade-all() {
 	pushd ~/git/private/ansible-arch &>/dev/null
-	ansible-playbook playbooks/upgrade.yaml -i roles/private/hosts -K
+	ansible-playbook playbooks/upgrade.yaml -i hosts.yaml -K --ask-vault-pass
 	popd &>/dev/null
 }
 
