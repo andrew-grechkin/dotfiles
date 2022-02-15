@@ -2,10 +2,10 @@
 
 use v5.34;
 use autodie;
-use open IO => ':raw';
+use open 'IO' => ':raw';
 use utf8;
 use warnings;
-use warnings FATAL => qw(utf8);
+use warnings 'FATAL' => qw(utf8);
 use experimental qw(signatures try);
 
 use JSON::PP ();
@@ -33,14 +33,17 @@ sub main() {
     return 0;
 }
 
+my $json = JSON::PP->new->utf8(1);
+
 sub _convert (@data) {
     my $result;
 
-    my $json = JSON::PP->new->utf8(1);
     foreach my $doc (@data) {
         local $YAML::XS::Boolean = 'JSON::PP'; ## no critic [Variables::ProhibitPackageVars]
         try {
-            $result .= YAML::XS::Dump($json->decode($doc));
+            my $section = $json->decode($doc);
+            _unjson_keys($section);
+            $result .= YAML::XS::Dump($section);
         } catch ($json_error) {
             try {
                 my @sections = YAML::XS::Load($doc);
@@ -53,6 +56,25 @@ sub _convert (@data) {
     }
 
     return $result;
+}
+
+sub _unjson_keys($data) {
+    if (ref $data eq 'ARRAY') {
+        for (my $i = 0; $i < scalar $data->@*; ++$i) {
+            $data->[$i] = _unjson_keys($data->[$i]);
+        }
+    } elsif (ref $data eq 'HASH') {
+        foreach my $key (keys $data->%*) {
+            $data->{$key} = _unjson_keys($data->{$key});
+        }
+    } else {
+        try {
+            $data = $json->decode($data);
+        } catch ($e) {
+            # no-op
+        };
+    }
+    return $data;
 }
 
 exit main();
