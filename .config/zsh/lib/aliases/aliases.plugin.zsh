@@ -81,7 +81,7 @@ fi
 
 # => mail -------------------------------------------------------------------------------------------------------- {{{1
 
-alias mbsync='mbsync -c ~/.config/isync/mbsyncrc andrew-grechkin'
+alias mbsync='mbsync -c ~/.config/isync/mbsyncrc andrew-grechkin julia-grechkina'
 
 # => misc -------------------------------------------------------------------------------------------------------- {{{1
 

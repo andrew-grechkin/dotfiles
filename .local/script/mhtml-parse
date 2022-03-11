@@ -171,7 +171,7 @@ sub _process_html_parts ($meta_ref, $dir) {
         foreach my $tag ($dom->find('*')->@*) {
             my \%attrs = $tag->attr;
             foreach my $attr (grep {defined $attrs{$_}} $link_elements{$tag->tag}->@*) {
-                my $uri = Mojo::URL->new($attrs{$attr})->to_abs($url);
+                my $uri = Mojo::URL->new($attrs{$attr})->to_abs(Mojo::URL->new($url));
                 if (exists $meta{'by_url'}{$uri}) {
                     my \%target = $meta{'by_url'}{$uri};
                     $attrs{$attr} = $meta{'dir'}->child($target{'name'})->to_string;
