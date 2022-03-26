@@ -6,73 +6,129 @@ use open 'IO' => ':raw';
 use utf8;
 use warnings;
 use warnings 'FATAL' => qw(utf8);
-use experimental qw(signatures try);
+use experimental qw(declared_refs refaliasing signatures try);
 
 use JSON::PP ();
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
 
 use YAML::XS ();
 
+use constant {
+    'JSON'          => JSON::PP->new->pretty->space_before(0)->canonical->utf8(1),
+    'JSON_ONE_LINE' => JSON::PP->new->pretty->space_before(0)->canonical->utf8(1)->indent(0),
+};
+
+my %options = (
+    'LENIENT' => 0,
+    'UNJSON'  => 0,
+    'VERBOSE' => 0,
+);
+
 sub main() {
+    GetOptions(
+        'lenient|l'  => \$options{'LENIENT'},
+        'unjson|u'   => \$options{'UNJSON'},
+        'verbose|v+' => \$options{'VERBOSE'},
+    ) or die "Unable to process command line options\n";
+
+    JSON()->relaxed if $options{'LENIENT'};
+
     my @data;
+    my $type;
+
+    local $YAML::XS::Boolean = 'JSON::PP'; ## no critic [Variables::ProhibitPackageVars]
 
     if (@ARGV) {
         foreach my $file (@ARGV) {
             -e -r $file
-                or die "File does not exists: $file\n";
-            push (
-                @data,
-                do {local $/ = undef; open my $fh, '<', $file; <$fh>}, ## no critic [InputOutput::RequireBriefOpen]
-            );
+                or die "file does not exist: $file\n";
+            open my $fh, '<', $file;
+            process_file_handle(\@data, \$type, $fh);
+            close $fh;
         }
     } else {
-        push (@data, do {local $/ = undef; <STDIN>});
+        process_file_handle(\@data, \$type, *STDIN);
     }
 
-    print _convert(@data);
+    if (@data) {
+        print dump_data(\@data, $type) if @data;
+    } else {
+        warn "empty input\n";
+    }
 
     return 0;
 }
 
-my $json = JSON::PP->new->utf8(1);
+sub process_file_handle ($data_ref, $type_ref, $fh) {
+    my \@data = $data_ref;
+    my \$type = $type_ref;
 
-sub _convert (@data) {
+    chomp(my @lines = <$fh>);
+
+    return unless @lines;
+
+    try {
+        my @decoded = map {JSON()->decode($_)} @lines;
+        $type = 'json' unless $type;
+        push @data, @decoded;
+        return;
+    } catch ($err) {
+    };
+
+    my $doc = join "\n", @lines;
+
+    my $json_error;
+    try {
+        my $decoded = JSON()->decode($doc);
+        $type = 'json' unless $type;
+        push @data, $decoded;
+        return;
+    } catch ($err) {
+        $json_error = $err;
+    };
+
+    my $yaml_error;
+    try {
+        my @decoded = YAML::XS::Load($doc);
+        $type = 'yaml' unless $type;
+        push @data, @decoded;
+        return;
+    } catch ($err) {
+        $yaml_error = $err;
+    };
+
+    warn "unable to parse file as json: $json_error\n";
+    die "unable to parse file as yaml: $yaml_error\n";
+}
+
+sub dump_data ($data_ref, $type) {
+    my \@data = $data_ref;
+
     my $result;
-
-    foreach my $doc (@data) {
-        local $YAML::XS::Boolean = 'JSON::PP'; ## no critic [Variables::ProhibitPackageVars]
-        try {
-            my $section = $json->decode($doc);
-            _unjson_keys($section);
-            $result .= YAML::XS::Dump($section);
-        } catch ($json_error) {
-            try {
-                my @sections = YAML::XS::Load($doc);
-                $result .= $json->pretty->canonical->encode($_) foreach @sections;
-            } catch ($yaml_error) {
-                warn "Unable to parse file as json: $json_error\n";
-                die "Unable to parse file as yaml: $yaml_error\n";
+    foreach my $it (@data) {
+        unjson_recursive_inplace($it) if $options{'UNJSON'};
+        if ($type eq 'json') {
+            $result .= YAML::XS::Dump($it);
+        } else {
+            if (@data > 1) {
+                $result .= JSON_ONE_LINE()->encode($it) . "\n";
+            } else {
+                $result .= JSON()->encode($it);
             }
-        } ## no critic [CodeLayout::RequireFinalSemicolon]
+        }
     }
 
     return $result;
 }
 
-sub _unjson_keys($data) {
-    if (ref $data eq 'ARRAY') {
-        for (my $i = 0; $i < scalar $data->@*; ++$i) {
-            $data->[$i] = _unjson_keys($data->[$i]);
-        }
-    } elsif (ref $data eq 'HASH') {
-        foreach my $key (keys $data->%*) {
-            $data->{$key} = _unjson_keys($data->{$key});
-        }
-    } else {
-        try {
-            $data = $json->decode($data);
-        } catch ($e) {
-            # no-op
-        };
+sub unjson_recursive_inplace ($data) {
+    if (ref $data eq 'HASH') {
+        $_ = __SUB__->($_) foreach values $data->%*;
+    } elsif (ref $data eq 'ARRAY') {
+        $_ = __SUB__->($_) foreach $data->@*;
+    } elsif (!ref $data) {
+        try {my $decoded = JSON()->decode($data); $data = $decoded if ref $decoded}
+        catch ($e) { }
     }
     return $data;
 }

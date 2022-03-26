@@ -45,7 +45,7 @@ sub make_request ($self, $options) {
         or croak $self->log->fatalf('invalid verb: %s', $verb);
 
     my %headers = ( ## no tidy
-        Accept => 'application/json',
+        'accept' => 'application/json',
         %{$options->{'headers'} // {}},
     );
     my %body = $options->{'body'} ? (json => $options->{'body'}) : ();
@@ -71,7 +71,12 @@ sub make_url ($self, $options) {
 }
 
 sub decode_tx ($self, $tx) {
-    $self->log->debugf("tx [%s %s]: '%s'", $tx->res->code, $tx->res->message, $tx->req->url);
+    if ($tx->res->is_success) {
+        $self->log->debugf("tx [%s %s]: '%s'", $tx->res->code, $tx->res->message, $tx->req->url);
+    } else {
+        $self->log->errorf("tx [%s %s]: '%s'", $tx->res->code, $tx->res->message, $tx->req->url);
+    }
+
     my $res  = $tx->result;
     my $data = $res->json // {};
 
