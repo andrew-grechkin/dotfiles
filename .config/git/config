@@ -1,4 +1,5 @@
 [alias]
+	aa         = !"git add \"$(git root)\""
 	b          = branch -vv
 	bleach     = !"f(){ git fall; git b | perl -alE 'm/: gone]/ && $F[0] ne q(*) && system(qq(git branch -D $F[0]))'; }; f"
 	bmain      = !"git rev-parse --abbrev-ref origin/HEAD 2>&1 | grep -Eho 'main$|trunk$|master$' || echo 'master'"

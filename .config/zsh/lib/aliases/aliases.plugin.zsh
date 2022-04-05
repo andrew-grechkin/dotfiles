@@ -8,7 +8,7 @@ alias la='l -A'
 alias le='la --sort=extension'
 alias lt='la --sort=time'
 
-alias lsblk='lsblk -o NAME,FSTYPE,LABEL,UUID,SIZE,FSUSE%,RO,TYPE,MOUNTPOINT'
+alias lsblk='lsblk -o NAME,TYPE,FSTYPE,LABEL,UUID,SIZE,FSAVAIL,FSUSE%,RO,MOUNTPOINTS'
 
 # => head, less -------------------------------------------------------------------------------------------------- {{{1
 
