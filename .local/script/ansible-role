@@ -4,9 +4,7 @@ set -Eeuo pipefail
 
 PATH="$(dirname "$0"):$PATH"
 
-HOST=$1
-ROLE=$2
-shift
+ROLE=$1
 shift
 
 git-in-repo || {
@@ -18,14 +16,16 @@ cd "$(git root)" &>/dev/null
 
 ROLE="$(realpath --relative-to="$(pwd)/roles" "$ROLE")"
 
-echo "Trying to apply role '$ROLE' to host/group '$HOST'..."
+echo "Trying to apply role '$ROLE'"
 
-ANSIBLE_FORCE_COLOR='True' \
-ANSIBLE_RETRY_FILES_ENABLED='False' \
-ANSIBLE_ROLES_PATH="$(pwd)/roles:${ANSIBLE_ROLES_PATH:-}" \
+ANSIBLE_FORCE_COLOR='True'
+ANSIBLE_RETRY_FILES_ENABLED='False'
+ANSIBLE_ROLES_PATH="$(pwd)/roles:${ANSIBLE_ROLES_PATH:-}"
+
+echo "executing: ansible-playbook $*"
 ansible-playbook "$@" /dev/stdin <<END
 ---
-- hosts: [$HOST]
+- hosts: [all]
   roles:
     - $ROLE
 END

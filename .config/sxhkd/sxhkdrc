@@ -1,7 +1,7 @@
 # vim: filetype=conf
 
 super + Return
-	exo-open --launch TerminalEmulator
+	alacritty
 super + BackSpace
 	$HOME/.local/script/rofi-exit
 super + b
