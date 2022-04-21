@@ -46,13 +46,13 @@ sub main {
     $log->{'adapter'}{'log_level'} += $options{'VERBOSE'};
 
     @ARGV
-        or push (@ARGV, '.');
+        or push(@ARGV, '.');
 
 ### Regroup files by dev + size
     my \%by_dev_size = _regroup_arrays(
         gather_files(),
         'key' => sub ($, $value) {
-            return sprintf ('d(%d)s(%d)', $value->{'stat'}->dev, $value->{'stat'}->size);
+            return sprintf('d(%d)s(%d)', $value->{'stat'}->dev, $value->{'stat'}->size);
         },
     );
 
@@ -80,9 +80,9 @@ sub main {
                 'key'      => sub ($key, $value) {
                     $value->{'partial_checksum'} //= do {
                         map_file(my $map, $value->{'paths'}[0]);
-                        sha256_hex(substr ($map, 0, PARTIAL_CHECKSUM_SIZE()));
+                        sha256_hex(substr($map, 0, PARTIAL_CHECKSUM_SIZE()));
                     };
-                    return sprintf ('%sp(%s)', $key, $value->{'partial_checksum'});
+                    return sprintf('%sp(%s)', $key, $value->{'partial_checksum'});
                 },
             );
         }
@@ -95,7 +95,7 @@ sub main {
                     map_file(my $map, $value->{'paths'}[0]);
                     sha256_hex($map);
                 };
-                return sprintf ('%sc(%s)', $key, $value->{'checksum'});
+                return sprintf('%sc(%s)', $key, $value->{'checksum'});
             },
         );
 
@@ -128,8 +128,8 @@ sub gather_files() {
                     or return;
 
                 ++$files_amount;
-                my \%it = $by_dev_ino{sprintf ('d(%d)i(%d)', $stat->dev, $stat->ino)}[0] //= {'stat' => $stat};
-                push ($it{'paths'}->@*, decode('UTF-8', $path->stringify, Encode::FB_CROAK));
+                my \%it = $by_dev_ino{sprintf('d(%d)i(%d)', $stat->dev, $stat->ino)}[0] //= {'stat' => $stat};
+                push($it{'paths'}->@*, decode('UTF-8', $path->stringify, Encode::FB_CROAK));
             },
             {
                 'follow_symlinks' => $options{'FOLLOW'},
@@ -146,13 +146,14 @@ sub _is_valid_file ($path, $stat) {
     return $stat->size >= $options{'MIN_SIZE'};
 }
 
-sub _regroup_arrays ($current, %params) {
-    my %result;
+sub _regroup_arrays ($current_href, %params) {
+    my \%current = $current_href;
 
-    while (my ($key, $items) = each ($current->%*)) {
+    my %result;
+    while (my ($key, $items) = each %current) {
         next if $params{'selector'} && !$params{'selector'}->($key, $items);
 
-        push ($result{$params{'key'}->($key, $_)}->@*, $_) foreach $items->@*;
+        push($result{$params{'key'}->($key, $_)}->@*, $_) foreach $items->@*;
     }
 
     return \%result;
@@ -179,7 +180,7 @@ sub _process_identical_checksums ($checksum, @inodes) {
 }
 
 sub _do_hardlink ($path, $new_path) {
-    my $message = join (' <- ', $path, $new_path);
+    my $message = join(' <- ', $path, $new_path);
     $log->info('Hardlinking: ', $message);
 
     if ($options{'APPLY'}) {
@@ -187,7 +188,7 @@ sub _do_hardlink ($path, $new_path) {
 
         try {
             $new_path->move($backup);
-            link ($path, $new_path);
+            link($path, $new_path);
             $backup->remove;
         } catch ($error) {
             croak("Unable to hardlink files $message: $error");

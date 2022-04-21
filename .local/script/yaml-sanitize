@@ -63,6 +63,7 @@ sub _sanitize (%data) {
 }
 
 sub _fix_section ($section) {
+    return unless ref $section eq 'HASH';
     if (exists $section->{'id'} && looks_like_number($section->{'id'})) {
         $section->{'id'} = 0 + $section->{'id'};
     }

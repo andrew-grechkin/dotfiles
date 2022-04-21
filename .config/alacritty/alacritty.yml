@@ -1,3 +1,4 @@
+---
 # Configuration for Alacritty, the GPU enhanced terminal emulator.
 
 # Import additional configuration files
@@ -123,9 +124,10 @@ font:
     # family: Iosevka
     family: JetBrains Mono
     # family: JetBrains Mono Nerd
+    # family: Comic Code Demo
 
     # The `style` can be specified to pick a specific face.
-    #style: Regular
+    style: Regular
 
   # Bold font face
   bold:

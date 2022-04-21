@@ -51,7 +51,7 @@ sub main() {
 
     AGENT()->env_proxy;
 
-    my $market = (shuffle split (m/,/, $options{'MARKET'}))[0];
+    my $market = (shuffle split(m/,/, $options{'MARKET'}))[0];
     my $info   = _fetch_info($market);
     my $path   = _fetch_image($market, $info->{'images'}[0]);
 
@@ -136,15 +136,15 @@ sub _process_image ($path, $descriptor) {
         "text 0,0 '$descriptor->{'copyright'}'",
         '-family', $family, $path, $path,
     );
-    system (@cmd) == 0
+    system(@cmd) == 0
         or carp 'Unable to process image';
     return;
 }
 
 sub _find_font_family ($text) {
     my $charcodes = $text =~ s/(.)/sprintf '%04X ', ord $1/gre;
-    chomp (my @families = `fc-list --format '%{family[0]}\n' ':style=Regular:charset=$charcodes'`);
-    @families = sort {-exists (PREFERRED_FONTS()->{$a}) + exists (PREFERRED_FONTS()->{$b}) or $a cmp $b} uniq @families;
+    chomp(my @families = `fc-list --format '%{family[0]}\n' ':style=Regular:charset=$charcodes'`);
+    @families = sort {-exists(PREFERRED_FONTS()->{$a}) + exists(PREFERRED_FONTS()->{$b}) or $a cmp $b} uniq @families;
 
     return $families[0];
 }
@@ -169,20 +169,20 @@ sub _set_wallpaper ($path) {
             "string: $script",
         );
 
-        system (@cmd) == 0
+        system(@cmd) == 0
             or croak 'Unable to set KDE wallpaper';
 
         return;
     }
 
-    system (qw(feh --no-fehbg --bg-scale), $path) == 0
+    system(qw(feh --no-fehbg --bg-scale), $path) == 0
         or croak('Unable to set wallpaper: ', $path);
 
     return;
 }
 
 sub _save_raw_file ($path, $content) {
-    open (my $fh, '>:raw', $path);
+    open(my $fh, '>:raw', $path);
     print {$fh} $content;
     close $fh;
     return;

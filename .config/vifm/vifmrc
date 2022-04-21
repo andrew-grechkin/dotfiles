@@ -299,7 +299,7 @@ fileviewer *.htm,*.html
 
 filextype *.bmp,*.dng,*.gif,.*.ico,*.icon,*.jp2,*.jpg,*.jpeg,*.png,*.xpm,*.svg,*.tif,*.thm
 	\ {View in sxiv}
-	\ sxiv %f %c:h %i &,
+	\ sxiv -f %f %c:h %i &,
 	\ {Open with xdg-open}
 	\ xdg-open %c %i &,
 	\ {View in vimiv}
@@ -394,14 +394,12 @@ filetype *.base64
 	\ base64 --decode %c > %c:r &,
 
 filetype *.txt
+	\ {View in less}
+	\ less,
 	\ {Recode from cp866}
 	\ text-recode cp866 %f,
-
-filetype *.txt
 	\ {Recode from cp1251}
 	\ text-recode cp1251 %f,
-
-filetype *.txt
 	\ {Recode from koi8}
 	\ text-recode koi8 %f,
 

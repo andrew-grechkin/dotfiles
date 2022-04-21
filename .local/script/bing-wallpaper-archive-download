@@ -58,7 +58,7 @@ sub _fetch_info ($market, $limit, $skip) {
 
     my $response = UA()->get($url)->result;
     $response->is_success
-        or croak("Failed to retrieve '$url': ", join (' ', $response->code, $response->message));
+        or croak("Failed to retrieve '$url': ", join(' ', $response->code, $response->message));
 
     return $response->json
         || croak("Failed to decode json: $! $@");
@@ -83,7 +83,7 @@ sub _fetch_images ($market, @descriptors) {
 
         my $response = UA()->get($image_url)->result;
         $response->is_success
-            or croak("Failed to retrieve '$image_url': ", join (' ', $response->code, $response->message));
+            or croak("Failed to retrieve '$image_url': ", join(' ', $response->code, $response->message));
 
         DumpFile($yml_filename, $descriptor);
         $response->save_to($jpg_filename);

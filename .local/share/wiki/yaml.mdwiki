@@ -92,7 +92,6 @@ content: |
 
 _no indicator (clip)_: one new line at the end
 
-
 ```yaml
 content: >
   Arbitrary free text, only one newline will be at the end
