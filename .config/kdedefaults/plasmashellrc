@@ -1,0 +1,32 @@
+[Action_0]
+Automatic=true
+Description=Youtube links handeling
+Number of commands=3
+Regexp=(youtube.*watch)
+
+[Action_0/Command_0]
+Commandline[$e]=mpv '%s'
+Description=Play youtube video with mpv
+Enabled=true
+Icon=mpv
+Output=0
+
+[Action_0/Command_1]
+Commandline[$e]=yt-dlp -f 'ba[ext=m4a]' -o '~/music/%%(title)s.%%(ext)s' '%s'
+Description=Download youtube audio
+Enabled=true
+Icon=youtube-dl
+Output=0
+
+[Action_0/Command_2]
+Commandline[$e]=yt-dlp --format-sort=res:720 --format-sort=codec:h264 -f 'bv*[ext=mp4]+ba[ext=m4a] / b[ext=mp4] / bv*+ba/b' -o '~/videos/%%(title)s.%%(ext)s' '%s'
+Description=Download youtube video
+Enabled=true
+Icon=youtube-dl
+Output=0
+
+[General]
+Number of Actions=1
+
+[Notification Messages]
+klipperClearHistoryAskAgain=false

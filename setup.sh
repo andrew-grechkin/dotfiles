@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/usr/bin/env bash
 
 mkdir -p ~/.cache/bin
 mkdir -p ~/.config/xfce4
@@ -18,11 +18,8 @@ ln -sf "$WORKDIR/.xprofile"                                            ~/
 ln -sf "$WORKDIR/.config/perltidyrc"                                   ~/.perltidyrc
 
 ln -sf "$WORKDIR/.config/alacritty"                                    ~/.config/
-ln -sf "$WORKDIR/.config/ansible"                                      ~/.config/
-ln -sf "$WORKDIR/.config/picom.conf"                                   ~/.config/
 ln -sf "$WORKDIR/.config/fontconfig/conf.d"                            ~/.config/fontconfig/
 ln -sf "$WORKDIR/.config/git"                                          ~/.config/
-ln -sf "$WORKDIR/.config/i3"                                           ~/.config/
 ln -sf "$WORKDIR/.config/luaformatter"                                 ~/.config/
 ln -sf "$WORKDIR/.config/mpv"                                          ~/.config/
 ln -sf "$WORKDIR/.config/mutt"                                         ~/.config/
@@ -32,7 +29,6 @@ ln -sf "$WORKDIR/.config/rofi"                                         ~/.config
 ln -sf "$WORKDIR/.config/shell"                                        ~/.config/
 ln -sf "$WORKDIR/.config/sxhkd"                                        ~/.config/
 ln -sf "$WORKDIR/.config/systemd"                                      ~/.config/
-ln -sf "$WORKDIR/.config/tigrc"                                        ~/.config/
 ln -sf "$WORKDIR/.config/tmux"                                         ~/.config/
 ln -sf "$WORKDIR/.config/vifm"                                         ~/.config/
 ln -sf "$WORKDIR/.config/user-dirs.dirs"                               ~/.config/
@@ -46,7 +42,8 @@ ln -sf "$WORKDIR/.local/share/vim-dict"                                ~/.local/
 ln -sf "$WORKDIR/.local/share/vim-plug"                                ~/.local/share/
 ln -sf "$WORKDIR/.local/share/wiki"                                    ~/.local/share/
 
-[[ -f "$HOME/.config/npm" ]] || cp -r "$WORKDIR/.config/npm"           ~/.config/
+[[ -f "$HOME/.config/npm" ]] || command cp -rf "$WORKDIR/.config/npm"          ~/.config/
+                                command cp -rf "$WORKDIR/.config/kdedefaults"  ~/.config/
 
 chmod -R u=rwX,go-rwx "$WORKDIR/.ssh"
 

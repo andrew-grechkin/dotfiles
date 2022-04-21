@@ -1,0 +1,14 @@
+[Layout]
+DisplayNames=,
+LayoutList=us,ru
+LayoutLoopCount=-1
+Model=pc86
+Options=grp:alt_space_toggle
+ResetOldOptions=true
+ShowFlag=true
+ShowLabel=false
+ShowLayoutIndicator=true
+ShowSingle=false
+SwitchMode=WinClass
+Use=true
+VariantList=,
