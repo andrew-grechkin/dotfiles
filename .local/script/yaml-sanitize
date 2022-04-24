@@ -5,18 +5,18 @@ use autodie;
 use open IO => ':raw';
 use utf8;
 use warnings;
-use warnings FATAL => qw(utf8);
+use warnings 'FATAL' => qw(utf8);
 use experimental qw(declared_refs refaliasing signatures try);
 
-# core
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
 use Pod::Usage;
 use Scalar::Util qw(looks_like_number);
 
-# non core
 use YAML::XS ();
 
 my %options = ('INPLACE' => 0);
+
+# carefull! All comments will be gone
 
 sub main() {
     GetOptions(
@@ -29,33 +29,37 @@ sub main() {
     if (@ARGV) {
         foreach my $file (@ARGV) {
             -e -r $file
-                or die "File does not exists: $file\n";
-            $data{$file} = [YAML::XS::LoadFile($file)];
+                or die "file does not exist: $file\n";
+            my @docs = YAML::XS::LoadFile($file);
+            $data{$file} = \@docs;
         }
     } else {
-        $data{'-'} = [YAML::XS::Load(do {local $/ = undef; <STDIN>})];
+        my @docs = YAML::XS::Load(do {local $/ = undef; <STDIN>});
+        $data{'-'} = \@docs;
     }
 
-    my $result = _sanitize(%data);
+    my $result = _sanitize(\%data);
     print $result if $result;
 
     return 0;
 }
 
-sub _sanitize (%data) {
+sub _sanitize ($data_href) {
+    my \%data = $data_href;
     my $result;
 
     local $YAML::XS::Boolean = 'JSON::PP'; ## no critic [Variables::ProhibitPackageVars]
-    while (my ($file, $doc) = each %data) {
+    while (my ($file, $docs_aref) = each %data) {
+        my \@docs = $docs_aref;
         try {
-            _fix_section($_) foreach $doc->@*;
+            _fix_section($_) foreach @docs;
             if ($options{'INPLACE'} && $file ne '-') {
-                YAML::XS::DumpFile($file, $doc->@*);
+                YAML::XS::DumpFile($file, @docs);
             } else {
-                $result .= YAML::XS::Dump($doc->@*);
+                $result .= YAML::XS::Dump(@docs);
             }
         } catch ($yaml_error) {
-            die "Unable to parse file as yaml: $yaml_error\n";
+            die "unable to parse file '$file' as yaml: $yaml_error\n";
         }
     }
 

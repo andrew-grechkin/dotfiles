@@ -51,7 +51,7 @@ sub main() {
     }
 
     if (@data) {
-        print dump_data(\@data, $type) if @data;
+        print dump_data(\@data, $type);
     } else {
         warn "empty input\n";
     }
@@ -59,9 +59,9 @@ sub main() {
     return 0;
 }
 
-sub process_file_handle ($data_ref, $type_ref, $fh) {
-    my \@data = $data_ref;
-    my \$type = $type_ref;
+sub process_file_handle ($data_aref, $type_sref, $fh) {
+    my \@data = $data_aref;
+    my \$type = $type_sref;
 
     chomp(my @lines = <$fh>);
 
@@ -69,10 +69,11 @@ sub process_file_handle ($data_ref, $type_ref, $fh) {
 
     try {
         my @decoded = map {JSON()->decode($_)} @lines;
-        $type = 'json' unless $type;
+        $type ||= 'json';
         push @data, @decoded;
         return;
     } catch ($err) {
+        # not a multiline json input
     };
 
     my $doc = join "\n", @lines;
@@ -80,7 +81,7 @@ sub process_file_handle ($data_ref, $type_ref, $fh) {
     my $json_error;
     try {
         my $decoded = JSON()->decode($doc);
-        $type = 'json' unless $type;
+        $type ||= 'json';
         push @data, $decoded;
         return;
     } catch ($err) {
@@ -90,7 +91,7 @@ sub process_file_handle ($data_ref, $type_ref, $fh) {
     my $yaml_error;
     try {
         my @decoded = YAML::XS::Load($doc);
-        $type = 'yaml' unless $type;
+        $type ||= 'yaml';
         push @data, @decoded;
         return;
     } catch ($err) {
@@ -101,8 +102,8 @@ sub process_file_handle ($data_ref, $type_ref, $fh) {
     die "unable to parse file as yaml: $yaml_error\n";
 }
 
-sub dump_data ($data_ref, $type) {
-    my \@data = $data_ref;
+sub dump_data ($data_aref, $type) {
+    my \@data = $data_aref;
 
     my $result;
     foreach my $it (@data) {
