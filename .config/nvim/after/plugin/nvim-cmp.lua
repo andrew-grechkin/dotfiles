@@ -1,5 +1,4 @@
 -- url: https://github.com/hrsh7th/nvim-cmp
-
 local status, cmp = pcall(require, 'cmp')
 if (not status) then return end
 
@@ -95,7 +94,9 @@ cmp.setup {
         {name = 'buffer'}, {name = 'spell'}, {name = 'path'},
     },
     confirm_opts = {behavior = cmp.ConfirmBehavior.Replace, select = false},
-    documentation = {border = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}},
+    window = {
+        documentation = {border = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}},
+    },
     experimental = {ghost_text = true, native_menu = false},
 }
 
