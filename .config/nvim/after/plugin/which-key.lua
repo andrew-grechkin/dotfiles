@@ -85,13 +85,13 @@ local normal_opts = {
     silent = true, -- use `silent` when creating keymaps
 }
 
-local terminal_opts = {
-    buffer = nil, -- Global mappings. Specify a buffer number for buffer local mappings
-    mode = 't', -- TERMINAL mode
-    noremap = true, -- use `noremap` when creating keymaps
-    nowait = true, -- use `nowait` when creating keymaps
-    silent = true, -- use `silent` when creating keymaps
-}
+-- local terminal_opts = {
+--     buffer = nil, -- Global mappings. Specify a buffer number for buffer local mappings
+--     mode = 't', -- TERMINAL mode
+--     noremap = true, -- use `noremap` when creating keymaps
+--     nowait = true, -- use `nowait` when creating keymaps
+--     silent = true, -- use `silent` when creating keymaps
+-- }
 
 local visual_opts = {
     buffer = nil, -- Global mappings. Specify a buffer number for buffer local mappings
