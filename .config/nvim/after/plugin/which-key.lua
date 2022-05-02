@@ -208,6 +208,7 @@ local normal_mappings = {
             ':!xdg-open %<CR><CR>',
             'Open the current file in the default program',
         },
+        -- p = {'`[ . strpart(getregtype(), 0, 1) . `]', 'select latest pasted'},
     },
     n = {'nzzzv', 'n and center'},
     N = {'Nzzzv', 'N and center'},
@@ -221,7 +222,9 @@ local norm_term_mappings = {
 }
 
 local visual_mappings = {
-    ['<leader>'] = {d = {'"_dd', 'delete to a black hole'}},
+    ['<leader>'] = {
+        d = {'"_dd', 'delete to a black hole'},
+    },
     g = {
         ['<'] = {'<gv', 'don\'t loose selection when changing indentation'},
         ['>'] = {'>gv', 'don\'t loose selection when changing indentation'},

@@ -56,7 +56,9 @@ function export-perl5lib() {
 	perl5lib=("$HOME/git/booking/pakket/lib" ${perl5lib[@]})
 	perl5lib=("$HOME/.local/lib/perl5"       ${perl5lib[@]})
 	perl5lib=("./lib"                        ${perl5lib[@]})
-	perl5lib=("./slib"                       ${perl5lib[@]})
+	perl5lib=("/usr/local/git_tree/main/lib"                             ${perl5lib[@]})
+	perl5lib=("/usr/local/git_tree/main/slib"                            ${perl5lib[@]})
+	perl5lib=("/usr/local/git_tree/main/dist/dev/bcritical/policies/lib" ${perl5lib[@]})
 }
 
 # => main -------------------------------------------------------------------------------------------------------- {{{1
