@@ -8,6 +8,9 @@ export PERL_CPANM_HOME="$XDG_CACHE_HOME/cpanm"
 export   PERLBREW_HOME="$XDG_DATA_HOME/perlbrew"
 export   PERLBREW_ROOT="$XDG_DATA_HOME/perlbrew"
 
+# work specific
+export USING_PERL_MODULE_INSTALL=1
+
 # => aliases ----------------------------------------------------------------------------------------------------- {{{1
 
 alias perldebug='PERLDB_OPTS="RemotePort=localhost:9000" perl -I${PERL_LOCAL_LIB_ROOT}/lib/perl5/x86_64-linux-thread-multi/dbgp-helper -d '
@@ -56,6 +59,7 @@ function export-perl5lib() {
 	perl5lib=("$HOME/git/booking/pakket/lib" ${perl5lib[@]})
 	perl5lib=("$HOME/.local/lib/perl5"       ${perl5lib[@]})
 	perl5lib=("./lib"                        ${perl5lib[@]})
+	# work specific
 	perl5lib=("/usr/local/git_tree/main/lib"                             ${perl5lib[@]})
 	perl5lib=("/usr/local/git_tree/main/slib"                            ${perl5lib[@]})
 	perl5lib=("/usr/local/git_tree/main/dist/dev/bcritical/policies/lib" ${perl5lib[@]})

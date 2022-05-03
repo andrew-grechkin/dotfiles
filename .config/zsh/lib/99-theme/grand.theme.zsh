@@ -31,7 +31,7 @@ function precmd() {
 	ZSH_THEME['CLOCK']='%K{29}%F{231}%B%T%b%f%k'
 	ZSH_THEME['CWD']='%F{cyan}:%f%B%F{blue}%~%f%b'
 
-	MODE_INDICATOR='%F{yellow}%B➤%b%F{yellow}➤➤%f'
+	# MODE_INDICATOR='%F{yellow}%B➤%b%F{yellow}➤➤%f'
 
 	local history='$[HISTCMD-1]'
 	local no_error='%K{black}%F{29}%f%k'
@@ -40,12 +40,13 @@ function precmd() {
 
 	# Check if we are root
 	[[ $UID -ne 0 ]] && ZSH_THEME['USER']='%F{green}%n%f' || ZSH_THEME['USER']='%F{red}%n%f'
+	[[ $UID -ne 0 ]] && ZSH_THEME['LINE2START']='%!─\$'   || ZSH_THEME['LINE2START']='%!─#'
 
 	# Check if we are on SSH or not
 	[[ -n "$SSH_CLIENT" || -n "$SSH2_CLIENT" ]] && ZSH_THEME['HOST']='%F{red}%M%f' || ZSH_THEME['HOST']='%F{green}%M%f'
 
 	PROMPT="╭${ZSH_THEME['CLOCK']}${ZSH_THEME['RETURN']}${ZSH_THEME['USER']}%F{cyan}@%f${ZSH_THEME['HOST']}${ZSH_THEME['CWD']} "'${vcs_info_msg_0_}'"%b%k%f%{$reset_color%}
-╰%!─➤${RPS1}%b%k%f% "
+╰${ZSH_THEME['LINE2START']} ${RPS1}%b%k%f% "
 	RPROMPT=''
 }
 
