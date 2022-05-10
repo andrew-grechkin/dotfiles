@@ -2,9 +2,9 @@ package TestService::Action;
 
 use v5.34;
 use autodie;
-use open IO => ':locale';
+use open 'IO' => ':locale';
 use warnings;
-use warnings FATAL => qw(utf8);
+use warnings 'FATAL' => qw(utf8);
 use Mojo::Base -base, -signatures;
 use namespace::autoclean;
 
@@ -18,8 +18,8 @@ use YAML::XS ();
 
 use experimental qw(declared_refs refaliasing try);
 
-has log  => sub {Log::Any->get_logger(category => __PACKAGE__)};
-has json => sub {JSON::PP->new->utf8->pretty->canonical->convert_blessed->allow_blessed};
+has 'log'  => sub {Log::Any->get_logger('category' => __PACKAGE__)};
+has 'json' => sub {JSON::PP->new->utf8->pretty->canonical->convert_blessed->allow_blessed};
 
 sub execute ($self, $names_ref, $tests_ref) {
     my \@names   = $names_ref;
@@ -80,7 +80,7 @@ sub get_writer ($self, $path) {
             $p->dirname->make_path;
             $self->log->infof('write to file: %s', $p);
             return $p->spurt($bytes);
-        }
+        };
     }
     return sub ($text) {say $text if $text};
 }

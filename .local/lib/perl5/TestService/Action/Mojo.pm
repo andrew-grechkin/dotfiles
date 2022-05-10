@@ -6,9 +6,12 @@ use namespace::autoclean;
 
 use Carp;
 
+use Data::Printer;
 use Mojo::Promise;
 use Mojo::URL;
 use Mojo::UserAgent;
+
+use MyList::Util qw(partition);
 
 use experimental qw(declared_refs refaliasing try);
 
@@ -16,22 +19,39 @@ use constant { ## no tidy
     'UA' => Mojo::UserAgent->new->insecure(1)->max_redirects(2)->request_timeout(10)->tap(sub {$_->proxy->detect}),
 };
 
-sub fetch_data ($self, $tests) {
-    my \@tests = $tests;
-
-    $self->log->tracef('fetching data in parallel: %d', scalar @tests);
-
-    my @promises = map {$self->make_request($_)} @tests;
+sub fetch_data ($self, $tests_aref) {
+    my (\@sequential, \@parallel) = partition(sub ($it) {$it->{'sequential'}}, $tests_aref);
 
     my ($results, $error);
-    Mojo::Promise->all(@promises)->then(
-        sub (@txs) {
-            $results = [map {$self->decode_tx($_->[0])} @txs];
-        },
-    )->catch(sub ($err) {
-        chomp $err;
-        $error = $err;
-    })->wait;
+    if (@parallel) {
+        $self->log->tracef('fetching data in parallel: %d', scalar @parallel);
+
+        my @promises = map {$self->make_request($_)} @parallel;
+        Mojo::Promise->all(@promises)->then(
+            sub (@txs) {
+                $results = [map {$self->decode_tx($_->[0])} @txs];
+            },
+        )->catch(
+            sub ($err) {
+                chomp $err;
+                $error = $err;
+            },
+        )->wait;
+    }
+    if (@sequential) {
+        $self->log->tracef('fetching data in a sequence: %d', scalar @sequential);
+
+        Mojo::Promise->map({'concurrency' => 1}, sub {$self->make_request($_)}, @sequential)->then(
+            sub (@txs) {
+                $results = [map {$self->decode_tx($_->[0])} @txs];
+            },
+        )->catch(
+            sub ($err) {
+                chomp $err;
+                $error = $err;
+            },
+        )->wait;
+    }
 
     die $error if $error;
     return $results;
@@ -40,7 +60,6 @@ sub fetch_data ($self, $tests) {
 sub make_request ($self, $options) {
     my $url    = $self->make_url($options);
     my $verb   = lc($options->{'method'} // $options->{'verb'} // 'get');
-    my $body   = $options->{'body'};
     my $method = UA()->can($verb =~ m/_p\z/ ? $verb : $verb . '_p')
         or croak $self->log->fatalf('invalid verb: %s', $verb);
 
@@ -48,12 +67,14 @@ sub make_request ($self, $options) {
         'accept' => 'application/json',
         %{$options->{'headers'} // {}},
     );
-    my %body = $options->{'body'} ? (json => $options->{'body'}) : ();
+    my %body = $options->{'body'} ? ('json' => $options->{'body'}) : ();
 
     $self->log->tracef('rq: %s', $url);
-    return $method->(UA(), $url => \%headers, %body)->catch(sub ($err) {
-        die "$err: $url\n";
-    });
+    return $method->(UA(), $url => \%headers, %body)->catch(
+        sub ($err) {
+            die "$err: $url\n";
+        },
+    );
 }
 
 sub make_url ($self, $options) {
@@ -76,6 +97,8 @@ sub decode_tx ($self, $tx) {
     } else {
         $self->log->errorf("tx [%s %s]: '%s'", $tx->res->code, $tx->res->message, $tx->req->url);
     }
+    $self->log->tracef('req: %s', np $tx->req);
+    $self->log->tracef('res: %s', np $tx->res);
 
     my $res  = $tx->result;
     my $data = $res->json // {};

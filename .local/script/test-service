@@ -2,17 +2,17 @@
 
 use v5.34;
 use autodie;
-use open IO => ':raw';
+use open 'IO' => ':raw';
 use utf8;
 use warnings;
-use warnings FATAL => qw(utf8);
+use warnings 'FATAL' => qw(utf8);
 use experimental qw(declared_refs refaliasing signatures try);
 
 use Carp;
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
 
 use Log::Any qw($log);
-use Log::Any::Adapter ('Stderr', log_level => 'notice');
+use Log::Any::Adapter ('Stderr', 'log_level' => 'notice');
 use Mojo::IOLoop;
 use YAML::XS ();
 
@@ -48,7 +48,7 @@ sub main() {
     ) or die "Unable to process command line options\n";
 
     $_->{'adapter'}{'log_level'} += $options{'VERBOSE'}
-        foreach $log, Log::Any->get_logger(category => 'TestService::Action');
+        foreach $log, Log::Any->get_logger('category' => 'TestService::Action');
 
     my \%config = _parse_config(_read_config(@ARGV));
 

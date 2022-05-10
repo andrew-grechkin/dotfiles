@@ -3,7 +3,7 @@ package MyList::Util;
 use v5.34;
 use utf8;
 use warnings;
-use warnings FATAL => qw(utf8);
+use warnings 'FATAL' => qw(utf8);
 
 use List::Util qw(sum0);
 use Storable qw(dclone);
@@ -41,7 +41,7 @@ our @EXPORT_OK = qw(
 sub adjacent_pairs ($array) {
     my @result;
     while ($array->@* > 1) {
-        push (@result, [shift $array->@*, $array->[0]]);
+        push(@result, [shift $array->@*, $array->[0]]);
     }
     return \@result;
 }
@@ -59,17 +59,17 @@ sub filter_by ($filter, $array_ref) {
 sub group_by ($key_extractor, $array_ref) {
     my %result;
     foreach my $it ($array_ref->@*) {
-        my $key = $key_extractor->($it) // 'undefined';
-        push ($result{$key}->@*, $it);
+        my $key = $key_extractor->($it) // 'undef';
+        push($result{$key}->@*, $it);
     }
 
     return \%result;
 }
 
-sub partition ($partitioner, $array_ref) {
+sub partition ($partitioner, $data_aref) {
     my (@truthy, @falsy);
-    foreach my $it ($array_ref->@*) {
-        $partitioner->($it) ? push (@truthy, $it) : push (@falsy, $it);
+    foreach my $it ($data_aref->@*) {
+        $partitioner->($it) ? push(@truthy, $it) : push(@falsy, $it);
     }
     return (\@truthy, \@falsy);
 }
@@ -137,7 +137,7 @@ sub union_by : prototype(&$$) {
 
 sub combinations ($array, $k, $state = [], $result = []) {
     if ($k == 0) {
-        push ($result->@*, $state);
+        push($result->@*, $state);
         return $result;
     }
 
@@ -167,7 +167,7 @@ sub permutations ($array_ref) {
     my @d = (-1) x scalar $array_ref->@*;
 
     do {
-        push (@result, dclone($array_ref));
+        push(@result, dclone($array_ref));
     } while (sjt_next_permutation($array_ref, \@d)); ## no critic [ControlStructures::ProhibitPostfixControls]
 
     return \@result;
@@ -198,7 +198,6 @@ sub sjt_next_permutation ($array_ref, $dirs_ref) {
     return 1;
 }
 
-## no critic [Subroutines::ProhibitExplicitReturnUndef]
 sub mean ($array_ref) {
     my \@values = $array_ref;
     return undef      if @values == 0;
@@ -212,7 +211,7 @@ sub sorted_median ($array_ref) {
     return undef      if @values == 0;
     return $values[0] if @values == 1;
 
-    my @middle = @values[int ((@values - 1) / 2) .. int ((0 + @values) / 2)];
+    my @middle = @values[int((@values - 1) / 2) .. int((0 + @values) / 2)];
     return mean(\@middle);
 }
 
@@ -225,7 +224,7 @@ sub sorted_quantile ($q, $array_ref) {
     return undef      if $q < 0 || 1 < $q || @values == 0;
     return $values[0] if @values == 1;
 
-    my $index = int ((@values + 1) * $q) - 1;
+    my $index = int((@values + 1) * $q) - 1;
     return $index >= 0 ? $values[$index] : undef;
 }
 
