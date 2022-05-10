@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+function setup_monitors() {
+	MONITORS_STR="$(bspc query --monitors --names | sort)"
+	readarray -t MONITORS_ARR <<<"$MONITORS_STR"
+
+	MONITORS_AMOUNT=${#MONITORS_ARR[@]}
+	echo "monitors array: ${MONITORS_ARR[*]}"
+	echo "monitors amount: ${#MONITORS_ARR[@]}"
+
+	if ((MONITORS_AMOUNT > 1)); then
+		bspc monitor "${MONITORS_ARR[1]}" -d 4 5 6 7 8 9 0
+		bspc monitor "${MONITORS_ARR[0]}" -d 1 2 3
+	else
+		bspc monitor -d 1 2 3 4 5 6 7 8 9 0
+	fi
+}
+
+setup_monitors
+
+bspc subscribe monitor_add monitor_remove | while read -r LINE; do
+	echo "$LINE"
+	# autorandr -c
+
+	setup_monitors
+done >/dev/null

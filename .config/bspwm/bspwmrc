@@ -3,8 +3,7 @@
 pgrep -x sxhkd > /dev/null || sxhkd &
 pgrep -x picom > /dev/null || picom -b &
 
-bspc monitor DP-3 -d 1 2 3
-bspc monitor -d 4 5 6 7 8 9 0
+"$(realpath ~/.local/script/bspwm-watch-monitor)" &
 
 bspc config border_width            2
 bspc config borderless_monocle      true
@@ -26,10 +25,10 @@ bspc rule -a 'gpclient'               state=floating sticky=on
 bspc rule -a 'mpv'                    state=floating sticky=on rectangle=480x270-522-330
 bspc rule -a 'pinentry'               state=floating sticky=on
 
-bspc rule -a '*:*:Zoom - Licensed Account' desktop='^6'
-bspc rule -a '*:*:Zoom Meeting'            desktop='^6'
-bspc rule -a 'Chromium'                    desktop='^1'
-bspc rule -a 'Gimp'                        desktop='^8' state=floating follow=on
-bspc rule -a 'Google-chrome'               desktop='^1'
-bspc rule -a 'Opera'                       desktop='^2'
+bspc rule -a '*:*:Zoom - Licensed Account' desktop='6'
+bspc rule -a '*:*:Zoom Meeting'            desktop='6'
+bspc rule -a 'Chromium'                    desktop='1'
+bspc rule -a 'Gimp'                        desktop='8' state=floating follow=on
+bspc rule -a 'Google-chrome'               desktop='1'
+bspc rule -a 'Opera'                       desktop='2'
 bspc rule -a 'Screenkey'                   manage=off

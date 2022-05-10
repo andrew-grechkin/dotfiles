@@ -2,37 +2,15 @@
 
 set -Eeuo pipefail
 
-function _i3lock() {
-	TMP_FILE="${XDG_RUNTIME_DIR}/screen-lock-tmp.png"
-	DST_FILE="${XDG_RUNTIME_DIR}/screen-lock.png"
-	import -window root "$TMP_FILE" || scrot "$TMP_FILE"
-#	convert $TMP_FILE -scale 10% -scale 1000% $DST_FILE
-#	convert $TMP_FILE -paint 3 -modulate 80 $DST_FILE
-	[[ -f "$TMP_FILE" ]]           && convert "$TMP_FILE" -paint 3 "$DST_FILE"
-	[[ -f ~/.config/i3/lock.png ]] && convert "$DST_FILE" ~/.config/i3/lock.png -gravity center -composite -matte "$DST_FILE"
-	i3lock --color=000000 --ignore-empty-password --show-failed-attempts --image="$DST_FILE"
-}
-
-function _lock() {
-	# try light-locker first
-	light-locker-command -l && return
-
-	# try i3lock
-	_i3lock
-}
-
 function list-options() {
 	options=(
 		"lock"
-		"i3-lock"
 		"logout"
 		"suspend"
 		"hibernate"
 		"hybrid"
 		"reboot/restart"
-		"reboot/restart-systemctl"
 		"poweroff/shutdown"
-		"poweroff/shutdown-systemctl"
 	)
 
 	printf '%s\n' "${options[@]}"
@@ -41,34 +19,25 @@ function list-options() {
 function action() {
 	case "$1" in
 		lock)
-			_lock
-			;;
-		i3-lock)
-			_i3lock
+			loginctl lock-session
 			;;
 		logout)
-			xfce4-session-logout --logout || i3-msg exit
+			loginctl terminate-session self
 			;;
 		suspend)
-			_lock && systemctl suspend
+			systemctl suspend
 			;;
 		hibernate)
-			_lock && systemctl hibernate
+			systemctl hibernate
 			;;
 		hybrid)
-			_lock && systemctl hybrid-sleep
-			;;
-		reboot/restart-systemctl)
-			systemctl reboot
+			systemctl hybrid-sleep
 			;;
 		reboot*)
-			xfce4-session-logout -f --reboot || systemctl reboot
-			;;
-		poweroff/shutdown-systemctl)
-			systemctl poweroff
+			systemctl reboot
 			;;
 		poweroff*)
-			xfce4-session-logout -f --halt   || systemctl poweroff
+			systemctl poweroff
 			;;
 		*help)
 			echo "Usage: $0 {lock|logout|suspend|hibernate|hybrid|reboot|poweroff}"
