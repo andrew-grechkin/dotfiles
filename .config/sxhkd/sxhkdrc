@@ -1,9 +1,12 @@
 # vim: filetype=conf
 
-# => control ----------------------------------------------------------------------------------------------------- {{{1
+# => control windows --------------------------------------------------------------------------------------------- {{{1
 
-super + ctrl + alt + Escape
+super + ctrl + alt + x
 	xkill
+
+super + alt + x
+    xprop > /tmp/xprop.log
 
 # => sxhkd hotkeys ----------------------------------------------------------------------------------------------- {{{1
 
@@ -14,15 +17,15 @@ super + ctrl + Escape
 # => bspwm hotkeys ----------------------------------------------------------------------------------------------- {{{1
 
 # quit/restart bspwm
-super + ctrl + {q,r}
-	bspc {quit,wm -r}
+# super + ctrl + {q,r}
+# 	bspc {quit,wm -r}
 
 #close and kill
 super + {_,shift + }w
 	bspc node -{c,k}
 
-super + shift + Up
-    xprop > /tmp/bla
+alt + F4
+	bspc node -c
 
 # alternate between the tiled and monocle layout
 # super + m
@@ -81,20 +84,20 @@ super + {_,shift + }{h,j,k,l}
 # preselect
 
 # preselect the direction
-super + ctrl + {h,j,k,l}
-	bspc node -p {west,south,north,east}
+# super + ctrl + {h,j,k,l}
+# 	bspc node -p {west,south,north,east}
 
 # preselect the ratio
-super + ctrl + {1-9}
-	bspc node -o 0.{1-9}
+# super + ctrl + {1-9}
+# 	bspc node -o 0.{1-9}
 
 # cancel the preselection for the focused node
-super + ctrl + space
-	bspc node -p cancel
+# super + ctrl + space
+# 	bspc node -p cancel
 
 # cancel the preselection for the focused desktop
-super + ctrl + shift + space
-	bspc query -N -d | xargs -I id -n 1 bspc node id -p cancel
+# super + ctrl + shift + space
+# 	bspc query -N -d | xargs -I id -n 1 bspc node id -p cancel
 
 # move/resize
 
@@ -133,8 +136,8 @@ super + o
 	opera
 #super + p
 #	exo-open --launch TerminalEmulator "profanity"
-super + r
-	alacritty -e zsh -c "vifm $HOME $HOME"
+# super + r
+# 	alacritty -e zsh -c "vifm $HOME $HOME"
 super + s
 	$HOME/.local/script/rofi-pass
 super + f
@@ -143,20 +146,6 @@ super + t
 	alacritty -e tmux
 super + u
 	alacritty --class 'Alacritty,floating' -e "$HOME/.local/script/fzf-select" unicode
-# super + w
-# 	alacritty -e "htop"
-
-super + F10
-	$HOME/.local/script/cliptrans
-super + F11
-	$HOME/.local/script/touchpad-toggle
-super + F12
-	$HOME/.local/script/passgen
-
-# => ------------------------------------------------------------------------------------------------------------- {{{1
-
-super + control + F5
-	$HOME/.local/script/bing-wallpaper -s
 
 # => ------------------------------------------------------------------------------------------------------------- {{{1
 
@@ -177,38 +166,52 @@ super + shift + v
 
 # => ------------------------------------------------------------------------------------------------------------- {{{1
 
-XF86AudioPlay
-	cmus-remote --pause
-XF86Battery
-	xfce4-power-manager-settings
+super + F9
+	$HOME/.local/script/touchpad-toggle
+super + F10
+	$HOME/.local/script/cliptrans
+super + F12
+	$HOME/.local/script/passgen
+
+# => ------------------------------------------------------------------------------------------------------------- {{{1
+
+super + control + F5
+	$HOME/.local/script/bing-wallpaper -s
+
+# => ------------------------------------------------------------------------------------------------------------- {{{1
+
+# XF86AudioPlay
+# 	cmus-remote --pause
+# XF86Battery
+# 	xfce4-power-manager-settings
 XF86Calculator
 	qalculate-gtk
-XF86Display
-	xfce4-display-settings
-XF86Favorites
-	exo-open --launch TerminalEmulator "$HOME/.local/script/tmux-default-session"
-XF86HomePage
-	exo-open --launch FileManager
-XF86Launch5
-	google-chrome-stable
-XF86Launch6
-	opera
-XF86Launch7
-	code
-XF86Launch8
-	code
-XF86Launch9
-	exo-open --launch TerminalEmulator
-XF86Mail
-	exo-open --launch MailReader
-XF86Search
-	catfish
+# XF86Display
+# 	xfce4-display-settings
+# XF86Favorites
+# 	exo-open --launch TerminalEmulator "$HOME/.local/script/tmux-default-session"
+# XF86HomePage
+# 	exo-open --launch FileManager
+# XF86Launch5
+# 	google-chrome-stable
+# XF86Launch6
+# 	opera
+# XF86Launch7
+# 	code
+# XF86Launch8
+# 	code
+# XF86Launch9
+# 	exo-open --launch TerminalEmulator
+# XF86Mail
+# 	exo-open --launch MailReader
+# XF86Search
+# 	catfish
 #XF86WWW
 #	exo-open --launch WebBrowser
-XF86Back
-	cmus-remote --prev
-XF86Forward
-	cmus-remote --next
+# XF86Back
+# 	cmus-remote --prev
+# XF86Forward
+# 	cmus-remote --next
 
 # => mouse ------------------------------------------------------------------------------------------------------- {{{1
 

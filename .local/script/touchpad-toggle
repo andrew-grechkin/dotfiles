@@ -3,31 +3,43 @@
 use v5.28;
 use autodie;
 use warnings;
-use warnings FATAL => qw(utf8);
+use warnings 'FATAL' => qw(utf8);
 
+use POSIX qw(EINVAL);
 use List::Util qw(first);
 
 sub main {
-    my $name   = _detect_name() // 'undefinded';
-    my $output = `xinput list-props '$name'`;
+    my $result = EINVAL();
 
-    my ($enabled) = $output =~ m{Device\sEnabled .*:\s*(\d)}x;
+    if ( $ENV{'DESKTOP_SESSION'} && $ENV{'DESKTOP_SESSION'} eq 'plasma' ) {
+        $result = system(
+            qw(
+                qdbus org.kde.kglobalaccel /component/kcm_touchpad org.kde.kglobalaccel.Component.invokeShortcut
+            ),
+            'Toggle Touchpad',
+        );
+    } else {
+        my $name   = _detect_name() // 'undefinded';
+        my $output = `xinput list-props '$name'`;
 
-    system (qw(xinput set-prop), $name, 'Device Enabled', !$enabled) == 0
-        or die "Unable to toggle touchpad\n";
+        my ($enabled) = $output =~ m{Device\sEnabled .*:\s*(\d)}x;
 
-    my $result = system (qw(notify-send -i dialog-positive), $name, !$enabled ? 'Is enabled' : 'Is disabled');
-    $result == 0
-        or die "Can't send desktop notification\n";
+        system( qw(xinput set-prop), $name, 'Device Enabled', !$enabled ) == 0
+            or die "Unable to toggle touchpad\n";
+
+        $result = system( qw(notify-send -i dialog-positive), $name, !$enabled ? 'Is enabled' : 'Is disabled' );
+        $result == 0
+            or die "Can't send desktop notification\n";
+    }
 
     return $result;
 }
 
 sub _detect_name {
-    state $names = ['DLL079F:01 044E:120B', 'SynPS/2 Synaptics TouchPad'];
+    state $names = [ 'DLL079F:01 044E:120B', 'SynPS/2 Synaptics TouchPad' ];
 
     my $devices = `xinput`;
-    return first {$devices =~ m/$_/} $names->@*;
+    return first { $devices =~ m/$_/ } $names->@*;
 }
 
 exit main();

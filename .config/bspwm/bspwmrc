@@ -21,12 +21,15 @@ bspc config window_gap              0
 bspc rule -r '*'
 bspc config external_rules_command "$(realpath ~/.local/script/bspwm-external-rules)"
 bspc rule -a '*:*:Picture in Picture' state=floating sticky=on rectangle=480x270-522-330
+bspc rule -a 'floating'               state=floating
+bspc rule -a 'gpclient'               state=floating sticky=on
 bspc rule -a 'mpv'                    state=floating sticky=on rectangle=480x270-522-330
 bspc rule -a 'pinentry'               state=floating sticky=on
-bspc rule -a 'gpclient'               state=floating sticky=on
 
-bspc rule -a 'Gimp'          desktop='^8' state=floating follow=on
-bspc rule -a 'Chromium'      desktop='^1'
-bspc rule -a 'Google-chrome' desktop='^1'
-bspc rule -a 'Opera'         desktop='^2'
-bspc rule -a 'Screenkey'     manage=off
+bspc rule -a '*:*:Zoom - Licensed Account' desktop='^6'
+bspc rule -a '*:*:Zoom Meeting'            desktop='^6'
+bspc rule -a 'Chromium'                    desktop='^1'
+bspc rule -a 'Gimp'                        desktop='^8' state=floating follow=on
+bspc rule -a 'Google-chrome'               desktop='^1'
+bspc rule -a 'Opera'                       desktop='^2'
+bspc rule -a 'Screenkey'                   manage=off

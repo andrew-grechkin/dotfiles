@@ -3,20 +3,32 @@
 use v5.34;
 use warnings;
 
-my ($window_id, $class_name, $instance_name, $params) = @ARGV;
-my $xprops = `xprop -id "$window_id" -f WM_NORMAL_HINTS 0bi '\$0 \$1 \$2 \$3 \$4 \$5 \$6 \$7 \$8 \$9' WM_NORMAL_HINTS`;
-my @data   = split m/ /, $xprops;
-my ($data, $loc_x, $loc_y, $size_w, $size_h, $min_size_w, $min_size_h, $max_size_w, $max_size_h) = @data;
+my ( $window_id, $class_name, $instance_name, $params ) = @ARGV;
+my $xprop_hints =
+    `xprop -id "$window_id" -f WM_NORMAL_HINTS 0bi '\$0 \$1 \$2 \$3 \$4 \$5 \$6 \$7 \$8 \$9' WM_NORMAL_HINTS`;
+my $xprop = `xprop -id "$window_id"`;
 
-# open (my $log, '>', '/tmp/bspwm.log') or die "open failed: $!";
-# say {$log} "args: @ARGV";
-# say {$log} `xprop -id "$window_id"  WM_NORMAL_HINTS`;
-# say {$log} "xprop: $xprops";
+my @data = split m/ /, $xprop_hints;
+my ( $data, $loc_x, $loc_y, $size_w, $size_h, $min_size_w, $min_size_h, $max_size_w, $max_size_h ) = @data;
 
-if ($data[1] || $data[2]) {
-    print "center=off rectangle=${size_w}x${size_h}+${loc_x}+${loc_y}";
+open( my $log, '>', '/tmp/bspwm.log' ) or die "open failed: $!";
+say {$log} "args: @ARGV";
+say {$log} `xprop -id "$window_id"`;
+
+# _KDE_NET_WM_WINDOW_TYPE_ON_SCREEN_DISPLAY, _NET_WM_WINDOW_TYPE_NOTIFICATION
+# _NET_WM_WINDOW_TYPE_DIALOG, _KDE_NET_WM_WINDOW_TYPE_OVERRIDE, _NET_WM_WINDOW_TYPE_NORMAL
+
+my $output = '';
+
+if ( $xprop =~ m/_KDE_NET_WM_WINDOW_TYPE_ON_SCREEN_DISPLAY/xms ) {
+    $output = 'layer=above center=on manage=on focus=off';
+} elsif ( $data[1] || $data[2] ) {
+    $output = "center=off rectangle=${size_w}x${size_h}+${loc_x}+${loc_y}";
 }
 
-# close $log;
+print $output if $output;
+say {$log} $output;
+
+close $log;
 
 __END__
