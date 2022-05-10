@@ -1,137 +1,23 @@
 # vim: filetype=conf
 
-super + Return
-	alacritty
-super + BackSpace
-	$HOME/.local/script/rofi-exit
-super + b
-	exo-open --launch WebBrowser
-super + c
-	rofi -show calc -modi "calc:qalc +u8" -no-show-match -no-sort
-super + d
-	rofi -show run
-super + m
-	google-chrome-stable
-super + o
-	opera
-#super + p
-#	exo-open --launch TerminalEmulator "profanity"
-super + r
-	alacritty -e zsh -c "vifm $HOME $HOME"
-super + s
-	$HOME/.local/script/rofi-pass
-super + f
-	$HOME/.local/script/rofi-cheatsheet
-super + t
-	alacritty -e tmux
-super + u
-	alacritty --class 'Alacritty,floating' -e "$HOME/.local/script/fzf-select" unicode
-# super + w
-# 	alacritty -e "htop"
+# => control ----------------------------------------------------------------------------------------------------- {{{1
 
-super + F10
-	$HOME/.local/script/cliptrans
-super + F11
-	$HOME/.local/script/touchpad-toggle
-super + F12
-	$HOME/.local/script/passgen
-
-# => ------------------------------------------------------------------------------------------------------------- {{{1
-
-super + control + l
-	$HOME/.local/script/rofi-exit lock
-super + control + F5
-	$HOME/.local/script/bing-wallpaper -s
-
-# => ------------------------------------------------------------------------------------------------------------- {{{1
-
-control + alt + Esc
+super + ctrl + alt + Escape
 	xkill
 
-# => ------------------------------------------------------------------------------------------------------------- {{{1
+# => sxhkd hotkeys ----------------------------------------------------------------------------------------------- {{{1
 
-#super + shift + Return
-#	exo-open --launch TerminalEmulator "$HOME/.local/script/tmux-default-session"
-super + shift + c
-	qalculate-gtk
-super + shift + n
-	alacritty --class 'Alacritty,floating' --command "$HOME/.local/script/create-note"
-super + shift + w
-	alacritty --class 'Alacritty,floating' --command "$HOME/.local/script/open-vim-wiki"
-super + shift + r
-	exo-open --launch FileManager
-super + shift + u
-	alacritty --class 'Alacritty,floating' --command "$HOME/.local/script/fzf-select" emoji
-super + shift + v
-	$HOME/.local/script/play-clipboard-url
-
-# => ------------------------------------------------------------------------------------------------------------- {{{1
-
-XF86AudioPlay
-	cmus-remote --pause
-XF86Battery
-	xfce4-power-manager-settings
-XF86Calculator
-	qalculate-gtk
-XF86Display
-	xfce4-display-settings
-XF86Favorites
-	exo-open --launch TerminalEmulator "$HOME/.local/script/tmux-default-session"
-XF86HomePage
-	exo-open --launch FileManager
-XF86Launch5
-	google-chrome-stable
-XF86Launch6
-	opera
-XF86Launch7
-	code
-XF86Launch8
-	code
-XF86Launch9
-	exo-open --launch TerminalEmulator
-XF86Mail
-	exo-open --launch MailReader
-XF86Search
-	catfish
-#XF86WWW
-#	exo-open --launch WebBrowser
-XF86Back
-	cmus-remote --prev
-XF86Forward
-	cmus-remote --next
-
-# => mouse ------------------------------------------------------------------------------------------------------- {{{1
-
-#button8
-#	cmus-remote --prev
-#	xte "keydown Alt_R" "keydown F1" "keyup Alt_R" "keyup F1"
-#button9
-#	cmus-remote --next
-#	xte "keydown Alt_R" "keydown F2" "keyup Alt_R" "keyup F2"
-
-# => ------------------------------------------------------------------------------------------------------------- {{{1
-
-#super + @x
-#	xdotool key --clearmodifiers ctrl+shift+v
-#super + @c
-#	xdotool key --clearmodifiers ctrl+c
-#super + @v
-#	xdotool key --clearmodifiers ctrl+shift+v
-
-# make sxhkd reload its configuration files:
-super + alt + Escape
+# reload
+super + ctrl + Escape
 	pkill -USR1 -x sxhkd
-
-# super
-#     qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.activateLauncherMenu
 
 # => bspwm hotkeys ----------------------------------------------------------------------------------------------- {{{1
 
 # quit/restart bspwm
-super + alt + {q,r}
+super + ctrl + {q,r}
 	bspc {quit,wm -r}
 
-close and kill
+#close and kill
 super + {_,shift + }w
 	bspc node -{c,k}
 
@@ -223,3 +109,121 @@ super + alt + shift + {h,j,k,l}
 # move a floating window
 super + {Left,Down,Up,Right}
 	bspc node -v {-20 0,0 20,0 -20,20 0}
+
+# => kde + bspwm ------------------------------------------------------------------------------------------------- {{{1
+
+# super
+#     qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.activateLauncherMenu
+
+# => applications ------------------------------------------------------------------------------------------------ {{{1
+
+super + Return
+	alacritty
+super + BackSpace
+	$HOME/.local/script/rofi-exit
+super + b
+	exo-open --launch WebBrowser
+super + c
+	rofi -show calc -modi "calc:qalc +u8" -no-show-match -no-sort
+super + d
+	rofi -show run
+super + m
+	google-chrome-stable
+super + o
+	opera
+#super + p
+#	exo-open --launch TerminalEmulator "profanity"
+super + r
+	alacritty -e zsh -c "vifm $HOME $HOME"
+super + s
+	$HOME/.local/script/rofi-pass
+super + f
+	$HOME/.local/script/rofi-cheatsheet
+super + t
+	alacritty -e tmux
+super + u
+	alacritty --class 'Alacritty,floating' -e "$HOME/.local/script/fzf-select" unicode
+# super + w
+# 	alacritty -e "htop"
+
+super + F10
+	$HOME/.local/script/cliptrans
+super + F11
+	$HOME/.local/script/touchpad-toggle
+super + F12
+	$HOME/.local/script/passgen
+
+# => ------------------------------------------------------------------------------------------------------------- {{{1
+
+super + control + F5
+	$HOME/.local/script/bing-wallpaper -s
+
+# => ------------------------------------------------------------------------------------------------------------- {{{1
+
+#super + shift + Return
+#	exo-open --launch TerminalEmulator "$HOME/.local/script/tmux-default-session"
+super + shift + c
+	qalculate-gtk
+super + shift + n
+	alacritty --class 'Alacritty,floating' --command "$HOME/.local/script/create-note"
+super + shift + w
+	alacritty --class 'Alacritty,floating' --command "$HOME/.local/script/open-vim-wiki"
+super + shift + r
+	exo-open --launch FileManager
+super + shift + u
+	alacritty --class 'Alacritty,floating' --command "$HOME/.local/script/fzf-select" emoji
+super + shift + v
+	$HOME/.local/script/play-clipboard-url
+
+# => ------------------------------------------------------------------------------------------------------------- {{{1
+
+XF86AudioPlay
+	cmus-remote --pause
+XF86Battery
+	xfce4-power-manager-settings
+XF86Calculator
+	qalculate-gtk
+XF86Display
+	xfce4-display-settings
+XF86Favorites
+	exo-open --launch TerminalEmulator "$HOME/.local/script/tmux-default-session"
+XF86HomePage
+	exo-open --launch FileManager
+XF86Launch5
+	google-chrome-stable
+XF86Launch6
+	opera
+XF86Launch7
+	code
+XF86Launch8
+	code
+XF86Launch9
+	exo-open --launch TerminalEmulator
+XF86Mail
+	exo-open --launch MailReader
+XF86Search
+	catfish
+#XF86WWW
+#	exo-open --launch WebBrowser
+XF86Back
+	cmus-remote --prev
+XF86Forward
+	cmus-remote --next
+
+# => mouse ------------------------------------------------------------------------------------------------------- {{{1
+
+#button8
+#	cmus-remote --prev
+#	xte "keydown Alt_R" "keydown F1" "keyup Alt_R" "keyup F1"
+#button9
+#	cmus-remote --next
+#	xte "keydown Alt_R" "keydown F2" "keyup Alt_R" "keyup F2"
+
+# => ------------------------------------------------------------------------------------------------------------- {{{1
+
+#super + @x
+#	xdotool key --clearmodifiers ctrl+shift+v
+#super + @c
+#	xdotool key --clearmodifiers ctrl+c
+#super + @v
+#	xdotool key --clearmodifiers ctrl+shift+v
