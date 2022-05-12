@@ -6,7 +6,7 @@ super + ctrl + alt + x
 	xkill
 
 super + alt + x
-    xprop > /tmp/xprop.log
+	xprop > /tmp/xprop.log
 
 # => sxhkd hotkeys ----------------------------------------------------------------------------------------------- {{{1
 
@@ -21,7 +21,7 @@ super + ctrl + Escape
 # 	bspc {quit,wm -r}
 
 #close and kill
-super + {_,shift + }w
+super + {_,shift + }q
 	bspc node -{c,k}
 
 alt + F4
@@ -120,18 +120,18 @@ super + {Left,Down,Up,Right}
 
 # => applications ------------------------------------------------------------------------------------------------ {{{1
 
-super + Return
-	alacritty
 super + BackSpace
 	$HOME/.local/script/rofi-exit
-super + b
-	exo-open --launch WebBrowser
+super + Return
+	alacritty
+# super + b
+# 	exo-open --launch WebBrowser
 super + c
 	rofi -show calc -modi "calc:qalc +u8" -no-show-match -no-sort
 super + d
 	rofi -show run
-super + m
-	google-chrome-stable
+# super + m
+# 	google-chrome-stable
 super + o
 	opera
 #super + p
@@ -140,8 +140,6 @@ super + o
 # 	alacritty -e zsh -c "vifm $HOME $HOME"
 super + s
 	$HOME/.local/script/rofi-pass
-super + f
-	$HOME/.local/script/rofi-cheatsheet
 super + t
 	alacritty -e tmux
 super + u
@@ -155,14 +153,16 @@ super + shift + c
 	qalculate-gtk
 super + shift + n
 	alacritty --class 'Alacritty,floating' --command "$HOME/.local/script/create-note"
-super + shift + w
-	alacritty --class 'Alacritty,floating' --command "$HOME/.local/script/open-vim-wiki"
-super + shift + r
-	exo-open --launch FileManager
+# super + shift + r
+# 	exo-open --launch FileManager
+super + shift + s
+	$HOME/.local/script/rofi-cheatsheet
 super + shift + u
 	alacritty --class 'Alacritty,floating' --command "$HOME/.local/script/fzf-select" emoji
 super + shift + v
 	$HOME/.local/script/play-clipboard-url
+super + shift + w
+	alacritty --class 'Alacritty,floating' --command "$HOME/.local/script/open-vim-wiki"
 
 # => ------------------------------------------------------------------------------------------------------------- {{{1
 
@@ -180,8 +180,14 @@ super + control + F5
 
 # => ------------------------------------------------------------------------------------------------------------- {{{1
 
+# XF86AudioMedia
+# 	cmus-remote
+# XF86AudioNext
+# 	cmus-remote
 # XF86AudioPlay
 # 	cmus-remote --pause
+# XF86AudioPrev
+# 	cmus-remote
 # XF86Battery
 # 	xfce4-power-manager-settings
 XF86Calculator
