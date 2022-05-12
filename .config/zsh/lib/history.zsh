@@ -3,13 +3,13 @@
 
 alias h='history'
 
-# => History command configuration ------------------------------------------------------------------------------- {{{1
+# => History command configuration https://zsh.sourceforge.io/Doc/Release/Options.html#History ------------------- {{{1
 
-setopt EXTENDED_HISTORY                                                        # record timestamp of command in HISTFILE
 setopt HIST_FCNTL_LOCK
 setopt HIST_IGNORE_ALL_DUPS                                                    # ignore duplicated commands history list
 setopt HIST_IGNORE_SPACE                                                       # ignore commands that start with space
 setopt HIST_REDUCE_BLANKS
+setopt HIST_SAVE_BY_COPY
 setopt HIST_VERIFY                                                             # show command with history expansion to user before running it
 setopt SHARE_HISTORY                                                           # share command history data
 
