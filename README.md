@@ -1,3 +1,3 @@
 # dotfiles
 
-Config files for linux and msys2
+Config files for linux

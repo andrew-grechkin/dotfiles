@@ -32,3 +32,4 @@ bspc rule -a 'Gimp'                        desktop='8' state=floating follow=on
 bspc rule -a 'Google-chrome'               desktop='1'
 bspc rule -a 'Opera'                       desktop='2'
 bspc rule -a 'Screenkey'                   manage=off
+bspc rule -a 'dolphin'                     desktop='4'

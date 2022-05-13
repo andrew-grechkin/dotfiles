@@ -5,12 +5,9 @@
 .config/mpv/watch_later
 .config/nvim/autoload/plug.vim
 .config/shell/*.work
-.config/systemd/user/chromoting.service
 .config/systemd/user/default.target.wants
-.config/systemd/user/pulseaudio.service.wants
 .config/systemd/user/sockets.target.wants
 .config/systemd/user/timers.target.wants
-.config/systemd/user/xfce4-notifyd.service
 .config/vifm/scripts/README
 .config/vifm/vifm-help.txt
 .config/vifm/vifminfo*

@@ -37,7 +37,6 @@ function _appendvar() {
 # => include common environment ---------------------------------------------------------------------------------- {{{1
 
 source-file "$XDG_CONFIG_HOME/shell/env"
-[[ -n "$WINDIR" ]] && source-file "$XDG_CONFIG_HOME/shell/env.msys2"
 
 export ZDOTDIR=$XDG_CONFIG_HOME/zsh
 
