@@ -7,39 +7,23 @@ use autodie;
 use open ':locale';
 use utf8;
 use warnings;
-use warnings FATAL => qw(utf8);
+use warnings 'FATAL' => qw(utf8);
 use experimental qw(declared_refs refaliasing signatures);
 
-use Carp;
-use Encode qw(decode);
-use English qw(-no_match_vars);
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
-use JSON::PP;
-use List::Util qw(first max);
-use Path::Tiny;
 use Pod::Usage;
+use YAML::XS ();
 
-use constant {
-    'FOLDERS' => [qw(/boot /etc /opt /srv /usr /var)],
-};
+use constant {'FOLDERS' => [qw(/boot /etc /opt /srv /usr /var)]};
 
-our $VERSION = 1.1;
+our $VERSION = 1.2;
 
-my %options = (
-    'VERBOSE' => 0,
-);
+my %options = ('VERBOSE' => 0);
 
 GetOptions(
-    'help|h'     => \(my $help),
+    'help|h'     => sub {pod2usage('-verbose' => 99, 'exitval' => 0)},
     'verbose|v+' => \$options{'VERBOSE'},
-) or die ('Unable to process command line options');
-
-if ($help) {
-    pod2usage(
-        -verbose => 99,
-        exitval  => 0,
-    );
-}
+) or die('Unable to process command line options');
 
 sub main() {
     _print(_altered_files());
@@ -51,20 +35,19 @@ sub _altered_files() {
     my %files;
     foreach my $file (`pacman -Qkk 2>/dev/null`) {
         chomp $file;
-        my ($type, $package, $path, $issue) = $file =~ m{([^:]+): ([^:]+): ([[:print:]]+) ([(] .+ [)])$}x;
+        my ($type, $package, $path, $issue) = $file =~ m{([^:]+): ([^:]+): ([[:print:]]+) ([(] .+ [)]) \z}x;
         $package && $path
             or next;
 
         # say $package, ' ', $type;
         my \@issues = $files{_trim($package)}{_trim($path)} //= [];
-        push (@issues, _trim_par(_trim($issue)));
+        push(@issues, _trim_par(_trim($issue)));
     }
     return \%files;
 }
 
 sub _print ($data_ref) {
-    my $json = JSON::PP->new->pretty(1)->canonical(1);
-    print $json->encode($data_ref);
+    print YAML::XS::Dump($data_ref);
     return;
 }
 

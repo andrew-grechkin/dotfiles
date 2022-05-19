@@ -2,6 +2,12 @@
 # Based on https://github.com/robbyrussell/oh-my-zsh
 
 alias h='history'
+# alias crap='history -d $((HISTCMD-1))'
+
+# do not save failed command in history
+function zshaddhistory() {
+	whence ${${(z)1}[1]} >| /dev/null || return 2
+}
 
 # => History command configuration https://zsh.sourceforge.io/Doc/Release/Options.html#History ------------------- {{{1
 
@@ -39,10 +45,10 @@ function omz_history {
 
 # => Timestamp format -------------------------------------------------------------------------------------------- {{{1
 
-case $HIST_STAMPS in
-	"mm/dd/yyyy") alias history='omz_history -f' ;;
-	"dd.mm.yyyy") alias history='omz_history -E' ;;
-	"yyyy-mm-dd") alias history='omz_history -i' ;;
-	""          ) alias history='omz_history' ;;
-	*           ) alias history="omz_history -t '$HIST_STAMPS'" ;;
-esac
+# case $HIST_STAMPS in
+# 	"mm/dd/yyyy") alias history='omz_history -f' ;;
+# 	"dd.mm.yyyy") alias history='omz_history -E' ;;
+# 	"yyyy-mm-dd") alias history='omz_history -i' ;;
+# 	""          ) alias history='omz_history' ;;
+# 	*           ) alias history="omz_history -t '$HIST_STAMPS'" ;;
+# esac

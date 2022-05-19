@@ -3,12 +3,18 @@
 use v5.34;
 use warnings;
 
+use List::Util qw(shuffle);
+
 use Test2::V0;
 use Test2::Tools::Spec;
+
 use experimental qw(declared_refs refaliasing signatures try);
 
 use MyList::Util qw(
     adjacent_pairs
+    filter_by
+    group_by
+    partition
     difference difference_stable
     difference_by
     symmetric_difference
@@ -20,7 +26,14 @@ use MyList::Util qw(
 
     combinations
     permutations
+
+    mean
+    sorted_median
+    sorted_percentile
+    sorted_quantile
 );
+
+## no critic [ValuesAndExpressions::ProhibitMagicNumbers]
 
 tests 'MyList::Util::adjacent_pairs' => sub {
     is(adjacent_pairs([]),                 [],                                    'empty array');
@@ -28,6 +41,26 @@ tests 'MyList::Util::adjacent_pairs' => sub {
     is(adjacent_pairs([42, 10]),           [[42, 10]],                            'two elements');
     is(adjacent_pairs([42, 10, 20, 7]),    [[42, 10], [10, 20], [20, 7]],         'even amount of elements');
     is(adjacent_pairs([42, 10, 20, 7, 5]), [[42, 10], [10, 20], [20, 7], [7, 5]], 'odd amount of elements');
+};
+
+tests 'MyList::Util::filter_by' => sub {
+    my @array = ({'a' => 1}, {'a' => 2}, {'a' => 3});
+    is(filter_by(sub {$_[0]->{'a'} =~ m/2/},  []),      [],           'empty array');
+    is(filter_by(sub {$_[0]->{'a'} =~ m/4/},  \@array), [],           'nothing mathed');
+    is(filter_by(sub {$_[0]->{'a'} =~ m/2/},  \@array), [{'a' => 2}], 'one mathed');
+    is(filter_by(sub {$_[0]->{'a'} =~ m/\d/}, \@array), \@array,      'many mathed');
+};
+
+tests 'MyList::Util::group_by' => sub {
+    my @array = ({'a' => 1}, {'a' => 1}, {'a' => 3});
+    is(group_by(sub {$_[0]->{'a'}}, []),      {},                                                     'empty array');
+    is(group_by(sub {$_[0]->{'a'}}, \@array), {'1' => [{'a' => 1}, {'a' => 1}], '3' => [{'a' => 3}]}, 'all grouped');
+};
+
+tests 'MyList::Util::partition' => sub {
+    my @array = ({'a' => 1}, {'a' => 1}, {'a' => 3});
+    is([partition(sub {$_[0]->{'a'} == 1}, [])], [[], []], 'empty array');
+    is([partition(sub {$_[0]->{'a'} == 1}, \@array)], [[{'a' => 1}, {'a' => 1}], [{'a' => 3}]], 'all grouped');
 };
 
 tests 'MyList::Util::difference' => sub {
@@ -154,4 +187,33 @@ tests 'MyList::Util::permutations' => sub {
     );
 };
 
+tests 'MyList::Util::mean' => sub {
+    my @array = shuffle(1 .. 9);
+    is(mean([]),      undef, 'empty array');
+    is(mean([42]),    42,    'one element');
+    is(mean(\@array), 5);
+};
+
+tests 'MyList::Util::sorted_median' => sub {
+    my @array = sort {$a <=> $b} (1 .. 19);
+    is(sorted_median([]),      undef, 'empty array');
+    is(sorted_median([42]),    42,    'one element');
+    is(sorted_median(\@array), 10);
+};
+
+tests 'MyList::Util::sorted_percentile' => sub {
+    my @array = sort {$a <=> $b} (1 .. 10);
+    is(sorted_percentile(50,  []),      undef, 'empty array');
+    is(sorted_percentile(50,  [42]),    42,    'one element');
+    is(sorted_percentile(20,  \@array), 2);
+    is(sorted_percentile(35,  \@array), 3);
+    is(sorted_percentile(50,  \@array), 5);
+    is(sorted_percentile(65,  \@array), 7);
+    is(sorted_percentile(70,  \@array), 7);
+    is(sorted_percentile(80,  \@array), 8);
+    is(sorted_percentile(100, \@array), 10);
+};
+
 done_testing();
+
+__END__

@@ -3,6 +3,7 @@
 setopt LONG_LIST_JOBS                                                          # jobs
 setopt INTERACTIVECOMMENTS                                                     # recognize comments
 setopt GLOB_DOTS
+setopt EXTENDED_GLOB
 
 autoload -Uz zmv zcp zln
 autoload -Uz add-zsh-hook

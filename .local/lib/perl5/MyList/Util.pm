@@ -5,7 +5,7 @@ use utf8;
 use warnings;
 use warnings 'FATAL' => qw(utf8);
 
-use List::Util qw(sum0);
+use List::Util qw(min sum0);
 use Storable qw(dclone);
 
 use experimental qw(declared_refs refaliasing signatures try);
@@ -38,11 +38,15 @@ our @EXPORT_OK = qw(
 
 ## no critic [Subroutines::RequireArgUnpacking, Subroutines::ProhibitSubroutinePrototypes]
 
-sub adjacent_pairs ($array) {
+sub adjacent_pairs ($array_ref) {
+    my \@array = $array_ref;
+    my $pairs = @array - 1;
+
     my @result;
-    while ($array->@* > 1) {
-        push(@result, [shift $array->@*, $array->[0]]);
+    for (my $i = 0; $i < $pairs; ++$i) {
+        push(@result, [$array[$i], $array[$i + 1]]);
     }
+
     return \@result;
 }
 
@@ -51,24 +55,23 @@ sub compact ($array_ref) {
     return \@result;
 }
 
-sub filter_by ($filter, $array_ref) {
+sub filter_by : prototype(&$) ($filter, $array_ref) {
     my @result = grep $filter->($_), $array_ref->@*;
     return \@result;
 }
 
-sub group_by ($key_extractor, $array_ref) {
+sub group_by : prototype(&$) ($key_extractor, $array_ref) {
     my %result;
     foreach my $it ($array_ref->@*) {
         my $key = $key_extractor->($it) // 'undef';
         push($result{$key}->@*, $it);
     }
-
     return \%result;
 }
 
-sub partition ($partitioner, $data_aref) {
+sub partition : prototype(&$) ($partitioner, $array_ref) {
     my (@truthy, @falsy);
-    foreach my $it ($data_aref->@*) {
+    foreach my $it ($array_ref->@*) {
         $partitioner->($it) ? push(@truthy, $it) : push(@falsy, $it);
     }
     return (\@truthy, \@falsy);
@@ -135,15 +138,15 @@ sub union_by : prototype(&$$) {
     return [$_[0]->@*, grep {!exists $lhs{$code->()}} $_[1]->@*];
 }
 
-sub combinations ($array, $k, $state = [], $result = []) {
+sub combinations ($array_ref, $k, $state = [], $result = []) {
     if ($k == 0) {
         push($result->@*, $state);
         return $result;
     }
 
-    my $length = scalar $array->@*;
+    my $length = scalar $array_ref->@*;
     for (my $i = 0; $i < $length; ++$i) {
-        combinations([$array->@[($i + 1) .. $length - 1]], $k - 1, [$state->@*, $array->[$i]], $result);
+        combinations([$array_ref->@[($i + 1) .. $length - 1]], $k - 1, [$state->@*, $array_ref->[$i]], $result);
     }
 
     return $result;
@@ -208,10 +211,11 @@ sub mean ($array_ref) {
 
 sub sorted_median ($array_ref) {
     my \@values = $array_ref;
+    my $size = @values;
     return undef      if @values == 0;
     return $values[0] if @values == 1;
 
-    my @middle = @values[int((@values - 1) / 2) .. int((0 + @values) / 2)];
+    my @middle = @values[int(($size - 1) / 2) .. int($size / 2)];
     return mean(\@middle);
 }
 
@@ -221,10 +225,11 @@ sub sorted_percentile ($p, $array_ref) {
 
 sub sorted_quantile ($q, $array_ref) {
     my \@values = $array_ref;
+    my $size = @values;
     return undef      if $q < 0 || 1 < $q || @values == 0;
     return $values[0] if @values == 1;
 
-    my $index = int((@values + 1) * $q) - 1;
+    my $index = min(int(($size + 1) * $q), $size ) - 1;
     return $index >= 0 ? $values[$index] : undef;
 }
 
