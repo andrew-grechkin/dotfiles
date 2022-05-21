@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
 
-pgrep -x sxhkd > /dev/null || sxhkd &
-pgrep -x picom > /dev/null || picom -b &
+BACKGROUND_APPS=(
+	sxhkd
+	picom
+	redshift
+	"$(realpath ~/.local/script/bspwm-watch-monitor)"
+)
 
-"$(realpath ~/.local/script/bspwm-watch-monitor)" &
+for BAPP in "${BACKGROUND_APPS[@]}"; do
+	pgrep -x "$BAPP" > /dev/null || "$BAPP" &
+done
 
 bspc config border_width            2
 bspc config borderless_monocle      true

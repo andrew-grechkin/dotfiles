@@ -4,7 +4,7 @@ source-file "$XDG_CONFIG_HOME/shell/rc"
 source-file "$XDG_CONFIG_HOME/shell/rc.work"
 
 export HISTFILE=$XDG_CONFIG_HOME/z_history
-export HISTORY_IGNORE='(exit( *)#|history( *)#|[bf]g *|cd *|l[alsh] *|less *|vi[m]# *)'
+export HISTORY_IGNORE='(exit( *)#|history( *)#|[bf]g *|cd *|l[alsh] *|less *|vi[m]# *|kill *)'
 
 # => PATH prepare (tail) ----------------------------------------------------------------------------------------- {{{1
 
