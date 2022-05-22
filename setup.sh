@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 mkdir -p ~/.cache/bin
-mkdir -p ~/.config/xfce4
+mkdir -p ~/.config/fontconfig
 mkdir -p ~/.local/{bin,lib}
 mkdir -p ~/.local/share/tig
 mkdir -p ~/{desktop,documents,downloads,music,pictures,public,templates,videos}
