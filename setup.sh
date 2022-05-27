@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+echo 'Executing setup'
+
 mkdir -p ~/.cache/bin
 mkdir -p ~/.config/fontconfig
 mkdir -p ~/.local/{bin,lib}
@@ -9,8 +11,8 @@ mkdir -p ~/{desktop,documents,downloads,music,pictures,public,templates,videos}
 SCRIPT=$(realpath -s "$0")
 WORKDIR=$(dirname "$SCRIPT")
 
-ln -s  "$WORKDIR/.gnupg"                                               ~/
-ln -s  "$WORKDIR/.ssh"                                                 ~/
+ln -s  "$WORKDIR/.gnupg"                                               ~/ 2>/dev/null
+ln -s  "$WORKDIR/.ssh"                                                 ~/ 2>/dev/null
 ln -sf "$WORKDIR/.pam_environment"                                     ~/
 ln -sf "$WORKDIR/.xprofile"                                            ~/
 [[ -z "$ZDOTDIR" ]] && ln -sf "$WORKDIR/.zshenv"                       ~/
@@ -27,6 +29,7 @@ ln -sf "$WORKDIR/.config/mpv"                                          ~/.config
 ln -sf "$WORKDIR/.config/mutt"                                         ~/.config/
 ln -sf "$WORKDIR/.config/nvim"                                         ~/.config/
 ln -sf "$WORKDIR/.config/perlcriticrc"                                 ~/.config/
+ln -sf "$WORKDIR/.config/picom.conf"                                   ~/.config/
 ln -sf "$WORKDIR/.config/rofi"                                         ~/.config/
 ln -sf "$WORKDIR/.config/shell"                                        ~/.config/
 ln -sf "$WORKDIR/.config/sxhkd"                                        ~/.config/
@@ -50,5 +53,5 @@ ln -sf "$WORKDIR/.local/share/wiki"                                    ~/.local/
 
 chmod -R u=rwX,go-rwx "$WORKDIR/.ssh"
 
-[[ -x 'submodules/private/setup.sh' ]] && echo 'Execution private/setup' && (exec 'submodules/private/setup.sh')
-[[ -x 'submodules/secret/setup.sh' ]]  && echo 'Execution secret/setup'  && (exec 'submodules/secret/setup.sh')
+[[ -x 'submodules/private/setup.sh' ]] && echo 'Executing private/setup' && (exec 'submodules/private/setup.sh')
+[[ -x 'submodules/secret/setup.sh' ]]  && echo 'Executing secret/setup'  && (exec 'submodules/secret/setup.sh')
