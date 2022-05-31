@@ -11,7 +11,7 @@ my $xprop = `xprop -id "$window_id"`;
 my @data = split m/ /, $xprop_hints;
 my ( $data, $loc_x, $loc_y, $size_w, $size_h, $min_size_w, $min_size_h, $max_size_w, $max_size_h ) = @data;
 
-open( my $log, '>', '/tmp/bspwm.log' ) or die "open failed: $!";
+open( my $log, '>', '/tmp/bspwm-external-rule.log' ) or die "open failed: $!";
 say {$log} "args: @ARGV";
 say {$log} `xprop -id "$window_id"`;
 

@@ -142,7 +142,7 @@ super + o
 super + s
 	$HOME/.local/script/rofi-pass
 super + t
-	alacritty -e tmux
+	alacritty --class 'Alacritty,Main-Tmux' -e tmux
 super + u
 	alacritty --class 'Alacritty,floating' -e "$HOME/.local/script/fzf-select" unicode
 
