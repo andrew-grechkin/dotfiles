@@ -4,7 +4,7 @@
 	bleach     = !"f(){ git fall; git b | perl -alE 'm/: gone]/ && $F[0] ne q(*) && system(qq(git branch -D $F[0]))'; }; f"
 	bmain      = !"git rev-parse --abbrev-ref origin/HEAD 2>&1 | grep -Eho 'main$|trunk$|master$' || echo 'master'"
 	bname      = !"git rev-parse --abbrev-ref HEAD"
-	bredo      = !"git rebase -i `git merge-base $(git bmain) HEAD`"
+	bredo      = !"f(){ git rebase -i `git mb $@`; }; f"
 	bush       = !"f(){ while true; do git push && break; git pull --no-tags --rebase || break; done }; f"
 	cl         = clone --filter=blob:none
 	co         = checkout
@@ -22,6 +22,7 @@
 	lag        = !"fzf-git-log-all-graph"
 	lg         = !"fzf-git-log-graph"
 	lr         = !"fzf-git-log-reflog"
+	mb         = !"f(){ git merge-base ${1:-$(git bmain)} HEAD; }; f"
 	m-diff     = !"f(){ git diff     -b  --color=always `git m-span .. $@`; }; f"
 	m-dt       = !"f(){ git difftool -b -t vimdiff      `git m-span .. $@`; }; f"
 	m-log      = !"f(){ git log          --color=always `git m-span ..  $@`; }; f"
