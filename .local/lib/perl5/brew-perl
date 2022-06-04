@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -Euo pipefail
+
+perlbrew install perl-5.36.0 -nfj 4 --as='booking-perl5360' -Accflags="-DSILENT_NO_TAINT_SUPPORT" -Duseshrplib -Doptimize="-O3" -UDEBUGGING
+perlbrew lib create booking-perl5360@default
+
+perlbrew install perl-5.36.0 -nfj 4 --as='booking-perl5360-debug' -Accflags="-DSILENT_NO_TAINT_SUPPORT" -Duseshrplib -Doptimize="-Og" -DDEBUGGING --clang
+perlbrew lib create booking-perl5360-debug@default
+
+perlbrew install perl-5.36.0 -nfj 4 --as='booking-perl5360-jemalloc' -Accflags="-DSILENT_NO_TAINT_SUPPORT" -Aldflags="-ljemalloc" -Duseshrplib -Doptimize="-O3" -UDEBUGGING
+perlbrew lib create booking-perl5360-jemalloc@default
