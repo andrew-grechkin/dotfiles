@@ -1,0 +1,41 @@
+# => Mojolicious ------------------------------------------------------------------------------------------------- {{{1
+
+requires "Cpanel::JSON::XS";
+requires "EV";
+requires "Future::AsyncAwait";
+requires "IO::Socket::SSL";
+requires "IO::Socket::Socks";
+requires "Mojolicious";
+requires "Net::DNS::Native";
+requires "Role::Tiny";
+
+# => Misc -------------------------------------------------------------------------------------------------------- {{{1
+
+requires "Code::TidyAll";
+requires "Data::Dump";
+requires "Data::Printer";
+requires "DateTime::TimeZone";
+requires "EV";
+requires "File::Map";
+requires "Image::ExifTool";
+requires "Image::Hash";
+requires "Log::Any";
+requires "Path::Tiny";
+requires "Sereal";
+requires "Sub::StrictDecl";
+requires "Time::Moment";
+requires "YAML::XS";
+
+# => Web --------------------------------------------------------------------------------------------------------- {{{1
+
+requires "Crypt::JWT";
+requires "CryptX";
+requires "Mojo::Pg";
+requires "Mojolicious::Plugin::OpenAPI";
+requires "Mojolicious::Plugin::Status";
+requires "Mojolicious::Plugin::SwaggerUI";
+
+# => Test -------------------------------------------------------------------------------------------------------- {{{1
+
+requires "Test2::Harness";
+requires "Test2::Suite";

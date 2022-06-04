@@ -407,6 +407,10 @@ filetype *.txt
 filextype *.pro
 	\ qtcreator %f &,
 
+filetype cpanfile
+	\ {Install Perl modules}
+	\ cpanm -nq --installdeps .
+
 " => File associations: office files ----------------------------------------------------------------------------- {{{1
 
 filextype *.odt,*.doc,*.docx,*.xls,*.xlsx,*.odp,*.pptx
