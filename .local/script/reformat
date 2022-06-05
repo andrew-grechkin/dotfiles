@@ -1,12 +1,11 @@
 #!/usr/bin/env perl
 
-use v5.34;
+use v5.36;
 use autodie;
 use open ':locale';
 use utf8;
-use warnings;
-use warnings FATAL => qw(utf8);
-use experimental qw(declared_refs refaliasing signatures try);
+use warnings 'FATAL' => qw(utf8);
+use experimental qw(builtin declared_refs defer for_list isa re_strict refaliasing try);
 
 use Digest::SHA qw(sha256_hex);
 use Encode ();
@@ -19,23 +18,21 @@ use Log::Any qw($log);
 use Log::Any::Adapter ('Stderr', log_level => 'info');
 use Path::Tiny;
 
-use Data::Printer;
-
 our $VERSION = 1.00;
 
 ## no critic [ValuesAndExpressions::RequireInterpolationOfMetachars]
 my %types = (
     '\.fb2$|\.xml$|\.kdenlive$' => sub ($input_file, $output_file) {
         $input_file =~ s/"/\\"/g;
-        my $cmd = join (' ', 'xmllint', '--encode', 'UTF-8', '--format', qq("$input_file"), '>', "'$output_file'",
-            '2>/dev/null');
+        my $cmd = join(' ',
+            'xmllint', '--encode', 'UTF-8', '--format', qq("$input_file"), '>', "'$output_file'", '2>/dev/null');
         return $cmd;
     },
     '\.json$' => sub ($input_file, $output_file) {
-        return join (' ', 'jq', '-S', '--indent', '2', '.', "'$input_file'", '>', "'$output_file'", '2>/dev/null');
+        return join(' ', 'jq', '-S', '--indent', '2', '.', "'$input_file'", '>', "'$output_file'", '2>/dev/null');
     },
     '\.yaml$' => sub ($input_file, $output_file) {
-        return join (' ', 'yaml-sanitize', "'$input_file'", '>', "'$output_file'", '2>/dev/null');
+        return join(' ', 'yaml-sanitize', "'$input_file'", '>', "'$output_file'", '2>/dev/null');
     },
 );
 
@@ -58,9 +55,8 @@ sub main {
     $log->{'adapter'}{'log_level'} += $options{'VERBOSE'};
 
     @ARGV
-        or push (@ARGV, '.');
+        or push(@ARGV, '.');
 
-    ## no critic [CodeLayout::RequireFinalSemicolon]
     foreach my $file (gather_files()->@*) {
         foreach my $match (keys %types) {
             if ($file =~ m/$match/) {
@@ -82,7 +78,7 @@ sub main {
                     $backup->cached_temp->unlink_on_destroy(0);
                     $log->errorf("Error occured while writing into: '%s'\nBackup can be found in: '%s'\n%s",
                         $file, $backup, $error);
-                    exit (1);
+                    exit(1);
                 }
             }
         }
@@ -93,14 +89,14 @@ sub main {
 
 sub execute ($command) {
     ## no critic [Bangs::ProhibitBitwiseOperators, ValuesAndExpressions::ProhibitMagicNumbers, ErrorHandling::RequireCarping]
-    system ($command) == 0 or do {
+    system($command) == 0 or do {
         if ($CHILD_ERROR == -1) {
             die "failed to execute: $!\n";
         } elsif ($CHILD_ERROR & 127) {
             die sprintf "child died with signal %d, %s coredump\n", ($CHILD_ERROR & 127),
                 ($CHILD_ERROR & 128) ? 'with' : 'without';
         }
-        die sprintf ("Command exited with value %d: %s\n", $CHILD_ERROR >> 8, $command);
+        die sprintf("Command exited with value %d: %s\n", $CHILD_ERROR >> 8, $command);
     };
 
     return;
@@ -138,14 +134,14 @@ sub gather_files() {
     foreach my $it (@ARGV) {
         my $node = path($it);
         if ($node->is_file) {
-            push (@files, decode($node->stringify)) if !-l $node;
+            push(@files, decode($node->stringify)) if !-l $node;
             next;
         }
         $node->visit(
             sub ($path, @) {
                 $path->is_file && !-l $node
                     or return;
-                push (@files, decode($path->stringify));
+                push(@files, decode($path->stringify));
             },
             {
                 'follow_symlinks' => $options{'FOLLOW'},

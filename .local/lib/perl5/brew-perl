@@ -2,6 +2,8 @@
 
 set -Euo pipefail
 
+[[ -d "/volume1/local/arch/usr" ]] && export OPENSSL_PREFIX="/volume1/local/arch/usr"
+
 perlbrew install perl-5.36.0 -nfj 4 --as='booking-perl5360' -Accflags="-DSILENT_NO_TAINT_SUPPORT" -Duseshrplib -Doptimize="-O3" -UDEBUGGING
 perlbrew lib create booking-perl5360@default
 

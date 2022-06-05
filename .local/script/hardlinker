@@ -1,12 +1,11 @@
 #!/usr/bin/env perl
 
-use v5.34;
+use v5.36;
 use autodie;
 use open ':locale';
 use utf8;
-use warnings;
-use warnings FATAL => qw(utf8);
-use experimental qw(declared_refs refaliasing signatures try);
+use warnings 'FATAL' => qw(utf8);
+use experimental qw(builtin declared_refs defer for_list isa re_strict refaliasing try);
 
 use Digest::SHA qw(sha256_hex);
 use Encode qw(decode);

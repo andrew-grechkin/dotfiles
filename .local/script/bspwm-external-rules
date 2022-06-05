@@ -1,17 +1,19 @@
 #!/usr/bin/perl
 
-use v5.34;
-use warnings;
+use v5.36;
+use autodie;
+use warnings 'FATAL' => qw(utf8);
+use experimental qw(builtin declared_refs defer for_list isa re_strict refaliasing try);
 
-my ( $window_id, $class_name, $instance_name, $params ) = @ARGV;
-my $xprop_hints =
-    `xprop -id "$window_id" -f WM_NORMAL_HINTS 0bi '\$0 \$1 \$2 \$3 \$4 \$5 \$6 \$7 \$8 \$9' WM_NORMAL_HINTS`;
+my ($window_id, $class_name, $instance_name, $params) = @ARGV;
+my $xprop_hints
+    = `xprop -id "$window_id" -f WM_NORMAL_HINTS 0bi '\$0 \$1 \$2 \$3 \$4 \$5 \$6 \$7 \$8 \$9' WM_NORMAL_HINTS`;
 my $xprop = `xprop -id "$window_id"`;
 
 my @data = split m/ /, $xprop_hints;
-my ( $data, $loc_x, $loc_y, $size_w, $size_h, $min_size_w, $min_size_h, $max_size_w, $max_size_h ) = @data;
+my ($data, $loc_x, $loc_y, $size_w, $size_h, $min_size_w, $min_size_h, $max_size_w, $max_size_h) = @data;
 
-open( my $log, '>', '/tmp/bspwm-external-rule.log' ) or die "open failed: $!";
+open(my $log, '>', '/tmp/bspwm-external-rule.log') or die "open failed: $!";
 say {$log} "args: @ARGV";
 say {$log} `xprop -id "$window_id"`;
 
@@ -20,9 +22,9 @@ say {$log} `xprop -id "$window_id"`;
 
 my $output = '';
 
-if ( $xprop =~ m/_KDE_NET_WM_WINDOW_TYPE_ON_SCREEN_DISPLAY/xms ) {
+if ($xprop =~ m/_KDE_NET_WM_WINDOW_TYPE_ON_SCREEN_DISPLAY/xms) {
     $output = 'layer=above center=on manage=on focus=off';
-} elsif ( $data[1] || $data[2] ) {
+} elsif ($data[1] || $data[2]) {
     $output = "center=off rectangle=${size_w}x${size_h}+${loc_x}+${loc_y}";
 }
 

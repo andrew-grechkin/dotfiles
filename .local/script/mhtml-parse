@@ -2,13 +2,12 @@
 
 # ABSTRACT: Parse MIME HTML archives (.mht and .mhtml) and extract files
 
-use v5.34;
+use v5.36;
 use autodie;
 use open 'IO' => ':raw';
 use utf8;
-use warnings;
-use warnings FATAL => qw(utf8);
-use experimental qw(declared_refs refaliasing signatures try);
+use warnings 'FATAL' => qw(utf8);
+use experimental qw(builtin declared_refs defer for_list isa re_strict refaliasing try);
 
 use Encode qw(decode encode);
 use English qw(-no_match_vars);
@@ -36,7 +35,7 @@ sub main() {
 
     my $mp         = Mojo::Content::MultiPart->new;
     my $mp_content = do {local $INPUT_RECORD_SEPARATOR = undef; <>};
-    $mp->parse(sprintf ("Content-Length: %d\r\n", do {use bytes; bytes::length $mp_content}));
+    $mp->parse(sprintf("Content-Length: %d\r\n", do {use bytes; bytes::length $mp_content}));
     $mp->parse($mp_content);
 
     $mp->is_multipart
@@ -70,7 +69,7 @@ sub main() {
 
     if (!$options{'LIST'}) {
         _process_html_parts(\%meta, $dir);
-        rename ($dir, $meta{'dir'});
+        rename($dir, $meta{'dir'});
     }
 
     return 0;
@@ -104,12 +103,12 @@ sub _process_part ($index, $part, $meta_ref, $dir) {
         $info{'main'} = 1;
     }
 
-    say sprintf ('Found document [%.3d]: %s, %s', $index, $info{'name'}, $url);
+    say sprintf('Found document [%.3d]: %s, %s', $index, $info{'name'}, $url);
 
     if ($info{'main'} && !$meta{'main'}) {
         $meta{'main'} = $url;
     } else {
-        push ($meta{'parts'}->@*, $url);
+        push($meta{'parts'}->@*, $url);
     }
 
     for ($headers->header('content-transfer-encoding')) {
@@ -186,7 +185,7 @@ sub _process_html_parts ($meta_ref, $dir) {
 }
 
 sub _split_header ($header) {
-    my @fields = split (m/;/, $header);
+    my @fields = split(m/;/, $header);
     my %result = map {trim($_)}
         map {my ($k, $v) = split m/=/; ($k, $v) = ('_anonymous_', $k) if !defined $v; $k => $v} @fields;
     return \%result;

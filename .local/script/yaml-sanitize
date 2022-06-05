@@ -1,12 +1,11 @@
 #!/usr/bin/env perl
 
-use v5.34;
+use v5.36;
 use autodie;
 use open IO => ':raw';
 use utf8;
-use warnings;
 use warnings 'FATAL' => qw(utf8);
-use experimental qw(declared_refs refaliasing signatures try);
+use experimental qw(builtin declared_refs defer for_list isa re_strict refaliasing try);
 
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
 use Pod::Usage;

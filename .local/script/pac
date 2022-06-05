@@ -1,21 +1,20 @@
 #!/usr/bin/env perl
 
-use v5.28;
+use v5.36;
 use autodie;
 use open ':locale';
 use utf8;
-use warnings;
-use warnings FATAL => qw(utf8);
-use experimental qw(declared_refs refaliasing signatures);
+use warnings 'FATAL' => qw(utf8);
+use experimental qw(builtin declared_refs defer for_list isa re_strict refaliasing try);
 
 use IPC::Open2;
 
 our $VERSION = 1;
 
 sub main() {
-    chomp (my @installed_depend   = `pacman -Qqd`);
-    chomp (my @installed_explicit = `pacman -Qqe`);
-    chomp (my @available          = `pacman -Slq`);
+    chomp(my @installed_depend   = `pacman -Qqd`);
+    chomp(my @installed_explicit = `pacman -Qqe`);
+    chomp(my @available          = `pacman -Slq`);
 
     my %available = map {$_ => undef} @available;
     delete @available{@installed_depend, @installed_explicit};
@@ -69,13 +68,13 @@ sub _start_fzf() {
     );
 
     my $pid = open2(my $chld_out, my $chld_in, @cmd);
-    binmode ($_, ':encoding(UTF-8)') foreach $chld_in, $chld_out;
+    binmode($_, ':encoding(UTF-8)') foreach $chld_in, $chld_out;
     return $pid, $chld_out, $chld_in;
 }
 
 sub _spew_to_fzf ($in, $list) {
     foreach my $package ($list->@*) {
-        say {$in} sprintf ('%s %s %s', $package->@*);
+        say {$in} sprintf('%s %s %s', $package->@*);
     }
     close $in;
 
@@ -85,7 +84,7 @@ sub _spew_to_fzf ($in, $list) {
 sub _wait_fzf ($pid, $out) {
     my @output = <$out>;
 
-    waitpid ($pid, 0)
+    waitpid($pid, 0)
         or die "Unable to wait for fzf to finish: $!\n";
 
     @output = map _trim($_), @output;
@@ -94,7 +93,7 @@ sub _wait_fzf ($pid, $out) {
 }
 
 sub _trim ($str) {
-    chomp ($str);
+    chomp($str);
     return $str =~ s{\A\s+|\s+\z}{}xgr;
 }
 

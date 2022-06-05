@@ -1,12 +1,11 @@
 #!/usr/bin/env perl
 
-use v5.34;
+use v5.36;
 use autodie;
 use open ':locale';
 use utf8;
-use warnings;
-use warnings FATAL => qw(utf8);
-use experimental qw(declared_refs refaliasing signatures try);
+use warnings 'FATAL' => qw(utf8);
+use experimental qw(builtin declared_refs defer for_list isa re_strict refaliasing try);
 
 use Encode;
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
@@ -31,7 +30,7 @@ sub main() {
     ) or die "Unable to process command line options\n";
 
     @ARGV
-        or push (@ARGV, '.');
+        or push(@ARGV, '.');
 
     my %files;
     foreach my $folder (@ARGV) {
@@ -41,8 +40,8 @@ sub main() {
                     or return;
 
                 my $stat = $path->stat;
-                push (
-                    $files{sprintf ('d(%d)i(%d)', $stat->dev, $stat->ino)}->@*,
+                push(
+                    $files{sprintf('d(%d)i(%d)', $stat->dev, $stat->ino)}->@*,
                     decode('UTF-8', $path->stringify, Encode::FB_CROAK),
                 );
             },

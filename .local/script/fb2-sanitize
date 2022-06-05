@@ -1,21 +1,18 @@
 #!/usr/bin/env perl
 
-use v5.34;
+use v5.36;
 use autodie;
 use open ':locale';
 use utf8;
-use warnings;
-use warnings FATAL => qw(utf8);
-use experimental qw(declared_refs refaliasing signatures try);
+use warnings 'FATAL' => qw(utf8);
+use experimental qw(builtin declared_refs defer for_list isa re_strict refaliasing try);
 
-# core
 use Encode ();
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
 use IPC::Open2;
 use Pod::Usage;
 use Scalar::Util qw(looks_like_number);
 
-# non core
 use Log::Any qw($log);
 use Log::Any::Adapter ('Stderr', log_level => 'info');
 use Mojo::DOM qw();
@@ -62,8 +59,8 @@ sub main() {
 
 sub external_process ($xml, @cmd) {
     my $pid = open2(my $chld_out, my $chld_in, @cmd);
-    binmode ($chld_in,  ':raw');
-    binmode ($chld_out, ':encoding(UTF-8)');
+    binmode($chld_in,  ':raw');
+    binmode($chld_out, ':encoding(UTF-8)');
 
     if (not defined $pid) {
         say {*STDERR} 'Failed to execute xmllint';
@@ -75,11 +72,11 @@ sub external_process ($xml, @cmd) {
 
     my @linted = <$chld_out>;
 
-    waitpid ($pid, 0)
+    waitpid($pid, 0)
         or die "Unable to wait for child to finish: $!\n";
 
-    chomp (@linted);
-    return join ("\n", @linted);
+    chomp(@linted);
+    return join("\n", @linted);
 }
 
 sub process ($octets) {

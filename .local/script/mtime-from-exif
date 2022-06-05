@@ -1,11 +1,11 @@
 #!/usr/bin/env perl
 
-use v5.34;
+use v5.36;
 use autodie;
+use open ':locale';
 use utf8;
-use warnings;
-use warnings FATAL => qw(utf8);
-use experimental qw(declared_refs refaliasing signatures try);
+use warnings 'FATAL' => qw(utf8);
+use experimental qw(builtin declared_refs defer for_list isa re_strict refaliasing try);
 
 use Carp;
 use Encode qw(decode);
@@ -13,13 +13,11 @@ use English qw(-no_match_vars);
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
 use Pod::Usage;
 
+use Image::ExifTool;
 use Log::Any qw($log);
 use Log::Any::Adapter ('Stderr', log_level => 'info');
 use Path::Tiny;
-
-use Image::ExifTool;
 use Time::Moment;
-
 use YAML::XS ();
 
 our $VERSION = 1.00;

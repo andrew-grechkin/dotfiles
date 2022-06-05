@@ -1,21 +1,21 @@
 #!/usr/bin/env perl
 
-use v5.28;
+use v5.36;
 use autodie;
 use open ':std', ':encoding(UTF-8)';
 use utf8;
-use warnings;
 use warnings 'FATAL' => qw(utf8);
+use experimental qw(builtin declared_refs defer for_list isa re_strict refaliasing try);
 
 use English qw(-no_match_vars);
 
 my $match = qr{[#]\s (?<emoji>\S+) \sE\d+ [.] \d+\s (?<name>.*)}x;
 
-push (@ARGV, '/usr/share/unicode/emoji/emoji-test.txt');
+push(@ARGV, '/usr/share/unicode/emoji/emoji-test.txt');
 
 while (my $line = <<>>) {
-    chomp ($line);
-    $line && length ($line) && substr ($line, 0, 1) ne '#'
+    chomp($line);
+    $line && length($line) && substr($line, 0, 1) ne '#'
         or next;
 
     if ($line =~ $match) {

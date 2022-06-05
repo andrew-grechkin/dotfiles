@@ -1,16 +1,15 @@
 #!/usr/bin/env perl
 
-use v5.34;
+use v5.36;
 use autodie;
 use open ':locale';
 use utf8;
-use warnings;
-use warnings FATAL => qw(utf8);
-use experimental qw(declared_refs refaliasing signatures try);
+use warnings 'FATAL' => qw(utf8);
+use experimental qw(builtin declared_refs defer for_list isa re_strict refaliasing try);
 
-use Carp;
 use Encode qw(decode);
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+
 use Path::Tiny;
 
 our $VERSION = 1;
@@ -28,7 +27,7 @@ sub main() {
         'follow|f'  => \$options{'FOLLOW'},
         'match|m'   => \$options{'MATCH'},
         'recurse|r' => \$options{'RECURSE'},
-    ) or croak 'Unable to process command line options';
+    ) or die "Unable to process command line options\n";
 
     my $match = qr{$options{'MATCH'}};
 
@@ -38,7 +37,7 @@ sub main() {
             $path->is_file
                 or return;
 
-            push ($state->{'files'}->@*, path(decode('UTF-8', $path->stringify, Encode::FB_CROAK)));
+            push($state->{'files'}->@*, path(decode('UTF-8', $path->stringify, Encode::FB_CROAK)));
         },
         {
             'follow_symlinks' => $options{'FOLLOW'},
@@ -65,7 +64,7 @@ sub main() {
             }
 
             my $new_path = $new_dir->child($name);
-            say 'Moving: ', join (' -> ', $path, $new_path);
+            say 'Moving: ', join(' -> ', $path, $new_path);
             $path->move($new_path) if $options{'APPLY'};
         }
     }

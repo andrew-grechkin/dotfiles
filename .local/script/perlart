@@ -2,13 +2,16 @@
 
 # video: https://www.youtube.com/watch?v=fVnmYzJfy5s
 
-use v5.28;
+use v5.36;
 use autodie;
-use warnings;
-use warnings FATAL => qw(utf8);
+use open ':locale';
+use utf8;
+use warnings 'FATAL' => qw(utf8);
+use experimental qw(builtin declared_refs defer for_list isa re_strict refaliasing try);
+
+use Getopt::Long qw(:config auto_help auto_version bundling no_ignore_case);
 
 use Code::ART;
-use Getopt::Long qw(:config auto_help auto_version bundling no_ignore_case);
 use Path::Tiny;
 
 GetOptions(
@@ -78,9 +81,9 @@ sub _report_unused {
 
 sub _line_offset {
     my ($file_content, $index) = @_;
-    my $substr    = substr ($file_content, 0, $index);
+    my $substr    = substr($file_content, 0, $index);
     my $line      = () = $substr =~ m/\n/g;
-    my $latest_ln = rindex ($substr, "\n");
+    my $latest_ln = rindex($substr, "\n");
     return $line + 1, $index - $latest_ln;
 }
 

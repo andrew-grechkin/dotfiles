@@ -2,13 +2,12 @@
 
 # ABSTRACT: Detect all extra files in Arch linux system folders
 
-use v5.28;
+use v5.36;
 use autodie;
 use open ':locale';
 use utf8;
-use warnings;
 use warnings 'FATAL' => qw(utf8);
-use experimental qw(declared_refs refaliasing signatures);
+use experimental qw(builtin declared_refs defer for_list isa re_strict refaliasing try);
 
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
 use Pod::Usage;

@@ -2,9 +2,12 @@
 # Author: Todd Larason <jtl@molehill.org>
 # $XFree86: xc/programs/xterm/vttests/256colors2.pl,v 1.1 1999/07/11 08:49:54 dawes Exp $
 
-use v5.28;
-use warnings;
-use warnings FATAL => qw(utf8);
+use v5.36;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings 'FATAL' => qw(utf8);
+use experimental qw(builtin declared_refs defer for_list isa re_strict refaliasing try);
 
 ## no critic [ValuesAndExpressions::ProhibitMagicNumbers, ValuesAndExpressions::ProhibitEscapedCharacters]
 print "256 color mode\n\n";

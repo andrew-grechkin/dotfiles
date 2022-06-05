@@ -2,17 +2,14 @@
 
 # ABSTRACT: Detect all extra files in Arch linux system folders
 
-use v5.28;
+use v5.36;
 use autodie;
 use open ':locale';
 use utf8;
-use warnings;
-use warnings FATAL => qw(utf8);
-use experimental qw(declared_refs refaliasing signatures);
+use warnings 'FATAL' => qw(utf8);
+use experimental qw(builtin declared_refs defer for_list isa re_strict refaliasing try);
 
-use Carp;
 use Encode qw(decode);
-use English qw(-no_match_vars);
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
 use List::Util qw(first max);
 use Pod::Usage;
@@ -116,14 +113,12 @@ use constant {
 
 our $VERSION = 1;
 
-my %options = (
-    'VERBOSE' => 0,
-);
+my %options = ('VERBOSE' => 0,);
 
 GetOptions(
     'help|h'     => \(my $help),
     'verbose|v+' => \$options{'VERBOSE'},
-) or die ('Unable to process command line options');
+) or die('Unable to process command line options');
 
 if ($help) {
     pod2usage(
@@ -138,11 +133,11 @@ my \%by_category  = _group_by_category(\%system_files);
 _print(\%by_category);
 
 sub _pacman_files() {
-    chomp (my @files = `pacman -Qlq`);
+    chomp(my @files = `pacman -Qlq`);
     return \@files;
 }
 
-sub _system_files(%pacman_files) {
+sub _system_files (%pacman_files) {
     my %files;
     foreach my $folder (FOLDERS()->@*) {
         Path::Tiny::path($folder)->visit(
@@ -163,22 +158,22 @@ sub _system_files(%pacman_files) {
     return \%files;
 }
 
-sub _group_by_category($files_ref) {
+sub _group_by_category ($files_ref) {
     my \%files = $files_ref;
     my %by_category;
     foreach my $file (sort keys %files) {
-        push ($by_category{_get_category($file)}->@*, $file);
+        push($by_category{_get_category($file)}->@*, $file);
     }
 
     return \%by_category;
 }
 
-sub _get_category($file) {
+sub _get_category ($file) {
     state $categories = [sort keys CATEGORY()->%*];
     return first {$file =~ CATEGORY()->{$_}{'match'}} $categories->@*;
 }
 
-sub _print($by_category_ref) {
+sub _print ($by_category_ref) {
     my \%by_category = $by_category_ref;
 
     my $category_length = 1 + max map length, keys %by_category;
@@ -186,9 +181,9 @@ sub _print($by_category_ref) {
         my \%it = CATEGORY()->{$category};
         if (0 <= $options{'VERBOSE'} - $it{'level'}) {
             say {*STDOUT} $category, " ($it{'match'}):";
-            say {*STDOUT} "\t", $_ foreach $by_category{$category}->@*;
+            say {*STDOUT} "\t",      $_ foreach $by_category{$category}->@*;
         } else {
-            say {*STDOUT} sprintf (
+            say {*STDOUT} sprintf(
                 "%-${category_length}s %-5d files (%s)",
                 "$category:", scalar $by_category{$category}->@*,
                 $it{'match'},

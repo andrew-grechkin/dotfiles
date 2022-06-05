@@ -1,7 +1,8 @@
 #!/usr/bin/env perl
+
 # man: PerlIO
 
-use v5.28;
+use v5.36;
 use autodie;
 use open ':std', 'OUT' => ':crlf';
 use utf8;
@@ -10,10 +11,10 @@ use warnings FATAL => qw(utf8);
 
 BEGIN {
     # by some kind of a bug open pragma with ':crlf' is not applied to STDOUT
-    binmode (STDOUT, ':raw :crlf');
+    binmode(STDOUT, ':raw :crlf');
 }
 
-while (<<>>) { ## no critic [Freenode::WhileDiamondDefaultAssignment]
+while (<<>>) {
     chomp;
 } continue {
     say;
