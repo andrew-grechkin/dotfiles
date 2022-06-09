@@ -24,13 +24,11 @@ use constant {
     'PARAM_LIMIT'  => 'n=',
     'PARAM_MARKET' => 'mkt=',
     'PARAM_SKIP'   => 'idx=',
-    'UA'           => Mojo::UserAgent->new->max_redirects(2),
+    'UA'           => Mojo::UserAgent->new->max_redirects(2)->request_timeout(10)->tap(sub {$_->proxy->detect}),
     'URL'          => Mojo::URL->new('http://www.bing.com'),
 };
 
 sub main() {
-    UA()->proxy->detect;
-
     foreach my $market (sort keys MARKETS()->%*) {
         for (my ($skip, $limit) = (0, 5); $skip <= 10; $skip += $limit) {
             say 'Skip: ', $skip;

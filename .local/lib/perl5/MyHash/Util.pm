@@ -1,10 +1,9 @@
 package MyHash::Util;
 
-use v5.34;
+use v5.36;
 use utf8;
-use warnings;
 use warnings 'FATAL' => qw(utf8);
-use experimental qw(declared_refs refaliasing signatures try);
+use experimental qw(builtin declared_refs defer for_list isa re_strict refaliasing try);
 
 use Storable qw(dclone);
 

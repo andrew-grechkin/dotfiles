@@ -9,45 +9,41 @@ use utf8;
 use warnings 'FATAL' => qw(utf8);
 use experimental qw(builtin declared_refs defer for_list isa re_strict refaliasing try);
 
-use File::Path qw(make_path);
-use File::Spec;
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
-use JSON::PP ();
 use List::Util qw(shuffle uniq);
 use Pod::Usage;
 
-BEGIN {
-    eval {
-        require HTTP::Request;
-        require LWP::UserAgent;
-        require URI;
-    } or do {
-        say 'Please install modules: HTTP::Request LWP::UserAgent URI';
-        exit 2;
-    };
-}
+use Log::Any qw($log);
+use Log::Any::Adapter 'Stderr', 'log_level' => 'info';
+use Mojo::File qw(path);
+use Mojo::URL;
+use Mojo::UserAgent;
 
-our $VERSION = 2.2;
+our $VERSION = 3.0;
 
 use constant {
-    'URL_BASE'        => 'http://www.bing.com',
-    'URL_PATH'        => 'HPImageArchive.aspx',
     'PREFERRED_FONTS' => {map {$_ => undef} 'DejaVu Serif', 'DejaVu Sans', 'Noto Sans CJK JP', 'Source Han Sans'},
-    'AGENT'           => LWP::UserAgent->new(timeout => 10),
+    'UA'              => Mojo::UserAgent->new->max_redirects(2)->request_timeout(10)->tap(sub {$_->proxy->detect}),
+    'URL'             => Mojo::URL->new('http://www.bing.com'),
 };
 
 my %options = (
     'HELP'       => 0,
     'MARKET'     => 'de-DE,en-AU,en-CA,en-IN,en-NZ,en-UK,en-US,es-ES,fr-FR,ja-JP,zh-CN',
-    'OUTPUT_DIR' => File::Spec->catfile('/var/tmp', 'bing-wallpaper'),
+    'OUTPUT_DIR' => '/var/tmp/bing-wallpaper',
     'SET'        => 0,
     'VERBOSE'    => 0,
 );
 
 sub main() {
-    _parse_options();
-
-    AGENT()->env_proxy;
+    GetOptions(
+        'directory|d=s' => \$options{'OUTPUT_DIR'},
+        'help|h'        => sub {pod2usage('-verbose' => 99, 'exitval' => 0)},
+        'market|m=s'    => \$options{'MARKET'},
+        'set|s'         => \$options{'SET'},
+        'verbose|v+'    => \$options{'VERBOSE'},
+    ) or die $log->fatal('Unable to process command line options');
+    $options{'OUTPUT_DIR'} = path($options{'OUTPUT_DIR'});
 
     my $market = (shuffle split(m/,/, $options{'MARKET'}))[0];
     my $info   = _fetch_info($market);
@@ -57,7 +53,7 @@ sub main() {
         if ($ENV{'XDG_CURRENT_DESKTOP'}) {
             _set_wallpaper($path);
         } else {
-            carp 'Unable to determine current desktop session';
+            die $log->fatal('Unable to determine current desktop session');
         }
     }
 
@@ -66,59 +62,37 @@ sub main() {
 
 # => ------------------------------------------------------------------------------------------------------------- {{{1
 
-sub _parse_options() {
-    GetOptions(
-        'directory|d=s' => \$options{'OUTPUT_DIR'},
-        'help|h'        => \$options{'HELP'},
-        'market|m=s'    => \$options{'MARKET'},
-        'set|s'         => \$options{'SET'},
-        'verbose|v+'    => \$options{'VERBOSE'},
-    ) or croak 'Unable to process command line options';
-
-    if ($options{'HELP'}) {
-        pod2usage(
-            -verbose => 99,
-            exitval  => 0,
-        );
-        exit;
-    }
-
-    return;
-}
-
 sub _fetch_info ($market, $limit = 1, $skip = 0) {
-    my $url = URI->new_abs(URL_PATH(), URL_BASE());
-    $url->query_form({
-            'format' => 'js',
-            'idx'    => $skip,
-            'n'      => $limit,
-            'mkt'    => $market,
-        },
+    my $url = URL()->clone->path('HPImageArchive.aspx')->query(
+        'format' => 'js',
+        'idx'    => $skip,
+        'n'      => $limit,
+        'mkt'    => $market,
     );
+    $log->infof('Archive url: %s', $url);
 
-    say 'Archive url: ', $url->as_string;
-
-    my $response = AGENT()->request(HTTP::Request->new(GET => $url));
+    my $response = UA()->get($url)->result;
     $response->is_success
-        or croak("Failed to retrieve $url: ", $response->status_line);
+        or croak("Failed to retrieve '$url': ", join(' ', $response->code, $response->message));
 
-    my $json = JSON::PP->new->utf8(1);
-    return $json->decode($response->decoded_content);
+    return $response->json
+        || croak("Failed to decode json: $! $@");
 }
 
 sub _fetch_image ($market, $descriptor) {
-    make_path($options{'OUTPUT_DIR'});
-    my $jpg_path = File::Spec->catfile($options{'OUTPUT_DIR'}, "image-of-the-day-$market.jpg");
+    $options{'OUTPUT_DIR'}->make_path;
+    my $jpg_path = $options{'OUTPUT_DIR'}->child("image-of-the-day-$market.jpg");
 
-    my $url = URI->new_abs($descriptor->{'url'}, URL_BASE());
-    say 'Fetching:    ', $url->as_string;
-    say 'To:          ', $jpg_path;
+    my $url = URL()->clone->path_query($descriptor->{'url'});
+    $log->infof('Fetching:    %s', $url);
+    $log->infof('To:          %s', $jpg_path);
 
-    my $response = AGENT()->request(HTTP::Request->new(GET => $url));
+    my $response = UA()->get($url)->result;
     $response->is_success
-        or croak("Failed to retrieve $url: ", $response->status_line);
+        or croak("Failed to retrieve '$url': ", join(' ', $response->code, $response->message));
 
-    _save_raw_file($jpg_path, $response->content);
+    $response->save_to($jpg_path);
+
     _process_image($jpg_path, $descriptor);
 
     return $jpg_path;
@@ -126,8 +100,8 @@ sub _fetch_image ($market, $descriptor) {
 
 sub _process_image ($path, $descriptor) {
     my $family = _find_font_family($descriptor->{'copyright'});
-    say 'Applying:    ', $descriptor->{'copyright'};
-    say 'Font family: ', $family;
+    $log->infof('Applying:    %s', $descriptor->{'copyright'});
+    $log->infof('Font family: %s', $family);
     $descriptor->{'copyright'} =~ s{'}{"}g;
     my @cmd = (
         qw(convert -fill white -pointsize 28 -gravity NorthWest -draw),
@@ -135,7 +109,7 @@ sub _process_image ($path, $descriptor) {
         '-family', $family, $path, $path,
     );
     system(@cmd) == 0
-        or carp 'Unable to process image';
+        or die $log->fatal('Unable to process image');
     return;
 }
 
@@ -168,7 +142,7 @@ sub _set_wallpaper ($path) {
         );
 
         system(@cmd) == 0
-            or croak 'Unable to set KDE wallpaper';
+            or die $log->fatal('Unable to set KDE wallpaper');
 
         return;
     }
@@ -176,13 +150,6 @@ sub _set_wallpaper ($path) {
     system(qw(feh --no-fehbg --bg-scale), $path) == 0
         or croak('Unable to set wallpaper: ', $path);
 
-    return;
-}
-
-sub _save_raw_file ($path, $content) {
-    open(my $fh, '>:raw', $path);
-    print {$fh} $content;
-    close $fh;
     return;
 }
 

@@ -10,11 +10,15 @@ use experimental qw(builtin declared_refs defer for_list isa re_strict refaliasi
 use Digest::SHA qw(sha256_hex);
 use Encode qw(decode);
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+use List::Util qw(min);
 use Pod::Usage;
 
 use File::Map qw(map_file);
 use Log::Any qw($log);
-use Log::Any::Adapter ('Stderr', log_level => 'info');
+use Log::Any::Adapter 'Syslog', 'options' => 'pid,ndelay';
+use Log::Any::Adapter::Syslog;
+use Log::Any::Adapter::Stderr;
+use Log::Any::Adapter::Util qw(INFO TRACE WARNING);
 use Path::Tiny;
 
 our $VERSION = 2.04;
@@ -40,26 +44,33 @@ sub main {
         'follow|f'   => \$options{'FOLLOW'},
         'recurse|r'  => \$options{'RECURSE'},
         'verbose|v+' => \$options{'VERBOSE'},
-    ) or die "Unable to process command line options\n";
+    ) or die $log->fatal('Unable to process command line options');
 
-    $log->{'adapter'}{'log_level'} += $options{'VERBOSE'};
+    Log::Any::Adapter->set(
+        'Multiplex',
+        'adapters' => {
+            'Syslog' => ['options'   => 'pid,ndelay', 'log_level' => 'warning'],
+            'Stderr' => ['log_level' => min(TRACE(), INFO() + $options{'VERBOSE'})],
+        },
+    );
 
     @ARGV
         or push(@ARGV, '.');
 
+    my %stats;
+
 ### Regroup files by dev + size
     my \%by_dev_size = _regroup_arrays(
-        gather_files(),
+        gather_files(\%stats),
         'key' => sub ($, $value) {
             return sprintf('d(%d)s(%d)', $value->{'stat'}->dev, $value->{'stat'}->size);
         },
     );
 
 ### Prepare order by dev and file size
-    my @order = sort { ## no critic [BuiltinFunctions::RequireSimpleSortBlock]
-        my ($stat_a, $stat_b) = ($by_dev_size{$a}[0]{'stat'}, $by_dev_size{$b}[0]{'stat'});
-        $stat_a->dev <=> $stat_b->dev or $stat_a->size <=> $stat_b->size
-    } keys %by_dev_size;
+    my @order = map {$_->[0]}
+        sort {$a->[1]->dev <=> $b->[1]->dev or $a->[1]->size <=> $b->[1]->size}
+        map {[$_, $by_dev_size{$_}[0]{'stat'}]} keys %by_dev_size;
 
 ### Process every size group
     my $counter = 0;
@@ -108,11 +119,12 @@ sub main {
 }
 
 ### gather files and group them by dev && inode
-sub gather_files() {
-    $log->debug('Gathering files');
-
+sub gather_files ($stats_href) {
     my %by_dev_ino;
-    my $files_amount = 0;
+
+    $log->trace('Gathering files started');
+    defer {$log->debugf('Gathering files finished: %d', $stats_href->{'files_count'})};
+
     foreach my $folder (@ARGV) {
         path($folder)->visit(
             sub ($path, @) {
@@ -126,7 +138,7 @@ sub gather_files() {
                 _is_valid_file($path, $stat)
                     or return;
 
-                ++$files_amount;
+                ++$stats_href->{'files_count'};
                 my \%it = $by_dev_ino{sprintf('d(%d)i(%d)', $stat->dev, $stat->ino)}[0] //= {'stat' => $stat};
                 push($it{'paths'}->@*, decode('UTF-8', $path->stringify, Encode::FB_CROAK));
             },
@@ -136,7 +148,6 @@ sub gather_files() {
             },
         );
     }
-    $log->debug('Gathering files finished: ', $files_amount);
 
     return \%by_dev_ino;
 }
@@ -160,7 +171,7 @@ sub _regroup_arrays ($current_href, %params) {
 
 sub _process_identical_checksums ($checksum, @inodes) {
     @inodes > 1 or do {
-        $log->debug('Skipping subbucket: ', $checksum);
+        $log->debugf('Skipping subbucket: %s', $checksum);
         return;
     };
 
@@ -180,7 +191,7 @@ sub _process_identical_checksums ($checksum, @inodes) {
 
 sub _do_hardlink ($path, $new_path) {
     my $message = join(' <- ', $path, $new_path);
-    $log->info('Hardlinking: ', $message);
+    $log->infof('Hardlinking: %s', $message);
 
     if ($options{'APPLY'}) {
         my $backup = path($new_path . '.hardlinker');

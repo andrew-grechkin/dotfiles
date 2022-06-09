@@ -11,6 +11,7 @@ requires "Role::Tiny";
 
 # => Misc -------------------------------------------------------------------------------------------------------- {{{1
 
+requires "Carp::Always";
 requires "Code::TidyAll";
 requires "Data::Dump";
 requires "Data::Printer";
@@ -21,8 +22,11 @@ requires "Image::ExifTool";
 requires "Image::Hash";
 requires "Log::Any";
 requires "Path::Tiny";
+requires "Reply";
 requires "Sereal";
+requires "Sort::Naturally";
 requires "Sub::StrictDecl";
+requires "Term::ReadLine::Gnu";
 requires "Time::Moment";
 requires "YAML::XS";
 
