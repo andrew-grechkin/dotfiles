@@ -144,6 +144,8 @@ color-severity-low     = bold cyan
 
 [-Freenode::EmptyReturn]
 
+[-NamingConventions::Capitalization]
+
 # => 5 ----------------------------------------------------------------------------------------------------------- {{{1
 
 # 5 Bangs::ProhibitBitwiseOperators [bangs bugs]

@@ -1,0 +1,35 @@
+package Mojo::File::Role::CanVisit;
+
+# ABSTRACT: Package Mojo::File::Role::CanVisit
+
+use v5.36;
+use Mojo::Base -role;
+
+use File::Find            ();
+use File::Spec::Functions ();
+
+sub visit ($self, $cb, $options = {}) {
+    my %stat;
+    return \%stat unless -d $$self;
+
+    local $File::Find::skip_pattern   = qr/^[.]/x unless $options->{'hidden'};
+    local $File::Find::dont_use_nlink = 1 if $options->{'dont_use_nlink'};
+
+    my $max_depth = $options->{'max_depth'};
+    my $wanted = sub {
+        if ($max_depth) {
+            my $rel = $File::Find::name =~ s{^\Q$$self\E/?}{}r;
+            $File::Find::prune = 1 if File::Spec::Functions::splitdir($rel) >= $max_depth;
+        }
+
+        $cb->($File::Find::name, \%stat);
+    };
+
+    File::Find::find({'wanted' => $wanted, 'no_chdir' => 1}, $$self);
+
+    return \%stat;
+}
+
+1;
+
+__END__
