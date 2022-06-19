@@ -20,6 +20,7 @@ call plug#begin('~/.cache/vim/plugged')
 	Plug 'vifm/vifm.vim'
 	Plug 'rodjek/vim-puppet'                                                   " For Puppet syntax highlighting
 "	Plug 'vim-ruby/vim-ruby', {'for': 'ruby'}                                  " For Facts, Ruby functions, and custom providers
+	Plug 'elixir-editors/vim-elixir', {'for': 'elixir'}
 	Plug 'pearofducks/ansible-vim'
 "	Plug '~/.local/share/vim-plug/trackperlvars', {'for': 'perl'}
 "	Plug '~/.local/share/vim-plug/perlart',       {'for': 'perl'}

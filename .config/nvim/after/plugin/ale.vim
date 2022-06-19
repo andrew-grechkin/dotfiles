@@ -17,6 +17,7 @@ if plugin#is_loaded('ale')
 	let g:ale_fix_on_save_ignore = {
 	\   'cpp':        ['clang-format'],
 	\   'css':        ['prettier'],
+	\   'elixir':     ['mix_format'],
 	\   'fb2':        ['xmllint'],
 	\   'html':       ['prettier', 'eslint'],
 	\   'javascript': ['eslint'],
@@ -33,6 +34,7 @@ if plugin#is_loaded('ale')
 	\   '*':          [                             'remove_trailing_lines', 'trim_whitespace'],
 	\   'cpp':        ['clang-format',              'remove_trailing_lines', 'trim_whitespace'],
 	\   'css':        ['prettier',                  'remove_trailing_lines', 'trim_whitespace'],
+	\   'elixir':     ['mix_format',                'remove_trailing_lines', 'trim_whitespace'],
 	\   'fb2':        ['xmllint',                   'remove_trailing_lines', 'trim_whitespace'],
 	\   'html':       ['prettier', 'eslint',        'remove_trailing_lines', 'trim_whitespace'],
 	\   'javascript': ['eslint',                    'remove_trailing_lines', 'trim_whitespace'],

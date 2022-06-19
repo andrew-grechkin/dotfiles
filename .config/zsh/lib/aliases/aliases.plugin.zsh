@@ -64,6 +64,7 @@ alias perf-report='sudo perf report'
 # => yum --------------------------------------------------------------------------------------------------------- {{{1
 
 alias yumdt='sudo yum group install "Development Tools"'
+alias yum-add-repo='yum-config-manager --add-repo "http://yum-mirror/yum/personal_repos/agrechkin/\$releasever/\$basearch/RPMS"'
 
 # => zsh --------------------------------------------------------------------------------------------------------- {{{1
 

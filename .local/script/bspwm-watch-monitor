@@ -41,14 +41,14 @@ use constant {
                 say $str;
             },
         },
-        {
-            'match' => qr{\Amonitor_(add|remove)}x,
-            'cb'    => \&rearrange_monitors,
-        },
-        {
-            'match' => qr{\Amonitor_geometry}x,
-            'cb'    => \&remove_disconnected_monitors,
-        },
+#         {
+#             'match' => qr{\Amonitor_(add|remove)}x,
+#             'cb'    => \&rearrange_monitors,
+#         },
+#         {
+#             'match' => qr{\Amonitor_geometry}x,
+#             'cb'    => \&remove_disconnected_monitors,
+#         },
     ],
 };
 
