@@ -3,9 +3,8 @@ package Log::Any::Adapter::Multiplex;
 # ABSTRACT: Adapter to use allow structured logging across other adapters
 
 use v5.36;
-use warnings;
-use parent qw(Log::Any::Adapter::Base);
-use experimental qw(builtin declared_refs defer for_list isa re_strict refaliasing try);
+use parent       qw(Log::Any::Adapter::Base);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
 use Carp       ();
 use List::Util ();

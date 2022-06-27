@@ -4,11 +4,19 @@ set -Euo pipefail
 
 [[ -d "/volume1/local/arch/usr" ]] && export OPENSSL_PREFIX="/volume1/local/arch/usr"
 
-perlbrew install perl-5.36.0 -nfj 4 --as='booking-perl5360' -Accflags="-DSILENT_NO_TAINT_SUPPORT" -Duseshrplib -Doptimize="-O3" -UDEBUGGING
-perlbrew lib create booking-perl5360@default
+NPROC=4
+[[ -x "$(command which -- nproc)" ]] && {
+	NPROC="$(nproc)"
+}
 
-perlbrew install perl-5.36.0 -nfj 4 --as='booking-perl5360-debug' -Accflags="-DSILENT_NO_TAINT_SUPPORT" -Duseshrplib -Doptimize="-Og" -DDEBUGGING --clang
-perlbrew lib create booking-perl5360-debug@default
+perlbrew install perl-5.36.0 -nf -j "$NPROC"
+perlbrew lib create perl-5.36.0@default
 
-perlbrew install perl-5.36.0 -nfj 4 --as='booking-perl5360-jemalloc' -Accflags="-DSILENT_NO_TAINT_SUPPORT" -Aldflags="-ljemalloc" -Duseshrplib -Doptimize="-O3" -UDEBUGGING
-perlbrew lib create booking-perl5360-jemalloc@default
+# perlbrew install perl-5.36.0 -nf -j "$NPROC" --as='booking-perl5360' -Accflags="-DSILENT_NO_TAINT_SUPPORT" -Duseshrplib -Doptimize="-O3" -UDEBUGGING
+# perlbrew lib create booking-perl5360@default
+
+# perlbrew install perl-5.36.0 -nf -j "$NPROC" --as='booking-perl5360-debug' -Accflags="-DSILENT_NO_TAINT_SUPPORT" -Duseshrplib -Doptimize="-Og" -DDEBUGGING --clang
+# perlbrew lib create booking-perl5360-debug@default
+
+# perlbrew install perl-5.36.0 -nf -j "$NPROC" --as='booking-perl5360-jemalloc' -Accflags="-DSILENT_NO_TAINT_SUPPORT" -Aldflags="-ljemalloc" -Duseshrplib -Doptimize="-O3" -UDEBUGGING
+# perlbrew lib create booking-perl5360-jemalloc@default
