@@ -5,7 +5,7 @@ use autodie;
 use open ':std', ':encoding(UTF-8)';
 use utf8;
 use warnings 'FATAL' => qw(utf8);
-use experimental qw(builtin declared_refs defer for_list isa re_strict refaliasing try);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
 push(@ARGV, '/usr/share/unicode/UnicodeData.txt');
 

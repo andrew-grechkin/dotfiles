@@ -4,7 +4,7 @@ package Mojo::File::Role::CanCopyTree;
 
 use v5.36;
 use Mojo::Base -role;
-use experimental qw(builtin declared_refs defer for_list isa re_strict refaliasing try);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
 sub copy_tree_to() {
     return;

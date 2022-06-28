@@ -3,7 +3,7 @@ package MyHash::Util;
 use v5.36;
 use utf8;
 use warnings 'FATAL' => qw(utf8);
-use experimental qw(builtin declared_refs defer for_list isa re_strict refaliasing try);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
 use Storable qw(dclone);
 

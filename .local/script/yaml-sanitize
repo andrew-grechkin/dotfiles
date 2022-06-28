@@ -5,7 +5,7 @@ use autodie;
 use open IO => ':raw';
 use utf8;
 use warnings 'FATAL' => qw(utf8);
-use experimental qw(builtin declared_refs defer for_list isa re_strict refaliasing try);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
 use Pod::Usage;
