@@ -5,11 +5,11 @@ set -Euo pipefail
 PATH="$(dirname "$0"):$PATH"
 
 {
-	GIT_LIST=(git ls-files -co --exclude-standard)
 #	GIT_LIST=(git ls-tree -r --name-only HEAD)
+	GIT_LIST=(git ls-files -co --exclude-standard)
 	RG__LIST=(rg --hidden --files)
 
 	"${GIT_LIST[@]}" \
 	|| "${RG__LIST[@]}" \
 	|| _fzf_compgen_helper . 'f'
-} 2>/dev/null
+} | grep -vP '\A(?:webservice|slib)/' 2>/dev/null

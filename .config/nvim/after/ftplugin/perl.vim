@@ -11,7 +11,7 @@ setlocal suffixesadd=.pl,.pm,.t
 setlocal include=
 setlocal define=
 
-setlocal wildignore+=*\\webservice\\*
+setlocal wildignore+=*\\webservice\\*,*\\slib\\*
 setlocal formatprg=perltidy
 setlocal iskeyword+=$,@,%
 
