@@ -22,6 +22,8 @@ requires "Image::ExifTool";
 requires "Image::Hash";
 requires "Log::Any";
 requires "Path::Tiny";
+requires "Perl::Critic";
+requires "Perl::Critic::Pulp";
 requires "Reply";
 requires "Sereal";
 requires "Sort::Naturally";

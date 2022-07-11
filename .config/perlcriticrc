@@ -42,6 +42,8 @@ color-severity-low     = bold cyan
 # Already available in core policy
 [-Freenode::StrictWarnings]
 
+[-Modules::ProhibitMultiplePackages]
+
 [-Subroutines::ProhibitBuiltinHomonyms]
 
 # Can't find how to mark DSL keywords

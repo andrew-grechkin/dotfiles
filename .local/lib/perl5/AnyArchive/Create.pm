@@ -12,8 +12,8 @@ use Carp;
 use List::Util qw(first);
 
 state @supported = (
-    {'suffix' => qr{[.]tar.gz$ |   [.]tgz$ |   [.]taz$}x, 'options' => ['--gzip']},
-    {'suffix' => qr{[.]tar.zst$ |  [.]tzst$}x,            'options' => ['--zstd']},
+    {'suffix' => qr{[.]tar[.]gz$  |  [.]tgz$ |   [.]taz$}x, 'options' => ['--gzip']},
+    {'suffix' => qr{[.]tar[.]zst$ |  [.]tzst$}x,            'options' => ['--zstd']},
 );
 
 sub execute ($archive, $items, $root = undef) {
@@ -22,7 +22,7 @@ sub execute ($archive, $items, $root = undef) {
         ? ('--directory', $root, map {$_->relative($root)->stringify} $items->@*)
         : (map {$_->stringify} $items->@*);
 
-    system ('tar', _get_options($archive), '-vcf', $archive, @items) == 0
+    system('tar', _get_options($archive), '-vcf', $archive, @items) == 0
         or croak "Unable to execute compress command: $!";
 
     return;
