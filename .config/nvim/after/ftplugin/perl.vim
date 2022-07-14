@@ -2,8 +2,8 @@ compiler perl
 setlocal expandtab smarttab shiftwidth=4 softtabstop=4 tabstop=4
 setlocal foldmethod=syntax
 
-setlocal path+=**,/usr/lib/perl5/**,/usr/share/perl5/**
-setlocal suffixesadd=.pl,.pm,.t
+setlocal path+=lib/**,slib/**,/usr/lib/perl5/**,/usr/share/perl5/**
+setlocal suffixesadd=.pm
 
 "perl include search works really slow, disable it
 "setlocal include=^\\s*\\<\\(use\\\|require\\)\\>\\s\\+
@@ -11,7 +11,7 @@ setlocal suffixesadd=.pl,.pm,.t
 setlocal include=
 setlocal define=
 
-setlocal wildignore+=*\\webservice\\*,*\\slib\\*
+setlocal wildignore+=*\\webservice\\*
 setlocal formatprg=perltidy
 setlocal iskeyword+=$,@,%
 
