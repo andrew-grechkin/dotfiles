@@ -43,15 +43,15 @@ else
 	set tabpagemax=50                                                          " Maximum number of tabs open by -p flag
 	set noesckeys                                                              " Don't wait after pressing ESC in insert mode
 	set ttyfast                                                                " Indicates that our connection is fast
+
+	set autoread                                                               " Set to auto read when a file is changed from the outside
 endif
 
 " => General ----------------------------------------------------------------------------------------------------- {{{1
 
-set autoread                                                                   " Set to auto read when a file is changed from the outside
 set autowrite                                                                  " Write the content of the file automatically if you call :make
 set fileformats=unix,dos,mac                                                   " Use Unix as the standard file type
 set history=10000                                                              " Longest possible command history
-set magic
 set nobackup noswapfile nowritebackup
 set nojoinspaces
 set path=.,
@@ -69,7 +69,7 @@ runtime! config/*.vim
 " => vim-plug plugins -------------------------------------------------------------------------------------------- {{{1
 
 runtime! preload/*.vim
-runtime plug.vim
+runtime! plug.vim
 
 " => UI ---------------------------------------------------------------------------------------------------------- {{{1
 
@@ -142,7 +142,7 @@ set virtualedit=block
 
 silent! set breakindent
 set colorcolumn=120                                                            " Break line on 120 characters
-let &showbreak = '↳⋙⋙⋙'                                                        " Pretty soft break character
+let &showbreak = '--->'                                                        " Pretty soft break character
 
 set autoindent smartindent                                                     " Copy indent from the previous line
 
