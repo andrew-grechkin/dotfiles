@@ -15,7 +15,7 @@ function precmd() {
 () {
 	typeset -AHg ZSH_THEME
 	ZSH_THEME['GIT_PROMPT_PREFIX']='%K{23}%F{231}%B'
-	ZSH_THEME['GIT_PROMPT_SUFFIX']='%b%K{36}%F{23}'
+	ZSH_THEME['GIT_PROMPT_SUFFIX']='%b%K{36}%F{23}'
 	ZSH_THEME['GIT_PROMPT_DIRTY']=''
 	ZSH_THEME['GIT_PROMPT_CLEAN']=''
 	ZSH_THEME['GIT_PROMPT_AHEAD']='%B%F{cyan}↑'
@@ -31,11 +31,9 @@ function precmd() {
 	ZSH_THEME['CLOCK']='%K{29}%F{231}%B%T%b%f%k'
 	ZSH_THEME['CWD']='%F{cyan}:%f%B%F{blue}%~%f%b'
 
-	# MODE_INDICATOR='%F{yellow}%B➤%b%F{yellow}➤➤%f'
-
 	local history='$[HISTCMD-1]'
-	local no_error='%K{black}%F{29}%f%k'
-	local is_error="%K{red}%F{29}%F{231}%B${history} -> %?%b%K{black}%F{red}%f%k"
+	local no_error='%K{black}%F{29}%f%k'
+	local is_error="%K{red}%F{29}%F{231}%B${history} -> %?%b%K{black}%F{red} %f%k"
 	ZSH_THEME['RETURN']="%(?.${no_error}.${is_error})"
 
 	# Check if we are root
@@ -58,5 +56,5 @@ zstyle    ':vcs_info:*'                 get-revision             true
 zstyle    ':vcs_info:*'                 stagedstr                '%B%F{green}+'
 zstyle    ':vcs_info:*'                 unstagedstr              '%B%F{yellow}*'
 zstyle -e ':vcs_info:git+set-message:*' hooks                    'reply=(${${(k)functions[(I)[+]vi-git-set-message*]}#+vi-})'
-zstyle    ':vcs_info:*'                 formats                  '%K{23}%F{231}%b%K{29}%F{23}%F{233}%i%k%F{29}%u%c%m '
-zstyle    ':vcs_info:*'                 actionformats            '%K{23}%F{231}%b%K{29}%F{23}%F{233}%i%k%F{29}%a %m '
+zstyle    ':vcs_info:*'                 formats                  '%K{23}%F{231}%b%K{29}%F{23} %F{233}%i%k%F{29} %u%c%m '
+zstyle    ':vcs_info:*'                 actionformats            '%K{23}%F{231}%b%K{29}%F{23} %F{233}%i%k%F{29} %a %m '

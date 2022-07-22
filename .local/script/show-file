@@ -67,8 +67,8 @@ function footer() {
 		hexdump -C "$1" \
 		|| true
 	elif (( FILESIZE < 1000000 )); then
-		pygmentize -O style=monokai -f console256 -g "$1" \
-		|| bat --style=numbers --color=always "$1" \
+		bat --style=numbers --color=always --tabs=4 "$1" \
+		|| pygmentize -O style=monokai -f console256 -g "$1" \
 		|| cat "$1"
 		(( FILESIZE > 255)) && return
 		echo
