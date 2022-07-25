@@ -5,8 +5,8 @@
 # export        PERLTIDY="$XDG_CONFIG_HOME/perltidyrc"
 export      PERLCRITIC="$XDG_CONFIG_HOME/perlcriticrc"
 export PERL_CPANM_HOME="$XDG_CACHE_HOME/cpanm"
-export   PERLBREW_HOME="$XDG_DATA_HOME/perlbrew"
-export   PERLBREW_ROOT="$XDG_DATA_HOME/perlbrew"
+export   PERLBREW_HOME="${PERLBREW_HOME:-$XDG_DATA_HOME/perlbrew}"
+export   PERLBREW_ROOT="${PERLBREW_ROOT:-$XDG_DATA_HOME/perlbrew}"
 
 # work specific
 export USING_PERL_MODULE_INSTALL=1

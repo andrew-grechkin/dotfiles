@@ -36,7 +36,10 @@ files=()
 files+=("$ZDOTDIR/lib"/*.zsh)
 files+=("$ZDOTDIR/lib"/**/*.plugin.zsh)
 files+=("$ZDOTDIR/lib"/**/*.theme.zsh)
-files+=("$ZDOTDIR/3rdparty"/**/*.plugin.zsh)
+
+[[ -d "$ZDOTDIR/3rdparty" ]] && [[ -n "$(find $ZDOTDIR/3rdparty -maxdepth 2 -name '*.plugin.zsh' -print -quit)" ]] && {
+	files+=("$ZDOTDIR/3rdparty"/**/*.plugin.zsh)
+}
 
 for FILE in "${files[@]}"; do
 	builtin source "$FILE"

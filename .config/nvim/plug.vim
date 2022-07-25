@@ -53,7 +53,7 @@ call plug#begin('~/.cache/vim/plugged')
 			""" UI
 			" Plug folke/lsp-colors.nvim'
 			""" completion
-			if 1
+			if 1                                                                   " completion
 				let g:loaded_completion = 1
 				Plug 'f3fora/cmp-spell'
 				Plug 'hrsh7th/cmp-buffer'
@@ -72,14 +72,14 @@ call plug#begin('~/.cache/vim/plugged')
 "			Plug 'akinsho/bufferline.nvim'
 		else                                                                       " no Neovim lua support
 "			Plug 'Valloric/YouCompleteMe', {'do': './install.py --clang-completer --system-libclang'}
-			Plug 'Valloric/YouCompleteMe', {'do': './install.py --clangd-completer'}
+"			Plug 'Valloric/YouCompleteMe', {'do': './install.py --clangd-completer'}
 "			Plug 'junegunn/vim-peekaboo'                                           " Preview registers
 		endif
 
-		if 1                                                                       " work plugins
-			Plug 'elixir-editors/vim-elixir', {'for': 'elixir'}
-			Plug 'rodjek/vim-puppet'                                               " For Puppet syntax highlighting
+		if 1                                                                       " work related plugins
+"			Plug 'elixir-editors/vim-elixir', {'for': 'elixir'}
 "			Plug 'fatih/vim-go', {'for': 'go'}
+			Plug 'rodjek/vim-puppet'                                               " For Puppet syntax highlighting
 "			Plug 'vim-ruby/vim-ruby', {'for': 'ruby'}                              " For Facts, Ruby functions, and custom providers
 "			Plug '~/.local/share/vim-plug/trackperlvars', {'for': 'perl'}
 "			Plug '~/.local/share/vim-plug/perlart',       {'for': 'perl'}
@@ -91,7 +91,7 @@ call plug#begin('~/.cache/vim/plugged')
 			Plug 'junegunn/fzf', {'dir': '~/.cache/fzf', 'do': './install --bin'}
 		else                                                                       " Install these pluggins only on personal machines
 			Plug 'szw/vim-g'                                                       " Search on Google
-			" Plug 'inkarkat/vim-localrc'
+"			Plug 'inkarkat/vim-localrc'
 			Plug 'mgrabovsky/vim-cuesheet'
 			Plug 'shumphrey/fugitive-gitlab.vim'                                   " fugitive Gitlab module
 			Plug 'tmux-plugins/vim-tmux', {'for': 'tmux'}                          " Vim plugin for .tmux.conf
