@@ -222,9 +222,7 @@ local norm_term_mappings = {
 }
 
 local visual_mappings = {
-    ['<leader>'] = {
-        d = {'"_dd', 'delete to a black hole'},
-    },
+    ['<leader>'] = {d = {'"_dd', 'delete to a black hole'}},
     g = {
         ['<'] = {'<gv', 'don\'t loose selection when changing indentation'},
         ['>'] = {'>gv', 'don\'t loose selection when changing indentation'},
