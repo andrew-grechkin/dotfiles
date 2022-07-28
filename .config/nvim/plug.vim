@@ -43,8 +43,6 @@ call plug#begin('~/.cache/vim/plugged')
 "			Plug 'dyng/ctrlsf.vim', {'on': ['CtrlSF','<Plug>CtrlSFPrompt','<Plug>CtrlSFCwordPath','<Plug>CtrlSFVwordExec']} " Global search and replace
 "			Plug 'simnalamburt/vim-mundo', {'on': 'MundoToggle'}                   " Visualize the undo tree
 			Plug 'nvim-telescope/telescope.nvim'
-			""" coloring
-			Plug 'RRethy/vim-hexokinase', {'do': 'make hexokinase'}
 			""" LSP
 			Plug 'neovim/nvim-lspconfig'                                           " ~/.config/nvim/after/plugin/nvim-lspconfig.lua
 			Plug 'williamboman/nvim-lsp-installer'
@@ -97,6 +95,8 @@ call plug#begin('~/.cache/vim/plugged')
 			Plug 'tmux-plugins/vim-tmux', {'for': 'tmux'}                          " Vim plugin for .tmux.conf
 			Plug 'tpope/vim-rhubarb'                                               " fugitive Github module
 			Plug 'vimwiki/vimwiki'                                                 " Personal wiki
+			""" coloring
+			Plug 'RRethy/vim-hexokinase', {'do': 'make hexokinase'}
 		endif
 	endif
 
