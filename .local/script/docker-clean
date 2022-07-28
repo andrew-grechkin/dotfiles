@@ -2,7 +2,7 @@
 
 set -Eeuo pipefail
 
-DANGLING_IMAGES=$(docker images -f 'dangling=true' -q)
+mapfile -t DANGLING_IMAGES < <(docker images -f 'dangling=true' -q)
 
 [[ -n "${DANGLING_IMAGES[*]}" ]] && {
 	command docker rmi -f "${DANGLING_IMAGES[@]}"
