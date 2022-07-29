@@ -1,3 +1,16 @@
+" let VIM_CREATE_DIR    = ':silent !mkdir -p '. VIM_CONFIG_HOME . '/autoload'
+let VIM_PLUG_URL      = 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+let VIM_PLUG_DOWNLOAD = ':silent !curl -sfLo ' . VIM_CONFIG_HOME . '/autoload/plug.vim --create-dirs ' . VIM_PLUG_URL
+
+if empty(glob(VIM_CONFIG_HOME . '/autoload/plug.vim'))                          " Download and install vim-plug
+	" execute VIM_CREATE_DIR
+	execute VIM_PLUG_DOWNLOAD
+	augroup InstallPlugins
+		autocmd!
+		autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+	augroup END
+endif
+
 call plug#begin('~/.cache/vim/plugged')
 	if 1                                                                           " common plugins
 		Plug 'Raimondi/delimitMate'
@@ -88,7 +101,7 @@ call plug#begin('~/.cache/vim/plugged')
 		if empty($KDEHOME)                                                         " Install these pluggins only at work remote machines
 			Plug 'junegunn/fzf', {'dir': '~/.cache/fzf', 'do': './install --bin'}
 		else                                                                       " Install these pluggins only on personal machines
-			Plug 'szw/vim-g'                                                       " Search on Google
+"			Plug 'szw/vim-g'                                                       " Search on Google
 "			Plug 'inkarkat/vim-localrc'
 			Plug 'mgrabovsky/vim-cuesheet'
 			Plug 'shumphrey/fugitive-gitlab.vim'                                   " fugitive Gitlab module
@@ -103,18 +116,17 @@ call plug#begin('~/.cache/vim/plugged')
 
 	if 0                                                                           " These plugins are disabled
 		Plug 'chrisbra/csv.vim'
-		Plug 'guns/xterm-color-table.vim', {'on': 'XtermColorTable'}
 		Plug 'flazz/vim-colorschemes'                                              " Huge set of color schemes
-		Plug 'vim-scripts/ScrollColors', {'on': 'SCROLL'}                          " Scroll through color schemes
+		Plug 'guns/xterm-color-table.vim', {'on': 'XtermColorTable'}
 		Plug 'itchyny/lightline.vim'
 		Plug 'jceb/vim-hier'
-		Plug 'neoclide/coc.nvim', {'do': { -> coc#util#install()}}                 " Language Server support
-		Plug 'tpope/vim-vinegar'
-		Plug 'vim-vdebug/vdebug'
-		Plug 'xolox/vim-misc'
-		Plug 'xolox/vim-easytags'
 		Plug 'mhinz/vim-startify'                                                  " startify is slow!
+		Plug 'tpope/vim-vinegar'
 		Plug 'unblevable/quick-scope'
+		Plug 'vim-scripts/ScrollColors', {'on': 'SCROLL'}                          " Scroll through color schemes
+		Plug 'vim-vdebug/vdebug'
+		Plug 'xolox/vim-easytags'
+		Plug 'xolox/vim-misc'
 		""" perl autocomplete (not working properly)
 		Plug 'chumakd/perlomni.vim'
 		Plug 'Shougo/deoplete.nvim'

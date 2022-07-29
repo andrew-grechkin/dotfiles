@@ -1,5 +1,6 @@
-if plugin#is_loaded('vifm.vim')
-	let g:vifm_embed_split = 1
+scriptencoding=utf-8
+if !plugin#is_loaded('vifm.vim') | finish | endif
 
-	noremap <silent> <leader><leader>n :EditVifm<CR>
-endif
+let g:vifm_embed_split = 1
+
+noremap <silent> <leader><leader>n :EditVifm<CR>

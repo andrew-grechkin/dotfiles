@@ -1,11 +1,12 @@
 " url: https://github.com/tpope/vim-commentary
 
-if plugin#is_loaded('vim-commentary')
-	nmap     <C-_>                         gcl
-	vmap     <C-_>                         gc
+scriptencoding=utf-8
+if !plugin#is_loaded('vim-commentary') | finish | endif
 
-	augroup SettingsVimCommentary
-		autocmd!
-		autocmd FileType perl,vim let b:commentary_startofline = 1
-	augroup END
-endif
+nmap     <C-_>                         gcl
+vmap     <C-_>                         gc
+
+augroup SettingsVimCommentary
+	autocmd!
+	autocmd FileType perl,vim let b:commentary_startofline = 1
+augroup END

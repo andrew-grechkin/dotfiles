@@ -1,3 +1,6 @@
+scriptencoding=utf-8
+if !plugin#is_loaded('fzf.vim') | finish | endif
+
 "command! FilesProject    execute 'Files' dir#git_root()
 command! FilesCurrentDir execute 'Files' dir#current()
 "command! FilesCurrentDir  execute 'Files' getcwd()
