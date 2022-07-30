@@ -1,4 +1,3 @@
-scriptencoding=utf-8
 if !plugin#is_loaded('vim-airline') | finish | endif
 
 let g:airline#extensions#ale#enabled     = 1

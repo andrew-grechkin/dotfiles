@@ -1,6 +1,5 @@
 " url: https://github.com/tpope/vim-commentary
 
-scriptencoding=utf-8
 if !plugin#is_loaded('vim-commentary') | finish | endif
 
 nmap     <C-_>                         gcl

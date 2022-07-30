@@ -1,4 +1,3 @@
-scriptencoding=utf-8
 if exists('g:loaded_completion') || plugin#is_loaded('YouCompleteMe') | finish | endif
 
 " vim: set noet fenc=utf-8 ff=unix sts=4 sw=4 ts=4 :

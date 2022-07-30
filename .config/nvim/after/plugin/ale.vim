@@ -89,6 +89,9 @@ let g:ale_cpp_gcc_options            = '-std=c++20 -Wall -I ./include -I ./src/i
 let g:ale_cpp_parse_compile_commands = 1
 let g:ale_cpp_parse_makefile         = 1
 
+" ale-lua-luacheck
+let g:ale_lua_luacheck_options = '--allow_defined_top'
+
 " ale_perl
 let g:ale_perl_perl_executable      = 'perl'
 let g:ale_perl_perl_options         = '-cw -Ilib'

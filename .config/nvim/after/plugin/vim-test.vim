@@ -1,4 +1,3 @@
-scriptencoding=utf-8
 if !plugin#is_loaded('vim-test') | finish | endif
 
 let g:test#strategy                = 'neovim'

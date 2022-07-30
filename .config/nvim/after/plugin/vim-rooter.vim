@@ -1,4 +1,3 @@
-scriptencoding=utf-8
 if !plugin#is_loaded('vim-rooter') | finish | endif
 
 let g:rooter_patterns     = ['.config/', '.git', '.git/']

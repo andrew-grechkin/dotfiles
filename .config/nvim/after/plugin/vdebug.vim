@@ -1,4 +1,3 @@
-scriptencoding=utf-8
 if !plugin#is_loaded('vdebug') | finish | endif
 
 if !exists('g:vdebug_options')

@@ -1,4 +1,3 @@
-scriptencoding=utf-8
 if !plugin#is_loaded('ctrlsf.vim') | finish | endif
 
 let g:ctrlsf_auto_focus = {

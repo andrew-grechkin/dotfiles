@@ -1,17 +1,4 @@
-" let VIM_CREATE_DIR    = ':silent !mkdir -p '. VIM_CONFIG_HOME . '/autoload'
-let VIM_PLUG_URL      = 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
-let VIM_PLUG_DOWNLOAD = ':silent !curl -sfLo ' . VIM_CONFIG_HOME . '/autoload/plug.vim --create-dirs ' . VIM_PLUG_URL
-
-if empty(glob(VIM_CONFIG_HOME . '/autoload/plug.vim'))                          " Download and install vim-plug
-	" execute VIM_CREATE_DIR
-	execute VIM_PLUG_DOWNLOAD
-	augroup InstallPlugins
-		autocmd!
-		autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
-	augroup END
-endif
-
-call plug#begin('~/.cache/vim/plugged')
+call plug#begin()
 	if 1                                                                           " common plugins
 		Plug 'Raimondi/delimitMate'
 		Plug 'andrew-grechkin/vim-rooter'                                          " Cwd if file is in git repo should be repo root
@@ -42,7 +29,6 @@ call plug#begin('~/.cache/vim/plugged')
 	if has('nvim') || v:version >= 800                                             " These plugins demand modern vim or neovim
 		Plug 'dense-analysis/ale'                                                  " Async syntax checker
 "		Plug 'easymotion/vim-easymotion'                                           " Better move commands
-		Plug 'lambdalisue/suda.vim'                                                " run sudo from vim
 		Plug 'majutsushi/tagbar'
 "		Plug 'masukomi/vim-markdown-folding'
 		Plug 'mhinz/vim-signify'                                                   " Git status/modifications of the file

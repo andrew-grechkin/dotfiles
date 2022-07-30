@@ -1,4 +1,3 @@
-scriptencoding=utf-8
 if !plugin#is_loaded('vim-grepper') | finish | endif
 
 silent! runtime plugin/grepper.vim                                         " initialize g:grepper with default values

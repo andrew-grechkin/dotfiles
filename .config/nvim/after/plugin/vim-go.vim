@@ -1,4 +1,3 @@
-scriptencoding=utf-8
 if !plugin#is_loaded('vim-go') | finish | endif
 
 " first setup steps: :GoInstallBinaries
