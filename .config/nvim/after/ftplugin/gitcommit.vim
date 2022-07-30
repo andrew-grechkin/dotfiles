@@ -1,1 +1,1 @@
-setlocal syntax=OFF
+setlocal syntax=off

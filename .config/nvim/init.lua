@@ -1,7 +1,7 @@
 ﻿-- Compatible with neovim only
 -- Author: Andrew Grechkin
-vim.api.nvim_command('runtime! init/**/*.vim')
-vim.api.nvim_command('runtime! init/**/*.lua')
+vim.cmd('runtime! init/**/*.lua')
+vim.cmd('runtime! init/**/*.vim')
 
 -- => Cheat sheet ------------------------------------------------------------------------------------------------ {{{1
 
