@@ -71,12 +71,12 @@ local setup = {
 }
 
 local leader_opts = {
-    buffer = nil, -- Global mappings. Specify a buffer number for buffer local mappings
-    mode = 'n', -- NORMAL mode
-    noremap = true, -- use `noremap` when creating keymaps
-    nowait = true, -- use `nowait` when creating keymaps
+    buffer = nil,
+    mode = 'n',
+    noremap = true,
+    nowait = true,
     prefix = '<leader>',
-    silent = true, -- use `silent` when creating keymaps
+    silent = true,
 }
 
 local normal_opts = {
@@ -88,19 +88,27 @@ local normal_opts = {
 }
 
 -- local terminal_opts = {
---     buffer = nil, -- Global mappings. Specify a buffer number for buffer local mappings
---     mode = 't', -- TERMINAL mode
---     noremap = true, -- use `noremap` when creating keymaps
---     nowait = true, -- use `nowait` when creating keymaps
---     silent = true, -- use `silent` when creating keymaps
+--     buffer = nil,
+--     mode = 't',
+--     noremap = true,
+--     nowait = true,
+--     silent = true,
 -- }
 
+local insert_opts = {
+    buffer = nil,
+    mode = 'i',
+    noremap = true,
+    nowait = true,
+    silent = true,
+}
+
 local visual_opts = {
-    buffer = nil, -- Global mappings. Specify a buffer number for buffer local mappings
-    mode = 'v', -- VISUAL mode
-    noremap = true, -- use `noremap` when creating keymaps
-    nowait = true, -- use `nowait` when creating keymaps
-    silent = true, -- use `silent` when creating keymaps
+    buffer = nil,
+    mode = 'v',
+    noremap = true,
+    nowait = true,
+    silent = true,
 }
 
 local leader_mappings = {
@@ -255,9 +263,15 @@ local visual_mappings = {
     y = {'myy`y', 'Yank without jank'},
 }
 
+local insert_mappings = {
+    ['<C-a>'] = {'<Esc>I', 'Edit beginning of the line'},
+    ['<C-e>'] = {'<Esc>A', 'Edit end of the line'},
+}
+
 which_key.setup(setup)
 which_key.register(leader_mappings, leader_opts)
 which_key.register(normal_mappings, normal_opts)
 which_key.register(visual_mappings, visual_opts)
+which_key.register(insert_mappings, insert_opts)
 which_key.register(norm_term_mappings, normal_opts)
 -- which_key.register(norm_term_mappings, terminal_opts)

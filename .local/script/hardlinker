@@ -7,14 +7,14 @@ use utf8;
 use warnings 'FATAL' => qw(utf8);
 use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
-use Digest::SHA qw(sha256_hex);
-use Encode qw(decode);
+use Digest::SHA  qw(sha256_hex);
+use Encode       qw(decode);
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
-use List::Util qw(min);
+use List::Util   qw(min);
 use Pod::Usage;
 
 use File::Map qw(map_file);
-use Log::Any qw($log);
+use Log::Any  qw($log);
 use Log::Any::Adapter 'Syslog', 'options' => 'pid,ndelay';
 use Log::Any::Adapter::Syslog;
 use Log::Any::Adapter::Stderr;
