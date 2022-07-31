@@ -28,8 +28,13 @@ set visualbell
 
 set laststatus=2                                                               " Always show the status line
 
-if has('nvim') && exists('+termguicolors')
+" it seems neovim has a bug and the author has wrong assumptions about [TTY](https://github.com/neovim/neovim/issues/11883#issuecomment-586756604)
+" so it's always sets t_Co to 256 doesn't matter what `tput colors` returns
+" this is a hacky workaround for colorshemes on TTY with 8 colors
+if exists('+termguicolors') && $TERM =~# '256'
 	set termguicolors
+else
+	set notermguicolors
 endif
 
 set cursorcolumn cursorline                                                    " Highlight current column

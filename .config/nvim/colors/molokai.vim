@@ -134,7 +134,7 @@ end
 "
 " Support for 256-color terminal
 "
-if &t_Co > 255
+if &termguicolors ==# 1
    if s:molokai_original == 1
       hi Normal                   ctermbg=234
       hi CursorLine               ctermbg=235   cterm=none
