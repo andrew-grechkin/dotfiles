@@ -212,6 +212,7 @@ local leader_mappings = {
 }
 
 local normal_mappings = {
+    ['<F12>'] = {':call hl#show()<CR>', 'Show highlight info'},
     ['<leader>'] = {
         b = {
             name = 'fast buffers',
