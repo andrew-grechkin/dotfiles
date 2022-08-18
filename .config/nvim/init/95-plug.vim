@@ -34,11 +34,11 @@ call plug#begin()
 	Plug 'folke/which-key.nvim'
 	Plug 'nvim-lua/plenary.nvim'
 	Plug 'nvim-telescope/telescope.nvim'
+	Plug 'nvim-treesitter/nvim-treesitter', { 'do': ':TSUpdate' }
 	""" LSP
 	Plug 'neovim/nvim-lspconfig'                                               " ~/.config/nvim/after/plugin/nvim-lspconfig.lua
 	Plug 'williamboman/nvim-lsp-installer'
 	" Plug 'glepnir/lspsaga.nvim'                                              " ~/.config/nvim/after/plugin/nvim-lspsaga.vim
-	" Plug 'nvim-treesitter/nvim-treesitter', { 'do': ':TSUpdate' }
 	""" UI
 	" Plug folke/lsp-colors.nvim'
 	""" completion

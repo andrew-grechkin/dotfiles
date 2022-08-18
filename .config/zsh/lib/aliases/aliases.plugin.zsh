@@ -109,3 +109,10 @@ alias grab-cd-tracks='abcde -xk    -o flac,ogg:"--quality=5" -a default,cue'
 # => diff/patch -------------------------------------------------------------------------------------------------- {{{1
 
 alias diffdirs='diff -wBNuar'
+
+# => co stream --------------------------------------------------------------------------------------------------- {{{1
+
+alias run8='make -f ~/git/public/andrew-grechkin/centos-rpmbuild-docker/Makefile run8'
+alias run9='make -f ~/git/public/andrew-grechkin/centos-rpmbuild-docker/Makefile run9'
+alias build8-here='make -f ~/git/public/andrew-grechkin/centos-rpmbuild-docker/Makefile build8'
+alias build9-here='make -f ~/git/public/andrew-grechkin/centos-rpmbuild-docker/Makefile build9'

@@ -21,6 +21,7 @@ requires "File::Map";
 requires "Image::ExifTool";
 requires "Image::Hash";
 requires "Log::Any";
+requires "Neovim::Ext";
 requires "Path::Tiny";
 requires "Perl::Critic";
 requires "Perl::Critic::Pulp";

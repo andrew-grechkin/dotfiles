@@ -232,7 +232,7 @@ local normal_mappings = {
     g = {
         name = 'fast buffers',
         h = {':bprevious<CR>', 'buffer: previous'},
-        l = {':bnext<CR>', 'buffer: last'},
+        l = {':bnext<CR>', 'buffer: next'},
     },
     n = {'nzzzv', 'n and center'},
     t = {
