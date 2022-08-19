@@ -33,7 +33,7 @@ function precmd() {
 
 	local history='$[HISTCMD-1]'
 	local no_error='%K{black}%F{29}%f%k'
-	local is_error="%K{red}%F{29}%F{231}%B${history} -> %?%b%K{black}%F{red} %f%k"
+	local is_error=" %K{red}%F{29}%F{231}%B${history} -> %?%b%K{black}%F{red}%f%k"
 	ZSH_THEME['RETURN']="%(?.${no_error}.${is_error})"
 
 	# Check if we are root

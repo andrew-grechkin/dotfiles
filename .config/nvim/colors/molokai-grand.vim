@@ -174,25 +174,25 @@ else
 		hi WarningMsg        ctermfg=231         ctermbg=238         cterm=bold
 		hi WildMenu          ctermfg=81          ctermbg=16
 	else " 16 colors only
-		hi Boolean           ctermfg=LightBlue
+		hi Boolean           ctermfg=Blue
 		hi Character         ctermfg=Yellow
 		hi Comment           ctermfg=Gray
 		hi Conditional       ctermfg=Red
-		hi Constant          ctermfg=LightBlue
+		hi Constant          ctermfg=Blue
 		hi Debug             ctermfg=Gray
 		hi Define            ctermfg=Cyan
-		hi Delimiter         ctermfg=DarkGray
+		hi Delimiter         ctermfg=White
 		hi Error             ctermfg=Brown       ctermbg=Red
 		hi Exception         ctermfg=Brown
-		hi Float             ctermfg=LightBlue
+		hi Float             ctermfg=Blue
 		hi Function          ctermfg=Green
 		hi Identifier        ctermfg=Magenta
 		hi Ignore            ctermfg=DarkGray
 		hi Keyword           ctermfg=Red
 		hi Label             ctermfg=Yellow
 		hi Macro             ctermfg=Yellow
-		hi Number            ctermfg=LightBlue
-		hi Operator          ctermfg=Red
+		hi Number            ctermfg=Blue
+		hi Operator          ctermfg=White
 		hi PreCondit         ctermfg=Brown
 		hi PreProc           ctermfg=Brown
 		hi Repeat            ctermfg=Red

@@ -448,7 +448,7 @@ fileviewer *.tar,
 	\ tar taf %c &,
 
 " fuse3-p7zip
-filetype *.7z,*.epub,
+filetype *.7z,*.epub,*.whl,
 	\*.dsl.dz,*.tar,*.zip,*.ova,*.sfs,*.a,*.so,lib*.so.*,
 	\*.apk,*.apm,*.ar,*.arj,*.cab,*.chm,*.cpio,*.cramfs,*.deb,*.dll,*.dmg,*.doc,*.esd,*.exe,
 	\*.flv,*.hxs,*.img,*.iso,*.iso,*.jar,*.lib,*.macho,*.msi,*.msp,*.nsis,*.pkg,*.pmd,*.ppt,
@@ -464,7 +464,7 @@ filetype *.7z,*.epub,
 	\ archive-extract --here %f 2>/dev/null,
 	\ {Convert to tar.zstd...}
 	\ archive-convert %f 2>/dev/null,
-fileviewer *.7z,
+fileviewer *.7z,*.whl,
 	\*.dsl.dz,*.tar,*.zip,*.ova,*.sfs,
 	\*.apk,*.apm,*.ar,*.arj,*.cab,*.chm,*.cpio,*.cramfs,*.deb,*.dll,*.dmg,*.doc,*.esd,*.exe,
 	\*.flv,*.hxs,*.img,*.iso,*.iso,*.jar,*.lib,*.macho,*.msi,*.msp,*.nsis,*.pkg,*.pmd,*.ppt,
@@ -682,11 +682,11 @@ mark v ~/.local/share/vault
 " => file icons -------------------------------------------------------------------------------------------------- {{{1
 
 set classify=' ::../::, :dir:/, :exe:, :reg:, :link:'
-set classify+=' ::*.sh::, ::*.cpp::, ::*.c::, ::*.hpp::, ::*.js::, ::*.pl,,*.pm::, ::*.rb::, ::*.go::, ::*.json::, ::*.ts::'
+set classify+=' ::*.sh::, ::*.cpp::, ::*.c::, ::*.hpp::, ::*.js::, ::*.pl,,*.pm::, ::*.py::, ::*.rb::, ::*.go::, ::*.json::, ::*.ts::'
 set classify+='© ::/^copying|license$/::, ::.git/,,*.git/::'
 set classify+=' ::*.fb2,,*.epub,,*.djvu,,*.pdf::'
 set classify+=' ::*.doc,,*.docx::, ::*.xls,,*.xls[mx]::, ::*.ppt,,*.pptx::'
-set classify+=' ::*.7z,,*.ace,,*.arj,,*.bz2,,*.cpio,,*.dz,,*.gz,,*.jar,,*.lzh,,*.lzma,,*.rar,,*.rz,,*.tar,,*.taz,,*.tb2,,*.tbz,,*.tbz2,,*.tgz,,*.tlz,,*.trz,,*.txz,,*.tz,,*.tz2,,*.zst,,*.tzst,,*.xz,,*.z,,*.zip,,*.zoo::, ::*.deb::, ::*.rpm::'
+set classify+=' ::*.7z,,*.ace,,*.arj,,*.bz2,,*.cpio,,*.dz,,*.gz,,*.jar,,*.lzh,,*.lzma,,*.rar,,*.rz,,*.tar,,*.taz,,*.tb2,,*.tbz,,*.tbz2,,*.tgz,,*.tlz,,*.trz,,*.txz,,*.tz,,*.tz2,,*.zst,,*.tzst,,*.xz,,*.z,,*.zip,,*.zoo::, ::*.deb::, ::*.rpm::, ::*.whl::'
 set classify+=' ::*.bmp,,*.gif,,*.jp2,,*.jpeg,,*.jpg,,*.ico,,*.png,,*.ppm,,*.tga,,*.tif,,*.tiff,,*.xbm,,*.xcf,,*.xpm,,*.xspf,,*.xwd,,*.svg,,*.svgz::'
 set classify+=' ::*.aac,,*.anx,,*.asf,,*.au,,*.axa,,*.flac,,*.m2a,,*.m4a,,*.mid,,*.midi,,*.mp3,,*.mpc,,*.oga,,*.ogg,,*.ogx,,*.ra,,*.ram,,*.rm,,*.spx,,*.wav,,*.wma,,*.ac3::'
 set classify+=' ::*.avi,,*.axv,,*.divx,,*.m2v,,*.m4p,,*.m4v,,.mka,,*.mkv,,*.mov,,*.mp4,,*.lrv,,*.flv::'
