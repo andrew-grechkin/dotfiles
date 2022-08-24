@@ -1,0 +1,3 @@
+[Master]
+init-hook='import sys; import os; sys.path.append("./src"); sys.path.append(os.getenv("VIRTUAL_ENV", "~/.local") + "/lib/python3.10")'
+max-line-length=120

@@ -105,7 +105,7 @@
 	encoding = utf-8
 
 [init]
-	defaultBranch = master
+	defaultBranch = main
 	templatedir = ~/.config/git/init-template
 
 [help]

@@ -20,7 +20,7 @@ set virtualedit=block
 " filetype plugin indent on
 
 set breakindent
-set colorcolumn=120                                                            " Break line on 120 characters
+set colorcolumn=121                                                            " Break line on 120 characters
 let &showbreak = '--->'                                                        " Pretty soft break character
 
 set autoindent smartindent                                                     " Copy indent from the previous line

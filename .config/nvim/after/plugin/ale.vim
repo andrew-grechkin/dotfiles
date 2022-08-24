@@ -25,6 +25,7 @@ let g:ale_fix_on_save_ignore = {
 \   'json':       ['fixjson', 'jq'],
 \   'lua':        ['lua-format'],
 \   'perl':       ['perltidy'],
+\   'python':     ['black'],
 \   'sh':         ['shfmt'],
 \   'typescript': ['prettier', 'deno', 'tslint', 'xo'],
 \   'vue':        ['prettier', 'eslint'],

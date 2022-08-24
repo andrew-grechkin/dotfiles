@@ -20,6 +20,7 @@ ln -srf "$WORKDIR/.config/perltidyrc"                                   ~/.perlt
 
 ln -srf "$WORKDIR/.config/alacritty"                                    ~/.config/
 ln -srf "$WORKDIR/.config/autorandr"                                    ~/.config/
+ln -srf "$WORKDIR/.config/black"                                        ~/.config/
 ln -srf "$WORKDIR/.config/bspwm"                                        ~/.config/
 ln -srf "$WORKDIR/.config/containers"                                   ~/.config/
 ln -srf "$WORKDIR/.config/fontconfig/conf.d"                            ~/.config/fontconfig/
@@ -30,6 +31,7 @@ ln -srf "$WORKDIR/.config/mutt"                                         ~/.confi
 ln -srf "$WORKDIR/.config/nvim"                                         ~/.config/
 ln -srf "$WORKDIR/.config/perlcriticrc"                                 ~/.config/
 ln -srf "$WORKDIR/.config/picom.conf"                                   ~/.config/
+ln -srf "$WORKDIR/.config/pylintrc"                                     ~/.config/
 ln -srf "$WORKDIR/.config/rofi"                                         ~/.config/
 ln -srf "$WORKDIR/.config/shell"                                        ~/.config/
 ln -srf "$WORKDIR/.config/sxhkd"                                        ~/.config/
