@@ -315,6 +315,15 @@ fileviewer *.bmp,*.dng,*.gif,.*.ico,*.icon,*.jp2,*.jpg,*.jpeg,*.png,*.xpm,*.svg,
 
 " => File associations: misc ------------------------------------------------------------------------------------- {{{1
 
+filetype *.spec
+	\ {Build for centos 8-stream}
+	\ make -f ~/git/public/andrew-grechkin/centos-rpmbuild-docker/Makefile build8,
+	\ {Build for centos 9-stream}
+	\ make -f ~/git/public/andrew-grechkin/centos-rpmbuild-docker/Makefile build9,
+
+fileviewer *.rpm
+	\ rpm -qi %f
+
 filetype CMakeLists.txt
 	\ {Build...}
 	\ build-cmake %d,
