@@ -316,6 +316,8 @@ fileviewer *.bmp,*.dng,*.gif,.*.ico,*.icon,*.jp2,*.jpg,*.jpeg,*.png,*.xpm,*.svg,
 " => File associations: misc ------------------------------------------------------------------------------------- {{{1
 
 filetype *.spec
+	\ {Edit}
+	\ vi %c,
 	\ {Build for centos 8-stream}
 	\ make -f ~/git/public/andrew-grechkin/centos-rpmbuild-docker/Makefile build8,
 	\ {Build for centos 9-stream}
