@@ -1,0 +1,11 @@
+# kubectl cheatsheet
+
+* filter by label
+```bash
+kubectl get release -l label=value
+```
+
+* get unhealthy pods
+```bash
+kubectl get pods --field-selector=status.phase!=Running
+```

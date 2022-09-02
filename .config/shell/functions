@@ -1,6 +1,6 @@
 # vim: filetype=sh foldmethod=marker
 
-# => proxy related ----------------------------------------------------------------------------------------------- {{{1
+# => proxy related ---------------=-------------------------------------------------------------------------------- {{{1
 
 function disable-proxy() {
 	unset  all_proxy
@@ -9,11 +9,11 @@ function disable-proxy() {
 	export no_proxy="*"
 }
 
-# => SSH agent --------------------------------------------------------------------------------------------------- {{{1
+# => SSH agent -------------------=-------------------------------------------------------------------------------- {{{1
 
 SSH_AGENTS=(
-	"${XDG_RUNTIME_DIR}/keyring/ssh"           # Gnome keyring agent
-	"${XDG_RUNTIME_DIR}/S.ssh-agent"           # OpenSSH agent
+	"${XDG_RUNTIME_DIR}/keyring/ssh"		   # Gnome keyring agent
+	"${XDG_RUNTIME_DIR}/S.ssh-agent"		   # OpenSSH agent
 	"${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.ssh" # Gnupg ssh agent
 )
 
@@ -60,13 +60,36 @@ function _start_ssh_agent() {
 #	fi
 }
 
-# => kubectl ----------------------------------------------------------------------------------------------------- {{{1
+# => kubectl ------------------------------------------------------------------------------------------------------ {{{1
 
 function kpatch() {
 	kubectl patch -p '{"spec":{"targetStep":2}}' --type="merge" "$@"
 }
 
-# => generate CDPATH --------------------------------------------------------------------------------------------- {{{1
+# => local development activation --------------------------------------------------------------------------------- {{{1
+
+# shellcheck source=/dev/null
+function activate() {
+	FILES=("./dev.rc" "./.venv/bin/activate")
+
+	if command git rev-parse HEAD &>/dev/null; then
+		FILES+=("$(git root)/apps/deployments/dev.rc")
+	fi
+
+	for FILE in "${FILES[@]}"; do
+		if [[ -r "$FILE" ]]; then
+			source "$FILE"
+			return
+		fi
+	done
+
+	tput bold
+	tput setaf 1
+	echo "Unable to find any activation scripts"
+	tput sgr0
+}
+
+# => generate CDPATH ---------------------------------------------------------------------------------------------- {{{1
 
 function gen-cdpath() {
 	declare -a DIRS
