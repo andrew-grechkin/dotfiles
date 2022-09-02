@@ -72,6 +72,7 @@ call plug#begin()
 	else                                                                       " Install these pluggins only on personal machines
 "		Plug 'szw/vim-g'                                                       " Search on Google
 "		Plug 'inkarkat/vim-localrc'
+		Plug 'gianarb/vim-flux'
 		Plug 'mgrabovsky/vim-cuesheet'
 		Plug 'shumphrey/fugitive-gitlab.vim'                                   " fugitive Gitlab module
 		Plug 'tmux-plugins/vim-tmux', {'for': 'tmux'}                          " Vim plugin for .tmux.conf

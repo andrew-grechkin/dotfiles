@@ -228,7 +228,7 @@ filextype *.ps,*.eps,*.ps.gz
 filetype *.cue,
 	\*.aac,*.ac3,*.ape,*.flac,*.m4a,*.m4b,*.mp3,*.og[agx],*.opus,*.spx,*.wav,*.wma,*.wv
 	\ {Play using mpv}
-	\ mpv --no-osc --term-osd=force --no-audio-display,
+	\ mpv --no-osc --term-osd=force --no-audio-display %c %s,
 	\ {Play using ffplay}
 	\ ffplay -nodisp -autoexit,
 	\ {Play using MPlayer}
@@ -319,9 +319,9 @@ filetype *.spec
 	\ {Edit}
 	\ vi %c,
 	\ {Build for centos 8-stream}
-	\ make -f ~/git/public/andrew-grechkin/centos-rpmbuild-docker/Makefile build8,
+	\ make -f ~/git/public/andrew-grechkin/centos-rpmbuild-docker/Makefile build8 %s,
 	\ {Build for centos 9-stream}
-	\ make -f ~/git/public/andrew-grechkin/centos-rpmbuild-docker/Makefile build9,
+	\ make -f ~/git/public/andrew-grechkin/centos-rpmbuild-docker/Makefile build9 %s,
 
 fileviewer *.rpm
 	\ rpm -qi %f
@@ -537,11 +537,11 @@ filetype *.svct
 
 filetype *[^/],.*[^/]
 	\ {Edit in vim}
-	\ vim,
+	\ vim %c %n,
 	\ {View in less}
-	\ less,
+	\ less %c %n,
 	\ {Show file}
-	\ show-file %c | less,
+	\ show-file %c | less %c %n,
 	\ {Compress}
 	\ archive-create %f,
 	\ {Show hardlins}
@@ -634,7 +634,7 @@ nnoremap ,w :set wrap!<CR>
 " Example of standard two-panel file managers mappings
 nnoremap <f2>  :file<CR>
 nnoremap <f3>  :!{ show-dir %c || show-file %c } | less<CR>
-nnoremap <f4>  :edit<CR>
+nnoremap <f4>  :edit %c %n<CR>
 nnoremap <f5>  :copy<CR>
 nnoremap <f6>  :move<CR>
 nnoremap <f7>  :mkdir<SPACE>

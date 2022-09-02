@@ -1,3 +1,3 @@
 [Master]
-init-hook='import sys; import os; sys.path.append("./src"); sys.path.append(os.getenv("VIRTUAL_ENV", "~/.local") + "/lib/python3.10")'
+init-hook='import sys; import os; [sys.path.append(str) for str in (".venv/lib/python3.10/site-packages", os.getenv("VIRTUAL_ENV", "~/.local") + "/lib/python3.10/site-packages", "./src", ".")]'
 max-line-length=120
