@@ -1,21 +1,36 @@
-local function export_buffer_keymaps(bufnr)
-    local opts = {noremap = true, silent = true}
-    local map = vim.api.nvim_buf_set_keymap
+local function export_buffer_keymaps(_client, bufnr)
+    local ok, which_key = pcall(require, 'which-key')
+    if (not ok) then return end
 
-    map(bufnr, 'n', '<C-h>', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
-    map(bufnr, 'n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
-    -- map(bufnr, 'n', '<leader>q', '<cmd>lua vim.diagnostic.setloclist()<CR>', opts)
-    map(bufnr, 'n', '[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>', opts)
-    map(bufnr, 'n', ']d', '<cmd>lua vim.diagnostic.goto_next()<CR>', opts)
-    map(bufnr, 'n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
-    map(bufnr, 'n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
-    map(bufnr, 'n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
-    -- map(bufnr, 'n', 'gl', '<cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>', opts)
-    map(bufnr, 'n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
-    -- map(bufnr, 'n', '<leader>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
-    -- map(bufnr, 'n', '<leader>f', '<cmd>lua vim.diagnostic.open_float()<CR>', opts)
-    -- map(bufnr, 'n', '<leader>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
-    vim.cmd [[ command! LspFormat execute 'lua vim.lsp.buf.formatting()' ]]
+    local normal_mappings = {
+        ['[d'] = {':lua vim.diagnostic.goto_prev()<CR>', 'LSP: diagnostic prev'},
+        [']d'] = {':lua vim.diagnostic.goto_next()<CR>', 'LSP: diagnostic next'},
+        ['<A-h>'] = {':lua vim.lsp.buf.hover()<CR>', 'LSP: hover'},
+        ['<A-k>'] = {
+            ':lua vim.lsp.buf.signature_help()<CR>', 'LSP: signature help',
+        },
+        ['\\'] = {
+            name = 'LSP',
+            D = {':lua vim.lsp.buf.declaration()', 'goto: declaration'},
+            a = {':lua vim.lsp.buf.code_action()<CR>', 'code action'},
+            d = {':lua vim.lsp.buf.definition()<CR>', 'goto: definition'},
+            f = {':lua vim.diagnostic.open_float()<CR>', 'open float'},
+            i = {
+                ':lua vim.lsp.buf.implementation()<CR>', 'goto: implementation',
+            },
+            l = {':lua vim.diagnostic.setloclist()<CR>', 'show diagnostic'},
+            n = {':lua vim.lsp.buf.rename()<CR>', 'rename'},
+            q = {':lua vim.lsp.buf.formatting()<CR>', 'format'},
+            r = {':lua vim.lsp.buf.references()<CR>', 'goto: references'},
+            t = {
+                ':lua vim.lsp.buf.type_definition()<CR>',
+                'goto: type definition',
+            },
+        },
+    }
+
+    which_key.register(normal_mappings, {bufer = bufnr})
+    -- vim.cmd [[ command! LspFormat execute 'lua vim.lsp.buf.formatting()' ]]
 end
 
 local M = {}
@@ -29,14 +44,14 @@ end
 M.setup = function()
     local signs = {
         {name = 'DiagnosticSignError', text = ''},
-        {name = 'DiagnosticSignWarn', text = ''},
         {name = 'DiagnosticSignHint', text = ''},
         {name = 'DiagnosticSignInfo', text = ''},
+        {name = 'DiagnosticSignWarn', text = ''},
     }
 
     for _, sign in ipairs(signs) do
-        vim.fn.sign_define(sign.name,
-                           {texthl = sign.name, text = sign.text, numhl = ''})
+        local value = {texthl = sign.name, text = sign.text, numhl = ''}
+        vim.fn.sign_define(sign.name, value)
     end
 
     local config = {
@@ -61,7 +76,7 @@ M.on_attach = function(client, bufnr)
     -- if client.name == 'tsserver' then
     --     client.resolved_capabilities.document_formatting = false
     -- end
-    export_buffer_keymaps(bufnr)
+    export_buffer_keymaps(client, bufnr)
 end
 
 return M

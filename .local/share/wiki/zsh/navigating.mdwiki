@@ -1,8 +1,8 @@
 # [Navigating command line](http://zsh.sourceforge.net/Doc/Release/Zsh-Line-Editor.html)
 
 ### List all key bindings
-```sh
-bindkey | less
+```bash
+bindkey | grep -v 'self-insert' | less
 ```
 
 ### Misc

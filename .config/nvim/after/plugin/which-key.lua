@@ -7,8 +7,8 @@ local setup = {
         marks = true, -- shows a list of your marks on ' and `
         registers = true, -- shows your registers on " in NORMAL or <C-r> in INSERT mode
         spelling = {
-            enabled = true, -- enabling this will show WhichKey when pressing z= to select spelling suggestions
-            suggestions = 20, -- how many suggestions should be shown in the list?
+            enabled = true, -- enabling this will show Whitaker when pressing z= to select spelling suggestions
+            suggestions = 40, -- how many suggestions should be shown in the list?
         },
         -- the presets plugin, adds help for a bunch of default keybindings in Neovim
         -- No actual key bindings are created
@@ -34,30 +34,30 @@ local setup = {
         -- ["<tab>"] = "TAB",
     },
     icons = {
-        breadcrumb = '»', -- symbol used in the command line area that shows your active key combo
+        breadcrumb = '>', -- symbol used in the command line area that shows your active key combo
         group = '+', -- symbol prepended to a group
-        separator = '➜', -- symbol used between a key and it's label
+        separator = ':', -- symbol used between a key and it's label
     },
     popup_mappings = {
-        scroll_down = '<c-d>', -- binding to scroll down inside the popup
-        scroll_up = '<c-u>', -- binding to scroll up inside the popup
+        scroll_down = '<C-d>', -- binding to scroll down inside the popup
+        scroll_up = '<C-u>', -- binding to scroll up inside the popup
     },
     window = {
         border = 'none', -- none, single, double, shadow
-        position = 'bottom', -- bottom, top
         margin = {1, 0, 1, 0}, -- extra window margin [top, right, bottom, left]
         padding = {1, 1, 1, 1}, -- extra window padding [top, right, bottom, left]
+        position = 'bottom', -- bottom, top
         winblend = 0,
     },
     layout = {
-        height = {min = 4, max = 25}, -- min and max height of the columns
-        width = {min = 20, max = 50}, -- min and max width of the columns
-        spacing = 3, -- spacing between columns
         align = 'center', -- align columns left, center or right
+        height = {min = 4, max = 25}, -- min and max height of the columns
+        spacing = 3, -- spacing between columns
+        width = {min = 20, max = 50}, -- min and max width of the columns
     },
     ignore_missing = false, -- enable this to hide mappings for which you didn't specify a label
     -- hidden = {'<silent>', '<cmd>', '<Cmd>', '<CR>', 'call', 'lua', '^:', '^ '}, -- hide mapping boilerplate
-    hidden = {'<cmd>', '<Cmd>', '<CR>', 'call', 'lua', '^:', '^ '}, -- hide mapping boilerplate
+    -- hidden = {'<cmd>', '<Cmd>', '<CR>', 'call', 'lua', '^:', '^ '}, -- hide mapping boilerplate
     show_help = true, -- show help message on the command line when the popup is visible
     triggers = 'auto', -- automatically setup triggers
     -- triggers = {"<leader>"} -- or specify a list manually
@@ -71,44 +71,27 @@ local setup = {
 }
 
 local leader_opts = {
-    buffer = nil,
-    mode = 'n',
-    noremap = true,
     nowait = true,
     prefix = '<leader>',
-    silent = true,
 }
 
 local normal_opts = {
-    buffer = nil, -- Global mappings. Specify a buffer number for buffer local mappings
-    mode = 'n', -- NORMAL mode
-    noremap = true, -- use `noremap` when creating keymaps
     nowait = true, -- use `nowait` when creating keymaps
-    silent = true, -- use `silent` when creating keymaps
 }
 
 -- local terminal_opts = {
---     buffer = nil,
 --     mode = 't',
---     noremap = true,
 --     nowait = true,
---     silent = true,
 -- }
 
 local insert_opts = {
-    buffer = nil,
     mode = 'i',
-    noremap = true,
     nowait = true,
-    silent = true,
 }
 
 local visual_opts = {
-    buffer = nil,
     mode = 'v',
-    noremap = true,
     nowait = true,
-    silent = true,
 }
 
 local leader_mappings = {

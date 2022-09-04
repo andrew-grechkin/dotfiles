@@ -1,7 +1,7 @@
 # zmv
 
 * man:
-    ```sh
+    ```bash
     man zshcontrib
     ```
 * params:
@@ -10,23 +10,23 @@
     + -w: implicitly add surrounding parenthesis in pattern
     + -W: implicitly add surrounding parenthesis on both sides
 * change extention:
-    ```sh
+    ```bash
      zmv -w '**/*.txt' '$1$2.lis'
      noglob zmv -W **/*.txt **/*.lis
     ```
 * rename to lower case:
-    ```sh
+    ```bash
     zmv '*' '${(L)f}'
     ```
 * lower case extention:
-    ```sh
+    ```bash
     zmv '(**/)(*).(#i)jpg' '$1$2.jpg'
     ```
 * capitalize first letter:
-    ```sh
+    ```bash
     zmv '([a-z])(*).txt' '${(C)1}$2.txt'
     ```
 * lower case first letter if capital:
-    ```sh
+    ```bash
     zmv -w '[[:upper:]]*' '${(L)1}$2'
     ```

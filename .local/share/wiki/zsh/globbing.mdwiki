@@ -3,42 +3,42 @@
 ### [Operators](http://zsh.sourceforge.net/Doc/Release/Expansion.html#Filename-Generation)
 
 * exact match
-    ```sh
+    ```bash
     ls folder_name
     ```
 * recursively first level
-    ```sh
+    ```bash
     ls folder_name/*
     ```
 * recursively second level
-    ```sh
+    ```bash
     ls folder_name/*/*
     ```
 * recursively full tree
-    ```sh
+    ```bash
     ls folder_name/**/*
     ```
 * recursively full tree with regex matching
-    ```sh
+    ```bash
     ls folder_name/**/*.txt
     ```
 
 #### Examples
 
 * list .txt files recursively that end in a number from 1 to 10
-    ```sh
+    ```bash
     ls **/*<1-10>.txt
     ```
 * list .txt files recursively that start with the letter a
-    ```sh
+    ```bash
     ls **/[a]*.txt
     ```
 * list .txt files recursively that start with either ab or bc
-    ```sh
+    ```bash
     ls **/(ab|bc)*.txt
     ```
 * list .txt files recursively that don't start with a lower or uppercase c
-    ```sh
+    ```bash
     ls **/[^cC]*.txt
     ```
 
@@ -100,47 +100,47 @@
 #### Examples
 
 * all regular files with 'blah' in the name recursively
-    ```sh
+    ```bash
     ls **/*blah*(.)
     ```
 * all executable files recursively
-    ```sh
+    ```bash
     ls **/*(.x)
     ```
 * all files recursively non-writable by owner group
-    ```sh
+    ```bash
     ls **/*(.:g-w:)
     ```
 * all files recursively having the same owner group as my group
-    ```sh
+    ```bash
     ls **/*(.G)
     ```
 * all folders recursively owned by me
-    ```sh
+    ```bash
     ls **/*(/U)
     ```
 * all files recursively owned by user
-    ```sh
+    ```bash
     ls **/*(.u:user:)
     ```
 * all files recursively not owned by me and root
-    ```sh
+    ```bash
     ls **/*(.^Uu0)
     ```
 * all files recursively modified during last week
-    ```sh
+    ```bash
     ls **/*(.mw-1)
     ```
 * all files recursively larger then 50 M
-    ```sh
+    ```bash
     ls **/*(.Lm+50)
     ```
 * all files recursively larger then 50 M, modified lash hour and show last 3
-    ```sh
+    ```bash
     ls -l zsh_demo/**/*(.Lm+50mh-1om[1,3])
     ```
 * all files recursively not having 'blah' in the path
-    ```sh
+    ```bash
     ls **/*(e:'[[ ! "$REPLY" =~ blah ]]':)
     ```
 
@@ -161,6 +161,6 @@
 #### Examples
 
 Print lowercase absolute paths to the all files in current directory and resolve all symlinks
-    ```sh
+    ```bash
     print -l *(:A:l)
     ```
