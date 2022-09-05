@@ -73,7 +73,7 @@ function activate() {
 	FILES=("./dev.rc" "./.venv/bin/activate")
 
 	if command git rev-parse HEAD &>/dev/null; then
-		FILES+=("$(git root)/apps/deployments/dev.rc")
+		FILES+=("$(git root)/projects/dev.rc")
 	fi
 
 	for FILE in "${FILES[@]}"; do

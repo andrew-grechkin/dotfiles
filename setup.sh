@@ -16,6 +16,7 @@ ln -sr  "$WORKDIR/.ssh"                                                 ~/ 2>/de
 ln -srf "$WORKDIR/.pam_environment"                                     ~/
 ln -srf "$WORKDIR/.xprofile"                                            ~/
 [[ -z "$ZDOTDIR" ]] && ln -srf "$WORKDIR/.zshenv"                       ~/
+ln -srf "$WORKDIR/.config/perlcriticrc"                                 ~/.perlcriticrc
 ln -srf "$WORKDIR/.config/perltidyrc"                                   ~/.perltidyrc
 
 ln -srf "$WORKDIR/.config/alacritty"                                    ~/.config/

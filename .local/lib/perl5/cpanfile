@@ -11,6 +11,7 @@ requires "Role::Tiny";
 
 # => Misc -------------------------------------------------------------------------------------------------------- {{{1
 
+requires "App::cpanminus";
 requires "Carp::Always";
 requires "Code::TidyAll";
 requires "Data::Dump";
