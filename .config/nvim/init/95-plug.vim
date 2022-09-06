@@ -35,6 +35,7 @@ call plug#begin()
 	Plug 'nvim-lua/plenary.nvim'
 	Plug 'nvim-telescope/telescope.nvim'
 	Plug 'nvim-treesitter/nvim-treesitter', { 'do': ':TSUpdate' }
+	Plug 'nvim-treesitter/playground'
 	""" LSP
 	Plug 'neovim/nvim-lspconfig'                                               " ~/.config/nvim/after/plugin/nvim-lspconfig.lua
 	Plug 'williamboman/nvim-lsp-installer'
