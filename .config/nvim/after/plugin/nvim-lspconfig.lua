@@ -1,4 +1,11 @@
-local function export_buffer_keymaps(_client, bufnr)
+local status_lspconfig, lspconfig = pcall(require, 'lspconfig')
+if not status_lspconfig then return end
+
+local status, lsp_installer = pcall(require, 'nvim-lsp-installer')
+if not status then return end
+lsp_installer.setup {}
+
+local function on_attach(_client, bufnr)
     local ok, which_key = pcall(require, 'which-key')
     if (not ok) then return end
 
@@ -33,50 +40,44 @@ local function export_buffer_keymaps(_client, bufnr)
     -- vim.cmd [[ command! LspFormat execute 'lua vim.lsp.buf.formatting()' ]]
 end
 
-local M = {}
+local servers = lsp_installer.get_installed_servers()
+for _, server in ipairs(servers) do
+    -- vim.notify(vim.inspect(server))
+    local opts = {on_attach = on_attach}
+    local req_name = string.format('lsp.settings-%s', server.name)
+    local ok, settings = pcall(require, req_name)
+    if ok then opts = vim.tbl_deep_extend('force', settings, opts) end
 
-local status_ok, cmp_nvim_lsp = pcall(require, 'cmp_nvim_lsp')
-if status_ok then
-    local capabilities = vim.lsp.protocol.make_client_capabilities()
-    M.capabilities = cmp_nvim_lsp.update_capabilities(capabilities)
+    -- Refer to https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md
+    -- vim.notify(vim.inspect(opts))
+    lspconfig[server.name].setup(opts)
 end
 
-M.setup = function()
-    local signs = {
-        {name = 'DiagnosticSignError', text = ''},
-        {name = 'DiagnosticSignHint', text = ''},
-        {name = 'DiagnosticSignInfo', text = ''},
-        {name = 'DiagnosticSignWarn', text = ''},
-    }
+local signs = {
+    {name = 'DiagnosticSignError', text = ''},
+    {name = 'DiagnosticSignHint', text = ''},
+    {name = 'DiagnosticSignInfo', text = ''},
+    {name = 'DiagnosticSignWarn', text = ''},
+}
 
-    for _, sign in ipairs(signs) do
-        local value = {texthl = sign.name, text = sign.text, numhl = ''}
-        vim.fn.sign_define(sign.name, value)
-    end
-
-    local config = {
-        float = {
-            focusable = false,
-            header = '',
-            prefix = '',
-            source = 'always',
-            style = 'minimal',
-        },
-        severity_sort = true,
-        signs = {active = signs},
-        underline = true,
-        update_in_insert = true,
-        virtual_text = true,
-    }
-
-    vim.diagnostic.config(config)
+for _, sign in ipairs(signs) do
+    local value = {texthl = sign.name, text = sign.text, numhl = ''}
+    vim.fn.sign_define(sign.name, value)
 end
 
-M.on_attach = function(client, bufnr)
-    -- if client.name == 'tsserver' then
-    --     client.resolved_capabilities.document_formatting = false
-    -- end
-    export_buffer_keymaps(client, bufnr)
-end
+local config = {
+    float = {
+        focusable = false,
+        header = '',
+        prefix = '',
+        source = 'always',
+        style = 'minimal',
+    },
+    severity_sort = true,
+    signs = {active = signs},
+    underline = true,
+    update_in_insert = true,
+    virtual_text = true,
+}
 
-return M
+vim.diagnostic.config(config)

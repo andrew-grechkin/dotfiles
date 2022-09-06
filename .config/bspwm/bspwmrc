@@ -29,7 +29,8 @@ bspc config window_gap              0
 bspc rule -r '*'
 bspc config external_rules_command "$(realpath ~/.local/script/bspwm-external-rules)"
 bspc rule -a '*:*:Picture in Picture' state=floating sticky=on rectangle=564x317-600-360
-bspc rule -a 'floating'               state=floating
+bspc rule -a 'floating'               state=floating           rectangle=1280x720
+bspc rule -a 'matplotlib'             state=floating           rectangle=1280x720
 bspc rule -a 'gpclient'               state=floating sticky=on
 bspc rule -a 'mpv'                    state=floating sticky=on rectangle=564x317-600-360
 bspc rule -a 'pinentry'               state=floating sticky=on

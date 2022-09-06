@@ -44,7 +44,6 @@ let g:ale_fixers = {
 \   'lua':        ['lua-format',                'remove_trailing_lines', 'trim_whitespace'],
 \   'perl':       ['perltidy',                  'remove_trailing_lines', 'trim_whitespace'],
 \   'python':     [
-\		'add_blank_lines_for_python_control_statements',
 \		'isort',
 \		'black',
 \	],
