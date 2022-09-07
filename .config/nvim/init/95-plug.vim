@@ -1,3 +1,5 @@
+" https://github.com/rockerBOO/awesome-neovim#tree-sitter-supported-colorscheme
+
 call plug#begin()
 	Plug 'Raimondi/delimitMate'
 	Plug 'SirVer/ultisnips'
@@ -31,11 +33,14 @@ call plug#begin()
 	Plug 'vim-airline/vim-airline'                                             " Most informative status line
 	Plug 'vim-airline/vim-airline-themes'                                      " Status line themes
 
+	Plug 'ellisonleao/glow.nvim'                                               " Preview markdown code directly in your neovim terminal"
+
 	Plug 'folke/which-key.nvim'
 	Plug 'nvim-lua/plenary.nvim'
 	Plug 'nvim-telescope/telescope.nvim'
 	Plug 'nvim-treesitter/nvim-treesitter', { 'do': ':TSUpdate' }
 	Plug 'nvim-treesitter/playground'
+	Plug 'RRethy/vim-illuminate'
 	""" LSP
 	Plug 'neovim/nvim-lspconfig'                                               " ~/.config/nvim/after/plugin/nvim-lspconfig.lua
 	Plug 'williamboman/nvim-lsp-installer'
@@ -45,6 +50,7 @@ call plug#begin()
 	""" completion
 	if 1                                                                       " completion
 		let g:loaded_completion = 1
+		Plug 'andersevenrud/cmp-tmux'
 		Plug 'f3fora/cmp-spell'
 		Plug 'hrsh7th/cmp-buffer'
 		Plug 'hrsh7th/cmp-cmdline'

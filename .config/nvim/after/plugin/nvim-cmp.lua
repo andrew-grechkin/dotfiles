@@ -83,6 +83,7 @@ cmp.setup {
                 path = '[path]',
                 spell = '[spel]',
                 tags = '[tags]',
+                tmux = '[tmux]',
                 ultisnips = '[snip]',
             })[entry.source.name]
             return vim_item
@@ -91,7 +92,7 @@ cmp.setup {
     sources = {
         {name = 'ultisnips'}, {name = 'dictionary', keyword_length = 2},
         {name = 'nvim_lsp'}, {name = 'nvim_lua'}, {name = 'tags'},
-        {name = 'buffer'}, {name = 'spell'}, {name = 'path'},
+        {name = 'buffer'}, {name = 'spell'}, {name = 'path'}, {name = 'tmux'},
     },
     confirm_opts = {behavior = cmp.ConfirmBehavior.Replace, select = false},
     window = {

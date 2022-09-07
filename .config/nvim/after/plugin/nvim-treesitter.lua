@@ -8,7 +8,7 @@ treesitter_configs.setup {
         'bash', 'c', 'cmake', 'cpp', 'css', 'dockerfile', 'elixir', 'gitignore',
         'html', 'http', 'javascript', 'json', 'lua', 'make', 'markdown',
         'markdown_inline', 'python', 'regex', 'ruby', 'scss', 'sql', 'toml',
-        'tsx', 'typescript', 'vim', 'vue', 'yaml',
+        'tsx', 'typescript', 'vue', 'yaml',
     },
 }
 
