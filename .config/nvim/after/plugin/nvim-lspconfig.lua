@@ -18,6 +18,7 @@ local function on_attach(_client, bufnr)
         },
         ['\\'] = {
             name = 'LSP',
+            ['\\'] = {':lua vim.diagnostic.setloclist()<CR>', 'show diagnostic'},
             D = {':lua vim.lsp.buf.declaration()', 'goto: declaration'},
             a = {':lua vim.lsp.buf.code_action()<CR>', 'code action'},
             d = {':lua vim.lsp.buf.definition()<CR>', 'goto: definition'},
@@ -25,7 +26,6 @@ local function on_attach(_client, bufnr)
             i = {
                 ':lua vim.lsp.buf.implementation()<CR>', 'goto: implementation',
             },
-            l = {':lua vim.diagnostic.setloclist()<CR>', 'show diagnostic'},
             n = {':lua vim.lsp.buf.rename()<CR>', 'rename'},
             q = {':lua vim.lsp.buf.formatting()<CR>', 'format'},
             r = {':lua vim.lsp.buf.references()<CR>', 'goto: references'},

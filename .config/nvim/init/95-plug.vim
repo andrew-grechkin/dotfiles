@@ -1,4 +1,4 @@
-" https://github.com/rockerBOO/awesome-neovim#tree-sitter-supported-colorscheme
+" https://github.com/rockerBOO/awesome-neovim
 
 call plug#begin()
 	Plug 'Raimondi/delimitMate'
@@ -9,7 +9,9 @@ call plug#begin()
 	Plug 'christoomey/vim-tmux-navigator'                                      " Better tmux integration
 	Plug 'dense-analysis/ale'                                                  " Async syntax checker
 	Plug 'dyng/ctrlsf.vim', {'on': ['CtrlSF','<Plug>CtrlSFPrompt','<Plug>CtrlSFCwordPath','<Plug>CtrlSFVwordExec']} " Global search and replace
+	Plug 'folke/which-key.nvim'
 	Plug 'janko/vim-test'
+	Plug 'jghauser/mkdir.nvim'
 	Plug 'junegunn/fzf.vim'                                                    " Fuzzy search
 	Plug 'junegunn/vim-easy-align'
 	Plug 'junegunn/vim-plug'
@@ -33,14 +35,12 @@ call plug#begin()
 	Plug 'vim-airline/vim-airline'                                             " Most informative status line
 	Plug 'vim-airline/vim-airline-themes'                                      " Status line themes
 
-	Plug 'ellisonleao/glow.nvim'                                               " Preview markdown code directly in your neovim terminal"
-
-	Plug 'folke/which-key.nvim'
 	Plug 'nvim-lua/plenary.nvim'
 	Plug 'nvim-telescope/telescope.nvim'
 	Plug 'nvim-treesitter/nvim-treesitter', { 'do': ':TSUpdate' }
 	Plug 'nvim-treesitter/playground'
 	Plug 'RRethy/vim-illuminate'
+
 	""" LSP
 	Plug 'neovim/nvim-lspconfig'                                               " ~/.config/nvim/after/plugin/nvim-lspconfig.lua
 	Plug 'williamboman/nvim-lsp-installer'
@@ -61,6 +61,11 @@ call plug#begin()
 		Plug 'quangnguyen30192/cmp-nvim-tags'
 		Plug 'quangnguyen30192/cmp-nvim-ultisnips'
 		" Plug 'uga-rosa/cmp-dictionary'
+		Plug 'lukas-reineke/cmp-rg'
+	else
+		Plug 'ms-jpq/coq_nvim', {'branch': 'coq'}
+		Plug 'ms-jpq/coq.artifacts', {'branch': 'artifacts'}
+		Plug 'ms-jpq/coq.thirdparty', {'branch': '3p'}
 	endif
 
 	if 1                                                                       " work related plugins
@@ -79,6 +84,7 @@ call plug#begin()
 	else                                                                       " Install these pluggins only on personal machines
 "		Plug 'szw/vim-g'                                                       " Search on Google
 "		Plug 'inkarkat/vim-localrc'
+		Plug 'ellisonleao/glow.nvim'                                           " Preview markdown code directly in your neovim terminal"
 		Plug 'gianarb/vim-flux'
 		Plug 'mgrabovsky/vim-cuesheet'
 		Plug 'shumphrey/fugitive-gitlab.vim'                                   " fugitive Gitlab module
