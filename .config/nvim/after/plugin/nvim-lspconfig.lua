@@ -5,7 +5,7 @@ local status, lsp_installer = pcall(require, 'nvim-lsp-installer')
 if not status then return end
 lsp_installer.setup {}
 
-local function on_attach(_client, bufnr)
+local function on_attach(_, bufnr)
     local ok, which_key = pcall(require, 'which-key')
     if (not ok) then return end
 
@@ -68,18 +68,12 @@ for _, sign in ipairs(signs) do
 end
 
 local config = {
-    float = {
-        focusable = false,
-        header = '',
-        prefix = '',
-        source = 'always',
-        style = 'minimal',
-    },
+    float = {source = true},
     severity_sort = true,
-    signs = {active = signs},
+    signs = true,
     underline = true,
     update_in_insert = true,
-    virtual_text = true,
+    virtual_text = {source = 'if_many'},
 }
 
 vim.diagnostic.config(config)

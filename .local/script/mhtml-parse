@@ -37,8 +37,8 @@ sub main() {
         'verbose|v+' => \$options{'VERBOSE'},
     ) or die "Unable to process command line options\n";
 
+    my $mp_content = do {local $INPUT_RECORD_SEPARATOR = undef; <<>>};
     my $mp         = Mojo::Content::MultiPart->new;
-    my $mp_content = do {local $INPUT_RECORD_SEPARATOR = undef; <>};
     $mp->parse(sprintf("Content-Length: %d\r\n", do {use bytes; bytes::length $mp_content}));
     $mp->parse($mp_content);
 

@@ -1,6 +1,6 @@
 -- url: https://github.com/hrsh7th/nvim-cmp
 local status, cmp = pcall(require, 'cmp')
-if (not status) then return end
+if not status then return end
 
 vim.api.nvim_set_var('loaded_completion', true)
 
@@ -33,43 +33,8 @@ local kind_icons = {
 }
 
 cmp.setup {
-    snippet = {
-        expand = function(args)
-            -- vim.fn['vsnip#anonymous'](args.body) -- For `vsnip` users.
-            -- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
-            -- require('snippy').expand_snippet(args.body) -- For `snippy` users.
-            vim.fn['UltiSnips#Anon'](args.body) -- For `ultisnips` users.
-        end,
-    },
-    mapping = {
-        -- ['<C-k>'] = cmp.mapping.select_prev_item(),
-        -- ['<C-j>'] = cmp.mapping.select_next_item(),
-        ['<C-b>'] = cmp.mapping(cmp.mapping.scroll_docs(-1), {'i', 'c'}),
-        ['<C-f>'] = cmp.mapping(cmp.mapping.scroll_docs(1), {'i', 'c'}),
-        ['<C-Space>'] = cmp.mapping(cmp.mapping.complete(), {'i', 'c'}),
-        -- ['<C-y>'] = cmp.config.disable, -- Specify `cmp.config.disable` if you want to remove the default `<C-y>` mapping.
-        ['<C-e>'] = cmp.mapping {
-            i = cmp.mapping.abort(),
-            c = cmp.mapping.close(),
-        },
-        -- Accept currently selected item. If none selected, `select` first item.
-        -- Set `select` to `false` to only confirm explicitly selected items.
-        ['<CR>'] = cmp.mapping.confirm {select = true},
-        ['<Tab>'] = cmp.mapping(function(fallback)
-            if cmp.visible() then
-                cmp.select_next_item()
-            else
-                fallback()
-            end
-        end, {'i', 's'}),
-        ['<S-Tab>'] = cmp.mapping(function(fallback)
-            if cmp.visible() then
-                cmp.select_prev_item()
-            else
-                fallback()
-            end
-        end, {'i', 's'}),
-    },
+    confirm_opts = {behavior = cmp.ConfirmBehavior.Replace, select = false},
+    experimental = {ghost_text = true, native_menu = false},
     formatting = {
         fields = {'kind', 'abbr', 'menu'},
         format = function(entry, vim_item)
@@ -90,17 +55,52 @@ cmp.setup {
             return vim_item
         end,
     },
+    mapping = {
+        -- ['<C-Space>'] = cmp.mapping(cmp.mapping.complete(), {'i', 'c'}),
+        ['<C-b>'] = cmp.mapping(cmp.mapping.scroll_docs(-1), {'i', 'c'}),
+        ['<C-f>'] = cmp.mapping(cmp.mapping.scroll_docs(1), {'i', 'c'}),
+        ['<C-j>'] = cmp.mapping.select_next_item(),
+        ['<C-k>'] = cmp.mapping.select_prev_item(),
+        -- ['<C-y>'] = cmp.config.disable, -- Specify `cmp.config.disable` if you want to remove the default `<C-y>` mapping.
+        ['<C-e>'] = cmp.mapping {
+            i = cmp.mapping.abort(),
+            c = cmp.mapping.close(),
+        },
+        -- Accept currently selected item. If none selected, `select` first item.
+        -- Set `select` to `false` to only confirm explicitly selected items.
+        ['<CR>'] = cmp.mapping.confirm {select = false},
+        ['<Tab>'] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+                cmp.select_next_item()
+            else
+                fallback()
+            end
+        end, {'i', 's'}),
+        ['<S-Tab>'] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+                cmp.select_prev_item()
+            else
+                fallback()
+            end
+        end, {'i', 's'}),
+    },
+    snippet = {
+        expand = function(args)
+            -- vim.fn['vsnip#anonymous'](args.body) -- For `vsnip` users.
+            -- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
+            -- require('snippy').expand_snippet(args.body) -- For `snippy` users.
+            vim.fn['UltiSnips#Anon'](args.body) -- For `ultisnips` users.
+        end,
+    },
     sources = {
         {name = 'ultisnips'}, {name = 'nvim_lsp'}, {name = 'nvim_lua'},
-        {name = 'buffer'}, {name = 'dictionary', keyword_length = 2},
-        {name = 'tags'}, {name = 'spell'}, {name = 'path'}, {name = 'tmux'},
-        {name = 'rg'},
+        {name = 'buffer'}, {name = 'dictionary', keyword_length = 4},
+        {name = 'tags'}, {name = 'spell'}, {name = 'path'},
+        {name = 'tmux', keyword_length = 5}, {name = 'rg', keyword_length = 5},
     },
-    confirm_opts = {behavior = cmp.ConfirmBehavior.Replace, select = false},
     window = {
         documentation = {border = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}},
     },
-    experimental = {ghost_text = true, native_menu = false},
 }
 
 -- local cmp_dictionary_status, cmp_dictionary = pcall(require, 'cmp_dictionary')
