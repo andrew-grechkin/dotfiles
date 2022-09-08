@@ -7,8 +7,7 @@ use utf8;
 use warnings 'FATAL' => qw(utf8);
 use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
-
-use POSIX qw(EINVAL);
+use POSIX      qw(EINVAL);
 use List::Util qw(first);
 
 sub main {

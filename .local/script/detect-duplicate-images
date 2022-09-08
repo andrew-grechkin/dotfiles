@@ -7,13 +7,13 @@ use utf8;
 use warnings 'FATAL' => qw(utf8);
 use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
-use Encode qw(decode);
+use Encode       qw(decode);
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
 use Pod::Usage;
 
-use File::Map qw(map_file);
+use File::Map   qw(map_file);
 use Image::Hash ();
-use Log::Any qw($log);
+use Log::Any    qw($log);
 use Log::Any::Adapter ('Stderr', log_level => 'notice');
 use Path::Tiny;
 use YAML::XS ();

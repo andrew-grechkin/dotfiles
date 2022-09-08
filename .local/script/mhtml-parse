@@ -6,22 +6,22 @@ use v5.36;
 use autodie;
 use open 'IO' => ':raw';
 use utf8;
-use warnings 'FATAL' => qw(utf8);
+use warnings     qw(FATAL utf8);
 use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
-use Encode qw(decode encode);
-use English qw(-no_match_vars);
-use Getopt::Long qw(:config auto_version bundling no_ignore_case);
-use MIME::QuotedPrint;
-use Pod::Usage;
+use Encode            qw(decode encode);
+use English           qw(-no_match_vars);
+use Getopt::Long      qw(:config auto_version bundling no_ignore_case);
+use MIME::QuotedPrint qw();
+use Pod::Usage        qw(pod2usage);
 
-use HTML::Tagset;
-use Mojo::Content::MultiPart;
-use Mojo::Content::Single;
-use Mojo::DOM;
-use Mojo::File qw(path);
-use Mojo::Util qw(b64_decode trim);
-use Mojo::URL;
+use HTML::Tagset             qw();
+use Mojo::Content::MultiPart qw();
+use Mojo::Content::Single    qw();
+use Mojo::DOM                qw();
+use Mojo::File               qw(path);
+use Mojo::Util               qw(b64_decode trim);
+use Mojo::URL                qw();
 
 our $VERSION = 1.01;
 

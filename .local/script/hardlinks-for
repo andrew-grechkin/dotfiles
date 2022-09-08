@@ -7,13 +7,13 @@ use utf8;
 use warnings 'FATAL' => qw(utf8);
 use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
-use Encode;
-use Getopt::Long qw(:config auto_version bundling no_ignore_case);
-use JSON::PP;
-use Module::Loaded;
-use Pod::Usage;
+use Encode         qw(decode);
+use Getopt::Long   qw(:config auto_version bundling no_ignore_case);
+use JSON::PP       qw();
+use Module::Loaded qw();
+use Pod::Usage     qw(pod2usage);
 
-use Path::Tiny;
+use Path::Tiny qw(path);
 
 BEGIN {
     eval {require YAML::XS}; ## no critic [ErrorHandling::RequireCheckingReturnValueOfEval]
@@ -39,7 +39,7 @@ sub main() {
     }
 
     if (!$options{'JSON'} && is_loaded('YAML::XS')) {
-        say Encode::decode('UTF-8', YAML::XS::Dump(\%links));
+        say decode('UTF-8', YAML::XS::Dump(\%links));
     } else {
         say JSON::PP->new->pretty->encode(\%links);
     }

@@ -7,22 +7,20 @@ use utf8;
 use warnings 'FATAL' => qw(utf8);
 use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
-use Carp;
-use Encode qw(decode);
+use Carp         qw(croak);
+use Encode       qw(decode);
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
-use List::Util qw(first);
-use Pod::Usage;
+use List::Util   qw(first);
+use Pod::Usage   qw(pod2usage);
 
-use Log::Any qw($log);
-use Log::Any::Adapter ('Stderr', log_level => 'info');
-use Mojo::DOM;
-use Path::Tiny;
+use Log::Any          qw($log);
+use Log::Any::Adapter qw(Stderr), (log_level => 'info');
+use Mojo::DOM         qw();
+use Path::Tiny        qw(path);
 
 our $VERSION = 1.00;
 
-use constant {
-    'FS_ENCODING' => 'UTF-8',
-};
+use constant {'FS_ENCODING' => 'UTF-8',};
 
 my %options = (
     'APPLY'   => 0,
@@ -47,7 +45,7 @@ sub main() {
     }
 
     @ARGV
-        or push (@ARGV, '.');
+        or push(@ARGV, '.');
 
     my (\@projects, \%map) = _build_files_map(@ARGV);
 
@@ -93,10 +91,11 @@ sub _fix_project ($project, $map) {
             }
 
             my $new_resource = $file->path->absolute;
-            my $relative = $file->path->absolute->relative($project_root);
+            my $relative     = $file->path->absolute->relative($project_root);
             if ($relative !~ m/[.]{2,}/) {
                 $new_resource = $relative;
             }
+
             # my $new_resource = $file->path->absolute->relative($project_root);
             # say sprintf ("%s \t-> %s", $resource->all_text, $new_resource);
             $resource->content($new_resource);
@@ -113,14 +112,12 @@ sub _fix_project ($project, $map) {
 }
 
 package Resource {
-    use Carp;
+    use Carp        qw(croak);
     use Digest::MD5 qw(md5_hex);
 
     use File::Map qw(map_file);
 
-    use constant {
-        'PARTIAL_CHECKSUM_SIZE' => 1_000_000,
-    };
+    use constant {'PARTIAL_CHECKSUM_SIZE' => 1_000_000,};
 
     sub new ($class, $path) {
         my %attributes = (
@@ -148,7 +145,7 @@ package Resource {
         map_file(my $map, $path);
 
         if ($path->stat->size > PARTIAL_CHECKSUM_SIZE() * 2) {
-            return md5_hex(substr ($map, 0, PARTIAL_CHECKSUM_SIZE()), substr ($map, -PARTIAL_CHECKSUM_SIZE()));
+            return md5_hex(substr($map, 0, PARTIAL_CHECKSUM_SIZE()), substr($map, -PARTIAL_CHECKSUM_SIZE()));
         }
 
         return md5_hex($map);
@@ -173,12 +170,12 @@ sub _build_files_map (@paths) {
                     and return;
 
                 if ($path =~ m/[.]kdenlive\z/x && $path !~ m/backup\d?[.]kdenlive\z/) {
-                    push (@projects, $path) if $stat->size > 128;
+                    push(@projects, $path) if $stat->size > 128;
                     return;
                 }
 
                 my $file = Resource->new($path);
-                push ($result{$file->size}->@*, $file);
+                push($result{$file->size}->@*, $file);
             },
             {
                 'follow_symlinks' => $options{'FOLLOW'},

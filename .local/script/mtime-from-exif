@@ -4,21 +4,20 @@ use v5.36;
 use autodie;
 use open ':locale';
 use utf8;
-use warnings 'FATAL' => qw(utf8);
+use warnings     qw(FATAL utf8);
 use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
-use Carp;
-use Encode qw(decode);
-use English qw(-no_match_vars);
+use Encode       qw(decode);
+use English      qw(-no_match_vars);
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
-use Pod::Usage;
+use Pod::Usage   qw(pod2usage);
 
-use Image::ExifTool;
-use Log::Any qw($log);
-use Log::Any::Adapter ('Stderr', log_level => 'info');
-use Path::Tiny;
-use Time::Moment;
-use YAML::XS ();
+use Image::ExifTool   qw();
+use Log::Any          qw($log);
+use Log::Any::Adapter qw(Stderr), (log_level => 'info');
+use Path::Tiny        qw(path);
+use Time::Moment      qw();
+use YAML::XS          qw();
 
 our $VERSION = 1.00;
 
@@ -89,7 +88,7 @@ sub detect_time ($path) {
         return $time_from_path;
     }
 
-    croak 'Unable to detect EXIF creation time';
+    die 'Unable to detect EXIF creation time';
 }
 
 ## no critic [RegularExpressions::ProhibitComplexRegexes]

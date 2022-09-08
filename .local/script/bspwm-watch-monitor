@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 use v5.36;
 use autodie;
@@ -41,6 +41,7 @@ use constant {
                 say $str;
             },
         },
+
 #         {
 #             'match' => qr{\Amonitor_(add|remove)}x,
 #             'cb'    => \&rearrange_monitors,

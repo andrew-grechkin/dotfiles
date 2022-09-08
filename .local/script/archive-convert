@@ -42,7 +42,7 @@ sub main() {
             AnyArchive::Extract::execute($archive, $destination);
             AnyArchive::Create::execute($new_archive, [$destination->children], $destination);
         } catch ($error) {
-            warn $error; ## no critic [ErrorHandling::RequireCarping]
+            warn $error;
             $error_code = 1;
         } ## no critic [CodeLayout::RequireFinalSemicolon]
     }

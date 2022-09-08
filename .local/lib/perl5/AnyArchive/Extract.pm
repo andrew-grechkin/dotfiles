@@ -40,9 +40,9 @@ sub execute ($archive, $destination) {
     my $basename = basename($archive);
 
     my @command = map {ref $_ eq 'CODE' ? $_->($archive, $basename, $arc, $destination) : $_} $arc->{'command'}->@*;
-    say {*STDERR} join (' ', @command);
+    say {*STDERR} join(' ', @command);
 
-    system (@command) == 0
+    system(@command) == 0
         or croak "Unable to execute extract command: $!";
 
     return;
@@ -65,7 +65,9 @@ sub _command_uncompress (@options) {return ['uncompress', \&_get_filename]}
 sub _command_unzip      (@options) {return ['unzip',      @options, '-d', \&_get_extract_path, \&_get_filename]}
 sub _command_zst        (@options) {return ['zstd',       '-d', \&_get_filename]}
 
-sub _command_tar (@options) {return ['tar', @options, '-xvf', \&_get_filename, '--directory', \&_get_extract_path]}
+sub _command_tar (@options) {
+    return ['tar', @options, '-xvf', \&_get_filename, '--force-local', '--directory', \&_get_extract_path];
+}
 
 sub _command_7zip (@options) {
     return ['7z', 'x', '-y', sub ($, $, $, $extract_path) {return "-o$extract_path"}, '--', \&_get_filename];

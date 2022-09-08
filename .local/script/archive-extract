@@ -39,7 +39,7 @@ sub main() {
         } catch ($error) {
             warn $error;
             $error_code = 1;
-        }
+        };
     }
 
     return $error_code;

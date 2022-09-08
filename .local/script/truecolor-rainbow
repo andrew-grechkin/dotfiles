@@ -6,7 +6,7 @@ use v5.36;
 use autodie;
 use open ':locale';
 use utf8;
-use warnings 'FATAL' => qw(utf8);
+use warnings     qw(FATAL utf8);
 use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
 ## no critic [ValuesAndExpressions::ProhibitMagicNumbers, ValuesAndExpressions::ProhibitEscapedCharacters]
@@ -17,17 +17,17 @@ print "256 color mode\n\n";
 print "8 colors (4 bit):\n";
 print 'normal: ';
 for (my $color = 0; $color < 8; $color++) {
-    print (sprintf "\x1b[%s;40m:: %2s ::", $color + 30, $color);
+    print(sprintf "\x1b[%s;40m:: %2s ::", $color + 30, $color);
 }
 print "\x1b[0m\n";
 print 'bright: ';
 for (my $color = 0; $color < 8; $color++) {
-    print (sprintf "\x1b[%s;40m:: %2s ::", $color + 90, $color);
+    print(sprintf "\x1b[%s;40m:: %2s ::", $color + 90, $color);
 }
 print "\x1b[0m\n";
 print 'bold:   ';
 for (my $color = 0; $color < 8; $color++) {
-    print (sprintf "\x1b[1;%s;40m:: %2s ::", $color + 30, $color);
+    print(sprintf "\x1b[1;%s;40m:: %2s ::", $color + 30, $color);
 }
 
 print "\x1b[0m\n";
@@ -38,11 +38,11 @@ for (my $fgbg = 38; $fgbg <= 48; $fgbg += 10) {
     # first the system ones:
     print "System colors:\n";
     for (my $color = 0; $color < 8; $color++) {
-        print (sprintf "\x1b[${fgbg};5;${color}m:: %2s ::", $color);
+        print(sprintf "\x1b[${fgbg};5;${color}m:: %2s ::", $color);
     }
     print "\x1b[0m\n";
     for (my $color = 8; $color < 16; $color++) {
-        print (sprintf "\x1b[${fgbg};5;${color}m:: %2s ::", $color);
+        print(sprintf "\x1b[${fgbg};5;${color}m:: %2s ::", $color);
     }
     print "\x1b[0m\n\n";
 

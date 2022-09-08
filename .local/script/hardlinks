@@ -7,9 +7,9 @@ use utf8;
 use warnings 'FATAL' => qw(utf8);
 use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
-use Encode;
+use Encode qw();
 
-use Path::Tiny;
+use Path::Tiny qw(path);
 
 our $VERSION = 1;
 

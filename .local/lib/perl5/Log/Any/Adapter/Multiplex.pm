@@ -4,6 +4,7 @@ package Log::Any::Adapter::Multiplex;
 
 use v5.36;
 use parent       qw(Log::Any::Adapter::Base);
+use warnings     qw(FATAL utf8);
 use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
 use Carp       ();
@@ -26,6 +27,7 @@ sub init ($self, @) {
     foreach my $adapter_name (sort keys %adapters) {
         my \@adapter_args = $adapters{$adapter_name};
         my $adapter_class = Log::Any::Manager->_get_adapter_class($adapter_name);
+        eval "require $adapter_class"; ## no critic [BuiltinFunctions::ProhibitStringyEval, ErrorHandling::RequireCheckingReturnValueOfEval]
         push $self->{'adapters_cache'}->@*, $adapter_class->new(@adapter_args, 'category' => $self->{'category'});
     }
 
@@ -59,7 +61,7 @@ sub structured ($self, $level, $category, @structured_log_args) {
         *{$name} = Sub::Util::set_subname(
             $name => sub ($self, @) {
                 return List::Util::any {$_->$method} $self->{'adapters_cache'}->@*;
-            }
+            },
         );
     }
 }

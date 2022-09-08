@@ -50,10 +50,14 @@ sub main() {
 }
 
 sub _compare ($lpath, $rpath, $ltree, $rtree) {
-    my %lhs = $ltree->grep(sub {!m{[.]git[/]|[@]eaDir[/]}x})
-        ->sort->map(sub {$_->to_rel($lpath)->to_string, $_->lstat // 0})->@*;
-    my %rhs = $rtree->grep(sub {!m{[.]git[/]|[@]eaDir[/]}x})
-        ->sort->map(sub {$_->to_rel($rpath)->to_string, $_->lstat // 0})->@*;
+    my %lhs = $ltree
+        ->grep(sub {!m{[.]git[/]|[@]eaDir[/]}x})
+        ->sort
+        ->map(sub {$_->to_rel($lpath)->to_string, $_->lstat // 0})->@*;
+    my %rhs = $rtree
+        ->grep(sub {!m{[.]git[/]|[@]eaDir[/]}x})
+        ->sort
+        ->map(sub {$_->to_rel($rpath)->to_string, $_->lstat // 0})->@*;
 
     my (%left_only, %right_only, %diff, %failures);
     foreach my $path (keys %lhs) {

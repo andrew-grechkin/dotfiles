@@ -6,7 +6,7 @@ use open ':locale';
 use utf8;
 use warnings 'FATAL' => qw(utf8);
 use experimental qw(builtin declared_refs defer for_list refaliasing try);
-use builtin qw(trim);
+use builtin      qw(trim);
 
 sub main() {
     my $clipboard = _encode_clipboard(_read_clipboard());
