@@ -10,12 +10,14 @@ local function on_attach(_client, bufnr)
     if (not ok) then return end
 
     local normal_mappings = {
+        ['<leader>'] = {
+            ['h'] = {':lua vim.lsp.buf.hover()<CR>', 'LSP: hover'},
+            ['k'] = {
+                ':lua vim.lsp.buf.signature_help()<CR>', 'LSP: signature help',
+            },
+        },
         ['[d'] = {':lua vim.diagnostic.goto_prev()<CR>', 'LSP: diagnostic prev'},
         [']d'] = {':lua vim.diagnostic.goto_next()<CR>', 'LSP: diagnostic next'},
-        ['<A-h>'] = {':lua vim.lsp.buf.hover()<CR>', 'LSP: hover'},
-        ['<A-k>'] = {
-            ':lua vim.lsp.buf.signature_help()<CR>', 'LSP: signature help',
-        },
         ['\\'] = {
             name = 'LSP',
             ['\\'] = {':lua vim.diagnostic.setloclist()<CR>', 'show diagnostic'},

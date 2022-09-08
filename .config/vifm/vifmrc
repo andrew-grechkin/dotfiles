@@ -294,6 +294,8 @@ filetype *.html,*.htm
 	\ lynx,
 fileviewer *.htm,*.html
 	\ html2text2 %f
+fileviewer *.mht,*.mhtml
+	\ mhtml-parse -l %f
 
 " => File associations: Images ----------------------------------------------------------------------------------- {{{1
 

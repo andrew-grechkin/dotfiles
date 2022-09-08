@@ -31,7 +31,11 @@ my %options = (
 );
 
 sub main() {
-    _read_options();
+    GetOptions(
+        'help|h'     => sub {pod2usage('-verbose' => 99, 'exitval' => 0)},
+        'list|l!'    => \$options{'LIST'},
+        'verbose|v+' => \$options{'VERBOSE'},
+    ) or die "Unable to process command line options\n";
 
     my $mp         = Mojo::Content::MultiPart->new;
     my $mp_content = do {local $INPUT_RECORD_SEPARATOR = undef; <>};
@@ -75,16 +79,6 @@ sub main() {
     return 0;
 }
 
-sub _read_options() {
-    GetOptions(
-        'help|h'     => sub {pod2usage('-verbose' => 99, 'exitval' => 0)},
-        'list|l!'    => \$options{'LIST'},
-        'verbose|v+' => \$options{'VERBOSE'},
-    ) or die "Unable to process command line options\n";
-
-    return;
-}
-
 sub _process_part ($index, $part, $meta_ref, $dir) {
     my \%meta = $meta_ref;
     my $headers = $part->headers;
@@ -103,7 +97,7 @@ sub _process_part ($index, $part, $meta_ref, $dir) {
         $info{'main'} = 1;
     }
 
-    say sprintf('Found document [%.3d]: %s, %s', $index, $info{'name'}, $url);
+    say sprintf('document [%.3d]: %s, %s', $index, $info{'name'}, $url);
 
     if ($info{'main'} && !$meta{'main'}) {
         $meta{'main'} = $url;
