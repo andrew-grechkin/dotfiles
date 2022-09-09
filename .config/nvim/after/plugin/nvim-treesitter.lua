@@ -5,10 +5,9 @@ treesitter_configs.setup {
     highlight = {enable = true, disable = {}},
     indent = {enable = false, disable = {}},
     ensure_installed = {
-        'bash', 'c', 'cmake', 'cpp', 'css', 'dockerfile', 'elixir', 'gitignore',
-        'html', 'http', 'javascript', 'json', 'lua', 'make', 'markdown',
-        'markdown_inline', 'python', 'regex', 'ruby', 'scss', 'sql', 'toml',
-        'tsx', 'typescript', 'vue', 'yaml',
+        'bash', 'c', 'cmake', 'cpp', 'css', 'dockerfile', 'elixir', 'gitignore', 'html', 'http',
+        'javascript', 'json', 'lua', 'make', 'markdown', 'markdown_inline', 'python', 'regex',
+        'ruby', 'scss', 'sql', 'toml', 'tsx', 'typescript', 'vue', 'yaml',
     },
 }
 

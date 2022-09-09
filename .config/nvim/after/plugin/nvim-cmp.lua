@@ -62,10 +62,7 @@ cmp.setup {
         ['<C-j>'] = cmp.mapping.select_next_item(),
         ['<C-k>'] = cmp.mapping.select_prev_item(),
         -- ['<C-y>'] = cmp.config.disable, -- Specify `cmp.config.disable` if you want to remove the default `<C-y>` mapping.
-        ['<C-e>'] = cmp.mapping {
-            i = cmp.mapping.abort(),
-            c = cmp.mapping.close(),
-        },
+        ['<C-e>'] = cmp.mapping {i = cmp.mapping.abort(), c = cmp.mapping.close()},
         -- Accept currently selected item. If none selected, `select` first item.
         -- Set `select` to `false` to only confirm explicitly selected items.
         ['<CR>'] = cmp.mapping.confirm {select = false},
@@ -93,14 +90,12 @@ cmp.setup {
         end,
     },
     sources = {
-        {name = 'ultisnips'}, {name = 'nvim_lsp'}, {name = 'nvim_lua'},
-        {name = 'buffer'}, {name = 'dictionary', keyword_length = 4},
-        {name = 'tags'}, {name = 'spell'}, {name = 'path'},
+        {name = 'ultisnips'}, {name = 'nvim_lsp'}, {name = 'nvim_lua'}, {name = 'path'},
+        {name = 'buffer', keyword_length = 4}, {name = 'dictionary', keyword_length = 4},
+        {name = 'tags', keyword_length = 4}, {name = 'spell', keyword_length = 5},
         {name = 'tmux', keyword_length = 5}, {name = 'rg', keyword_length = 5},
     },
-    window = {
-        documentation = {border = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}},
-    },
+    window = {documentation = {border = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}}},
 }
 
 -- local cmp_dictionary_status, cmp_dictionary = pcall(require, 'cmp_dictionary')
@@ -123,6 +118,4 @@ cmp.setup {
 cmp.setup.cmdline('/', {sources = {{name = 'buffer'}}})
 
 -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
-cmp.setup.cmdline(':', {
-    sources = cmp.config.sources({{name = 'path'}}, {{name = 'cmdline'}}),
-})
+cmp.setup.cmdline(':', {sources = cmp.config.sources({{name = 'path'}}, {{name = 'cmdline'}})})

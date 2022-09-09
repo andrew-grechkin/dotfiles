@@ -11,30 +11,25 @@ local function on_attach(_, bufnr)
 
     local normal_mappings = {
         ['<leader>'] = {
-            ['h'] = {':lua vim.lsp.buf.hover()<CR>', 'LSP: hover'},
-            ['k'] = {
-                ':lua vim.lsp.buf.signature_help()<CR>', 'LSP: signature help',
-            },
+            ['h'] = {vim.lsp.buf.hover, 'LSP: hover'},
+            ['k'] = {vim.lsp.buf.signature_help, 'LSP: signature help'},
         },
-        ['[d'] = {':lua vim.diagnostic.goto_prev()<CR>', 'LSP: diagnostic prev'},
-        [']d'] = {':lua vim.diagnostic.goto_next()<CR>', 'LSP: diagnostic next'},
+        ['[d'] = {vim.diagnostic.goto_pre, 'LSP: diagnostic prev'},
+        [']d'] = {vim.diagnostic.goto_next, 'LSP: diagnostic next'},
         ['\\'] = {
             name = 'LSP',
-            ['\\'] = {':lua vim.diagnostic.setloclist()<CR>', 'show diagnostic'},
-            D = {':lua vim.lsp.buf.declaration()', 'goto: declaration'},
-            a = {':lua vim.lsp.buf.code_action()<CR>', 'code action'},
-            d = {':lua vim.lsp.buf.definition()<CR>', 'goto: definition'},
-            f = {':lua vim.diagnostic.open_float()<CR>', 'open float'},
-            i = {
-                ':lua vim.lsp.buf.implementation()<CR>', 'goto: implementation',
-            },
-            n = {':lua vim.lsp.buf.rename()<CR>', 'rename'},
-            q = {':lua vim.lsp.buf.formatting()<CR>', 'format'},
-            r = {':lua vim.lsp.buf.references()<CR>', 'goto: references'},
-            t = {
-                ':lua vim.lsp.buf.type_definition()<CR>',
-                'goto: type definition',
-            },
+            ['\\'] = {vim.diagnostic.setloclist, 'show diagnostic'},
+            a = {vim.lsp.buf.code_action, 'code action'},
+            f = {vim.diagnostic.open_float, 'open float'},
+            i = {vim.lsp.buf.implementation, 'goto: implementation'},
+            n = {vim.lsp.buf.rename, 'rename'},
+            q = {vim.lsp.buf.formatting, 'format'},
+            r = {vim.lsp.buf.references, 'goto: references'},
+            t = {vim.lsp.buf.type_definition, 'goto: type definition'},
+        },
+        g = {
+            D = {vim.lsp.buf.declaration, 'goto: declaration'},
+            d = {vim.lsp.buf.definition, 'goto: definition'},
         },
     }
 
@@ -46,12 +41,10 @@ local servers = lsp_installer.get_installed_servers()
 for _, server in ipairs(servers) do
     -- vim.notify(vim.inspect(server))
     local opts = {on_attach = on_attach}
-    local req_name = string.format('lsp.settings-%s', server.name)
-    local ok, settings = pcall(require, req_name)
+    local ok, settings = pcall(require, string.format('lsp.settings-%s', server.name))
     if ok then opts = vim.tbl_deep_extend('force', settings, opts) end
 
     -- Refer to https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md
-    -- vim.notify(vim.inspect(opts))
     lspconfig[server.name].setup(opts)
 end
 

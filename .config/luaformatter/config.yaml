@@ -1,3 +1,4 @@
+# https://github.com/Koihik/LuaFormatter/blob/master/docs/Style-Config.md
 ---
 align_args: true
 align_parameter: true
@@ -13,7 +14,7 @@ chop_down_kv_table: true
 chop_down_parameter: false
 chop_down_table: false
 column_limit: 120
-column_table_limit: 80
+column_table_limit: 100
 continuation_indent_width: 4
 double_quote_to_single_quote: true
 extra_sep_at_table_end: true
