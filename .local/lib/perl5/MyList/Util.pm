@@ -1,14 +1,12 @@
 package MyList::Util;
 
-use v5.34;
+use v5.36;
 use utf8;
-use warnings;
-use warnings 'FATAL' => qw(utf8);
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
 use List::Util qw(min sum0);
-use Storable qw(dclone);
-
-use experimental qw(declared_refs refaliasing signatures try);
+use Storable   qw(dclone);
 
 use Exporter qw(import);
 our @EXPORT_OK = qw(
@@ -229,7 +227,7 @@ sub sorted_quantile ($q, $array_ref) {
     return undef      if $q < 0 || 1 < $q || @values == 0;
     return $values[0] if @values == 1;
 
-    my $index = min(int(($size + 1) * $q), $size ) - 1;
+    my $index = min(int(($size + 1) * $q), $size) - 1;
     return $index >= 0 ? $values[$index] : undef;
 }
 

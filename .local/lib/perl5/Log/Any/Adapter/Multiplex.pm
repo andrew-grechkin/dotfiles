@@ -7,13 +7,13 @@ use parent       qw(Log::Any::Adapter::Base);
 use warnings     qw(FATAL utf8);
 use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
-use Carp       ();
-use List::Util ();
-use Sub::Util  ();
+use Carp       qw();
+use List::Util qw();
+use Sub::Util  qw();
 
-use Log::Any          ();
-use Log::Any::Manager ();
-use Log::Any::Proxy   ();
+use Log::Any          qw();
+use Log::Any::Manager qw();
+use Log::Any::Proxy   qw();
 
 ## no critic [Subroutines::ProtectPrivateSubs]
 

@@ -1,19 +1,18 @@
 package TestService::Action::Mojo;
 
-use v5.34;
-use Mojo::Base 'TestService::Action', -signatures;
+use v5.36;
+use Mojo::Base   qw(TestService::Action);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
 use namespace::autoclean;
 
-use Carp;
+use Carp qw(croak);
 
 use Data::Printer;
-use Mojo::Promise;
-use Mojo::URL;
-use Mojo::UserAgent;
+use Mojo::Promise   qw();
+use Mojo::URL       qw();
+use Mojo::UserAgent qw();
 
 use MyList::Util qw(partition);
-
-use experimental qw(declared_refs refaliasing try);
 
 use constant { ## no tidy
     'UA' => Mojo::UserAgent->new->insecure(1)->max_redirects(2)->request_timeout(10)->tap(sub {$_->proxy->detect}),

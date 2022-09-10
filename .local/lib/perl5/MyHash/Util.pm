@@ -2,7 +2,7 @@ package MyHash::Util;
 
 use v5.36;
 use utf8;
-use warnings 'FATAL' => qw(utf8);
+use warnings     qw(FATAL utf8);
 use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
 use Storable qw(dclone);
@@ -11,11 +11,11 @@ use Exporter qw(import);
 our @EXPORT_OK = qw(
     build_data_cache
     build_reverse_indices
-    compact
     clean_hash_from_key
+    compact
     merge
-    merge_inplace_left
     merge_inplace_both
+    merge_inplace_left
 );
 
 sub build_data_cache ($hash_ref, %caches) {
@@ -43,6 +43,17 @@ sub build_reverse_indices ($hash_ref, %indices) {
     return \%result;
 }
 
+sub clean_hash_from_key ($data, $key_to_remove) {
+    if (ref $data eq 'ARRAY') {
+        __SUB__->($_, $key_to_remove) foreach $data->@*;
+    } elsif (ref $data eq 'HASH' || (ref $data) =~ m/::/) {
+        delete $data->{$key_to_remove};
+        __SUB__->($_, $key_to_remove) foreach values $data->%*;
+    }
+
+    return $data;
+}
+
 sub compact ($data) {
     ref $data eq 'HASH'
         or return $data;
@@ -51,17 +62,6 @@ sub compact ($data) {
         if (!defined $value || (__SUB__->($value), ref $value eq 'HASH' && $value->%* == 0)) {
             delete $data->{$key};
         }
-    }
-
-    return $data;
-}
-
-sub clean_hash_from_key ($data, $key_to_remove) {
-    if (ref $data eq 'ARRAY') {
-        __SUB__->($_, $key_to_remove) foreach $data->@*;
-    } elsif (ref $data eq 'HASH' || (ref $data) =~ m/::/) {
-        delete $data->{$key_to_remove};
-        __SUB__->($_, $key_to_remove) foreach values $data->%*;
     }
 
     return $data;

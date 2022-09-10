@@ -4,11 +4,11 @@ use v5.36;
 use autodie;
 use open ':locale';
 use utf8;
-use warnings 'FATAL' => qw(utf8);
+use warnings     qw(FATAL utf8);
 use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
 use IO::Socket::UNIX;
-use JSON::PP;
+use JSON::PP qw();
 
 # => configuration ----------------------------------------------------------------------------------------------- {{{1
 

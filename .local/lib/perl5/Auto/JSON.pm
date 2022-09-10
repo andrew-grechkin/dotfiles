@@ -1,11 +1,11 @@
 package Auto::JSON;
 
-use v5.34;
-use warnings;
-use experimental qw(signatures try);
+use v5.36;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
-use Carp;
-use JSON::PP;
+use Carp     qw(croak);
+use JSON::PP qw();
 
 my $json = JSON::PP->new->convert_blessed;
 

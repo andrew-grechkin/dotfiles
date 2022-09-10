@@ -1,14 +1,13 @@
 package AnyArchive::Extract;
 
-use v5.34;
+use v5.36;
 use autodie;
 use open ':locale';
 use utf8;
-use warnings;
-use warnings 'FATAL' => qw(utf8);
-use experimental qw(declared_refs refaliasing signatures try);
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
-use Carp;
+use Carp       qw(croak);
 use List::Util qw(first);
 
 state @supported = (

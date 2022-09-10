@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-use v5.34;
+use v5.36;
 use warnings;
 
 use List::Util qw(shuffle);
@@ -8,7 +8,7 @@ use List::Util qw(shuffle);
 use Test2::V0;
 use Test2::Tools::Spec;
 
-use experimental qw(declared_refs refaliasing signatures try);
+use experimental qw(builtin declared_refs defer for_list refaliasing try); 
 
 use MyList::Util qw(
     adjacent_pairs

@@ -1,22 +1,20 @@
 package TestService::Action;
 
-use v5.34;
+use v5.36;
 use autodie;
 use open 'IO' => ':locale';
-use warnings;
-use warnings 'FATAL' => qw(utf8);
-use Mojo::Base -base, -signatures;
+use warnings     qw(FATAL utf8);
+use Mojo::Base   qw(-base -signatures);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
 use namespace::autoclean;
 
 use List::Util 1.60 qw(zip);
 
-use JSON::PP   ();
-use Log::Any   ();
-use Mojo::File ();
+use JSON::PP   qw();
+use Log::Any   qw();
+use Mojo::File qw();
 use Mojo::Util qw(encode dumper sha1_sum);
-use YAML::XS ();
-
-use experimental qw(declared_refs refaliasing try);
+use YAML::XS   qw();
 
 has 'log'  => sub {Log::Any->get_logger('category' => __PACKAGE__)};
 has 'json' => sub {JSON::PP->new->utf8->pretty->canonical->convert_blessed->allow_blessed};

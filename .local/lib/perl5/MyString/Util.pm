@@ -4,11 +4,11 @@ use v5.36;
 use autodie;
 use open ':locale';
 use utf8;
-use warnings 'FATAL' => qw(utf8);
+use warnings     qw(FATAL utf8);
 use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
-use overload;
-use Sub::Util ();
+use Sub::Util qw();
+use overload  qw();
 
 use Exporter qw(import);
 our @EXPORT_OK = qw(
@@ -16,20 +16,46 @@ our @EXPORT_OK = qw(
 );
 
 my $dump = Sub::Util::set_subname 'dump', sub {
-    return Data::Dumper->new([$_[0]])->Indent(1)->Quotekeys(1)->Sortkeys(1)->Terse(1)->Trailingcomma(1)->Useqq(0)
+    return Data::Dumper->new([$_[0]])
+        ->Indent(1)
+        ->Quotekeys(1)
+        ->Sortkeys(1)
+        ->Terse(1)
+        ->Trailingcomma(1)
+        ->Useqq(0)
         ->Dump;
 };
 my $dump_json_like = Sub::Util::set_subname 'dump_json_like', sub {
-    return Data::Dumper->new([$_[0]])->Indent(1)->Pair(': ')->Quotekeys(1)->Sortkeys(1)->Terse(1)->Trailingcomma(0)
-        ->Useqq(1)->Dump;
+    return Data::Dumper->new([$_[0]])
+        ->Indent(1)
+        ->Pair(': ')
+        ->Quotekeys(1)
+        ->Sortkeys(1)
+        ->Terse(1)
+        ->Trailingcomma(0)
+        ->Useqq(1)
+        ->Dump;
 };
 my $dump_one_line = Sub::Util::set_subname 'dump_one_line', sub {
-    return Data::Dumper->new([$_[0]])->Indent(0)->Quotekeys(1)->Sortkeys(1)->Terse(1)->Trailingcomma(1)->Useqq(0)
+    return Data::Dumper->new([$_[0]])
+        ->Indent(0)
+        ->Quotekeys(1)
+        ->Sortkeys(1)
+        ->Terse(1)
+        ->Trailingcomma(1)
+        ->Useqq(0)
         ->Dump;
 };
 my $dump_one_line_json_like = Sub::Util::set_subname 'dump_one_line_json_like', sub {
-    return Data::Dumper->new([$_[0]])->Indent(0)->Pair(':')->Quotekeys(1)->Sortkeys(1)->Terse(1)->Trailingcomma(0)
-        ->Useqq(1)->Dump;
+    return Data::Dumper->new([$_[0]])
+        ->Indent(0)
+        ->Pair(':')
+        ->Quotekeys(1)
+        ->Sortkeys(1)
+        ->Terse(1)
+        ->Trailingcomma(0)
+        ->Useqq(1)
+        ->Dump;
 };
 
 sub _export_and_replace_subs() {

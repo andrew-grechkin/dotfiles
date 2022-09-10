@@ -5,10 +5,10 @@ use autodie;
 use charnames ':full';
 use open ':locale';
 use utf8;
-use warnings 'FATAL' => qw(utf8);
+use warnings     qw(FATAL utf8);
 use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
-use Encode       ();
+use Encode       qw();
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
 use IPC::Open2   qw(open2);
 use Pod::Usage   qw(pod2usage);
