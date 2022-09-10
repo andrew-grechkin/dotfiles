@@ -1,6 +1,6 @@
 -- url: https://github.com/folke/which-key.nvim
 local ok, which_key = pcall(require, 'which-key')
-if (not ok) then return end
+if not ok then return end
 
 local setup = {
     plugins = {

@@ -1,13 +1,9 @@
 local status_lspconfig, lspconfig = pcall(require, 'lspconfig')
 if not status_lspconfig then return end
 
-local status, lsp_installer = pcall(require, 'nvim-lsp-installer')
-if not status then return end
-lsp_installer.setup {}
-
 local function on_attach(_, bufnr)
     local ok, which_key = pcall(require, 'which-key')
-    if (not ok) then return end
+    if not ok then return end
 
     local normal_mappings = {
         ['<leader>'] = {
@@ -37,22 +33,35 @@ local function on_attach(_, bufnr)
     -- vim.cmd [[ command! LspFormat execute 'lua vim.lsp.buf.formatting()' ]]
 end
 
-local servers = lsp_installer.get_installed_servers()
-for _, server in ipairs(servers) do
-    -- vim.notify(vim.inspect(server))
-    local opts = {on_attach = on_attach}
-    local ok, settings = pcall(require, string.format('lsp.settings-%s', server.name))
-    if ok then opts = vim.tbl_deep_extend('force', settings, opts) end
+-- => ------------------------------------------------------------------------------------------------------------- {{{1
 
-    -- Refer to https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md
-    lspconfig[server.name].setup(opts)
+local status, mason = pcall(require, 'mason')
+if status then
+    mason.setup {}
+
+    local config = require('mason-lspconfig')
+    config.setup {
+        ensure_installed = {'sumneko_lua', 'perlnavigator', 'pyright', 'pylint', 'debugpy'},
+        automatic_installation = true,
+    }
+    config.setup_handlers {
+        function(server_name)
+            -- vim.notify(vim.inspect(server_name))
+            local opts = {on_attach = on_attach}
+            local ok, settings = pcall(require, string.format('lsp.settings-%s', server_name))
+            if ok then opts = vim.tbl_deep_extend('force', settings, opts) end
+
+            -- Refer to https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md
+            lspconfig[server_name].setup(opts)
+        end,
+    }
 end
 
+-- => ------------------------------------------------------------------------------------------------------------- {{{1
+
 local signs = {
-    {name = 'DiagnosticSignError', text = ''},
-    {name = 'DiagnosticSignHint', text = ''},
-    {name = 'DiagnosticSignInfo', text = ''},
-    {name = 'DiagnosticSignWarn', text = ''},
+    {name = 'DiagnosticSignError', text = ''}, {name = 'DiagnosticSignHint', text = ''},
+    {name = 'DiagnosticSignInfo', text = ''}, {name = 'DiagnosticSignWarn', text = ''},
 }
 
 for _, sign in ipairs(signs) do

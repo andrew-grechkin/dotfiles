@@ -1,7 +1,7 @@
-local status, lualine = pcall(require, 'lualine')
-if (not status) then return end
+local status, plugin = pcall(require, 'lualine')
+if not status then return end
 
-lualine.setup {
+plugin.setup {
     options = {
         icons_enabled = true,
         theme = 'modus-vivendi',
@@ -11,22 +11,17 @@ lualine.setup {
     },
     sections = {
         lualine_a = {'mode'},
-        lualine_b = {'branch'},
-        lualine_c = {'filename'},
-        lualine_x = {
-            {
+        lualine_b = {'branch', 'diff'},
+        lualine_c = {
+            'filename', {
                 'diagnostics',
                 sources = {'nvim_lsp'},
-                symbols = {
-                    error = ' ',
-                    warn = ' ',
-                    info = ' ',
-                    hint = ' ',
-                },
-            }, 'encoding', 'filetype',
+                symbols = {error = ' ', warn = ' ', info = ' ', hint = ' '},
+            },
         },
-        lualine_y = {'progress'},
-        lualine_z = {'location'},
+        lualine_x = {'filetype'},
+        lualine_y = {'encoding', 'fileformat'},
+        lualine_z = {'filesize', 'progress', 'location'},
     },
     inactive_sections = {
         lualine_a = {},
@@ -37,5 +32,5 @@ lualine.setup {
         lualine_z = {},
     },
     tabline = {},
-    extensions = {'fugitive'},
+    extensions = {'fugitive', 'nvim-dap-ui', 'quickfix'},
 }

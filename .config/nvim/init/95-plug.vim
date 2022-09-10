@@ -10,12 +10,11 @@ call plug#begin()
 	Plug 'dense-analysis/ale'                                                  " Async syntax checker
 	Plug 'dyng/ctrlsf.vim', {'on': ['CtrlSF','<Plug>CtrlSFPrompt','<Plug>CtrlSFCwordPath','<Plug>CtrlSFVwordExec']} " Global search and replace
 	Plug 'folke/which-key.nvim'
-	Plug 'janko/vim-test'
 	Plug 'jghauser/mkdir.nvim'
 	Plug 'junegunn/fzf.vim'                                                    " Fuzzy search
 	Plug 'junegunn/vim-easy-align'
 	Plug 'junegunn/vim-plug'
-	Plug 'majutsushi/tagbar'
+	Plug 'preservim/tagbar'
 	Plug 'mhinz/vim-grepper', {'on': ['Grepper', '<Plug>(GrepperOperator)']}   " Grep integration
 	Plug 'mhinz/vim-signify'                                                   " Git status/modifications of the file
 	Plug 'nelstrom/vim-visual-star-search'
@@ -32,8 +31,14 @@ call plug#begin()
 	Plug 'tpope/vim-surround'                                                  " Better surround commands
 	Plug 'tpope/vim-unimpaired'                                                " Pairs of helpful commands
 	Plug 'vifm/vifm.vim'
-	Plug 'vim-airline/vim-airline'                                             " Most informative status line
-	Plug 'vim-airline/vim-airline-themes'                                      " Status line themes
+
+	if 0
+		Plug 'vim-airline/vim-airline'                                         " Most informative status line
+		Plug 'vim-airline/vim-airline-themes'                                  " Status line themes
+	else
+		Plug 'nvim-lualine/lualine.nvim'
+		Plug 'akinsho/bufferline.nvim'
+	endif
 
 	Plug 'nvim-lua/plenary.nvim'
 	Plug 'nvim-telescope/telescope.nvim'
@@ -43,11 +48,28 @@ call plug#begin()
 
 	""" LSP
 	Plug 'neovim/nvim-lspconfig'                                               " ~/.config/nvim/after/plugin/nvim-lspconfig.lua
-	Plug 'williamboman/nvim-lsp-installer'
+" 	Plug 'williamboman/nvim-lsp-installer'
+	Plug 'williamboman/mason.nvim'
+	Plug 'williamboman/mason-lspconfig.nvim'
+	Plug 'ray-x/lsp_signature.nvim'
 	" Plug 'glepnir/lspsaga.nvim'                                              " ~/.config/nvim/after/plugin/nvim-lspsaga.vim
 	""" UI
 	" Plug folke/lsp-colors.nvim'
-	""" completion
+	" Plug 'folke/todo-comments.nvim'
+
+	Plug 'mfussenegger/nvim-dap'
+	Plug 'rcarriga/nvim-dap-ui'
+
+	Plug 'antoinemadec/FixCursorHold.nvim'
+	Plug 'lukas-reineke/indent-blankline.nvim'
+
+	" testing
+	Plug 'janko/vim-test'
+	Plug 'nvim-neotest/neotest'
+	Plug 'nvim-neotest/neotest-plenary'
+	Plug 'nvim-neotest/neotest-python'
+	Plug 'nvim-neotest/neotest-vim-test'
+
 	if 1                                                                       " completion
 		let g:loaded_completion = 1
 		Plug 'andersevenrud/cmp-tmux'
