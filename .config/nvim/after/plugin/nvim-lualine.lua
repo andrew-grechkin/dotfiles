@@ -13,7 +13,11 @@ plugin.setup {
         lualine_a = {'mode'},
         lualine_b = {'branch', 'diff'},
         lualine_c = {
-            'filename', {
+            {
+                'filename',
+                file_status = true,
+                path = 1,
+            }, {
                 'diagnostics',
                 sources = {'nvim_lsp'},
                 symbols = {error = ' ', warn = ' ', info = ' ', hint = ' '},

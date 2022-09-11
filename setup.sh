@@ -34,6 +34,7 @@ ln -srf "$WORKDIR/.config/perlcriticrc"                                 ~/.confi
 ln -srf "$WORKDIR/.config/picom.conf"                                   ~/.config/
 ln -srf "$WORKDIR/.config/pylintrc"                                     ~/.config/
 ln -srf "$WORKDIR/.config/rofi"                                         ~/.config/
+ln -srf "$WORKDIR/.config/ripgreprc"                                    ~/.config/
 ln -srf "$WORKDIR/.config/shell"                                        ~/.config/
 ln -srf "$WORKDIR/.config/sxhkd"                                        ~/.config/
 ln -srf "$WORKDIR/.config/systemd"                                      ~/.config/

@@ -55,7 +55,7 @@ call plug#begin()
 	" Plug 'glepnir/lspsaga.nvim'                                              " ~/.config/nvim/after/plugin/nvim-lspsaga.vim
 	""" UI
 	" Plug folke/lsp-colors.nvim'
-	" Plug 'folke/todo-comments.nvim'
+	Plug 'folke/todo-comments.nvim'
 	Plug 'antoinemadec/FixCursorHold.nvim'
 	Plug 'lukas-reineke/indent-blankline.nvim'
 

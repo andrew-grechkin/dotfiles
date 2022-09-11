@@ -1,0 +1,19 @@
+# --max-columns=150
+# --max-columns-preview
+
+# Add my 'web' type.
+# --type-add
+# web:*.{html,css,js}*
+
+# Using glob patterns to include/exclude files or folders
+# --glob
+# !.config/*
+
+# Set the colors.
+# --colors=line:none
+# --colors=line:style:bold
+
+--smart-case
+--with-filename
+--follow
+--hidden
