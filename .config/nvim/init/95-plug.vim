@@ -56,14 +56,15 @@ call plug#begin()
 	""" UI
 	" Plug folke/lsp-colors.nvim'
 	" Plug 'folke/todo-comments.nvim'
-
-	Plug 'mfussenegger/nvim-dap'
-	Plug 'rcarriga/nvim-dap-ui'
-
 	Plug 'antoinemadec/FixCursorHold.nvim'
 	Plug 'lukas-reineke/indent-blankline.nvim'
 
-	" testing
+	""" debug
+	Plug 'mfussenegger/nvim-dap'
+	Plug 'mfussenegger/nvim-dap-python'
+	Plug 'rcarriga/nvim-dap-ui'
+
+	""" test
 	Plug 'janko/vim-test'
 	Plug 'nvim-neotest/neotest'
 	Plug 'nvim-neotest/neotest-plenary'
