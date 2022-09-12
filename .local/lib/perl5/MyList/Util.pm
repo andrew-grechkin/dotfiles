@@ -36,8 +36,8 @@ our @EXPORT_OK = qw(
 
 ## no critic [Subroutines::RequireArgUnpacking, Subroutines::ProhibitSubroutinePrototypes]
 
-sub adjacent_pairs ($array_ref) {
-    my \@array = $array_ref;
+sub adjacent_pairs ($aref) {
+    my \@array = $aref;
     my $pairs = @array - 1;
 
     my @result;
@@ -48,28 +48,30 @@ sub adjacent_pairs ($array_ref) {
     return \@result;
 }
 
-sub compact ($array_ref) {
-    my @result = grep defined, $array_ref->@*;
+sub compact ($aref) {
+    my @result = grep defined, $aref->@*;
     return \@result;
 }
 
-sub filter_by : prototype(&$) ($filter, $array_ref) {
-    my @result = grep $filter->($_), $array_ref->@*;
+sub filter_by : prototype(&$) ($filter, $aref) {
+    my @result = grep $filter->($_), $aref->@*;
     return \@result;
 }
 
-sub group_by : prototype(&$) ($key_extractor, $array_ref) {
+sub group_by : prototype(&$) ($key_extractor, $aref) {
+    my \@array = $aref;
     my %result;
-    foreach my $it ($array_ref->@*) {
+    foreach my $it (@array) {
         my $key = $key_extractor->($it) // 'undef';
         push($result{$key}->@*, $it);
     }
     return \%result;
 }
 
-sub partition : prototype(&$) ($partitioner, $array_ref) {
+sub partition : prototype(&$) ($partitioner, $aref) {
+    my \@array = $aref;
     my (@truthy, @falsy);
-    foreach my $it ($array_ref->@*) {
+    foreach my $it (@array) {
         $partitioner->($it) ? push(@truthy, $it) : push(@falsy, $it);
     }
     return (\@truthy, \@falsy);
@@ -199,16 +201,16 @@ sub sjt_next_permutation ($array_ref, $dirs_ref) {
     return 1;
 }
 
-sub mean ($array_ref) {
-    my \@values = $array_ref;
+sub mean ($aref) {
+    my \@values = $aref;
     return undef      if @values == 0;
     return $values[0] if @values == 1;
 
     return sum0(@values) / scalar @values;
 }
 
-sub sorted_median ($array_ref) {
-    my \@values = $array_ref;
+sub sorted_median ($aref) {
+    my \@values = $aref;
     my $size = @values;
     return undef      if @values == 0;
     return $values[0] if @values == 1;
@@ -217,12 +219,12 @@ sub sorted_median ($array_ref) {
     return mean(\@middle);
 }
 
-sub sorted_percentile ($p, $array_ref) {
-    return sorted_quantile($p / 100, $array_ref);
+sub sorted_percentile ($p, $aref) {
+    return sorted_quantile($p / 100, $aref);
 }
 
-sub sorted_quantile ($q, $array_ref) {
-    my \@values = $array_ref;
+sub sorted_quantile ($q, $aref) {
+    my \@values = $aref;
     my $size = @values;
     return undef      if $q < 0 || 1 < $q || @values == 0;
     return $values[0] if @values == 1;

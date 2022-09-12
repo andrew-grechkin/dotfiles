@@ -12,15 +12,16 @@ use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
 use MyList::Util qw(
     adjacent_pairs
+    difference
+    difference_by
+    difference_stable
     filter_by
     group_by
-    partition
-    difference difference_stable
-    difference_by
-    symmetric_difference
-    symmetric_difference_by
     intersection
     intersection_by
+    partition
+    symmetric_difference
+    symmetric_difference_by
     union
     union_by
 

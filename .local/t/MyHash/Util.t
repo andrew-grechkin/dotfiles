@@ -11,8 +11,8 @@ use experimental qw(builtin declared_refs defer for_list refaliasing try);
 use MyHash::Util qw(
     build_data_cache
     build_reverse_indices
-    compact
     clean_hash_from_key
+    compact
 );
 
 my %valid_data = (
@@ -78,45 +78,6 @@ describe 'MyHash::Util' => sub {
         run_tests($package, 'build_reverse_indices', \@tests);
     };
 
-    tests 'compact' => sub {
-        my @tests = ({
-                description => 'undefined',
-                input       => [undef],
-                expected    => [undef],
-            },
-            {
-                description => 'array',
-                input       => [[42, undef]],
-                expected    => [[42, undef]],
-            },
-            {
-                description => 'empty data',
-                input       => [{}],
-                expected    => [{}],
-            },
-            {
-                description => 'empty data 2',
-                input       => [{'x' => undef, 'y' => {'z' => undef}}],
-                expected    => [{}],
-            },
-            {
-                description => 'valid data',
-                input       => [{
-                        'x1' => undef,
-                        'x2' => [],
-                        'x3' => {},
-                        'y2' => [undef],
-                        'y3' => {'_' => undef},
-                        %valid_data,
-                    },
-                ],
-                expected => [{'x2' => [], 'y2' => [undef], %valid_data}],
-            },
-        );
-
-        run_tests($package, 'compact', \@tests);
-    };
-
     tests 'clean_hash_from_key' => sub {
         my @tests = ({
                 description => 'undefined',
@@ -155,6 +116,45 @@ describe 'MyHash::Util' => sub {
         );
 
         run_tests($package, 'clean_hash_from_key', \@tests);
+    };
+
+    tests 'compact' => sub {
+        my @tests = ({
+                description => 'undefined',
+                input       => [undef],
+                expected    => [undef],
+            },
+            {
+                description => 'array',
+                input       => [[42, undef]],
+                expected    => [[42, undef]],
+            },
+            {
+                description => 'empty data',
+                input       => [{}],
+                expected    => [{}],
+            },
+            {
+                description => 'empty data 2',
+                input       => [{'x' => undef, 'y' => {'z' => undef}}],
+                expected    => [{}],
+            },
+            {
+                description => 'valid data',
+                input       => [{
+                        'x1' => undef,
+                        'x2' => [],
+                        'x3' => {},
+                        'y2' => [undef],
+                        'y3' => {'_' => undef},
+                        %valid_data,
+                    },
+                ],
+                expected => [{'x2' => [], 'y2' => [undef], %valid_data}],
+            },
+        );
+
+        run_tests($package, 'compact', \@tests);
     };
 
     tests 'merge' => sub {

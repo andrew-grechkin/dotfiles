@@ -19,7 +19,6 @@ call plug#begin()
 	Plug 'mhinz/vim-signify'                                                   " Git status/modifications of the file
 	Plug 'nelstrom/vim-visual-star-search'
 	Plug 'pearofducks/ansible-vim'
-	Plug 'ryanoasis/vim-devicons'
 	Plug 'sbdchd/vim-run'
 	Plug 'simnalamburt/vim-mundo', {'on': 'MundoToggle'}                       " Visualize the undo tree
 	Plug 'suy/vim-context-commentstring'
@@ -32,12 +31,14 @@ call plug#begin()
 	Plug 'tpope/vim-unimpaired'                                                " Pairs of helpful commands
 	Plug 'vifm/vifm.vim'
 
-	if 0
+	if 1
 		Plug 'vim-airline/vim-airline'                                         " Most informative status line
 		Plug 'vim-airline/vim-airline-themes'                                  " Status line themes
+		Plug 'ryanoasis/vim-devicons'
 	else
 		Plug 'nvim-lualine/lualine.nvim'
 		Plug 'akinsho/bufferline.nvim'
+		Plug 'kyazdani42/nvim-web-devicons'                                    " lua fork of ryanoasis/vim-devicons
 	endif
 
 	Plug 'nvim-lua/plenary.nvim'
@@ -48,7 +49,6 @@ call plug#begin()
 
 	""" LSP
 	Plug 'neovim/nvim-lspconfig'                                               " ~/.config/nvim/after/plugin/nvim-lspconfig.lua
-" 	Plug 'williamboman/nvim-lsp-installer'
 	Plug 'williamboman/mason.nvim'
 	Plug 'williamboman/mason-lspconfig.nvim'
 	Plug 'ray-x/lsp_signature.nvim'
@@ -117,10 +117,6 @@ call plug#begin()
 		""" coloring
 		Plug 'RRethy/vim-hexokinase', {'do': 'make hexokinase'}
 	endif
-
-"	Plug 'hoob3rt/lualine.nvim'
-"	Plug 'akinsho/bufferline.nvim'
-"	Plug 'kyazdani42/nvim-web-devicons'                                        " lua fork of ryanoasis/vim-devicons
 
 "	Plug 'easymotion/vim-easymotion'                                           " Better move commands
 "	Plug 'masukomi/vim-markdown-folding'

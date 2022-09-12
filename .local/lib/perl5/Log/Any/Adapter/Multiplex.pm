@@ -21,13 +21,13 @@ sub init ($self, @) {
     my \%adapters = $self->{'adapters'};
 
     if (List::Util::any {ref ne 'ARRAY'} values %adapters) {
-        croak('A list of adapters and their arguments must be provided');
+        Carp::croak('A list of adapters and their arguments must be provided');
     }
 
     foreach my $adapter_name (sort keys %adapters) {
         my \@adapter_args = $adapters{$adapter_name};
         my $adapter_class = Log::Any::Manager->_get_adapter_class($adapter_name);
-        eval "require $adapter_class"; ## no critic [BuiltinFunctions::ProhibitStringyEval, ErrorHandling::RequireCheckingReturnValueOfEval]
+        eval "require $adapter_class" or Carp::croak $@; ## no critic [BuiltinFunctions::ProhibitStringyEval, ErrorHandling::RequireCheckingReturnValueOfEval]
         push $self->{'adapters_cache'}->@*, $adapter_class->new(@adapter_args, 'category' => $self->{'category'});
     }
 

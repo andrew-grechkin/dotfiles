@@ -11,6 +11,7 @@ VISUAL              DEFAULT=vim
 XDG_CACHE_HOME      DEFAULT="@{HOME}/.cache"
 XDG_CONFIG_HOME     DEFAULT="@{HOME}/.config"
 XDG_DATA_HOME       DEFAULT="@{HOME}/.local/share"
+XDG_STATE_HOME      DEFAULT="@{HOME}/.local/state"
 
 # => shell ------------------------------------------------------------------------------------------------------- {{{1
 
@@ -19,8 +20,8 @@ FUSE3_P7ZIP_FORMATS DEFAULT="Iso:Udf:*:APM:GPT"
 
 # => wine -------------------------------------------------------------------------------------------------------- {{{1
 
-WINEPREFIX          DEFAULT="${XDG_CACHE_HOME}/wine/default-x64"
-WINEARCH            DEFAULT=win64
+WINEPREFIX          DEFAULT="${XDG_CACHE_HOME}/wine/default-x32"
+WINEARCH            DEFAULT=win32
 
 # => X11 settings ------------------------------------------------------------------------------------------------ {{{1
 
@@ -32,12 +33,15 @@ GTK2_RC_FILES       DEFAULT="${XDG_CONFIG_HOME}/x11/gtk2rc"
 ### this might break lightdm (and xrdp)
 #XAUTHORITY          DEFAULT="${XDG_RUNTIME_DIR}/Xauthority"
 #ICEAUTHORITY        DEFAULT="${XDG_RUNTIME_DIR}/ICEauthority"
+ERRFILE             DEFAULT="$XDG_CACHE_HOME/X11/xsession-errors"
 
 # => kde --------------------------------------------------------------------------------------------------------- {{{1
 
-# KDEWM               DEFAULT="/usr/bin/i3"
+#KDEWM               DEFAULT="/usr/bin/bspwm"
 KDEHOME             DEFAULT="${XDG_CONFIG_HOME}/kde"
 
 # => misc -------------------------------------------------------------------------------------------------------- {{{1
 
 GROFF_TMPDIR        DEFAULT="/tmp"
+RIPGREP_CONFIG_PATH DEFAULT="${XDG_CONFIG_HOME}/ripgreprc"
+USRTMP              DEFAULT="@{HOME}/.local/no-cow/tmp"
