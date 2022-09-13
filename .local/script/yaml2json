@@ -129,7 +129,7 @@ sub unjson_recursive_inplace ($data) {
         $_ = __SUB__->($_) foreach $data->@*;
     } elsif (!ref $data) {
         try {my $decoded = JSON()->decode($data); $data = $decoded if ref $decoded}
-        catch ($e) { }
+        catch ($e) { };
     }
     return $data;
 }

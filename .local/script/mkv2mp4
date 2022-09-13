@@ -14,7 +14,7 @@ sub main() {
         next if $file !~ m/[.]mkv\z/x;
 
         my $out_file = $file =~ s{[.]mkv\z}{.mp4}xgr;
-        if (-e -r $out_file) {
+        if (-e $out_file) {
             warn "File already exist, skipping: $out_file\n";
             next;
         }
