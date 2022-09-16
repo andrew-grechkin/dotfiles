@@ -42,7 +42,7 @@ sub main {
         'follow|f'   => \$options{'FOLLOW'},
         'recurse|r'  => \$options{'RECURSE'},
         'verbose|v+' => \$options{'VERBOSE'},
-    ) or die $log->fatal('Unable to process command line options');
+    ) or die $log->fatal('Unable to process command line options') . "\n";
 
     Log::Any::Adapter->set(
         'Multiplex',

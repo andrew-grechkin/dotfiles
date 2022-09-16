@@ -31,7 +31,7 @@ sub main() {
     if (@absent) {
         say {*STDERR} 'Not found:';
         say {*STDERR} "\t$_" foreach @absent;
-        return ENOENT if @absent;
+        return ENOENT;
     }
 
     my $suffix   = $options{'GZ'} ? '.tgz' : '.tzst';

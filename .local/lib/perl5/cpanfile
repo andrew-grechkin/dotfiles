@@ -47,3 +47,5 @@ requires "Mojolicious::Plugin::SwaggerUI";
 
 requires "Test2::Harness";
 requires "Test2::Suite";
+requires "Code::TidyAll";
+requires "Parallel::ForkManager";

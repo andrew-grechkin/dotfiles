@@ -84,7 +84,7 @@ sub merge_inplace_left ($lhs, $rhs) {
 }
 
 sub merge_inplace_both ($lhs, $rhs) {
-    return $rhs if !(ref $lhs eq 'HASH' && ref $rhs eq 'HASH');
+    return $rhs unless ref $lhs eq 'HASH' && ref $rhs eq 'HASH';
 
     while (my ($rkey, $rvalue) = each $rhs->%*) {
         $lhs->{$rkey} = merge_inplace_both($lhs->{$rkey}, $rvalue);

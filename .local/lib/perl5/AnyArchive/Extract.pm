@@ -10,16 +10,16 @@ use experimental qw(builtin declared_refs defer for_list refaliasing try);
 use Carp       qw(croak);
 use List::Util qw(first);
 
-state @supported = (
+my @supported = (
     {'suffix' => qr{[.]tar$}x,                                      'command' => _command_tar()},
-    {'suffix' => qr{[.]tar.bz2$ |  [.]tbz2$ |  [.]tbz$ | [.]tz2$}x, 'command' => _command_tar('--bzip2')},
-    {'suffix' => qr{[.]tar.gz$ |   [.]tgz$ |   [.]taz$}x,           'command' => _command_tar('--gzip')},
-    {'suffix' => qr{[.]tar.lz$ |   [.]tlzip$}x,                     'command' => _command_tar('--lzip')},
+    {'suffix' => qr{[.]tar.bz2$  | [.]tbz2$  | [.]tbz$ | [.]tz2$}x, 'command' => _command_tar('--bzip2')},
+    {'suffix' => qr{[.]tar.gz$   | [.]tgz$   | [.]taz$}x,           'command' => _command_tar('--gzip')},
+    {'suffix' => qr{[.]tar.lz$   | [.]tlzip$}x,                     'command' => _command_tar('--lzip')},
     {'suffix' => qr{[.]tar.lzma$ | [.]tlzma$ | [.]tlz$}x,           'command' => _command_tar('--lzma')},
-    {'suffix' => qr{[.]tar.lzop$ | [.]tlzo$ |  [.]tlzop$}x,         'command' => _command_tar('--lzop')},
-    {'suffix' => qr{[.]tar.xz$ |   [.]txz$}x,                       'command' => _command_tar('--xz')},
-    {'suffix' => qr{[.]tar.zst$ |  [.]tzst$}x,                      'command' => _command_tar('--zstd')},
-    {'suffix' => qr{[.]tar.Z$ |    [.]taZ$}x,                       'command' => _command_tar('-Z')},
+    {'suffix' => qr{[.]tar.lzop$ | [.]tlzo$  | [.]tlzop$}x,         'command' => _command_tar('--lzop')},
+    {'suffix' => qr{[.]tar.xz$   | [.]txz$}x,                       'command' => _command_tar('--xz')},
+    {'suffix' => qr{[.]tar.zst$  | [.]tzst$}x,                      'command' => _command_tar('--zstd')},
+    {'suffix' => qr{[.]tar.Z$    | [.]taZ$}x,                       'command' => _command_tar('-Z')},
     {'suffix' => qr{[.]Z$}x,                                        'command' => _command_uncompress()},
     {'suffix' => qr{[.]bz2$}x,                                      'command' => _command_bunzip2()},
     {'suffix' => qr{[.]deb$}x,                                      'command' => _command_ar()},
@@ -27,18 +27,19 @@ state @supported = (
     {'suffix' => qr{[.]zst$}x,                                      'command' => _command_zst()},
     {'suffix' => qr{[.]eml$}x,                                      'command' => _command_munpack()},
     {'suffix' => qr{[.]cp866[.]zip$}x,                              'command' => _command_unzip('-O', 'cp866')},
-    {'suffix' => qr{[.]7z$ |       [.]rar$ |   [.]zip$}x,           'command' => _command_7zip()},
+    {'suffix' => qr{[.]7z$       | [.]rar$   | [.]zip$}x,           'command' => _command_7zip()},
 );
 
-sub basename ($archive, $decompressor = undef) {
-    return $archive->basename($decompressor // _decompressor($archive)->{'suffix'});
+sub basename ($archive_path, $decompressor = undef) {
+    return $archive_path->basename($decompressor // _decompressor($archive_path)->{'suffix'});
 }
 
-sub execute ($archive, $destination) {
-    my $arc      = _decompressor($archive);
-    my $basename = basename($archive);
+sub execute ($archive_path, $destination) {
+    my $arc      = _decompressor($archive_path);
+    my $basename = basename($archive_path);
 
-    my @command = map {ref $_ eq 'CODE' ? $_->($archive, $basename, $arc, $destination) : $_} $arc->{'command'}->@*;
+    my @command
+        = map {ref $_ eq 'CODE' ? $_->($archive_path, $basename, $arc, $destination) : $_} $arc->{'command'}->@*;
     say {*STDERR} join(' ', @command);
 
     system(@command) == 0
@@ -47,9 +48,9 @@ sub execute ($archive, $destination) {
     return;
 }
 
-sub _decompressor ($archive) {
-    my $result = first {$archive =~ m{$_->{'suffix'}}} @supported
-        or croak "Unsupported archive format: $archive";
+sub _decompressor ($archive_path) {
+    my $result = first {$archive_path =~ $_->{'suffix'}} @supported
+        or croak "Unsupported archive format: $archive_path";
     return $result;
 }
 
