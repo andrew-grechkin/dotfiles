@@ -10,7 +10,7 @@ set -Eeuo pipefail
 #   primarypaste > <file>       - paste contents to a file
 
 case "$OSTYPE" in
-	cygwin*|msys*)
+	cygwin* | msys*)
 		cat /dev/primary
 		;;
 	*)

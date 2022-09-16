@@ -4,8 +4,8 @@ set -Euo pipefail
 
 PATH="$(dirname "$0"):$PATH"
 
-tr -dc '[:graph:]' < /dev/urandom \
-| dd count=24 bs=1 2>/dev/null \
-| clipcopy
+tr -dc '[:alnum:]!@#$%^&*' </dev/urandom \
+	| dd count=24 bs=1 2>/dev/null \
+	| clipcopy
 
 notify-send -i dialog-password 'Password' 'Generated and copied to the clipboard'

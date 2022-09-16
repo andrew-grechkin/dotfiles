@@ -6,5 +6,5 @@ set -Eeuo pipefail
 
 for FILE in "$@"; do
 	FILENAMEFULL=$(basename "$FILE")
-	command gpg --decrypt --output "./${FILENAMEFULL/.gpg}" "$FILE"
+	command gpg --decrypt --output "./${FILENAMEFULL/.gpg/}" "$FILE"
 done

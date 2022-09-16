@@ -7,8 +7,6 @@ use utf8;
 use warnings     qw(FATAL utf8);
 use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
-use List::Util qw(all);
-
 use Mojo::File qw(path);
 
 sub main() {

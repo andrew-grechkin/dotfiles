@@ -2,5 +2,5 @@
 
 set -Eeuo pipefail
 
-command docker ps -a \
-	| grep -v '^CONTAINER'
+command docker ps -a --format "table {{.ID}}\t{{.Names}}\t{{.Image}}" \
+	| grep -v 'CONTAINER'

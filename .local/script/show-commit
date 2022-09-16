@@ -22,4 +22,4 @@ git-in-repo && {
 		# git m-diff "$COMMIT"
 	fi
 	git --no-pager show "${SHOW_OPTIONS[@]}" "$COMMIT" "$@"
-} 2> /dev/null
+} 2>/dev/null

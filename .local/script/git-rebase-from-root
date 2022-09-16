@@ -7,8 +7,8 @@ PATH="$(dirname "$0"):$PATH"
 git-in-repo && {
 	git checkout --orphan empty-initial-commit
 	git rm -rf .
-	git commit --allow-empty -m 'Empty initial commit'
-	git checkout master
-	git rebase empty-initial-commit
+	git commit --allow-empty -m 'init: empty commit'
+	git checkout main || git checkout master
+	git rebase -i empty-initial-commit
 	git branch -d empty-initial-commit
 }

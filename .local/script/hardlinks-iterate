@@ -10,5 +10,5 @@ PATH="$(dirname "$0"):$PATH"
 # hardlinks | xargs -d "\n" -ri bash -c 'eval "array=({})"; printf "%s\n" "${array[@]}" | fzf'
 
 hardlinks -o json \
-| jq -r '.[] | @sh' \
-| xargs -d "\n" -ri bash -c 'eval "array=({})"; printf "%s\n" "${array[@]}" | fzf --multi --bind "tab:toggle-out,shift-tab:toggle-in"'
+	| jq -r '.[] | @sh' \
+	| xargs -d "\n" -ri bash -c 'eval "array=({})"; printf "%s\n" "${array[@]}" | fzf --multi --bind "tab:toggle-out,shift-tab:toggle-in"'

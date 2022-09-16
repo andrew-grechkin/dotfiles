@@ -3,7 +3,15 @@
 set -Eeuo pipefail
 
 mapfile -t DANGLING_IMAGES < <(docker images -f 'dangling=true' -q)
-
 [[ -n "${DANGLING_IMAGES[*]}" ]] && {
+	echo "Removing dangling images: $#DANGLING_IMAGES"
 	command docker rmi -f "${DANGLING_IMAGES[@]}"
 }
+
+mapfile -t STOPPED_CONTAINERS < <(docker ps --filter status=exited -q)
+[[ -n "${STOPPED_CONTAINERS[*]}" ]] && {
+	echo "Removing stopped contaiers: $#STOPPED_CONTAINERS"
+	command docker rm "${STOPPED_CONTAINERS[@]}"
+}
+
+exit 0

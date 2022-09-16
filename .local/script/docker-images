@@ -2,4 +2,5 @@
 
 set -Eeuo pipefail
 
-command docker images --format '{{.Repository}}:{{.Tag}} \t\t{{.ID}} \t\t{{.Size}} \t\t{{.CreatedSince}}' 2>/dev/null
+command docker images --format 'table {{.Repository}}:{{.Tag}}\t{{.ID}}\t{{.Size}}\t{{.CreatedSince}}' 2>/dev/null \
+	| grep -v 'REPOSITORY'

@@ -3,7 +3,7 @@
 set -Eeuo pipefail
 
 case "$1" in
-    *.md|*.mkd|*.mdwiki) pandoc -f markdown+smart -t pdf "$1" | zathura - &>/dev/null & ;;
-    *) echo 'unknown' ;;
+	*.md | *.mkd | *.mdwiki) pandoc -f markdown+smart -t pdf "$1" | zathura - &>/dev/null & ;;
+	*)  echo 'unknown' ;;
 esac
-    # *.md|*.mkd|*.mdwiki) pandoc -f markdown+smart -t pdf --pdf-engine pdfroff "$1" | zathura - &>/dev/null & ;;
+# *.md|*.mkd|*.mdwiki) pandoc -f markdown+smart -t pdf --pdf-engine pdfroff "$1" | zathura - &>/dev/null & ;;

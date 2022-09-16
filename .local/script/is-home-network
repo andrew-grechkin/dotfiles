@@ -4,4 +4,4 @@ set -Eeo pipefail
 
 {
 	ip route | grep -E '192\.168\.168\.0/24'
-} &> /dev/null
+} &>/dev/null

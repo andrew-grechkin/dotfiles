@@ -4,18 +4,18 @@ set -Eeuo pipefail
 
 [ -z "$1" ] && {
 	"$BROWSER"
-	exit;
+	exit
 }
 
 case "$1" in
-	*mkv|*webm|*mp4|*youtube.com/watch*|*youtube.com/playlist*|*youtu.be*|*hooktube.com*|*bitchute.com*)
+	*mkv | *webm | *mp4 | *youtube.com/watch* | *youtube.com/playlist* | *youtu.be* | *hooktube.com* | *bitchute.com*)
 		setsid -f mpv -quiet "$1" &>/dev/null
 		;;
-	*png|*jpg|*jpe|*jpeg|*gif)
-		curl -sL "$1" > "/tmp/$(echo "$1" | sed "s/.*\///")" \
+	*png | *jpg | *jpe | *jpeg | *gif)
+		curl -sL "$1" >"/tmp/$(echo "$1" | sed "s/.*\///")" \
 			&& sxiv -a "/tmp/$(echo "$1" | sed "s/.*\///")" &>/dev/null &
 		;;
-	*mp3|*flac|*opus|*mp3?source*)
+	*mp3 | *flac | *opus | *mp3?source*)
 		setsid -f tsp curl -LO "$1" &>/dev/null
 		;;
 	*)
@@ -24,4 +24,5 @@ case "$1" in
 		else
 			setsid -f "$BROWSER" "$1" &>/dev/null
 		fi
+		;;
 esac

@@ -103,6 +103,8 @@ let g:ale_perl_perlcritic_showrules = 1
 " ale_sh
 let g:ale_sh_shellcheck_dialect     = 'bash'
 
+let g:ale_sh_shfmt_options          = '--binary-next-line --case-indent --keep-padding'
+
 " ale_json
 let g:ale_json_jq_options           = '-S --indent 4'
 let g:ale_json_spectral_use_global  = 1
