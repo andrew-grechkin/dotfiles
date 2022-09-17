@@ -5,7 +5,7 @@ set -Euo pipefail
 PATH="$(dirname "$0"):$PATH"
 
 {
-	EXCLUDE_FOLDERS_FD=('.cache' '.cargo' '.git' '.m2' '.snapshots' '.steam' '.vim' 'Steam' 'dosdevices' 'games' 'git' 'node_modules' 'slib/' 'venv' '/media/nfs/' '/proc/' '/sys/' 'tmp')
+	EXCLUDE_FOLDERS_FD=('.build' '.cache' '.cargo' '.git' '.m2' '.snapshots' '.steam' '.tidyall.d' '.vim' 'Steam' 'dosdevices' 'games' 'git' 'node_modules' 'slib/' 'venv' '/media/nfs/' '/proc/' '/sys/' 'tmp')
 	CMD1=(fd -HL --type "$2" . "$1" "${EXCLUDE_FOLDERS_FD[@]/#/-E=}")
 	CMD2=(find "$1" -type "$2")
 	FILT=(grep -v -F '/.git')

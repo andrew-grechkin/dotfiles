@@ -26,7 +26,9 @@ Thumbs.db
 *.vstags
 *_i.c
 *_p.c
+.build/
 .settings*/
+.tidyall.d/
 [Bb]in
 [Dd]ebug*/
 [Oo]bj/
@@ -39,3 +41,5 @@ x32-[Dd]ebug*/
 x32-[Rr]elease*/
 x64-[Dd]ebug*/
 x64-[Rr]elease*/
+
+hypnotoad.pid
