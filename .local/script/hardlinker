@@ -47,7 +47,7 @@ sub main {
     Log::Any::Adapter->set(
         'Multiplex',
         'adapters' => {
-            'Syslog' => ['options'   => 'pid,ndelay', 'log_level' => WARNING()],
+            'Syslog' => ['options'   => 'pid,ndelay', 'log_level' => 'warning'],
             'Stderr' => ['log_level' => min(TRACE(), INFO() + $options{'VERBOSE'})],
         },
     );
