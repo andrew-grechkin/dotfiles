@@ -29,6 +29,12 @@ my %options = (
 
 my @tm_parsers = (
     sub ($str) {
+        return Time::Moment->from_string($str, 'lenient' => 1);
+    },
+    sub ($str) {
+        return Time::Moment->from_string($str . 'Z', 'lenient' => 1);
+    },
+    sub ($str) {
         return Time::Moment->from_string($str =~ s{:}{}xgr, 'lenient' => 1);
     },
     sub ($str) {
@@ -67,10 +73,10 @@ sub detect_time ($path) {
         return $time_from_name;
     }
 
-    my \@times = fetch_exif_times($path);
+    my \@exif_times = fetch_exif_times($path);
 
     my $last_error;
-    foreach my $time_str (@times) {
+    foreach my $time_str (@exif_times) {
         $log->tracef('trying time: %s', $time_str);
 
         foreach my $parser (@tm_parsers) {
@@ -88,7 +94,7 @@ sub detect_time ($path) {
         return $time_from_path;
     }
 
-    die 'Unable to detect EXIF creation time';
+    die $log->fatalf("Unable to detect EXIF creation time: %s\n", $last_error);
 }
 
 ## no critic [RegularExpressions::ProhibitComplexRegexes]
@@ -105,9 +111,20 @@ sub detect_from_name ($path) {
     my $result;
 
     my $filename = $path->basename;
+    foreach my $parser (@tm_parsers) {
+        my ($name) = $filename =~ m/(.*)[.]\w+$/x;
+        try {
+            $log->tracef('Checking filename: %s', $name);
+            my $tm = $parser->($name);
+            $log->debugf('Detected "%s" from filename: %s', $tm, $name);
+            return $tm;
+        } catch ($e) {
+        };
+    }
+
     if ($filename =~ $regex) {
         my $tm = $tm_parsers[0]->($LAST_PAREN_MATCH{'date'} . 'T' . $LAST_PAREN_MATCH{'time'} . 'Z');
-        $log->debugf('Detected "%s" from path: %s', $tm, $filename);
+        $log->debugf('Detected "%s" from filename: %s', $tm, $filename);
         return $tm;
     }
 
@@ -159,8 +176,8 @@ sub change_file_mtime ($file, $tm) {
     if ($options{'APPLY'}) {
         utime $tm->epoch, $tm->epoch, $file
             or $log->error('Unable to set file time');
-        $log->debugf('Applied "%s" to: %s', $tm, $file);
     }
+    $log->infof('Applied "%s" to: %s', $tm, $file);
 
     return;
 }
