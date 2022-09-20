@@ -1,6 +1,7 @@
 package Auto::JSON;
 
 use v5.36;
+use utf8;
 use warnings     qw(FATAL utf8);
 use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
@@ -21,7 +22,7 @@ sub new ($class, $data) {
         try {
             $data = $json->decode($data);
         } catch ($e) {
-            croak "Unable to decode JSON: '$data'";
+            croak "Unable to decode JSON: '$e'";
         };
     }
     return bless \$data, $class;
