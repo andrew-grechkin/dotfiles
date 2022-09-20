@@ -1,19 +1,20 @@
 # vim: filetype=sh foldmethod=marker
+# shellcheck shell=bash
 
-# => proxy related ---------------=-------------------------------------------------------------------------------- {{{1
+# => proxy related ------------------------------------------------------------------------------------------------ {{{1
 
 function disable-proxy() {
-	unset  all_proxy
-	unset  http_proxy
-	unset  https_proxy
+	unset all_proxy
+	unset http_proxy
+	unset https_proxy
 	export no_proxy="*"
 }
 
-# => SSH agent -------------------=-------------------------------------------------------------------------------- {{{1
+# => SSH agent ---------------------------------------------------------------------------------------------------- {{{1
 
 SSH_AGENTS=(
-	"${XDG_RUNTIME_DIR}/keyring/ssh"		   # Gnome keyring agent
-	"${XDG_RUNTIME_DIR}/S.ssh-agent"		   # OpenSSH agent
+	"${XDG_RUNTIME_DIR}/keyring/ssh" # Gnome keyring agent
+	"${XDG_RUNTIME_DIR}/S.ssh-agent" # OpenSSH agent
 	"${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.ssh" # Gnupg ssh agent
 )
 
@@ -46,18 +47,18 @@ function _start_ssh_agent() {
 	local SSHAGENTARGS=(-s)
 
 	if [[ -x "$SSHAGENT" ]]; then
-#		eval `$SSHAGENT $SSHAGENTARGS`
-#		trap "kill $SSH_AGENT_PID" 0
+		# eval `$SSHAGENT $SSHAGENTARGS`
+		# trap "kill $SSH_AGENT_PID" 0
 		# shellcheck disable=2091
-		$("$SSHAGENT" "${SSHAGENTARGS[@]}" > "$XDG_CACHE_HOME/ssh-agent.rc")
+		$("$SSHAGENT" "${SSHAGENTARGS[@]}" >"$XDG_CACHE_HOME/ssh-agent.rc")
 		source-file "$XDG_CACHE_HOME/ssh-agent.rc"
 	fi
 
-#	add ssh keys if empty
-#	RESULT=$(ssh-add -l 2>/dev/null | grep '.ssh/id_')
-#	if [[ "0" = "${#RESULT}" ]]; then
-#		ssh-add
-#	fi
+	# add ssh keys if empty
+	# RESULT=$(ssh-add -l 2>/dev/null | grep '.ssh/id_')
+	# if [[ "0" = "${#RESULT}" ]]; then
+	#     ssh-add
+	# fi
 }
 
 # => kubectl ------------------------------------------------------------------------------------------------------ {{{1
@@ -83,6 +84,14 @@ function activate() {
 		fi
 	done
 
+	if [[ -r "poetry.lock" ]]; then
+		if command -v poetry &>/dev/null; then
+			PYTHON_LOCAL="$(poetry env info -p)"
+			source "$PYTHON_LOCAL/bin/activate"
+			return
+		fi
+	fi
+
 	tput bold
 	tput setaf 1
 	echo "Unable to find any activation scripts"
@@ -100,6 +109,6 @@ function gen-cdpath() {
 	local IFS=:
 	export CDPATH="${DIRS[*]}"
 	unset -f gen-cdpath
-} &> /dev/null
+} &>/dev/null
 
 gen-cdpath
