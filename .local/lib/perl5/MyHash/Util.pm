@@ -5,8 +5,14 @@ use utf8;
 use warnings     qw(FATAL utf8);
 use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
+use JSON::PP qw();
 use Storable qw(dclone);
 use builtin  qw(blessed);
+
+use constant {
+    'JSON'          => JSON::PP->new->pretty->space_before(0)->canonical->utf8(1),
+    'JSON_ONE_LINE' => JSON::PP->new->pretty->space_before(0)->canonical->utf8(1)->indent(0),
+};
 
 use Exporter qw(import);
 our @EXPORT_OK = qw(
@@ -14,6 +20,7 @@ our @EXPORT_OK = qw(
     build_reverse_indices
     clean_hash_from_key
     compact
+    decode_json_recursive_inplace
     merge
     merge_inplace_both
     merge_inplace_left
@@ -70,6 +77,40 @@ sub compact ($data) {
     }
 
     return $data;
+}
+
+sub decode_json_recursive_inplace ($data) {
+    if (!ref $data) {
+        try {
+            my $decoded = JSON()->decode($data);
+            $data = $decoded;
+            if (ref $decoded) {__SUB__->($data)}
+        } catch ($e) {
+            ## not an encoded json
+        };
+    } elsif (ref $data eq 'HASH') {
+        $_ = __SUB__->($_) foreach values $data->%*;
+    } elsif (ref $data eq 'ARRAY') {
+        $_ = __SUB__->($_) foreach $data->@*;
+    }
+    return $data;
+}
+
+sub flatten ($data, $acc = {}, $prefix = undef) {
+    ref $data eq 'HASH'
+        or return $data;
+
+    foreach my $key (keys $data->%*) {
+        my $prefix = $prefix ? join '.', $prefix, $key : $key;
+        my $value  = $data->{$key};
+        if (ref $value eq 'HASH') {
+            __SUB__->($value, $acc, $prefix);
+        } else {
+            $acc->{$prefix} = $value;
+        }
+    }
+
+    return $acc;
 }
 
 sub merge ($lhs, $rhs) {

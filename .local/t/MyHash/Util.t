@@ -8,12 +8,7 @@ use Test2::Tools::Spec;
 
 use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
-use MyHash::Util qw(
-    build_data_cache
-    build_reverse_indices
-    clean_hash_from_key
-    compact
-);
+use MyHash::Util qw();
 
 my %valid_data = (
     'key1' => {'a' => '1a', 'b' => '1b', 'c' => '1c'},
@@ -155,6 +150,56 @@ describe 'MyHash::Util' => sub {
         );
 
         run_tests($package, 'compact', \@tests);
+    };
+
+    tests 'decode_json_recursive_inplace' => sub {
+        my @tests = (
+            {description => 'undefined',   input => [undef],            expected => [undef]},
+            {description => 'scalar',      input => [42],               expected => [42]},
+            {description => 'scalar',      input => ['{"42": 42}'],     expected => [{'42' => 42}]},
+            {description => 'empty array', input => [[]],               expected => [[]]},
+            {description => 'empty hash',  input => [{}],               expected => [{}]},
+            {description => 'recursive',   input => ['{"42": "[42]"}'], expected => [{42 => [42]}]},
+            {
+                description => 'empty hash',
+                input       => [{x => undef, y => {z => undef}}],
+                expected    => [{x => undef, y => {z => undef}}],
+            },
+            {
+                description => 'array',
+                input       => [[undef, 42, '42', '"42"', '[42]', '{"42": 42}', [10]]],
+                expected    => [[undef, 42, '42', '42',   [42],   {42 => 42},   [10]]],
+            },
+            {
+                description => 'hash',
+                input       => [{k1 => 42, k2 => '42', k3 => '[42]', k4 => '{"42": 42}', k5 => [10]}],
+                expected    => [{k1 => 42, k2 => '42', k3 => [42],   k4 => {42 => 42},   k5 => [10]}],
+            },
+        );
+
+        run_tests($package, 'decode_json_recursive_inplace', \@tests);
+    };
+
+    tests 'flatten' => sub {
+        my @tests = (
+            {description => 'undefined',   input => [undef], expected => [undef]},
+            {description => 'scalar',      input => [42],    expected => [42]},
+            {description => 'scalar',      input => ['42'],  expected => ['42']},
+            {description => 'empty array', input => [[]],    expected => [[]]},
+            {description => 'empty hash',  input => [{}],    expected => [{}]},
+            {
+                description => 'empty hash',
+                input       => [{x => undef, y     => {z => undef}}],
+                expected    => [{x => undef, 'y.z' => undef}],
+            },
+            {
+                description => 'hash',
+                input       => [{a => undef, b     => {c => 42, d => {e => [42], f => {g => 42}}}}],
+                expected    => [{a => undef, 'b.c' => 42, 'b.d.e' => [42], 'b.d.f.g' => 42}],
+            },
+        );
+
+        run_tests($package, 'flatten', \@tests);
     };
 
     tests 'merge' => sub {
