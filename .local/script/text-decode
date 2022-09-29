@@ -29,10 +29,10 @@ while (my $ARGV = shift) {
 
     binmode($fh, ":raw :crlf :encoding($codepage)");
 
-    while (defined(my $line = <$fh>)) {
-        chomp($line);
+    while (<$fh>) {
+        chomp;
     } continue {
-        say $line;
+        say;
     }
 
     $ARGV eq '-'

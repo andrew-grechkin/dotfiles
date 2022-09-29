@@ -4,19 +4,24 @@
 
 use v5.36;
 use autodie;
-use open ':std', IN => ':crlf';
-use utf8;
-use warnings qw(FATAL utf8);
 
-BEGIN {
-    # by some kind of a bug open pragma with ':crlf' is not applied to STDIN
-    binmode(STDIN, ':crlf');
-}
+@ARGV
+    or push(@ARGV, '-');
 
-while (<<>>) {
-    chomp;
-} continue {
-    say;
+while (my $ARGV = shift) {
+    my $fh = *STDIN;
+
+    open($fh, '<', $ARGV) if $ARGV ne '-';
+
+    binmode($fh, ':raw :crlf');
+
+    while (<$fh>) {
+        chomp;
+    } continue {
+        say;
+    }
+
+    close($fh) if $ARGV ne '-';
 }
 
 __END__

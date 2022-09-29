@@ -1,4 +1,4 @@
-# => Mojolicious ------------------------------------------------------------------------------------------------- {{{1
+# => Mojolicious -------------------------------------------------------------------------------------------------- {{{1
 
 requires "Cpanel::JSON::XS";
 requires "EV";
@@ -9,7 +9,7 @@ requires "Mojolicious";
 requires "Net::DNS::Native";
 requires "Role::Tiny";
 
-# => Misc -------------------------------------------------------------------------------------------------------- {{{1
+# => Misc --------------------------------------------------------------------------------------------------------- {{{1
 
 requires "App::cpanminus";
 requires "Carp::Always";
@@ -26,15 +26,13 @@ requires "Neovim::Ext";
 requires "Path::Tiny";
 requires "Perl::Critic";
 requires "Perl::Critic::Pulp";
-requires "Reply";
 requires "Sereal";
 requires "Sort::Naturally";
 requires "Sub::StrictDecl";
-requires "Term::ReadLine::Gnu";
 requires "Time::Moment";
 requires "YAML::XS";
 
-# => Web --------------------------------------------------------------------------------------------------------- {{{1
+# => Web ---------------------------------------------------------------------------------------------------------- {{{1
 
 requires "Crypt::JWT";
 requires "CryptX";
@@ -43,9 +41,16 @@ requires "Mojolicious::Plugin::OpenAPI";
 requires "Mojolicious::Plugin::Status";
 requires "Mojolicious::Plugin::SwaggerUI";
 
-# => Test -------------------------------------------------------------------------------------------------------- {{{1
+# => Test --------------------------------------------------------------------------------------------------------- {{{1
 
 requires "Test2::Harness";
 requires "Test2::Suite";
 requires "Code::TidyAll";
 requires "Parallel::ForkManager";
+
+# => repl --------------------------------------------------------------------------------------------------------- {{{1
+
+requires "Regexp::Debugger";
+requires "Reply";
+requires "Term::ReadKey";
+requires "Term::ReadLine::Gnu";
