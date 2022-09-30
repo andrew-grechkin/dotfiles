@@ -1,10 +1,11 @@
 ---
 title: Example beamer presentation
 author: Andrew Grechkin
-date: November 02, 2020
+date: November 02, 2022
 theme: Dresden
 output: beamer_presentation
 toc: true
+fig_caption: true
 ---
 
 # In the morning
@@ -23,14 +24,15 @@ toc: true
 
 ## Working
 
-- Hour ^1^...~2~
-- Hour 2---4
+![Image](https://www.markdownguide.org/assets/images/tux.png)
 
 > a *lot* of work
 >
 > and **even** more
 >
 > **and _even_** more
+
+## Lunch
 
 ```perl
 use v5.28;
@@ -40,8 +42,6 @@ use warnings FATAL => qw(utf8);
 our $VERSION = 1;
 exit 42;
 ```
-
-## Lunch
 
 ***
 - Sandwich
@@ -63,7 +63,13 @@ exit 42;
 plot(cars)
 ```
 
+```{r, fig.cap=c("hello", "bye"), echo=FALSE, fig.retina=1}
+plot(1:10)
+cat('\n\n')
+hist(rnorm(1000))
+```
+
 ## Going to sleep
 
-- Get in bed
-- Count sheep
+- Get in bed ^1^...~2~
+- Count sheep 2---4

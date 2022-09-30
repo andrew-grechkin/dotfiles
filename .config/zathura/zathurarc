@@ -4,6 +4,14 @@
 set selection-clipboard clipboard
 set adjust-open         'width'
 set first-page-column   1:1
+set guioptions          ''
+
+map [normal]       <Space>      navigate next
+map [normal]       <BackSpace>  navigate previous
+
+map [normal]       `            toggle_statusbar
+map [fullscreen]   `            toggle_statusbar
+map [presentation] `            toggle_statusbar
 
 # => Recolor to dark mode (Ctrl-R toggle) ------------------------------------------------------------------------ {{{1
 
@@ -35,7 +43,7 @@ set completion-fg           '#E0E0E0'
 set notification-bg         '#90A959'
 set notification-fg         '#151515'
 
-set recolor                 'true'
+# set recolor                 'true'
 set recolor-darkcolor       '#90A4AE'
 set recolor-lightcolor      '#222222'
 set recolor-keephue         'true'

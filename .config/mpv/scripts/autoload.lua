@@ -5,12 +5,12 @@
 -- the internal playlist. (It stops if the it would add an already existing
 -- playlist entry at the same position - this makes it "stable".)
 -- Add at most 5000 * 2 files when starting a file (before + after).
-MAXENTRIES = 5000
 
 local msg = require 'mp.msg'
 local mp_options = require 'mp.options'
 local utils = require 'mp.utils'
 
+MAXENTRIES = 5000
 OPTIONS = {disabled = false}
 mp_options.read_options(OPTIONS)
 

@@ -48,3 +48,4 @@ bspc rule -a 'VirtualBox Manager'          desktop='4'
 bspc rule -a 'VirtualBoxVM'                desktop='5'
 bspc rule -a 'Main-Tmux'                   desktop='0'
 bspc rule -a 'Qemu-system-x86_64'          desktop='5'
+bspc rule -a 'Zathura'                     desktop='5' state=tiled follow=on

@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-
-set -Eeuo pipefail
-
-case "$1" in
-	*.md | *.mkd | *.mdwiki) pandoc -f markdown+smart -t beamer <(cat "$1") -o /tmp/presentation.pdf && cat /tmp/presentation.pdf | zathura - &>/dev/null & ;;
-	*)  echo 'unknown' ;;
-esac
