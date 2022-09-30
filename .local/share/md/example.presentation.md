@@ -58,17 +58,6 @@ exit 42;
 | First  | Spaghetti |              10 € |
 | Second |   Wine    |              20 € |
 
-
-```{r, cars, fig.cap="A scatterplot.", echo=FALSE}
-plot(cars)
-```
-
-```{r, fig.cap=c("hello", "bye"), echo=FALSE, fig.retina=1}
-plot(1:10)
-cat('\n\n')
-hist(rnorm(1000))
-```
-
 ## Going to sleep
 
 - Get in bed ^1^...~2~

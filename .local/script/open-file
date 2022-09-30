@@ -4,6 +4,7 @@ set -Eeuo pipefail
 
 case "$1" in
 	*presentation.md) pandoc -f markdown+smart -t beamer <(cat "$1") -o /tmp/presentation.pdf && zathura - --mode=presentation </tmp/presentation.pdf &>/dev/null & ;;
+	*.Rmd) PODMAN_USERNS=keep-id docker run --rm -v "${PWD}:/mnt:rw" -w "/mnt" "localhost/fedora-rpm-build" knit "$1" -n && pandoc -f markdown+smart -t pdf "${1%.Rmd}.md" | zathura - &>/dev/null & ;;
 	*.md | *.mkd | *.mdwiki) pandoc -f markdown+smart -t pdf "$1" | zathura - &>/dev/null & ;;
 	*)  echo 'unknown' ;;
 esac

@@ -207,7 +207,7 @@ filextype *.djvu,*.pdf
 	\ xdg-open %c %i &,
 	\ {View in apvlv}
 	\ apvlv,
-filextype *.md,*.mkd
+filextype *.md,*.mkd,*.Rmd,*.mdwiki
 	\ {View in zathura}
 	\ open-file %f %i - &,
 filextype *.pdf
