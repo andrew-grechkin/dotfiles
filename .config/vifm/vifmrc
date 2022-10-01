@@ -211,8 +211,8 @@ filextype *.md,*.mkd,*.Rmd,*.mdwiki
 	\ {View in glow}
 	\ glow -p %f,
 filextype *.md,*.mkd,*.Rmd,*.mdwiki
-	\ {View in zathura}
-	\ open-file %f %i - &,
+	\ {Render to pdf and view}
+	\ md-render-view %f,
 filextype *.pdf
 	\ xpdf,
 fileviewer *.pdf

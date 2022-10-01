@@ -2,10 +2,41 @@
 
 set -Eeuo pipefail
 
+[[ -r "$1" ]] || exit 2
+
+export PODMAN_USERNS=keep-id
+
+TMP_NAME="$SRANDOM"
+TMP_PATH="/tmp/$TMP_NAME"
+
+mkdir -p "$TMP_PATH"
+chmod a+rwX "$TMP_PATH"
+
+function clean() {
+	rm -rf "$TMP_PATH"
+}
+
+cp -r . "$TMP_PATH/"
+trap clean EXIT
+
 case "$1" in
-	*presentation.md) pandoc -f markdown+smart -t beamer <(cat "$1") -o /tmp/presentation.pdf && zathura - --mode=presentation </tmp/presentation.pdf &>/dev/null & ;;
-	*.Rmd) PODMAN_USERNS=keep-id docker run --rm -v "${PWD}:/mnt:rw" -w "/mnt" "localhost/fedora-rpm-build" knit "$1" -n && pandoc -f markdown+smart -t pdf "${1%.Rmd}.md" | zathura - &>/dev/null & ;;
-	*.md | *.mkd | *.mdwiki) pandoc -f markdown+smart -t pdf "$1" | zathura - &>/dev/null & ;;
-	*)  echo 'unknown' ;;
+	*presentation.md)
+		echo "Processing presentation: $1" >/dev/stderr \
+			&& docker run --rm -q -v "$TMP_PATH:/data" "docker.io/minlag/mermaid-cli" -q -b transparent -i "/data/$1" -o "/data/$TMP_NAME.mmd.md" \
+			&& docker run --rm -q -v "$TMP_PATH:/data" "docker.io/pandoc/latex:latest-ubuntu" -f markdown+smart -t beamer -o "/data/$TMP_NAME.pdf" "/data/$TMP_NAME.mmd.md" \
+			&& zathura --mode=presentation - <"$TMP_PATH/$TMP_NAME.pdf" &>/dev/null
+		;;
+	*.Rmd)
+		echo "Processing r-markdown: $1" >/dev/stderr \
+			&& docker run --rm -q -v "$TMP_PATH:/data" -w "/data" "docker.io/rocker/verse" /usr/local/lib/R/site-library/knitr/bin/knit "$1" -n >/dev/stderr \
+			&& docker run --rm -q -v "$TMP_PATH:/data" "docker.io/minlag/mermaid-cli" -q -b transparent --outputFormat png -i "/data/${1%.Rmd}.md" -o "/data/$TMP_NAME.mmd.md" \
+			&& docker run --rm -q -v "$TMP_PATH:/data" "docker.io/pandoc/latex:latest-ubuntu" -f markdown+smart -t pdf "/data/$TMP_NAME.mmd.md" \
+			| zathura - &>/dev/null
+		;;
+	*.md | *.mkd | *.mdwiki)
+		echo "Processing markdown: $1" >/dev/stderr \
+			&& docker run --rm -q -v "$TMP_PATH:/data" "docker.io/pandoc/latex:latest-ubuntu" -f markdown+smart -t pdf "/data/$1" \
+			| zathura - &>/dev/null
+		;;
+	*) echo 'unknown' ;;
 esac
-# *.md|*.mkd|*.mdwiki) pandoc -f markdown+smart -t pdf --pdf-engine pdfroff "$1" | zathura - &>/dev/null & ;;

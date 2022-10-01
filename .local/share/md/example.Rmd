@@ -14,3 +14,54 @@ plot(1:10)
 cat('\n\n')
 hist(rnorm(1000))
 ```
+
+```mermaid
+%%{
+  init: {
+    "flowchart": { "htmlLabels": false }
+  }
+}%%
+graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;
+```
+<!---->
+
+```mermaid
+%%{
+  init: {
+    "flowchart": { "htmlLabels": false }
+  }
+}%%
+graph TD
+    A{Does your flowchart have arrows?} --> B[No]
+    A --> C[yes]
+    B --> D(Add them already)
+    C --> E(Yay, what a great flowchart!)
+    D -.->|you can even add text to them| A
+```
+<!---->
+
+```mermaid
+%%{
+  init: {
+    "flowchart": { "htmlLabels": false }
+  }
+}%%
+graph LR
+
+A & B--> C & D
+style A fill:#f9f,stroke:#333,stroke-width:px
+style B fill:#bbf,stroke:#f66,stroke-width:2px,color:#fff,stroke-dasharray: 5 5
+
+subgraph beginning
+A & B
+end
+
+subgraph ending
+C & D
+end
+```
+<!---->
