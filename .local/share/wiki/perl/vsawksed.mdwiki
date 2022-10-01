@@ -1,3 +1,5 @@
+# vs AWK and SED
+
 ```bash
 curl -s https://www.archlinux.org/download/ | perl -nlE '/Current Release/ && (say /([[:digit:].]+)/x) && exit'
 curl -s https://www.archlinux.org/download/ | awk '/Current Release/,/Current Release/ {match($0, /[[:digit:].]+/, m); print m[0]}'

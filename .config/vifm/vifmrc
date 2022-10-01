@@ -208,6 +208,9 @@ filextype *.djvu,*.pdf
 	\ {View in apvlv}
 	\ apvlv,
 filextype *.md,*.mkd,*.Rmd,*.mdwiki
+	\ {View in glow}
+	\ glow -p %f,
+filextype *.md,*.mkd,*.Rmd,*.mdwiki
 	\ {View in zathura}
 	\ open-file %f %i - &,
 filextype *.pdf

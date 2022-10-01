@@ -6,8 +6,8 @@ set adjust-open         'width'
 set first-page-column   1:1
 set guioptions          ''
 
-map [normal]       <Space>      navigate next
-map [normal]       <BackSpace>  navigate previous
+# map [normal]       <Space>      navigate next
+# map [normal]       <BackSpace>  navigate previous
 
 map [normal]       `            toggle_statusbar
 map [fullscreen]   `            toggle_statusbar

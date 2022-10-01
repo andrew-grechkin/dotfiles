@@ -6,8 +6,8 @@ theme: Dresden
 output: beamer_presentation
 toc: true
 fig_caption: true
----
 
+---
 # In the morning
 
 ## Getting up
@@ -26,6 +26,8 @@ fig_caption: true
 
 ![Image](https://www.markdownguide.org/assets/images/tux.png)
 
+***
+
 > a *lot* of work
 >
 > and **even** more
@@ -43,9 +45,11 @@ our $VERSION = 1;
 exit 42;
 ```
 
-***
-- Sandwich
-- Drink `tea`
+## Incremental bullets
+
+>- Sandwich
+>- Drink tea
+>- one at a time (incrementally)
 
 ---
 

@@ -1,5 +1,6 @@
 # https://gist.github.com/DNA/ebb9258089e9e1dfd08c58695b3cd6f1
 
+```
 "WTF IS \033[30;47m???", a practical cheat-sheet
 
 Font color definitions can be intimidating and nonsense at first,
@@ -37,3 +38,4 @@ but it is quite easy, lets just follow character by character:
   │ \033[1;2;94m │ Bold, Italic font with Bright Blue color  │
   │ \033[0m      │ Reset everything                          │
   └──────────────┴───────────────────────────────────────────┘
+  ```

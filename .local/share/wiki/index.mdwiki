@@ -1,12 +1,17 @@
 # Topics
 
-[Git](git/index)
+[Git](git)
+
 [Perl](perl/index)
+
 [Terminal control](terminal/control)
+
 [Zsh](zsh/index)
+
 [vim](vim/index)
 
-[kubectl](kubectl)
+[Kubectl](kubectl)
 
-[markdown](markdown)
-[yaml](yaml)
+[Markdown](markdown)
+
+[Yaml](yaml)

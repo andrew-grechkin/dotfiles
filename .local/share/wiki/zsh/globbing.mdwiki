@@ -1,6 +1,6 @@
-## Globbing
+# Globbing
 
-### [Operators](http://zsh.sourceforge.net/Doc/Release/Expansion.html#Filename-Generation)
+## [Operators](http://zsh.sourceforge.net/Doc/Release/Expansion.html#Filename-Generation)
 
 * exact match
     ```bash
@@ -23,7 +23,7 @@
     ls folder_name/**/*.txt
     ```
 
-#### Examples
+### Examples
 
 * list .txt files recursively that end in a number from 1 to 10
     ```bash
@@ -42,7 +42,7 @@
     ls **/[^cC]*.txt
     ```
 
-### [Qualifiers](http://zsh.sourceforge.net/Doc/Release/Expansion.html#Glob-Qualifiers)
+## [Qualifiers](http://zsh.sourceforge.net/Doc/Release/Expansion.html#Glob-Qualifiers)
 
 1. Type
     - .  plain files
@@ -97,7 +97,7 @@
     - T  mark types
     - Y  + at most ARG matches
 
-#### Examples
+### Examples
 
 * all regular files with 'blah' in the name recursively
     ```bash
@@ -144,7 +144,7 @@
     ls **/*(e:'[[ ! "$REPLY" =~ blah ]]':)
     ```
 
-### [Modifiers](http://zsh.sourceforge.net/Doc/Release/Expansion.html#Modifiers)
+## [Modifiers](http://zsh.sourceforge.net/Doc/Release/Expansion.html#Modifiers)
 
 * a  absolute
 * A  absolute + realpath
@@ -158,7 +158,7 @@
 * q  quote
 * r  remove extension
 
-#### Examples
+### Examples
 
 Print lowercase absolute paths to the all files in current directory and resolve all symlinks
     ```bash
