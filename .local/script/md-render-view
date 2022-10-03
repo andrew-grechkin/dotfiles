@@ -12,15 +12,16 @@ use Getopt::Long qw(:config auto_version bundling no_ignore_case);
 
 use Path::Tiny qw(path);
 
-my %options = ( ## no tidy
+$PODMAN_USERNS = 'keep-id';
+
+my $extension = qr/[.](?:mkd|mdwiki|R?md|)\z/x;
+my %options   = (
     'KEEP'    => 0,
     'VERBOSE' => 0,
 );
 
-$PODMAN_USERNS = 'keep-id';
-my $extension = qr/[.](?:mkd|mdwiki|R?md|)\z/x;
 sub main() {
-    GetOptions( ## no tidy
+    GetOptions(
         'keep|k'     => \$options{'KEEP'},
         'verbose|v+' => \$options{'VERBOSE'},
     ) or die "Unable to process command line options\n";
@@ -30,25 +31,20 @@ sub main() {
 
     my $markdown_path = path($ARGV[0]);
     my $markdown_name = $markdown_path->basename($extension) . '.md';
-    chomp(my $uid = `id -u`);
-    chomp(my $gid = `id -g`);
 
-    my $workdir = $markdown_path->parent->absolute;
     my $payload = $markdown_path->slurp_utf8;
-    my \%types  = detect_fenced_code($payload);
+    my \%types = detect_fenced_code($payload);
 
-    if ($types{'r'} || $types{'mermaid'}) {
-        $workdir = Path::Tiny->tempdir('CLEANUP' => !$options{'KEEP'}, 'TEMPLATE' => 'aaa-XXXXX')->absolute;
-        $workdir->chmod('a+rw');
-        $markdown_path->copy($workdir->child($markdown_name));
-    }
+    my $workdir = Path::Tiny->tempdir('CLEANUP' => !$options{'KEEP'}, 'TEMPLATE' => 'md-render-view-XXXXX')->absolute;
+    $workdir->chmod('a+rw');
+    $markdown_path->copy($workdir->child($markdown_name));
 
     if ($types{'knit'}) {
         my $temp_path = $workdir->child("$markdown_name.01.Rmd");
         my $temp_name = $temp_path->basename;
         $workdir->child($markdown_name)->move($temp_path);
         my @cmd = (
-            'docker', qw(run --rm -q),
+            'docker', qw(run --rm),
             '-v',     "$workdir:/data", '-w', '/data', 'docker.io/rocker/verse',
             '/usr/local/lib/R/site-library/knitr/bin/knit',
             '-n', "/data/$temp_name", '-o', "/data/$markdown_name",
@@ -64,8 +60,10 @@ sub main() {
         my $temp_path = $workdir->child("$markdown_name.02.md");
         my $temp_name = $temp_path->basename;
         $workdir->child($markdown_name)->move($temp_path);
+        chomp(my $uid = `id -u`);
+        chomp(my $gid = `id -g`);
         my @cmd = (
-            'docker', qw(run --rm -q),
+            'docker', qw(run --rm),
             '-v',     "$workdir:/data", '-u', "$uid:$gid",
             'docker.io/minlag/mermaid-cli',
             qw(-q -b transparent -i),
@@ -79,7 +77,7 @@ sub main() {
 
     if ($types{'presentation'}) {
         my @cmd = (
-            'docker', qw(run --rm -q),
+            'docker', qw(run --rm),
             '-v',     "$workdir:/data",
             'docker.io/pandoc/latex:latest-ubuntu',
             qw(-f markdown+smart -t beamer),
@@ -92,7 +90,7 @@ sub main() {
             or die "Unable to zathura\n";
     } else {
         my @cmd = (
-            'docker', qw(run --rm -q),
+            'docker', qw(run --rm),
             '-v',     "$workdir:/data",
             'docker.io/pandoc/latex:latest-ubuntu',
             qw(-f markdown+smart -t pdf),
@@ -104,7 +102,6 @@ sub main() {
         system("zathura - <'$workdir/$markdown_name.pdf' &>/dev/null &") == 0
             or die "Unable to zathura\n";
     }
-
 
     return 0;
 }
@@ -118,7 +115,6 @@ sub detect_fenced_code ($payload) {
 
     return \%result;
 }
-
 
 exit main();
 

@@ -45,6 +45,12 @@ our $VERSION = 1;
 exit 42;
 ```
 
+## Incremental bullets
+
+>- Sandwich
+>- Drink tea
+>- one at a time (incrementally)
+
 ## Some diagrams 1
 
 ```mermaid
@@ -60,12 +66,6 @@ flowchart TD;
     C-->D;
 ```
 <!---->
-
-## Incremental bullets
-
->- Sandwich
->- Drink tea
->- one at a time (incrementally)
 
 ## Some diagrams 2
 
@@ -102,6 +102,11 @@ sequenceDiagram
 ## Some diagrams 3
 
 ```mermaid
+%%{
+  init: {
+    "flowchart": { "htmlLabels": false }
+  }
+}%%
 gantt
     dateFormat  YYYY-MM-DD
     title Adding GANTT diagram functionality to mermaid
@@ -117,6 +122,52 @@ gantt
     Future task in critical line        :crit, 5d
     Create tests for renderer           :2d
     Add to mermaid                      :1d
+```
+<!---->
+
+## Some diagrams 4
+
+```mermaid
+%%{
+  init: {
+    "flowchart": { "htmlLabels": false }
+  }
+}%%
+gitGraph
+    commit
+    commit
+    branch develop
+    commit
+    commit
+    commit
+    checkout main
+    commit
+    commit
+```
+<!---->
+
+## Some diagrams 5
+
+```mermaid
+%%{
+  init: {
+    "flowchart": { "htmlLabels": false }
+  }
+}%%
+classDiagram
+    Class01 <|-- AveryLongClass : Cool
+    Class03 *-- Class04
+    Class05 o-- Class06
+    Class07 .. Class08
+    Class09 --> C2 : Where am i?
+    Class09 --* C3
+    Class09 --|> Class07
+    Class07 : equals()
+    Class07 : Object[] elementData
+    Class01 : size()
+    Class01 : int chimp
+    Class01 : int gorilla
+    Class08 <--> C2: Cool label
 ```
 <!---->
 
