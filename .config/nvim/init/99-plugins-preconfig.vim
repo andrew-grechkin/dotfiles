@@ -29,6 +29,10 @@ let perl_no_extended_vars      = 1
 let perl_no_scope_in_variables = 1
 let perl_nofold_packages       = 1
 
+" => vim-grepper ------------------------------------------------------------------------------------------------- {{{1
+
+let g:grepper = {}
+
 " => python.vim -------------------------------------------------------------------------------------------------- {{{1
 
 let g:loaded_python_provider = 0

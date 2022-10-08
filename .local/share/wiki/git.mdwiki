@@ -1,6 +1,52 @@
-# Git
+# references
 
-## log
+## RefLog Shortnames
+
+```bash
+$ git reflog
+734713b HEAD@{0}: commit: fixed refs handling, added gc auto, updated
+d921970 HEAD@{1}: merge phedders/rdocs: Merge made by recursive.
+1c002dd HEAD@{2}: commit: added some blame and merge stuff
+```
+
+```bash
+$ git show master@{yesterday}
+```
+
+## Ancestry References
+
+- previous commit
+```bash
+$ git show HEAD^
+$ git show HEAD~
+```
+- the second parent of d921970. useful for merge commits
+```bash
+$ git show d921970^2
+```
+- deeper history
+```bash
+$ git show HEAD~3
+$ git show HEAD^^^
+```
+
+## Commit Ranges
+
+- all commits reachable by feature that aren’t reachable by main
+```bash
+$ git log main..feature
+$ git log ^main feature
+$ git log feature --not main
+$ git log feature bugfix ^main
+$ git log feature bugfix --not main
+```
+- commits reachable from feature and main but not common
+```bash
+$ git log main...feature
+$ git log --left-right main...featrure
+```
+
+# log
 
 * Show commits in ours branch but not in theirs
 
@@ -8,7 +54,7 @@
 git log theirs..ours
 ```
 
-## rebase
+# rebase
 
 * Auto resolve conflicts using changes from working branch (current)
 
