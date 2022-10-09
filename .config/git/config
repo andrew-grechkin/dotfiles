@@ -150,8 +150,12 @@
 	rebase = true
 
 [rebase]
-	autosquash = true
-	autostash  = true
+	abbreviateCommands  = true
+	autoSquash          = true
+	autoStash           = true
+	missingCommitsCheck = warn
+	stat                = true
+	updateRefs          = true
 
 [rerere]
 	enabled = true

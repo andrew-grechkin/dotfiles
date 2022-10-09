@@ -691,7 +691,7 @@ mark m /media/nfs/home
 mark r \/                                        home
 mark u ~/.local/usr/
 mark p ~/.local/share/perlbrew                   libs
-mark s ~/.local/share                            nvim
+mark s ~/.local/state                            nvim
 mark u /run/media/$USER
 mark v ~/.local/share/vault
 

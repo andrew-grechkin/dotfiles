@@ -1,75 +1,103 @@
-# references
+# References
 
 ## RefLog Shortnames
 
 ```bash
-$ git reflog
+git reflog
 734713b HEAD@{0}: commit: fixed refs handling, added gc auto, updated
 d921970 HEAD@{1}: merge phedders/rdocs: Merge made by recursive.
 1c002dd HEAD@{2}: commit: added some blame and merge stuff
 ```
 
 ```bash
-$ git show master@{yesterday}
+git show main@{yesterday}
 ```
 
 ## Ancestry References
 
 - previous commit
-```bash
-$ git show HEAD^
-$ git show HEAD~
-```
+
+    ```bash
+    git show HEAD^
+    git show HEAD~
+    ```
+
 - the second parent of d921970. useful for merge commits
-```bash
-$ git show d921970^2
-```
+
+    ```bash
+    git show d921970^2
+    ```
+
 - deeper history
-```bash
-$ git show HEAD~3
-$ git show HEAD^^^
-```
+
+    ```bash
+    git show HEAD~3
+    git show HEAD^^^
+    ```
 
 ## Commit Ranges
 
 - all commits reachable by feature that aren’t reachable by main
-```bash
-$ git log main..feature
-$ git log ^main feature
-$ git log feature --not main
-$ git log feature bugfix ^main
-$ git log feature bugfix --not main
-```
+
+    ```bash
+    git log main..feature
+    git log ^main feature
+    git log feature --not main
+    git log feature bugfix ^main
+    git log feature bugfix --not main
+    ```
+
 - commits reachable from feature and main but not common
-```bash
-$ git log main...feature
-$ git log --left-right main...featrure
-```
 
-# log
+    ```bash
+    git log main...feature
+    git log --left-right main...featrure
+    ```
 
-* Show commits in ours branch but not in theirs
+# Log
 
-```bash
-git log theirs..ours
-```
+- Show commits in ours branch but not in theirs
 
-# rebase
+    ```bash
+    git log theirs..ours
+    ```
 
-* Auto resolve conflicts using changes from working branch (current)
+# Rebase
 
-```bash
-git rebase -Xtheirs master
-```
+- mnemonic
 
-* Resolve conflict using the changes from the target branch
+    ```bash
+    git rebase main
+    # same as
+    git rebase --onto main main..HEAD
 
-```bash
-git checkout --ours -- path/file
-```
+    git rebase main topic
+    # same as
+    git checkout topic
+    git rebase main
 
-* Resolve conflict using the changes from the target working branch
+    # rebase but keep the branch point as is (don't advance forward)
+    git rebase -i --keep-base main topic
+    # same as
+    git rebase -i --onto main...topic main topic
+    ```
 
-```bash
-git checkout --theirs -- path/file
-```
+- Auto resolve conflicts using changes from working branch (current)
+
+    ```bash
+    git rebase -Xtheirs main
+    ```
+
+# Conflict resolve
+
+- Resolve conflict using the changes from the target branch
+
+    ```bash
+    git checkout --ours -- path/file
+    ```
+
+- Resolve conflict using the changes from the working branch
+
+    ```bash
+    git checkout --theirs -- path/file
+    ```
