@@ -5,7 +5,7 @@ echo 'Executing setup'
 mkdir -p ~/.cache/bin
 mkdir -p ~/.config/fontconfig
 mkdir -p ~/.local/{bin,lib}
-mkdir -p ~/.local/share/tig
+mkdir -p ~/.local/share
 mkdir -p ~/{desktop,documents,downloads,music,pictures,public,templates,videos}
 
 SCRIPT=$(realpath -s "$0")

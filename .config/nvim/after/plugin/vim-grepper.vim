@@ -18,16 +18,16 @@ xnoremap <silent> <plug>(GrepperOperatorRepo) :<c-u>let g:grepper.operator.dir='
 xnoremap <silent> <plug>(GrepperOperatorFile) :<c-u>let g:grepper.operator.dir='file,repo,cwd' <bar> call GrepperOperator(visualmode())<CR>
 
 " Start Grepper prompt
-nnoremap <leader>g         :Grepper -dir repo<CR>
-nnoremap <leader>G         :Grepper -dir file<CR>
+nnoremap <leader>G         :Grepper -dir repo<CR>
+nnoremap <leader>g         :Grepper -dir file<CR>
 " Search for the current word
-nnoremap <leader>8         :Grepper -cword -noprompt<CR>
-nnoremap <leader>*         :Grepper -dir file -cword -noprompt<CR>
+nnoremap <leader>*         :Grepper -cword -noprompt<CR>
+nnoremap <leader>8         :Grepper -dir file -cword -noprompt<CR>
 " Search for the current selection or {motion} (see text-objects)
-nmap     gs                <Plug>(GrepperOperatorRepo)
-nmap     gS                <Plug>(GrepperOperatorFile)
-xmap     gs                <Plug>(GrepperOperatorRepo)
-xmap     gS                <Plug>(GrepperOperatorFile)
+nmap     gS                <Plug>(GrepperOperatorRepo)
+nmap     gs                <Plug>(GrepperOperatorFile)
+xmap     gS                <Plug>(GrepperOperatorRepo)
+xmap     gs                <Plug>(GrepperOperatorFile)
 " " Search current selection (alias for gs in visual mode)
-vmap     <leader>g         <Plug>(GrepperOperatorRepo)
-vmap     <leader>G         <Plug>(GrepperOperatorFile)
+vmap     <leader>G         <Plug>(GrepperOperatorRepo)
+vmap     <leader>g         <Plug>(GrepperOperatorFile)
