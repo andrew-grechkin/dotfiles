@@ -101,3 +101,31 @@ git show main@{yesterday}
     ```bash
     git checkout --theirs -- path/file
     ```
+
+# examples
+
+```mermaid
+%%{init: { 'logLevel': 'debug', 'theme': 'base', 'gitGraph': {'rotateCommitLabel': true}} }%%
+gitGraph
+    commit id: "m1"
+    commit id: "m2"
+    branch feature
+    checkout feature
+    commit id: "f1"
+    checkout main
+    commit id: "m3"
+    checkout feature
+    commit id: "f2"
+    checkout main
+    commit id: "m4"
+    checkout feature
+    branch topic
+    commit id: "t1"
+    checkout feature
+    commit id: "f3"
+    checkout main
+    merge feature tag: "MC"
+    commit id: "m5"
+    checkout topic
+    commit id: "t2" tag: "HEAD"
+```
