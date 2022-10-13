@@ -93,7 +93,11 @@ cmp.setup {
         {name = 'ultisnips'}, {name = 'nvim_lsp'}, {name = 'nvim_lua'}, {name = 'path'},
         {name = 'buffer', keyword_length = 4}, {name = 'dictionary', keyword_length = 4},
         {name = 'tags', keyword_length = 4}, {name = 'spell', keyword_length = 5},
-        {name = 'tmux', keyword_length = 5}, {name = 'rg', keyword_length = 5},
+        {name = 'tmux', keyword_length = 5}, {
+            name = 'rg',
+            keyword_length = 5,
+            option = {debounce = 500, additional_arguments = '--max-depth 4'},
+        },
     },
     window = {documentation = {border = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}}},
 }
