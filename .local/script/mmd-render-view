@@ -1,0 +1,65 @@
+#!/usr/bin/env perl
+
+use v5.36;
+use autodie;
+use open 'IO' => ':raw';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
+
+use Env          qw($PODMAN_USERNS);
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+
+use Path::Tiny qw(path);
+
+$PODMAN_USERNS = 'keep-id';
+
+my $extension_match = qr/[.](mmd|mermaid)\z/x;
+my %options         = (
+    'KEEP'    => 0,
+    'VERBOSE' => 0,
+);
+
+sub main() {
+    GetOptions(
+        'keep|k+'    => \$options{'KEEP'},
+        'verbose|v+' => \$options{'VERBOSE'},
+    ) or die "Unable to process command line options\n";
+
+    @ARGV == 1 && $ARGV[0] =~ $extension_match
+        or die "Provide one mmd file\n";
+
+    my ($extension) = $ARGV[0] =~ $extension_match;
+    my $mmd_path    = path( $ARGV[0] );
+    my $mmd_name    = $mmd_path->basename($extension_match) . '.' . $extension;
+
+    my $workdir =
+        Path::Tiny->tempdir( 'CLEANUP' => ( $options{'KEEP'} < 2 ), 'TEMPLATE' => 'mmd-render-XXXXX' )->absolute;
+    $workdir->chmod('a+rw');
+    $mmd_path->copy( $workdir->child($mmd_name) );
+
+    chomp( my $uid = `id -u` );
+    chomp( my $gid = `id -g` );
+    my @cmd = (
+        'docker', qw(run --rm), '-v', "$workdir:/data", '-u', "$uid:$gid",
+        'docker.io/minlag/mermaid-cli',
+        qw(-q -b transparent -i),
+        "/data/$mmd_name", '-o', "/data/${mmd_name}.svg",
+    );
+    say "@cmd";
+    system(@cmd) == 0
+        or die "Unable to run: @cmd\n";
+
+    my $outfile = $workdir->child("${mmd_name}.svg");
+    if ( $options{'KEEP'} ) {
+        $outfile->copy( $mmd_path->sibling("${mmd_name}.svg") );
+    }
+    system("sxiv -f '$outfile' &>/dev/null &") == 0
+        or die "Unable to zathura\n";
+
+    return 0;
+}
+
+exit main();
+
+__END__

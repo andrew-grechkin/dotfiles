@@ -218,6 +218,10 @@ filextype *.pdf
 fileviewer *.pdf
 	\ pdftotext -nopgbrk %c -,
 
+filextype *.mmd,*.mermaid
+	\ {Render to svg}
+	\ mmd-render-view -k %f,
+
 " => File associations: PostScript ------------------------------------------------------------------------------- {{{1
 
 filextype *.ps,*.eps,*.ps.gz
