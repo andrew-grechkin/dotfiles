@@ -41,7 +41,7 @@ git show main@{yesterday}
 
     ```bash
     git log main..feature
-    git log ^main feature
+    git log feature ^main
     git log feature --not main
     git log feature bugfix ^main
     git log feature bugfix --not main
@@ -59,7 +59,7 @@ git show main@{yesterday}
 - Show commits in ours branch but not in theirs
 
     ```bash
-    git log theirs..ours
+    git log --left-right theirs..ours
     ```
 
 # Rebase
@@ -82,21 +82,37 @@ git show main@{yesterday}
     git rebase -i --onto main...topic main topic
     ```
 
-- Auto resolve conflicts using changes from working branch (current)
+- Auto resolve conflicts using changes from working branch (current, counterintuitive - theirs is the branch which is
+  checked out, opposite to merge)
 
     ```bash
     git rebase -Xtheirs main
     ```
 
+- Rebase and set authors date as commit date (basically now):
+    ```bash
+    git rebase master topic --onto feature --reset-author-date
+    ```
+
+- Rebase and set committer date as authors date (instead of now):
+    ```bash
+    git rebase master topic --onto feature --committer-date-is-author-date
+    ```
+
+- Rebase and keep committer date:
+    ```bash
+    git -c rebase.instructionFormat='%s%nexec GIT_COMMITTER_DATE="%cD" git commit --amend --no-edit' rebase -i
+    ```
+
 # Conflict resolve
 
-- Resolve conflict using the changes from the target branch
+- Resolve conflict using the changes from the target branch (main)
 
     ```bash
     git checkout --ours -- path/file
     ```
 
-- Resolve conflict using the changes from the working branch
+- Resolve conflict using the changes from the working branch (feature)
 
     ```bash
     git checkout --theirs -- path/file

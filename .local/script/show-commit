@@ -10,7 +10,7 @@ if [[ -n "$1" ]]; then
 else
 	COMMIT="$(git rev-parse HEAD)"
 fi
-SHOW_OPTIONS=(--color=always --show-signature -b)
+SHOW_OPTIONS=(--color=always --show-signature --ignore-space-change --pretty=fuller)
 
 git-in-repo && {
 	if [[ -n "$(git rev-parse --verify "$COMMIT^2" 2>/dev/null)" ]]; then
