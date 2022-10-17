@@ -220,7 +220,7 @@ fileviewer *.pdf
 
 filextype *.mmd,*.mermaid
 	\ {Render to svg}
-	\ mmd-render-view -k %f,
+	\ diagram-render-view -k %f,
 
 " => File associations: PostScript ------------------------------------------------------------------------------- {{{1
 

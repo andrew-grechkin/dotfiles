@@ -30,16 +30,15 @@ sub main() {
         or die "Provide one mmd file\n";
 
     my ($extension) = $ARGV[0] =~ $extension_match;
-    my $mmd_path    = path( $ARGV[0] );
+    my $mmd_path    = path($ARGV[0]);
     my $mmd_name    = $mmd_path->basename($extension_match) . '.' . $extension;
 
-    my $workdir =
-        Path::Tiny->tempdir( 'CLEANUP' => ( $options{'KEEP'} < 2 ), 'TEMPLATE' => 'mmd-render-XXXXX' )->absolute;
+    my $workdir = Path::Tiny->tempdir('CLEANUP' => ($options{'KEEP'} < 2), 'TEMPLATE' => 'mmd-render-XXXXX')->absolute;
     $workdir->chmod('a+rw');
-    $mmd_path->copy( $workdir->child($mmd_name) );
+    $mmd_path->copy($workdir->child($mmd_name));
 
-    chomp( my $uid = `id -u` );
-    chomp( my $gid = `id -g` );
+    chomp(my $uid = `id -u`);
+    chomp(my $gid = `id -g`);
     my @cmd = (
         'docker', qw(run --rm), '-v', "$workdir:/data", '-u', "$uid:$gid",
         'docker.io/minlag/mermaid-cli',
@@ -51,11 +50,11 @@ sub main() {
         or die "Unable to run: @cmd\n";
 
     my $outfile = $workdir->child("${mmd_name}.svg");
-    if ( $options{'KEEP'} ) {
-        $outfile->copy( $mmd_path->sibling("${mmd_name}.svg") );
+    if ($options{'KEEP'}) {
+        $outfile->copy($mmd_path->sibling("${mmd_name}.svg"));
     }
-    system("sxiv -f '$outfile' &>/dev/null &") == 0
-        or die "Unable to zathura\n";
+    system("sxiv -f '$outfile'") == 0
+        or die "Unable to open svg\n";
 
     return 0;
 }
