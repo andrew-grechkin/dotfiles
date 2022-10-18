@@ -55,7 +55,7 @@ sub _start_fzf() {
         '--bind',           'f3:toggle-sort',
         '--bind',           'home:top',
         '--bind',           'ctrl-alt-i:execute(sudo pacman -S {+1} </dev/tty >/dev/tty)+abort',
-        '--bind',           'ctrl-alt-d:execute(sudo pacman -Rs {+1} </dev/tty >/dev/tty)+abort',
+        '--bind',           'ctrl-alt-d:execute(sudo pacman -Rcs {+1} </dev/tty >/dev/tty)+abort',
         '--header',         'Ctrl-Alt-I: install; Ctrl-Alt-D: remove',
         '--preview-window', 'right:50%:wrap', '--preview',
         q{
