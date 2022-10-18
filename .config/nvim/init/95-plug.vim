@@ -43,8 +43,6 @@ call plug#begin()
 
 	Plug 'nvim-lua/plenary.nvim'
 	Plug 'nvim-telescope/telescope.nvim'
-	Plug 'nvim-treesitter/nvim-treesitter', { 'do': ':TSUpdate' }
-	Plug 'nvim-treesitter/playground'
 	Plug 'RRethy/vim-illuminate'
 
 	""" LSP
@@ -104,6 +102,8 @@ call plug#begin()
 	if empty($KDEHOME)                                                         " Install these pluggins only at work remote machines
 		Plug 'junegunn/fzf', {'dir': '~/.cache/fzf', 'do': './install --bin'}
 	else                                                                       " Install these pluggins only on personal machines
+	Plug 'nvim-treesitter/nvim-treesitter', { 'do': ':TSUpdate' }
+	Plug 'nvim-treesitter/playground'
 "		Plug 'szw/vim-g'                                                       " Search on Google
 "		Plug 'inkarkat/vim-localrc'
 		Plug 'ellisonleao/glow.nvim'                                           " Preview markdown code directly in your neovim terminal"

@@ -218,7 +218,7 @@ filextype *.pdf
 fileviewer *.pdf
 	\ pdftotext -nopgbrk %c -,
 
-filextype *.mmd,*.mermaid
+filextype *.mmd,*.mermaid,*.plantuml,*.puml,*.pu
 	\ {Render to svg}
 	\ diagram-render-view -k %f,
 
