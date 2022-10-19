@@ -1,9 +1,0 @@
-#!/bin/bash
-
-set -Eeuo pipefail
-
-PATH="$(dirname "$0"):$PATH"
-
-git-in-repo && {
-	git-log --single-worktree --graph --topo-order "$@"
-}

@@ -4,6 +4,4 @@ set -Eeuo pipefail
 
 PATH="$(dirname "$0"):$PATH"
 
-git-in-repo && {
-	git-log --all --no-merges "$@"
-}
+git-log --all --topo-order "$@"

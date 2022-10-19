@@ -4,6 +4,7 @@
 set -Eeuo pipefail
 
 PATH="$(dirname "$0"):$PATH"
+MAX=9999
 
 git-in-repo && {
 	CMD=(git log
@@ -11,7 +12,7 @@ git-in-repo && {
 		--abbrev-commit
 		--date='format-local:%Y-%m-%d %H:%M'
 		--format='%C(yellow)%h %C(bold blue)%an%C(reset) (%C(green)%cd, %cr%C(reset)) %s %C(auto)%d%G?'
-		--max-count=9999
+		--max-count="$MAX"
 		"$@"
 	)
 	"${CMD[@]}"

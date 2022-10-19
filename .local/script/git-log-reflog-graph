@@ -4,6 +4,4 @@ set -Eeuo pipefail
 
 PATH="$(dirname "$0"):$PATH"
 
-git-in-repo && {
-	git-log --all --graph --reflog "$@"
-}
+git-log --all --reflog --graph "$@"

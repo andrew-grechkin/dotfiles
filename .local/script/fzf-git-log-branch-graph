@@ -4,4 +4,5 @@ set -Eeuo pipefail
 
 PATH="$(dirname "$0"):$PATH"
 
-git-log-reflog --all --graph --reflog "$@"
+git-log-branch-graph "$@" \
+	| fzf-git-log

@@ -5,4 +5,4 @@ set -Eeuo pipefail
 PATH="$(dirname "$0"):$PATH"
 
 git-hashes \
-| fzf-git-ref
+	| fzf-git-ref

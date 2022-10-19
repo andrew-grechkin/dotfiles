@@ -4,6 +4,4 @@ set -Eeuo pipefail
 
 PATH="$(dirname "$0"):$PATH"
 
-git-in-repo && {
-	git-log --single-worktree --no-merges
-}
+git-log --single-worktree --no-merges
