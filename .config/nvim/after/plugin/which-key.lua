@@ -240,10 +240,10 @@ local visual_mappings = {
     ['<'] = {'<gv', 'don\'t loose selection when changing indentation'},
     ['>'] = {'>gv', 'don\'t loose selection when changing indentation'},
     g = {
-        p = {'"_dP', 'paste replace visual selection without copying it'},
+        p = {'"_dp', 'paste replace visual selection without copying it'},
         P = {'"_dP', 'paste replace visual selection without copying it'},
     },
-    Y = {'myY`y', 'Yank without jank'}, --- http://ddrscott.github.io/blog/2016/yank-without-jank
+    Y = {'myY`y', 'Yank without jank'}, -- http://ddrscott.github.io/blog/2016/yank-without-jank
     y = {'myy`y', 'Yank without jank'},
 }
 
