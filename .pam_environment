@@ -25,23 +25,28 @@ WINEARCH            DEFAULT=win32
 
 # => X11 settings ------------------------------------------------------------------------------------------------ {{{1
 
-GTK_RC_FILES        DEFAULT="${XDG_CONFIG_HOME}/x11/gtk1rc"
-GTK2_RC_FILES       DEFAULT="${XDG_CONFIG_HOME}/x11/gtk2rc"
 #XINITRC             DEFAULT="${XDG_CONFIG_HOME}/.config/x11/xinitrc"
 #XSERVERRC           DEFAULT="${XDG_CONFIG_HOME}/x11/xserverrc"
 
 ### this might break lightdm (and xrdp)
 #XAUTHORITY          DEFAULT="${XDG_RUNTIME_DIR}/Xauthority"
 #ICEAUTHORITY        DEFAULT="${XDG_RUNTIME_DIR}/ICEauthority"
-ERRFILE             DEFAULT="$XDG_CACHE_HOME/X11/xsession-errors"
+
+# => does not work ----------------------------------------------------------------------------------------------- {{{1
+
+# GTK_RC_FILES        DEFAULT="${XDG_CONFIG_HOME}/x11/gtk1rc"
+# GTK2_RC_FILES       DEFAULT="${XDG_CONFIG_HOME}/x11/gtk2rc"
+# ERRFILE             DEFAULT="${XDG_CACHE_HOME}/x11/xsession-errors"
 
 # => kde --------------------------------------------------------------------------------------------------------- {{{1
 
-#KDEWM               DEFAULT="/usr/bin/bspwm"
 KDEHOME             DEFAULT="${XDG_CONFIG_HOME}/kde"
 
 # => misc -------------------------------------------------------------------------------------------------------- {{{1
 
+ANSIBLE_HOME           DEFAULT="${XDG_CONFIG_HOME}/ansible"
 GROFF_TMPDIR        DEFAULT="/tmp"
+PYTHON_KEYRING_BACKEND DEFAULT="keyring.backends.null.Keyring"
 RIPGREP_CONFIG_PATH DEFAULT="${XDG_CONFIG_HOME}/ripgreprc"
 USRTMP              DEFAULT="@{HOME}/.local/no-cow/tmp"
+VAGRANT_DOTFILE_PATH   DEFAULT="${XDG_DATA_HOME}/vagrant"
