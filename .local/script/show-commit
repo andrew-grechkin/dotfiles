@@ -4,22 +4,45 @@ set -Eeo pipefail
 
 PATH="$(dirname "$0"):$PATH"
 
-if [[ -n "$1" ]]; then
-	COMMIT="$1"
-	shift
-else
-	COMMIT="$(git rev-parse HEAD)"
-fi
-SHOW_OPTIONS=(--color=always --show-signature --ignore-space-change --pretty=fuller)
-
 git-in-repo && {
+	if [[ -n "$*" ]]; then
+		REF="$1"
+		shift
+	else
+		REF="HEAD"
+	fi
+
+	COMMIT="$(git rev-parse "$REF" 2>/dev/null)"
+	[[ -z "$COMMIT" ]] && return
+
+	SHOW_OPTIONS=(--color=always --show-signature --ignore-space-change --pretty=fuller)
+
 	if [[ -n "$(git rev-parse --verify "$COMMIT^2" 2>/dev/null)" ]]; then
-		# git --no-pager show "$COMMIT" "$@"
-		# echo
-		git --no-pager m-log "$COMMIT"
+		# is a merge commit
+
+		git --no-pager show "$COMMIT" "$@"
 		echo
 		SHOW_OPTIONS+=(--first-parent)
-		# git m-diff "$COMMIT"
+
+		LEFT_SIDE="$(git rev-parse --verify "$COMMIT^1" 2>/dev/null)"
+		COMMIT="$(git rev-parse --verify "$COMMIT^2" 2>/dev/null)"
+		SPAN="$LEFT_SIDE..$COMMIT"
+	else
+		if git mr &>/dev/null; then
+			# has remote
+			MAIN_UPSTREAM_BRANCH="$(git mu 2>/dev/null)"
+			MAIN_UPSTREAM_COMMIT="$(git rev-parse "$MAIN_UPSTREAM_BRANCH" 2>/dev/null)"
+			if [[ "$MAIN_UPSTREAM_COMMIT" = "$COMMIT" ]]; then
+				SPAN="$COMMIT"
+			elif git merge-base --is-ancestor "$COMMIT" "$MAIN_UPSTREAM_BRANCH"; then
+				SPAN="$COMMIT"
+			else
+				SPAN="$MAIN_UPSTREAM_BRANCH..$COMMIT"
+			fi
+		else
+			SPAN="$COMMIT"
+		fi
 	fi
-	git --no-pager show "${SHOW_OPTIONS[@]}" "$COMMIT" "$@"
+
+	git --no-pager show "${SHOW_OPTIONS[@]}" "$SPAN" "$@" | delta
 } 2>/dev/null

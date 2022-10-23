@@ -8,9 +8,9 @@ CMD=(fzf
 	--ansi
 	--reverse
 	--tiebreak=index
-	--preview-window=right:40%:wrap:hidden
+	--preview-window=right:60%:wrap:hidden
 	--preview="show-commit \"\$(echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1)\" --show-signature --color=always $@"
-	--bind="ctrl-m:execute(show-commit \"\$(echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1)\" --show-signature --color=always $@ | $PAGER)"
+	--bind="ctrl-m:execute(show-commit \"\$(echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1)\" $@ | $PAGER)"
 	--bind="ctrl-o:execute-silent(echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | xargs git checkout)+abort"
 )
 

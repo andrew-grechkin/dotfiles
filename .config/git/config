@@ -40,7 +40,8 @@
 	pub        = !"git push -u origin $(git bname) -o merge_request.create -o merge_request.remove_source_branch"
 	puba       = !"git push -u origin $(git bname) -o merge_request.create -o merge_request.remove_source_branch -o merge_request.merge_when_pipeline_succeeds"
 	root       = rev-parse --show-toplevel
-	sh         = !"show-commit | $PAGER -r"
+	sh         = !"show-commit $@"
+	; sh         = !"show-commit $@ | $PAGER -r"
 	st         = status -b
 	u          = rev-parse --abbrev-ref --symbolic-full-name @{u}
 	unpub      = !"git push origin :$(git bname)"

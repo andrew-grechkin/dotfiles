@@ -4,6 +4,7 @@ echo 'Executing setup'
 
 mkdir -p ~/.cache/bin
 mkdir -p ~/.config/fontconfig
+mkdir -p ~/.config/environment.d
 mkdir -p ~/.local/{bin,lib}
 mkdir -p ~/.local/share
 mkdir -p ~/{desktop,documents,downloads,music,pictures,public,templates,videos}
@@ -13,7 +14,6 @@ WORKDIR=$(dirname "$SCRIPT")
 
 ln -sr  "$WORKDIR/.gnupg"                                               ~/ 2>/dev/null
 ln -sr  "$WORKDIR/.ssh"                                                 ~/ 2>/dev/null
-ln -srf "$WORKDIR/.pam_environment"                                     ~/
 ln -srf "$WORKDIR/.xprofile"                                            ~/
 [[ -z "$ZDOTDIR" ]] && ln -srf "$WORKDIR/.zshenv"                       ~/
 ln -srf "$WORKDIR/.config/perlcriticrc"                                 ~/.perlcriticrc
@@ -26,6 +26,8 @@ ln -srf "$WORKDIR/.config/bspwm"                                        ~/.confi
 ln -srf "$WORKDIR/.config/containers"                                   ~/.config/
 ln -srf "$WORKDIR/.config/fontconfig/conf.d"                            ~/.config/fontconfig/
 ln -srf "$WORKDIR/.config/git"                                          ~/.config/
+ln -srf "$WORKDIR/.config/environment.d/01-default.conf"                ~/.config/environment.d/
+ln -srf "$WORKDIR/.config/environment.d/90-common.conf"                 ~/.config/environment.d/
 ln -srf "$WORKDIR/.config/luaformatter"                                 ~/.config/
 ln -srf "$WORKDIR/.config/mpv"                                          ~/.config/
 ln -srf "$WORKDIR/.config/mutt"                                         ~/.config/
