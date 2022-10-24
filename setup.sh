@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -Euo pipefail
+
 echo 'Executing setup'
 
 mkdir -p ~/.cache/bin
@@ -12,52 +14,56 @@ mkdir -p ~/{desktop,documents,downloads,music,pictures,public,templates,videos}
 SCRIPT=$(realpath -s "$0")
 WORKDIR=$(dirname "$SCRIPT")
 
-ln -sr  "$WORKDIR/.gnupg"                                               ~/ 2>/dev/null
-ln -sr  "$WORKDIR/.ssh"                                                 ~/ 2>/dev/null
-ln -srf "$WORKDIR/.xprofile"                                            ~/
-[[ -z "$ZDOTDIR" ]] && ln -srf "$WORKDIR/.zshenv"                       ~/
-ln -srf "$WORKDIR/.config/perlcriticrc"                                 ~/.perlcriticrc
-ln -srf "$WORKDIR/.config/perltidyrc"                                   ~/.perltidyrc
+cd "$WORKDIR" || exit 1
 
-ln -srf "$WORKDIR/.config/alacritty"                                    ~/.config/
-ln -srf "$WORKDIR/.config/autorandr"                                    ~/.config/
-ln -srf "$WORKDIR/.config/black"                                        ~/.config/
-ln -srf "$WORKDIR/.config/bspwm"                                        ~/.config/
-ln -srf "$WORKDIR/.config/containers"                                   ~/.config/
-ln -srf "$WORKDIR/.config/fontconfig/conf.d"                            ~/.config/fontconfig/
-ln -srf "$WORKDIR/.config/git"                                          ~/.config/
-ln -srf "$WORKDIR/.config/environment.d/01-default.conf"                ~/.config/environment.d/
-ln -srf "$WORKDIR/.config/environment.d/90-common.conf"                 ~/.config/environment.d/
-ln -srf "$WORKDIR/.config/luaformatter"                                 ~/.config/
-ln -srf "$WORKDIR/.config/mpv"                                          ~/.config/
-ln -srf "$WORKDIR/.config/mutt"                                         ~/.config/
-ln -srf "$WORKDIR/.config/nvim"                                         ~/.config/
-ln -srf "$WORKDIR/.config/perlcriticrc"                                 ~/.config/
-ln -srf "$WORKDIR/.config/picom.conf"                                   ~/.config/
-ln -srf "$WORKDIR/.config/pylintrc"                                     ~/.config/
-ln -srf "$WORKDIR/.config/rofi"                                         ~/.config/
-ln -srf "$WORKDIR/.config/ripgreprc"                                    ~/.config/
-ln -srf "$WORKDIR/.config/shell"                                        ~/.config/
-ln -srf "$WORKDIR/.config/sxhkd"                                        ~/.config/
-ln -srf "$WORKDIR/.config/systemd"                                      ~/.config/
-ln -srf "$WORKDIR/.config/tmux"                                         ~/.config/
-ln -srf "$WORKDIR/.config/vifm"                                         ~/.config/
-ln -srf "$WORKDIR/.config/user-dirs.dirs"                               ~/.config/
-ln -srf "$WORKDIR/.config/yamllint"                                     ~/.config/
-ln -srf "$WORKDIR/.config/wireplumber"                                  ~/.config/
-ln -srf "$WORKDIR/.config/zathura"                                      ~/.config/
-ln -srf "$WORKDIR/.config/zsh"                                          ~/.config/
+ln -sr  .gnupg                                               ~/ 2>/dev/null
+ln -sr  .ssh                                                 ~/ 2>/dev/null
+ln -srf .xprofile                                            ~/
+[[ -z "$ZDOTDIR" ]] && {
+	ln -srf .zshenv                                          ~/
+}
+ln -srf .config/perlcriticrc                                 ~/.perlcriticrc
+ln -srf .config/perltidyrc                                   ~/.perltidyrc
 
-ln -srf "$WORKDIR/.local/lib/perl5"                                     ~/.local/lib/
-ln -srf "$WORKDIR/.local/script"                                        ~/.local/
-ln -srf "$WORKDIR/.local/share/vim-dict"                                ~/.local/share/
-ln -srf "$WORKDIR/.local/share/vim-plug"                                ~/.local/share/
-ln -srf "$WORKDIR/.local/share/wiki"                                    ~/.local/share/
+ln -srf .config/alacritty                                    ~/.config/
+ln -srf .config/autorandr                                    ~/.config/
+ln -srf .config/black                                        ~/.config/
+ln -srf .config/bspwm                                        ~/.config/
+ln -srf .config/containers                                   ~/.config/
+ln -srf .config/fontconfig/conf.d                            ~/.config/fontconfig/
+ln -srf .config/git                                          ~/.config/
+ln -srf .config/environment.d/01-default.conf                ~/.config/environment.d/
+ln -srf .config/environment.d/90-common.conf                 ~/.config/environment.d/
+ln -srf .config/luaformatter                                 ~/.config/
+ln -srf .config/mpv                                          ~/.config/
+ln -srf .config/mutt                                         ~/.config/
+ln -srf .config/nvim                                         ~/.config/
+ln -srf .config/perlcriticrc                                 ~/.config/
+ln -srf .config/picom.conf                                   ~/.config/
+ln -srf .config/pylintrc                                     ~/.config/
+ln -srf .config/rofi                                         ~/.config/
+ln -srf .config/ripgreprc                                    ~/.config/
+ln -srf .config/shell                                        ~/.config/
+ln -srf .config/sxhkd                                        ~/.config/
+ln -srf .config/systemd                                      ~/.config/
+ln -srf .config/tmux                                         ~/.config/
+ln -srf .config/vifm                                         ~/.config/
+ln -srf .config/user-dirs.dirs                               ~/.config/
+ln -srf .config/yamllint                                     ~/.config/
+ln -srf .config/wireplumber                                  ~/.config/
+ln -srf .config/zathura                                      ~/.config/
+ln -srf .config/zsh                                          ~/.config/
 
-[[ -f "$HOME/.config/npm" ]] || command cp -rf "$WORKDIR/.config/npm"          ~/.config/
-                                command cp -rf "$WORKDIR/.config/kdedefaults"  ~/.config/
+ln -srf .local/lib/perl5                                     ~/.local/lib/
+ln -srf .local/script                                        ~/.local/
+ln -srf .local/share/vim-dict                                ~/.local/share/
+ln -srf .local/share/vim-plug                                ~/.local/share/
+ln -srf .local/share/wiki                                    ~/.local/share/
 
-chmod -R u=rwX,go-rwx "$WORKDIR/.ssh"
+[[ -f "$HOME/.config/npm" ]] || command cp -rf .config/npm          ~/.config/
+command                                 cp -rf .config/kdedefaults  ~/.config/
 
-[[ -x 'submodules/private/setup.sh' ]] && echo 'Executing private/setup' && (exec 'submodules/private/setup.sh')
-[[ -x 'submodules/secret/setup.sh' ]]  && echo 'Executing secret/setup'  && (exec 'submodules/secret/setup.sh')
+chmod -R u=rwX,go-rwx .ssh
+
+[[ -x submodules/private/setup.sh ]] && echo 'Executing private/setup' && (exec submodules/private/setup.sh)
+[[ -x submodules/secret/setup.sh ]]  && echo 'Executing secret/setup'  && (exec submodules/secret/setup.sh)
