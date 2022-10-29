@@ -356,7 +356,7 @@ fileviewer *.json
 
 filetype *.yaml,*.yml
 	\ {View yaml}
-	\ yaml-sanitize %c | less,
+	\ yaml-sanitize %c | bat -l yaml --paging=always,
 	\ {Sanitize yaml}
 	\ yaml-sanitize -i %c,
 	\ {Convert yaml -> json}
@@ -457,7 +457,8 @@ filetype *.tar,
 	\*.tar.bz2,*.tbz2,*.tbz,*.tz2,*.tar.gz,*.tgz,*.taz,*.tar.lz,*.tlzip,*.tar.lzma,*.tlzma,*.tlz,
 	\*.tar.lzop,*.tlzo,*.tlzop,*.tar.xz,*.txz,*.tar.zst,*.tzst,*.tar.Z,*.taZ,
 	\*.bz2,*.gz,*.lz,*.lzma,*.lzop,*.xz,*.zst,*.Z,
-	\*.jar,*.war,*.ear,*.oxt,*.apkg,*.lha,*.ar,*.cpio,*.rpm,*.deb,*.udeb,*.mtree,*.xar
+	\*.jar,*.war,*.ear,*.oxt,*.apkg,*.lha,*.ar,*.cpio,*.rpm,*.deb,*.udeb,*.mtree,*.xar,
+	\*.eu4
 	\ {Mount with archivemount}
 	\ FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR,
 fileviewer *.tar,
