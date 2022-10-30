@@ -32,8 +32,7 @@ ln -srf .config/bspwm                                        ~/.config/
 ln -srf .config/containers                                   ~/.config/
 ln -srf .config/fontconfig/conf.d                            ~/.config/fontconfig/
 ln -srf .config/git                                          ~/.config/
-ln -srf .config/environment.d/01-default.conf                ~/.config/environment.d/
-ln -srf .config/environment.d/90-common.conf                 ~/.config/environment.d/
+ln -srf .config/environment.d/*                              ~/.config/environment.d/
 ln -srf .config/luaformatter                                 ~/.config/
 ln -srf .config/mpv                                          ~/.config/
 ln -srf .config/mutt                                         ~/.config/
