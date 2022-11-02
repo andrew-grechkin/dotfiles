@@ -4,6 +4,8 @@
 
 set -Euo pipefail
 
+setopt globdots
+
 CWD=${1:-$(pwd)}
 GIT_DIRS=("$CWD"/**/.git)
 

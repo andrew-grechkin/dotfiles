@@ -1,9 +1,8 @@
 !.local/script
+**/autoload/plug.vim
 *.spl
 *.sug
-*.zwc
 .config/mpv/watch_later
-.config/nvim/autoload/plug.vim
 .config/shell/*.work
 .config/systemd/user/default.target.wants
 .config/systemd/user/git-maintenance*

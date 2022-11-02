@@ -19,9 +19,8 @@ cd "$WORKDIR" || exit 1
 ln -sr  .gnupg                                               ~/ 2>/dev/null
 ln -sr  .ssh                                                 ~/ 2>/dev/null
 ln -srf .xprofile                                            ~/
-[[ -z "$ZDOTDIR" ]] && {
-	ln -srf .zshenv                                          ~/
-}
+[[ -z "${ZDOTDIR:-}" ]] && ln -srf .zshenv                   ~/
+
 ln -srf .config/perlcriticrc                                 ~/.perlcriticrc
 ln -srf .config/perltidyrc                                   ~/.perltidyrc
 
