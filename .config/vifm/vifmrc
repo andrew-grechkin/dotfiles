@@ -524,7 +524,7 @@ filetype *.encfs
 
 filetype main.yaml
 	\ {Execute ansible role}
-	\ ansible-role localhost %d:h -K --ask-vault-pass | less -r,
+	\ ansible-role  %d:h -K --ask-vault-pass -i localhost,, ,
 
 filetype *.svct
 	\ {Execute service-test}
