@@ -1,6 +1,6 @@
 # vim: filetype=zsh foldmethod=marker
 
-export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
+source "$HOME/.config/environment.d"/*
 
 [[ -z "$ZSH_INITED" ]] && {
 	export ZSH_INITED=1

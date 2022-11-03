@@ -19,36 +19,35 @@ cd "$WORKDIR" || exit 1
 ln -sr  .gnupg                                               ~/ 2>/dev/null
 ln -sr  .ssh                                                 ~/ 2>/dev/null
 ln -srf .xprofile                                            ~/
-[[ -z "${ZDOTDIR:-}" ]] && ln -srf .zshenv                   ~/
-
-ln -srf .config/perlcriticrc                                 ~/.perlcriticrc
-ln -srf .config/perltidyrc                                   ~/.perltidyrc
+ln -srf .zshenv                                              ~/
 
 ln -srf .config/alacritty                                    ~/.config/
 ln -srf .config/autorandr                                    ~/.config/
 ln -srf .config/black                                        ~/.config/
 ln -srf .config/bspwm                                        ~/.config/
 ln -srf .config/containers                                   ~/.config/
+ln -srf .config/environment.d/*                              ~/.config/environment.d/
 ln -srf .config/fontconfig/conf.d                            ~/.config/fontconfig/
 ln -srf .config/git                                          ~/.config/
-ln -srf .config/environment.d/*                              ~/.config/environment.d/
 ln -srf .config/luaformatter                                 ~/.config/
 ln -srf .config/mpv                                          ~/.config/
 ln -srf .config/mutt                                         ~/.config/
 ln -srf .config/nvim                                         ~/.config/
 ln -srf .config/perlcriticrc                                 ~/.config/
+ln -srf .config/perlcriticrc                                 ~/.perlcriticrc
+ln -srf .config/perltidyrc                                   ~/.perltidyrc
 ln -srf .config/picom.conf                                   ~/.config/
 ln -srf .config/pylintrc                                     ~/.config/
-ln -srf .config/rofi                                         ~/.config/
 ln -srf .config/ripgreprc                                    ~/.config/
+ln -srf .config/rofi                                         ~/.config/
 ln -srf .config/shell                                        ~/.config/
 ln -srf .config/sxhkd                                        ~/.config/
 ln -srf .config/systemd                                      ~/.config/
 ln -srf .config/tmux                                         ~/.config/
-ln -srf .config/vifm                                         ~/.config/
 ln -srf .config/user-dirs.dirs                               ~/.config/
-ln -srf .config/yamllint                                     ~/.config/
+ln -srf .config/vifm                                         ~/.config/
 ln -srf .config/wireplumber                                  ~/.config/
+ln -srf .config/yamllint                                     ~/.config/
 ln -srf .config/zathura                                      ~/.config/
 ln -srf .config/zsh                                          ~/.config/
 
