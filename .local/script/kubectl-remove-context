@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -Eeuo pipefail
+
+command kubectl config get-contexts --no-headers \
+	| perl -nlE 'say $_ =~ s/^\*?\s+//rg;' \
+	| fzf --reverse --multi --bind 'tab:toggle-out,shift-tab:toggle-in' \
+	| perl -nlaE 'say $F[0]' \
+	| xargs --max-lines=1 --no-run-if-empty kubectl config delete-context
