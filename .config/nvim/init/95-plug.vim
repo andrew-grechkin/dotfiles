@@ -59,7 +59,10 @@ call plug#begin()
 	""" debug
 	Plug 'mfussenegger/nvim-dap'
 	Plug 'mfussenegger/nvim-dap-python'
+	Plug 'nvim-telescope/telescope-dap.nvim'
 	Plug 'rcarriga/nvim-dap-ui'
+	Plug 'theHamsta/nvim-dap-virtual-text'
+	Plug 'jbyuki/one-small-step-for-vimkind'
 
 	""" test
 	Plug 'janko/vim-test'
