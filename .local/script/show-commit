@@ -15,12 +15,12 @@ git-in-repo && {
 	COMMIT="$(git rev-parse "$REF" 2>/dev/null)"
 	[[ -z "$COMMIT" ]] && return
 
-	SHOW_OPTIONS=(--color=always --show-signature --ignore-space-change --pretty=fuller)
+	SHOW_OPTIONS=(--color=always --show-signature --ignore-space-change)
 
 	if [[ -n "$(git rev-parse --verify "$COMMIT^2" 2>/dev/null)" ]]; then
 		# is a merge commit
 
-		git --no-pager show "$COMMIT" "$@"
+		git --no-pager show "$COMMIT" "$@" --pretty=fuller | delta
 		echo
 		SHOW_OPTIONS+=(--first-parent)
 

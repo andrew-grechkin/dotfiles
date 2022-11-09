@@ -5,8 +5,8 @@ set -Eeuo pipefail
 PATH="$(dirname "$0"):$PATH"
 
 git-in-repo && {
-	S=${1:-..}
-	C=${2:-"$(git bname)"}
-	A=$(git log -1 "$C" --merges --pretty="format:%p")
-	echo "${A/ /$S}"
+	SPAN_TYPE=${1:-..}
+	REF=${2:-"$(git bname)"}
+	FIRST_MERGE_PARENTS=$(git log -1 "$REF" --merges --pretty="format:%p")
+	echo "${FIRST_MERGE_PARENTS/ /$SPAN_TYPE}"
 }

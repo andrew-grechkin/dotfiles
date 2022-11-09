@@ -44,7 +44,7 @@
 	sh           = !"show-commit $@"
 	; sh         = !"show-commit $@ | $PAGER -r"
 	st           = status -b
-	u            = rev-parse --abbrev-ref --symbolic-full-name @{u}
+	u            = rev-parse --abbrev-ref --symbolic-full-name @{upstream}
 	unpub        = !"git push origin :$(git bname)"
 	untag        = !"git push origin :$(git describe --exact-match --tags)"
 	up           = pull --no-tags
@@ -100,6 +100,9 @@
 
 [fetch]
 	prune = true
+
+[format]
+	pretty = commit %H %h %(describe:tags) %nAuthor:     %aN <%aE>%nAuthorDate: %ai%nCommit:     %cN <%cE>%nCommitDate: %ci%n%n%B
 
 [gc]
 	auto = 0
