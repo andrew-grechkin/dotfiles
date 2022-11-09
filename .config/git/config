@@ -102,7 +102,7 @@
 	prune = true
 
 [format]
-	pretty = commit %H %h %(describe:tags) %nAuthor:     %aN <%aE>%nAuthorDate: %ai%nCommit:     %cN <%cE>%nCommitDate: %ci%n%n%B
+	pretty = commit %H%d %(describe:tags) %nAuthor:     %aN <%aE>%nAuthorDate: %ai%nCommit:     %cN <%cE>%nCommitDate: %ci%n%n%B
 
 [gc]
 	auto = 0
