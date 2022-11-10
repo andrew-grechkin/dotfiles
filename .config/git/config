@@ -4,6 +4,7 @@
 	behind       = !"MAIN_UBRANCH=\"$(git mu)\"; echo \"Behind $MAIN_UBRANCH:\" &>/dev/stderr; git log --oneline \"HEAD..$MAIN_UBRANCH\" | wc -l"
 	bleach       = !"f(){ git fall; git b | perl -alE 'm/: gone]/ && $F[0] ne q(*) && system(qq(git branch -D $F[0]))'; }; f"
 	bname        = rev-parse --abbrev-ref HEAD
+	branches     = !"git branch --list --no-column --format='%(refname:lstrip=2)' \"$@\""
 	bredo        = !"f(){ git rebase -i --keep-base --committer-date-is-author-date `git mb $@`; }; f"
 	bush         = !"f(){ while true; do git push && break; git pull --no-tags --rebase || break; done }; f"
 	cl           = clone --filter=blob:none
@@ -32,9 +33,9 @@
 	m-dt         = !"f(){ git difftool -b -t vimdiff      `git m-span .. $@`; }; f"
 	m-log        = !"f(){ git log          --color=always `git m-span .. $@`; }; f"
 	m-span       = !"git-merge-span"
-	mb           = !"MAIN_REMOTE=\"$(git mr)\"; git mu | grep -Po \"(?<=$MAIN_REMOTE/)\\w+$\""
+	mb           = !"MAIN_REMOTE=\"$(git mr)\"; [[ -n \"$MAIN_REMOTE\" ]] && { git mu | grep -Po \"(?<=$MAIN_REMOTE/)\\w+$\"; } || git rev-parse --abbrev-ref --symbolic-full-name HEAD"
 	mg           = mergetool --gui
-	mr           = !"git branch --all | grep -Po '(?<=remotes/)\\w+(?=/HEAD)'"
+	mr           = !"git branch --list --no-column --all | grep -Po '(?<=remotes/)\\w+(?=/HEAD)'"
 	mt           = mergetool
 	mu           = !"MAIN_REMOTE=\"$(git mr)\"; git rev-parse --abbrev-ref \"$MAIN_REMOTE/HEAD\" 2>&1"
 	pall         = !"git-push-all"

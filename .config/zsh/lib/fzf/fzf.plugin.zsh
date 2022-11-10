@@ -136,7 +136,7 @@ function _fzf_complete_kubectl_post() {
 
 function fzf-git-branches-widget()       LBUFFER+=$(fzf-git-branches --all | stdin-join-lines)
 function fzf-git-files-widget()          LBUFFER+=$(fzf-git-files          | stdin-join-lines)
-function fzf-git-hashes-widget()         LBUFFER+=$(fzf-git-hashes         | stdin-join-lines)
+function fzf-git-hashes-widget()         LBUFFER+=$(fzf-git-hashes --all   | stdin-join-lines)
 function fzf-git-remotes-widget()        LBUFFER+=$(fzf-git-remotes        | stdin-join-lines)
 function fzf-git-tags-widget()           LBUFFER+=$(fzf-git-tags           | stdin-join-lines)
 
@@ -156,7 +156,7 @@ function fzf-detect-widget() {
 	setopt local_options ksh_glob
 	case "$LBUFFER" in
 		git+( )@(show)*( ))
-			RESULT=$(fzf-git-hashes | stdin-join-lines)
+			RESULT=$(fzf-git-hashes --all | stdin-join-lines)
 			;;
 		git+( )@(remote)+( )@(remove|rename|show)*( ))
 			RESULT=$(fzf-git-remotes | stdin-join-lines)
