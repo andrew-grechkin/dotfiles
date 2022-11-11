@@ -1,6 +1,6 @@
-alias               cpr='rsync -PHah    --sparse --exclude "@eaDir"'
-alias               mvr='rsync -PHah    --sparse --exclude "@eaDir" --remove-source-files'
-alias               upr='rsync -PHahu   --sparse --exclude "@eaDir"'
+alias               cpr='rsync -PHah    --sparse --exclude "@eaDir" --exclude "#recycle"'
+alias               mvr='rsync -PHah    --sparse --exclude "@eaDir" --exclude "#recycle" --remove-source-files'
+alias               upr='rsync -PHahu   --sparse --exclude "@eaDir" --exclude "#recycle"'
 
 alias        rsync-copy='rsync -Hah     --sparse --info=progress2'
 alias        rsync-move='rsync -Hah     --sparse --info=progress2 --remove-source-files'
