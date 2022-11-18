@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -Euo pipefail
+set -Eeuo pipefail
 
 echo 'Executing setup'
 

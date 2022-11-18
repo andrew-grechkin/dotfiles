@@ -10,8 +10,12 @@ BACKGROUND_APPS=(
 	"$(realpath ~/.local/script/bspwm-watch-monitor)"
 )
 
+echo 'Starting background apps...'
 for BAPP in "${BACKGROUND_APPS[@]}"; do
-	pgrep -x "$BAPP" > /dev/null || "$BAPP" &
+	pgrep -x "$BAPP" > /dev/null || {
+		echo "  Starting $BAPP"
+		"$BAPP" &
+	}
 done
 
 bspc config border_width            2

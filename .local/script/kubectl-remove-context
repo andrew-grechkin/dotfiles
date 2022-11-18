@@ -3,7 +3,8 @@
 set -Eeuo pipefail
 
 command kubectl config get-contexts --no-headers \
-	| perl -nlE 'say $_ =~ s/^\*?\s+//rg;' \
+	| perl -nlaE 'my $trimmed = $_ =~ s/^\*?\s+//rg; say (sprintf "%-30s %s", $F[-1], $trimmed)' \
+	| sort \
 	| fzf --reverse --multi --bind 'tab:toggle-out,shift-tab:toggle-in' \
-	| perl -nlaE 'say $F[0]' \
+	| perl -nlaE 'say $F[1]' \
 	| xargs --max-lines=1 --no-run-if-empty kubectl config delete-context
