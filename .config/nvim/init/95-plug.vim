@@ -95,6 +95,7 @@ call plug#begin()
 "		Plug 'elixir-editors/vim-elixir', {'for': 'elixir'}
 "		Plug 'fatih/vim-go', {'for': 'go'}
 		Plug 'rodjek/vim-puppet'                                               " For Puppet syntax highlighting
+		Plug 'towolf/vim-helm'
 "		Plug 'vim-ruby/vim-ruby', {'for': 'ruby'}                              " For Facts, Ruby functions, and custom providers
 "		Plug '~/.local/share/vim-plug/trackperlvars', {'for': 'perl'}
 "		Plug '~/.local/share/vim-plug/perlart',       {'for': 'perl'}
