@@ -12,7 +12,7 @@
 	commit-again = !"git commit -eF \"$(git root)/.git/COMMIT_EDITMSG\""
 	compress     = !"git-compress"
 	compress-a   = !"git-compress-aggressive"
-	d            = diff -b
+	d            = -c delta.side-by-side=true diff -b
 	dc           = diff -b --cached
 	dg           = difftool --gui
 	ds           = diff -b --submodule=diff
@@ -43,7 +43,6 @@
 	puba         = !"git push -u origin $(git bname) -o merge_request.create -o merge_request.remove_source_branch -o merge_request.merge_when_pipeline_succeeds"
 	root         = rev-parse --show-toplevel
 	sh           = !"show-commit $@"
-	; sh         = !"show-commit $@ | $PAGER -r"
 	st           = status -b
 	u            = rev-parse --abbrev-ref --symbolic-full-name @{upstream}
 	unpub        = !"git push origin :$(git bname)"
@@ -80,7 +79,7 @@
 	tool            = fugitive
 	guitool         = kompare
 	algorithm       = patience
-	colorMoved      = plain
+	colorMoved      = blocks
 	colorMovedWS    = ignore-space-change
 	indentHeuristic = true
 ;	diff-algorithm  = patience
@@ -150,6 +149,7 @@
 	cmd = nvim -d "$LOCAL" "$BASE" "$REMOTE" "$MERGED" -c '$wincmd w' -c 'wincmd J'
 
 [pager]
+	blame  = delta
 	branch = false
 	diff   = delta
 	log    = delta

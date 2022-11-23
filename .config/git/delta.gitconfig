@@ -1,7 +1,11 @@
 ; vim: filetype=gitconfig
 
+[interactive]
+	diffFilter = delta --color-only
+
 [delta]
 	features     = line-numbers decorations
+	side-by-side = false
 	syntax-theme = "zenburn"
 
 [delta "decorations"]
