@@ -5,4 +5,4 @@ set -Eeuo pipefail
 PATH="$(dirname "$0"):$PATH"
 
 git-log-all-graph \
-| fzf-git-log "$@"
+	| fzf-git-log "$@" --reload-command='git-log-all-graph'

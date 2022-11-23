@@ -4,14 +4,40 @@ set -Eeuo pipefail
 
 PATH="$(dirname "$0"):$PATH"
 
-CMD=(fzf
+COMMAND_EXTRACT_COMMIT="echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | tr -d '\n'"
+
+CMD=(
+	fzf
 	--ansi
 	--reverse
 	--tiebreak=index
 	--preview-window=right:60%:wrap:hidden
-	--preview="show-commit \"\$(echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1)\" --show-signature --color=always $@"
-	--bind="ctrl-m:execute(show-commit \"\$(echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1)\" $@ | $PAGER)"
-	--bind="ctrl-o:execute-silent(echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | xargs git checkout)+abort"
+	--bind="ctrl-o:execute-silent(git checkout \"${COMMAND_EXTRACT_COMMIT}\")+abort"
+	--bind="ctrl-y:execute-silent(${COMMAND_EXTRACT_COMMIT} | clipcopy)"
+	--bind='ctrl-d:page-down,ctrl-u:page-up'
+	--bind='ctrl-v:toggle-preview,ctrl-w:toggle-preview-wrap,ctrl-s:toggle-sort'
+	--bind='esc:cancel'
+	--bind='home:top'
+	--bind='tab:accept,shift-tab:accept'
+	--header='Press c-v to preview, c-o to checkout, c-m/enter to show fullscreen'
+)
+
+OPTIONS=("$@")
+for i in ${!OPTIONS[*]}; do
+	OPTION="${OPTIONS[$i]}"
+	if [[ "$OPTION" =~ --reload-command= ]]; then
+		unset "OPTIONS[$i]"
+		CMD[-1]=--header='Press c-v to preview, c-r to reload, c-o to checkout, c-m/enter to show fullscreen'
+		CMD+=(
+			--bind="ctrl-r:reload(${OPTION#--reload-command=})"
+			--bind="ctrl-o:execute-silent(git checkout \"\$(${COMMAND_EXTRACT_COMMIT})\")+reload(${OPTION#--reload-command=})"
+		)
+	fi
+done
+
+CMD+=(
+	--bind="ctrl-m:execute(show-commit \"\$(${COMMAND_EXTRACT_COMMIT})\" ${OPTIONS[@]} | $PAGER)"
+	--preview="show-commit \"\$(${COMMAND_EXTRACT_COMMIT})\" --show-signature --color=always ${OPTIONS[@]}"
 )
 
 "${CMD[@]}"
