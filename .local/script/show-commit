@@ -5,9 +5,9 @@ set -Eeo pipefail
 PATH="$(dirname "$0"):$PATH"
 
 if [[ -x "$(command -v delta)" ]]; then
-	PRETTIFIER=delta
+	PRETTIFIER="delta"
 else
-	PRETTIFIER=cat
+	PRETTIFIER="cat"
 fi
 
 git-in-repo && {

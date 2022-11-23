@@ -12,13 +12,13 @@ CMD=(
 	--reverse
 	--tiebreak=index
 	--preview-window=right:60%:wrap:hidden
-	--bind="ctrl-o:execute-silent(git checkout \"${COMMAND_EXTRACT_COMMIT}\")+abort"
+	--bind="ctrl-d:page-down,ctrl-u:page-up"
+	--bind="ctrl-h:preview-down,ctrl-l:preview-up"
+	--bind="ctrl-v:toggle-preview,ctrl-w:toggle-preview-wrap,ctrl-s:toggle-sort"
 	--bind="ctrl-y:execute-silent(${COMMAND_EXTRACT_COMMIT} | clipcopy)"
-	--bind='ctrl-d:page-down,ctrl-u:page-up'
-	--bind='ctrl-v:toggle-preview,ctrl-w:toggle-preview-wrap,ctrl-s:toggle-sort'
-	--bind='esc:cancel'
-	--bind='home:top'
-	--bind='tab:accept,shift-tab:accept'
+	--bind="esc:cancel"
+	--bind="home:top"
+	--bind="tab:accept,shift-tab:accept"
 	--header='Press c-v to preview, c-o to checkout, c-m/enter to show fullscreen'
 )
 
@@ -26,12 +26,15 @@ OPTIONS=("$@")
 for i in ${!OPTIONS[*]}; do
 	OPTION="${OPTIONS[$i]}"
 	if [[ "$OPTION" =~ --reload-command= ]]; then
-		unset "OPTIONS[$i]"
 		CMD+=(
-			--header='Press c-v to preview, c-r to reload, c-o to checkout, c-m/enter to show fullscreen'
+			--header='Keys: move(c-j/k), preview(c-v), p-move(c-h/l), yank(c-y), (c-m/enter), fetch(c-f), pull(c-g), checkout(c-o), reload(c-r)'
+			--bind="ctrl-f:execute-silent(git fall)+reload(${OPTION#--reload-command=})"
+			--bind="ctrl-g:execute-silent(git up)+reload(${OPTION#--reload-command=})"
+			--bind="ctrl-o:execute(set -x;C=\$(${COMMAND_EXTRACT_COMMIT}); A=\$(git describe --all --always \$C); git checkout \${A/heads\/})+reload(${OPTION#--reload-command=})"
+			--bind="ctrl-t:execute-silent(ABB=\$(git mb); git checkout \$ABB)+reload(${OPTION#--reload-command=})"
 			--bind="ctrl-r:reload(${OPTION#--reload-command=})"
-			--bind="ctrl-o:execute-silent(git checkout \"\$(${COMMAND_EXTRACT_COMMIT})\")+reload(${OPTION#--reload-command=})"
 		)
+		unset "OPTIONS[$i]"
 	fi
 done
 
