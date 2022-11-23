@@ -1,6 +1,6 @@
 # vim: filetype=zsh foldmethod=marker
 
-source "$HOME/.config/environment.d"/*
+[[ -d "$HOME/.config/environment.d" ]] && source "$HOME/.config/environment.d"/*
 
 [[ -z "$ZSH_INITED" ]] && {
 	export ZSH_INITED=1

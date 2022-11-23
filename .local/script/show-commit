@@ -4,6 +4,12 @@ set -Eeo pipefail
 
 PATH="$(dirname "$0"):$PATH"
 
+if [[ -x "$(command -v delta)" ]]; then
+	PRETTIFIER=delta
+else
+	PRETTIFIER=cat
+fi
+
 git-in-repo && {
 	if [[ -n "$*" ]]; then
 		REF="$1"
@@ -20,7 +26,7 @@ git-in-repo && {
 	if [[ -n "$(git rev-parse --verify "$COMMIT^2" 2>/dev/null)" ]]; then
 		# is a merge commit
 
-		git --no-pager show "$COMMIT" "$@" --pretty=fuller | delta
+		git --no-pager show --color=always "$COMMIT" "$@" --pretty=fuller | $PRETTIFIER
 		echo
 		SHOW_OPTIONS+=(--first-parent)
 
@@ -44,5 +50,5 @@ git-in-repo && {
 		fi
 	fi
 
-	git --no-pager show "${SHOW_OPTIONS[@]}" "$SPAN" "$@" | delta
+	git --no-pager show "${SHOW_OPTIONS[@]}" "$SPAN" "$@" | $PRETTIFIER
 } 2>/dev/null

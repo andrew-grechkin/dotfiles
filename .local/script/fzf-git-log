@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -Eeuo pipefail
+set -Eeo pipefail
 
 PATH="$(dirname "$0"):$PATH"
 
@@ -27,8 +27,8 @@ for i in ${!OPTIONS[*]}; do
 	OPTION="${OPTIONS[$i]}"
 	if [[ "$OPTION" =~ --reload-command= ]]; then
 		unset "OPTIONS[$i]"
-		CMD[-1]=--header='Press c-v to preview, c-r to reload, c-o to checkout, c-m/enter to show fullscreen'
 		CMD+=(
+			--header='Press c-v to preview, c-r to reload, c-o to checkout, c-m/enter to show fullscreen'
 			--bind="ctrl-r:reload(${OPTION#--reload-command=})"
 			--bind="ctrl-o:execute-silent(git checkout \"\$(${COMMAND_EXTRACT_COMMIT})\")+reload(${OPTION#--reload-command=})"
 		)
