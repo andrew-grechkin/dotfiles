@@ -30,7 +30,7 @@ for i in ${!OPTIONS[*]}; do
 			--header='Keys: move(c-j/k), preview(c-v), p-move(c-h/l), yank(c-y), (c-m/enter), fetch(c-f), pull(c-g), checkout(c-o), reload(c-r)'
 			--bind="ctrl-f:execute-silent(git fall)+reload(${OPTION#--reload-command=})"
 			--bind="ctrl-g:execute-silent(git up)+reload(${OPTION#--reload-command=})"
-			--bind="ctrl-o:execute(set -x;C=\$(${COMMAND_EXTRACT_COMMIT}); A=\$(git describe --all --always \$C); git checkout \${A/heads\/})+reload(${OPTION#--reload-command=})"
+			--bind="ctrl-o:execute-silent(C=\$(${COMMAND_EXTRACT_COMMIT}); A=\$(git describe --all --always \$C); git checkout \${A/heads\/})+reload(${OPTION#--reload-command=})"
 			--bind="ctrl-t:execute-silent(ABB=\$(git mb); git checkout \$ABB)+reload(${OPTION#--reload-command=})"
 			--bind="ctrl-r:reload(${OPTION#--reload-command=})"
 		)
