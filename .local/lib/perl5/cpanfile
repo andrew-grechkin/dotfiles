@@ -50,6 +50,7 @@ requires "Parallel::ForkManager";
 
 # => repl --------------------------------------------------------------------------------------------------------- {{{1
 
+requires "Devel::IPerl";
 requires "Regexp::Debugger";
 requires "Reply";
 requires "Term::ReadKey";
