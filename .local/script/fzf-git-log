@@ -31,7 +31,7 @@ for i in ${!OPTIONS[*]}; do
 			--bind="ctrl-f:execute-silent(git fall)+reload(${OPTION#--reload-command=})"
 			--bind="ctrl-g:execute-silent(git up)+reload(${OPTION#--reload-command=})"
 			--bind="ctrl-o:execute-silent(C=\$(${COMMAND_EXTRACT_COMMIT}); A=\$(git describe --all --always \$C); git checkout \${A/heads\/})+reload(${OPTION#--reload-command=})"
-			--bind="ctrl-t:execute-silent(ABB=\$(git mb); git checkout \$ABB)+reload(${OPTION#--reload-command=})"
+			--bind="ctrl-t:execute-silent(ABB=\$(git gmb); git checkout \$ABB)+reload(${OPTION#--reload-command=})"
 			--bind="ctrl-r:reload(${OPTION#--reload-command=})"
 		)
 		unset "OPTIONS[$i]"

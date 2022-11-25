@@ -34,9 +34,9 @@ git-in-repo && {
 		COMMIT="$(git rev-parse --verify "$COMMIT^2" 2>/dev/null)"
 		SPAN="$LEFT_SIDE..$COMMIT"
 	else
-		if git mr &>/dev/null; then
+		if git gmr &>/dev/null; then
 			# has remote
-			MAIN_UPSTREAM_BRANCH="$(git mu 2>/dev/null)"
+			MAIN_UPSTREAM_BRANCH="$(git gmu 2>/dev/null)"
 			MAIN_UPSTREAM_COMMIT="$(git rev-parse "$MAIN_UPSTREAM_BRANCH" 2>/dev/null)"
 			if [[ "$MAIN_UPSTREAM_COMMIT" = "$COMMIT" ]]; then
 				SPAN="$COMMIT"

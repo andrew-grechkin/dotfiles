@@ -1,15 +1,14 @@
 [alias]
 	aa           = add --all
 	b            = branch -vv
-	behind       = !"MAIN_UBRANCH=\"$(git mu)\"; echo \"Behind $MAIN_UBRANCH:\" &>/dev/stderr; git log --oneline \"HEAD..$MAIN_UBRANCH\" | wc -l"
+	behind       = !"MAIN_UBRANCH=\"$(git gmu)\"; echo \"Behind $MAIN_UBRANCH:\" &>/dev/stderr; git log --oneline \"HEAD..$MAIN_UBRANCH\" | wc -l"
 	bleach       = !"f(){ git fall; git b | perl -alE 'm/: gone]/ && $F[0] ne q(*) && system(qq(git branch -D $F[0]))'; }; f"
 	bname        = rev-parse --abbrev-ref HEAD
 	branches     = !"git branch --list --no-column --format='%(refname:lstrip=2)' \"$@\""
-	bredo        = !"f(){ git rebase -i --keep-base --committer-date-is-author-date `git mb $@`; }; f"
 	bush         = !"f(){ while true; do git push && break; git pull --no-tags --rebase || break; done }; f"
 	cl           = clone --filter=blob:none
 	co           = checkout
-	commit-again = !"git commit -eF \"$(git root)/.git/COMMIT_EDITMSG\""
+	commit-again = !"git commit -eF \"$(git root)/.git/COMMIT_EDITMSG\" \"$@\""
 	compress     = !"git-compress"
 	compress-a   = !"git-compress-aggressive"
 	d            = -c delta.side-by-side=true diff -b
@@ -17,34 +16,35 @@
 	dg           = difftool --gui
 	ds           = diff -b --submodule=diff
 	dt           = difftool
-	dtw          = !"git difftool -b -t vimdiff $(git mb)..HEAD"
-	dw           = !"git diff -b --color=always $(git mb)..HEAD"
+	dtw          = !"git difftool -b -t vimdiff $(git gmb)..HEAD"
+	dw           = !"git diff -b --color=always $(git gmb)..HEAD"
 	fall         = fetch --all --prune --prune-tags
+	gmb          = !"MAIN_REMOTE=\"$(git gmr)\"; [[ -n \"$MAIN_REMOTE\" ]] && { git gmu | grep -Po \"(?<=$MAIN_REMOTE/)\\w+$\"; } || git rev-parse --abbrev-ref --symbolic-full-name HEAD"
+	gmr          = !"git branch --list --no-column --all | grep -Po '(?<=remotes/)\\w+(?=/HEAD)'"
+	gmu          = !"MAIN_REMOTE=\"$(git gmr)\"; git rev-parse --abbrev-ref \"$MAIN_REMOTE/HEAD\" 2>&1"
+	gu           = rev-parse --abbrev-ref --symbolic-full-name @{upstream}
 	ha           = !"git --no-pager log --abbrev-commit --all --color=always --graph --pretty=oneline --topo-order"
 	l            = !"fzf-git-log-branch"
 	la           = !"fzf-git-log-all"
 	lag          = !"fzf-git-log-all-graph"
 	lg           = !"fzf-git-log-branch-graph"
-	lr           = !"git-log-reflog-graph"
-	lw           = !"fzf-git-log-branch $(git mu)..HEAD"
-	m            = !"git checkout `git mb`"
-	m-base       = !"f(){ git merge-base ${1:-$(git mb)} HEAD; }; f"
+	lrg          = !"git-log-reflog-graph"
+	lw           = !"fzf-git-log-branch $(git gmu)..HEAD"
+	m            = !"git checkout $(git gmb)"
+	m-base       = !"f(){ git merge-base ${1:-$(git gmb)} HEAD; }; f"
 	m-diff       = !"f(){ git diff     -b  --color=always `git m-span .. $@`; }; f"
 	m-dt         = !"f(){ git difftool -b -t vimdiff      `git m-span .. $@`; }; f"
 	m-log        = !"f(){ git log          --color=always `git m-span .. $@`; }; f"
 	m-span       = !"git-merge-span"
-	mb           = !"MAIN_REMOTE=\"$(git mr)\"; [[ -n \"$MAIN_REMOTE\" ]] && { git mu | grep -Po \"(?<=$MAIN_REMOTE/)\\w+$\"; } || git rev-parse --abbrev-ref --symbolic-full-name HEAD"
-	mg           = mergetool --gui
-	mr           = !"git branch --list --no-column --all | grep -Po '(?<=remotes/)\\w+(?=/HEAD)'"
 	mt           = mergetool
-	mu           = !"MAIN_REMOTE=\"$(git mr)\"; git rev-parse --abbrev-ref \"$MAIN_REMOTE/HEAD\" 2>&1"
+	mtg          = mergetool --gui
 	pall         = !"git-push-all"
 	pub          = !"git push -u origin $(git bname) -o merge_request.create -o merge_request.remove_source_branch"
 	puba         = !"git push -u origin $(git bname) -o merge_request.create -o merge_request.remove_source_branch -o merge_request.merge_when_pipeline_succeeds"
+	redow        = !"f(){ git rebase -i --autosquash --keep-base --committer-date-is-author-date --update-refs `git gmb` \"$@\"; }; f"
 	root         = rev-parse --show-toplevel
 	sh           = !"show-commit $@"
 	st           = status -b
-	u            = rev-parse --abbrev-ref --symbolic-full-name @{upstream}
 	unpub        = !"git push origin :$(git bname)"
 	untag        = !"git push origin :$(git describe --exact-match --tags)"
 	up           = pull --no-tags
