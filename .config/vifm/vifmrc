@@ -652,7 +652,11 @@ nnoremap <f8>  :delete<CR>
 nnoremap <f10> :quit<CR>
 nnoremap <c-@> :sync<CR>
 
-" => fsf integration (ctrl-t, ctrl-p) ---------------------------------------------------------------------------- {{{1
+nmap rp :!tsp rsync --sparse --exclude "@eaDir" --exclude "#recycle" --exclude ".Trash-*" -PHah %f %D<CR>
+nmap rP :!tsp rsync --sparse --exclude "@eaDir" --exclude "#recycle" --exclude ".Trash-*" -PHah --remove-source-files %f %D/ && find %f -type d -empty -exec rmdir --ignore-fail-on-non-empty -p {} \+<CR>
+" nmap rP :!tsp rsync --sparse --exclude "@eaDir" --exclude "#recycle" --exclude ".Trash-*" -PHah --remove-source-files %f %D/ && find %f -type d -empty -exec rmdir --ignore-fail-on-non-empty -p {} \; && tsp rmdir %f<CR>
+
+" => fzf integration (ctrl-t, ctrl-p) ---------------------------------------------------------------------------- {{{1
 
 command! FZFfind   :set noquickview | :execute 'goto "'.system('_fzf_compgen_helper "." f | fzf --reverse 2>/dev/tty || echo "./dummy"').'"%IU' | redraw
 command! FZFlocate :set noquickview | :execute 'goto "'.system('command locate / | fzf --reverse 2>/dev/tty || echo "./dummy"').'"%IU' | redraw
