@@ -79,7 +79,7 @@
 	tool            = fugitive
 	guitool         = kompare
 	algorithm       = patience
-	colorMoved      = blocks
+	colorMoved      = plain
 	colorMovedWS    = ignore-space-change
 	indentHeuristic = true
 ;	diff-algorithm  = patience
