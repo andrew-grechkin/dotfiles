@@ -5,9 +5,9 @@ set -Eeo pipefail
 PATH="$(dirname "$0"):$PATH"
 
 if [[ -x "$(command -v delta)" ]]; then
-	PRETTIFIER="delta"
+	GIT_PAGER="delta"
 else
-	PRETTIFIER="cat"
+	GIT_PAGER="cat"
 fi
 
 git-in-repo && {
@@ -21,12 +21,16 @@ git-in-repo && {
 	COMMIT="$(git rev-parse "$REF" 2>/dev/null)"
 	[[ -z "$COMMIT" ]] && return
 
-	SHOW_OPTIONS=(--color=always --show-signature --ignore-space-change)
+	SHOW_OPTIONS=(--color=always --ignore-space-change)
 
 	if [[ -n "$(git rev-parse --verify "$COMMIT^2" 2>/dev/null)" ]]; then
 		# is a merge commit
 
-		git --no-pager show --color=always "$COMMIT" "$@" --pretty=fuller | $PRETTIFIER
+		if [ -t 1 ]; then
+			git show "${SHOW_OPTIONS[@]}" "$COMMIT" "$@" --pretty=fuller
+		else
+			git --no-pager show "${SHOW_OPTIONS[@]}" "$COMMIT" "$@" --pretty=fuller | $GIT_PAGER
+		fi
 		echo
 		SHOW_OPTIONS+=(--first-parent)
 
@@ -50,5 +54,9 @@ git-in-repo && {
 		fi
 	fi
 
-	git --no-pager show "${SHOW_OPTIONS[@]}" "$SPAN" "$@" | $PRETTIFIER
+	if [ -t 1 ]; then
+		git show "${SHOW_OPTIONS[@]}" "$SPAN" "$@"
+	else
+		git --no-pager show "${SHOW_OPTIONS[@]}" "$SPAN" "$@" | $GIT_PAGER
+	fi
 } 2>/dev/null

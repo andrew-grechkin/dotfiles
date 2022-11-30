@@ -40,7 +40,7 @@ done
 
 CMD+=(
 	--bind="ctrl-m:execute(show-commit \"\$(${COMMAND_EXTRACT_COMMIT})\" ${OPTIONS[@]} | $PAGER)"
-	--preview="show-commit \"\$(${COMMAND_EXTRACT_COMMIT})\" --show-signature --color=always ${OPTIONS[@]}"
+	--preview="show-commit \"\$(${COMMAND_EXTRACT_COMMIT})\" --color=always ${OPTIONS[@]}"
 )
 
 "${CMD[@]}"
