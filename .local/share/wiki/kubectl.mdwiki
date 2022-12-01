@@ -1,14 +1,20 @@
 # Filters
 
-* filter by label
-```bash
-kubectl get release -l label=value
-```
+- filter by label
+    ```bash
+    kubectl get release -l label=value
+    ```
+- get unhealthy pods
+    ```bash
+    kubectl get pods --field-selector=status.phase!=Running
+    ```
 
-* get unhealthy pods
-```bash
-kubectl get pods --field-selector=status.phase!=Running
-```
+# Order
+
+- sort by age
+    ```bash
+    kubectl get rs --sort-by=.metadata.creationTimestamp --no-headers | tac
+    ```
 
 # Deployments
 

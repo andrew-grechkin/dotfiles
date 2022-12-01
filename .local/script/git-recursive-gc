@@ -6,26 +6,33 @@ set -Euo pipefail
 
 setopt globdots
 
-CWD=${1:-$(pwd)}
-GIT_DIRS=("$CWD"/**/.git)
-
-for DIR in "$CWD"/*(@N); do
-	GIT_DIR="$DIR/.git"
-
-	[[ -d "$GIT_DIR" ]] && GIT_DIRS+=("$GIT_DIR")
-done
-
-function process_git_dir() {
+if [[ "$#" -eq "1" ]] && [[ "$1" =~ .git$ ]]; then
 	REPO=$(dirname "$1")
-	shift
 
-	echo -e '\033[0;33m'"Gc $REPO"'\033[0m'
+    echo -n "$(tput setaf 3)"
+	echo "Gc $REPO"
+    echo -n "$(tput sgr0)"
 
-	git -C "$REPO" bleach
-	git -C "$REPO" reflog expire --all --expire=now \
-	&& nice git -C "$REPO" gc --keep-largest-pack "$@"
-}
+	nice git -C "$REPO" bleach
+	nice git -C "$REPO" reflog expire --all --expire=now \
+		&& nice git -C "$REPO" gc --keep-largest-pack
+else
+	setopt globdots
 
-for GIT_DIR in "${(ou)GIT_DIRS[@]}"; do
-	process_git_dir "$GIT_DIR"
-done
+	PWD=${1:-$PWD}
+	GIT_DIRS=("$PWD"/**/.git)
+
+	for DIR in "$PWD"/*(@N); do
+		GIT_DIR="$DIR/.git"
+
+		[[ -d "$GIT_DIR" ]] && GIT_DIRS+=("$GIT_DIR")
+	done
+
+	if [[ -n "$(command -v parallel)" ]]; then
+		parallel -k -j-2 "$0" {} ::: "${(ou)GIT_DIRS[@]}"
+	else
+		for GIT_DIR in "${(ou)GIT_DIRS[@]}"; do
+			"$0" "$GIT_DIR"
+		done
+	fi
+fi
