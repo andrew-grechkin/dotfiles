@@ -4,35 +4,23 @@
 
 set -Euo pipefail
 
-setopt globdots
-
-if [[ "$#" -eq "1" ]] && [[ "$1" =~ .git$ ]]; then
+if [[ "$#" -eq "1" ]] && [[ "$1" =~ .git/?$ ]]; then
 	REPO=$(dirname "$1")
 
-    echo -n "$(tput setaf 3)"
+	echo -n "$(tput setaf 3)"
 	echo "Gc $REPO"
-    echo -n "$(tput sgr0)"
+	echo -n "$(tput sgr0)"
 
-	nice git -C "$REPO" bleach
+	git -C "$REPO" fetch \
+		&& nice git -C "$REPO" bleach
 	nice git -C "$REPO" reflog expire --all --expire=now \
 		&& nice git -C "$REPO" gc --keep-largest-pack
 else
-	setopt globdots
-
-	PWD=${1:-$PWD}
-	GIT_DIRS=("$PWD"/**/.git)
-
-	for DIR in "$PWD"/*(@N); do
-		GIT_DIR="$DIR/.git"
-
-		[[ -d "$GIT_DIR" ]] && GIT_DIRS+=("$GIT_DIR")
-	done
-
-	if [[ -n "$(command -v parallel)" ]]; then
-		parallel -k -j-2 "$0" {} ::: "${(ou)GIT_DIRS[@]}"
-	else
-		for GIT_DIR in "${(ou)GIT_DIRS[@]}"; do
-			"$0" "$GIT_DIR"
-		done
-	fi
+	fd -HIL -td -tf -0 '\A.git\z' "${1:-$PWD}" | {
+		if [[ -n "$(command -v parallel)" ]]; then
+			parallel -k -j-2 --delay 0.3 -0 "$0" {}
+		else
+			xargs -0 --max-args=1 --no-run-if-empty "$0"
+		fi
+	}
 fi
