@@ -1,9 +1,9 @@
 [submodule "submodules/private"]
 	path = submodules/private
-	url = ssh://home.ams/volume1/service/git/dotfiles-private.git
+	url = ssh://home.ams/volume3/service/git/dotfiles-private.git
 [submodule "submodules/secret"]
 	path = submodules/secret
-	url = ssh://home.ams/volume1/service/git/dotfiles-secret.git
+	url = ssh://home.ams/volume3/service/git/dotfiles-secret.git
 [submodule ".config/zsh/3rdparty/zsh-autosuggestions"]
 	path = .config/zsh/3rdparty/zsh-autosuggestions
 	url = https://github.com/zsh-users/zsh-autosuggestions
