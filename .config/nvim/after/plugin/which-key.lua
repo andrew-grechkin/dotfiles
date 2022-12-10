@@ -70,10 +70,7 @@ local setup = {
     },
 }
 
-local leader_opts = {
-    nowait = true,
-    prefix = '<leader>',
-}
+local leader_opts = {nowait = true, prefix = '<leader>'}
 
 local normal_opts = {
     nowait = true, -- use `nowait` when creating keymaps
@@ -84,15 +81,9 @@ local normal_opts = {
 --     nowait = true,
 -- }
 
-local insert_opts = {
-    mode = 'i',
-    nowait = true,
-}
+local insert_opts = {mode = 'i', nowait = true}
 
-local visual_opts = {
-    mode = 'v',
-    nowait = true,
-}
+local visual_opts = {mode = 'v', nowait = true}
 
 local leader_mappings = {
     -- ['a'] = {'<cmd>Alpha<CR>', 'Alpha'},
@@ -163,6 +154,13 @@ local leader_mappings = {
     --         'Workspace Symbols',
     --     },
     -- },
+    b = {
+        name = 'fast buffers',
+        ['0'] = {':blast<CR>', 'buffer: last'},
+        ['1'] = {':bfirst<CR>', 'buffer: first'},
+    },
+    d = {'"_d', 'delete to a black hole'},
+    -- p = {'`[ . strpart(getregtype(), 0, 1) . `]', 'select latest pasted'},
     s = {
         name = 'Search',
         C = {'<cmd>Telescope commands<CR>', 'Commands'},
@@ -185,46 +183,36 @@ local leader_mappings = {
     --     h = {'<cmd>ToggleTerm size=10 direction=horizontal<CR>', 'Horizontal'},
     --     v = {'<cmd>ToggleTerm size=80 direction=vertical<CR>', 'Vertical'},
     -- },
+    x = {':!xdg-open %<CR><CR>', 'Open the current file in the default program'},
     ['<leader>'] = {
         name = 'Setup',
         ['.'] = {':execute "lcd" dir#git_root()<CR>', 'cd to git-root'},
-        h = {'<cmd>checkhealth<CR>', 'Health'},
-        m = {':belowright 10split term://zsh<CR>', 'Open terminal'},
-        v = {':tabedit <C-R>=VIM_CONFIG_FILE<CR><CR><CR>', 'init.vim'},
+        ['h'] = {'<cmd>checkhealth<CR>', 'Health'},
+        ['m'] = {':belowright 10split term://zsh<CR>', 'Open terminal'},
+        ['t'] = {':tab split<CR>', 'tab: split'},
+        ['v'] = {':tabedit <C-R>=VIM_CONFIG_FILE<CR><CR><CR>', 'init.vim'},
     },
 }
 
 local normal_mappings = {
-    ['<F12>'] = {':call hl#show()<CR>', 'Show highlight info'},
-    ['<leader>'] = {
-        b = {
-            name = 'fast buffers',
-            ['0'] = {':blast<CR>', 'buffer: last'},
-            ['1'] = {':bfirst<CR>', 'buffer: first'},
-        },
-        d = {'"_d', 'delete to a black hole'},
-        x = {
-            ':!xdg-open %<CR><CR>',
-            'Open the current file in the default program',
-        },
-        ['<leader>'] = {t = {':tab split<CR>', 'tab: split'}},
-        -- p = {'`[ . strpart(getregtype(), 0, 1) . `]', 'select latest pasted'},
-    },
-    N = {'Nzzzv', 'N and center'},
     ['<C-a>'] = {'gg<S-v>G', 'select all'},
+    ['<C-d>'] = {'<C-d>zz', 'scroll down and centralize'},
+    ['<C-u>'] = {'<C-u>zz', 'scroll up and centralize'},
+    ['<F12>'] = {':call hl#show()<CR>', 'Show highlight info'},
+    N = {'Nzzzv', 'N and center'},
     g = {
         name = 'fast buffers',
         h = {':bprevious<CR>', 'buffer: previous'},
         l = {':bnext<CR>', 'buffer: next'},
     },
-    n = {'nzzzv', 'n and center'},
+    n = {'nzzzv', 'n and centralize'},
     t = {
         name = 'fast tabs',
-        h = {':tabprevious<CR>', 'tab: previous'},
-        l = {':tabnext<CR>', 'tab: next'},
         ['0'] = {':tablast<CR>', 'tab: last'},
         ['1'] = {':tabfirst<CR>', 'tab: first'},
         ['2'] = {':tabnext 2<CR>', 'tab: 2'},
+        h = {':tabprevious<CR>', 'tab: previous'},
+        l = {':tabnext<CR>', 'tab: next'},
     },
 }
 
