@@ -4,7 +4,7 @@ Description=Fetch archive
 [Service]
 Type=oneshot
 WorkingDirectory=/media/nfs/home/local/photo/world/bing-peapix/#by-date/2022
-ExecStart=/usr/bin/perl "%h/.local/private-script/peapix-wallpaper-archive-download"
+ExecStart=/usr/bin/perl "%h/.local/script-private/peapix-wallpaper-archive-download"
 
 [Install]
 WantedBy=default.target

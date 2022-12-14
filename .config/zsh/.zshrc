@@ -11,7 +11,8 @@ export HISTORY_IGNORE='(exit( *)#|history( *)#|[bfr]g *|cd *|l[alsh] *|less *|vi
 typeset -U PATH path
 [[ -d "$HOME/.local/bin"                                ]] && path+=("$HOME/.local/bin")
 [[ -d "$HOME/.local/script"                             ]] && path+=("$HOME/.local/script")
-[[ -d "$HOME/.local/private-script"                     ]] && path+=("$HOME/.local/private-script")
+[[ -d "$HOME/.local/script-private"                     ]] && path+=("$HOME/.local/script-private")
+[[ -d "$HOME/.local/script-work"                        ]] && path+=("$HOME/.local/script-work")
 [[ -d "$HOME/.local/usr/bin"                            ]] && path+=("$HOME/.local/usr/bin")
 [[ -d "$HOME/.cache/bin"                                ]] && path+=("$HOME/.cache/bin")
 [[ -d "$HOME/.cache/fzf/bin"                            ]] && path+=("$HOME/.cache/fzf/bin")
@@ -52,7 +53,8 @@ done
 [[ -n "$PERLBREW_PATH"                                  ]] && path=("${(ps/:/)PERLBREW_PATH[@]}"  "${path[@]}")
 [[ -d "$HOME/.local/bin"                                ]] && path=("$HOME/.local/bin"            "${path[@]}")
 [[ -d "$HOME/.local/script"                             ]] && path=("$HOME/.local/script"         "${path[@]}")
-[[ -d "$HOME/.local/private-script"                     ]] && path=("$HOME/.local/private-script" "${path[@]}")
+[[ -d "$HOME/.local/script-private"                     ]] && path=("$HOME/.local/script-private" "${path[@]}")
+[[ -d "$HOME/.local/script-work"                        ]] && path=("$HOME/.local/script-work"    "${path[@]}")
 [[ -d "$HOME/.cache/bin"                                ]] && path=("$HOME/.cache/bin"            "${path[@]}")
 
 export PATH

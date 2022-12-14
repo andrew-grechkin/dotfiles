@@ -6,7 +6,7 @@ Wants=v4l2-tee.service
 Type=simple
 Restart=on-failure
 RestartSec=30
-ExecStart=/usr/bin/bash -c "%h/git/private/dotfiles/submodules/private/.local/private-script/x11-record"
+ExecStart=/usr/bin/bash -c "%h/git/private/dotfiles/submodules/private/.local/script-private/x11-record"
 
 [Install]
 WantedBy=default.target

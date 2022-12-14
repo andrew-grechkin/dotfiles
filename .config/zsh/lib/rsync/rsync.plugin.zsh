@@ -1,8 +1,8 @@
-COMMON_PARAMS='--sparse --exclude "@eaDir" --exclude "#recycle" --exclude ".Trash-*"'
+COMMON_PARAMS='--sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*"'
 
-alias               cpr="rsync ${COMMON_PARAMS} -PHah"
-alias               mvr="rsync ${COMMON_PARAMS} -PHah --remove-source-files"
-alias               upr="rsync ${COMMON_PARAMS} -PHahu"
+alias               cpr="rsync ${COMMON_PARAMS} -P -Hah"
+alias               mvr="rsync ${COMMON_PARAMS} -P -Hah --remove-source-files"
+alias               upr="rsync ${COMMON_PARAMS} -P -Hahu"
 
 alias        rsync-copy="rsync ${COMMON_PARAMS} --info=progress2 -Hah"
 alias        rsync-move="rsync ${COMMON_PARAMS} --info=progress2 -Hah --remove-source-files"
