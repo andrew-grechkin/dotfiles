@@ -659,8 +659,8 @@ vnoremap rP :!tsp rsync --sparse --exclude "@eaDir" --exclude "#recycle" --exclu
 
 " => fzf integration (ctrl-t, ctrl-p) ---------------------------------------------------------------------------- {{{1
 
-command! FZFfind   :set noquickview | :execute 'goto "'.system('_fzf_compgen_helper "." f | fzf --reverse 2>/dev/tty || echo "./dummy"').'"%IU' | redraw
-command! FZFlocate :set noquickview | :execute 'goto "'.system('command locate / | fzf --reverse 2>/dev/tty || echo "./dummy"').'"%IU' | redraw
+command! FZFfind   :set noquickview | :execute 'goto "'.system('unset REPORTTIME; _fzf_compgen_helper "." f | fzf --reverse 2>/dev/tty || echo "./dummy"').'"%IU' | redraw
+command! FZFlocate :set noquickview | :execute 'goto "'.system('unset REPORTTIME; command locate / | fzf --reverse 2>/dev/tty || echo "./dummy"').'"%IU' | redraw
 
 nnoremap <c-p> :FZFfind<CR>
 nnoremap <c-t> :FZFlocate<CR>
