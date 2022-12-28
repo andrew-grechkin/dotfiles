@@ -3,8 +3,14 @@
 
 # => ls ---------------------------------------------------------------------------------------------------------- {{{1
 
-alias  l='ls -lFhv  --group-directories-first'                                 # long list, show type, human readable, group dirs
-alias la='l -A'
+if [[ -n "$(command -v exa)"  ]]; then
+	alias l='exa -lFh --group-directories-first'
+	alias la='l -a --sort=name'
+else
+	alias l='ls -lFhv --group-directories-first' # long list, show type, human readable, group dirs
+	alias la='l -A'
+fi
+
 alias le='la --sort=extension'
 alias lt='la --sort=time'
 
