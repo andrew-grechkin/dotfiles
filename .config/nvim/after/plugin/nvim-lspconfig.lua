@@ -43,7 +43,7 @@ if status then
     config.setup {
         ensure_installed = {
             'ansiblels', 'bashls', 'cmake', 'dockerls', 'sumneko_lua', 'marksman', 'perlnavigator',
-            'puppet', 'pyright', 'sqlls',
+            'puppet', 'pyright', 'sqlls', 'tsserver',
         },
         -- 'flux_lsp',
         automatic_installation = true,
