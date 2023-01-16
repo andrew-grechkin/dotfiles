@@ -10,4 +10,7 @@ alias      rsync-update="rsync ${COMMON_PARAMS} --info=progress2 -Hahu"
 alias rsync-synchronize="rsync ${COMMON_PARAMS} --info=progress2 -HahuXx --delete"
 alias        rsync-diff="rsync ${COMMON_PARAMS} --dry-run -i     -HahuXx --delete"
 
+alias     rsync-sudo-copy="sudo -E -s rsync ${COMMON_PARAMS} --info=progress2 -e 'ssh -l $USER' -Hah"
+alias   rsync-sudo-update="sudo -E -s rsync ${COMMON_PARAMS} --info=progress2 -e 'ssh -l $USER' -Hahu"
+
 unset COMMON_PARAMS
