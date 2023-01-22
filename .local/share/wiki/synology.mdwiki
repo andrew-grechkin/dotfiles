@@ -1,0 +1,15 @@
+# Synology
+
+## Docker without sudo
+
+```bash
+sudo synogroup --add docker
+sudo synogroup --member docker $USER
+```
+
+## Enable admin account via ssh
+
+```bash
+sudo synouser --setpw admin <password>
+sudo synouser --modify admin admin 0 my@email.net
+```
