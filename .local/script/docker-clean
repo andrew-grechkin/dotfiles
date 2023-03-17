@@ -2,11 +2,13 @@
 
 set -Eeuo pipefail
 
-mapfile -t RUNNING_CONTAINERS < <(command docker ps -q)
-[[ -n "${RUNNING_CONTAINERS[*]}" ]] && {
-	echo "Stopping running contaiers: ${#RUNNING_CONTAINERS[@]}"
-	command docker kill "${RUNNING_CONTAINERS[@]}"
-}
+if [[ "${1:-}" == "-f" ]]; then
+	mapfile -t RUNNING_CONTAINERS < <(command docker ps -q)
+	[[ -n "${RUNNING_CONTAINERS[*]}" ]] && {
+		echo "Stopping running contaiers: ${#RUNNING_CONTAINERS[@]}"
+		command docker kill "${RUNNING_CONTAINERS[@]}"
+	}
+fi
 
 mapfile -t STOPPED_CONTAINERS < <(command docker ps --filter status=exited -q)
 [[ -n "${STOPPED_CONTAINERS[*]}" ]] && {

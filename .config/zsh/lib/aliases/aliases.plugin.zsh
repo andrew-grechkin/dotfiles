@@ -94,7 +94,7 @@ alias mbsync='mbsync -c ~/.config/isync/mbsyncrc andrew-grechkin julia-grechkina
 
 alias -g xa='xargs -d "\n" -ri'
 alias fm='vifm . .'
-alias dd='dd oflag=sync status=progress'
+alias dd='dd oflag=sync conv=sparse,excl status=progress'
 alias :q='exit'
 alias :qa='exit'
 
