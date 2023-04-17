@@ -318,7 +318,7 @@ filextype *.bmp,*.dng,*.gif,.*.ico,*.icon,*.jp2,*.jpg,*.jpeg,*.png,*.xpm,*.svg,*
 	\ {View in gpicview}
 	\ gpicview,
 fileviewer *.bmp,*.dng,*.gif,.*.ico,*.icon,*.jp2,*.jpg,*.jpeg,*.png,*.xpm,*.svg,*.tif
-	\ chafa --clear -c 240 -s %pwx%ph %c,
+    \ chafa --clear -c 240 -s %pwx%ph %c,
 	\ mediainfo,
 	\ identify -verbose,
 

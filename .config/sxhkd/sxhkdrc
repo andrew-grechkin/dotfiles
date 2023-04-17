@@ -124,7 +124,7 @@ super + {Left,Down,Up,Right}
 super + BackSpace
 	$HOME/.local/script/rofi-exit
 super + Return
-	alacritty
+	wezterm
 # super + b
 # 	exo-open --launch WebBrowser
 super + c
@@ -141,8 +141,10 @@ super + o
 # 	alacritty -e zsh -c "vifm $HOME $HOME"
 super + s
 	$HOME/.local/script/rofi-pass
-super + t
+super + shift + t
 	alacritty --class 'Alacritty,Main-Tmux' -e tmux
+super + t
+	wezterm start  --class 'Alacritty,Main-Tmux' tmux
 super + u
 	alacritty --class 'Alacritty,floating' -e "$HOME/.local/script/fzf-select" unicode
 

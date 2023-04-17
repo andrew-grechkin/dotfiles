@@ -171,7 +171,8 @@ if &termguicolors ==# 1
 	hi ModeMsg               guifg=#E6DB74
 	hi MoreMsg               guifg=#E6DB74
 	hi NonText               guifg=#222023
-	hi Normal                guifg=#D8D8D2 guibg=#151515
+	hi Normal                              guibg=NONE                                  ctermbg=NONE
+" 	hi Normal                guifg=#D8D8D2 guibg=#151515
 	hi Pmenu                 guifg=#66D9EF guibg=#000000
 	hi PmenuSbar                           guibg=#080808
 	hi PmenuSel                            guibg=#808080
@@ -180,10 +181,10 @@ if &termguicolors ==# 1
 	hi Search                guifg=#000000 guibg=#9F8762
 	hi SignColumn            guifg=#A6E22E guibg=#232526
 	hi SpecialKey            guifg=#66D9EF                             gui=italic
-	hi SpellBad                            guibg=#382020 guisp=#FF0000 gui=undercurl
+	hi SpellBad                            guibg=#382020 guisp=#FF0000 gui=underdouble
 	hi SpellCap                            guibg=#382020 guisp=#7070F0 gui=undercurl
-	hi SpellLocal                          guibg=#382020 guisp=#70F0F0 gui=undercurl
-	hi SpellRare                           guibg=#382020 guisp=#FFFFFF gui=undercurl
+	hi SpellLocal                          guibg=#382020 guisp=#70F0F0 gui=underdotted
+	hi SpellRare                           guibg=#382020 guisp=#FFFFFF gui=underdashed
 	hi StatusLine            guifg=#455354 guibg=bg
 	hi StatusLineNC          guifg=#808080 guibg=#080808
 	hi TabLine               guifg=#808080 guibg=#1B1D1E               gui=none
@@ -192,7 +193,7 @@ if &termguicolors ==# 1
 	hi VertSplit             guifg=#808080 guibg=#080808               gui=bold
 	hi Visual                              guibg=#403D3D
 	hi VisualNOS                           guibg=#403D3D
-	hi WarningMsg            guifg=#FFFFFF guibg=#333333               gui=bold
+	hi WarningMsg            guifg=#FFFFFF guibg=#333333               gui=standout
 	hi WildMenu              guifg=#66D9EF guibg=#000000
 else
 	if $TERM =~# '256'

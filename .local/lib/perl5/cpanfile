@@ -5,6 +5,7 @@ requires "EV";
 requires "Future::AsyncAwait";
 requires "IO::Socket::SSL";
 requires "IO::Socket::Socks";
+requires "Mojo::Run3";
 requires "Mojolicious";
 requires "Net::DNS::Native";
 requires "Role::Tiny";

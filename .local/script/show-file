@@ -50,7 +50,7 @@ function body() {
 		(( FILESIZE < 10000000)) && {
 			COLS=$(tput cols)
 			COLS=${COLS:-120}
-			{ chafa --clear -c 240 -s "${COLS}x${COLS}" "$1"; } \
+			{ chafa --clear -c full -s "${COLS}x${COLS}" "$1"; } \
 			|| true
 		}
 		exit 0;

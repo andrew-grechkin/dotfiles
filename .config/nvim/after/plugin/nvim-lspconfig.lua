@@ -42,8 +42,8 @@ if status then
     local config = require('mason-lspconfig')
     config.setup {
         ensure_installed = {
-            'ansiblels', 'bashls', 'cmake', 'dockerls', 'sumneko_lua', 'marksman', 'perlnavigator',
-            'puppet', 'pyright', 'sqlls', 'tsserver',
+            'ansiblels', 'bashls', 'clangd', 'cmake', 'dockerls', 'lua_ls', 'marksman',
+            'perlnavigator', 'puppet', 'pyright', 'sqlls', 'tsserver',
         },
         -- 'flux_lsp',
         automatic_installation = true,
