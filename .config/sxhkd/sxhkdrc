@@ -124,7 +124,7 @@ super + {Left,Down,Up,Right}
 super + BackSpace
 	$HOME/.local/script/rofi-exit
 super + Return
-	wezterm
+	wezterm start /usr/bin/zsh
 # super + b
 # 	exo-open --launch WebBrowser
 super + c

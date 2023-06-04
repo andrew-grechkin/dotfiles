@@ -180,7 +180,7 @@ command! hardlinker hardlinker -av
 
 " => File associations: ebooks ----------------------------------------------------------------------------------- {{{1
 
-filextype *.chm,*.epub,*.fb2,*.fbz,*.fb2.zip,*.mobi,*.rtf,*.tcr
+filextype *.chm,*.epub,*.fb2,*.fbz,*.mobi,*.rtf,*.tcr
 	\ {Open with xdg-open}
 	\ xdg-open %c %i &,
 	\ FBReader %c %i &,
