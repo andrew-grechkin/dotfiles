@@ -25,6 +25,8 @@ ln -srf .config/alacritty                                    ~/.config/
 ln -srf .config/autorandr                                    ~/.config/
 ln -srf .config/black                                        ~/.config/
 ln -srf .config/bspwm                                        ~/.config/
+ln -srf .config/chromium-flags.conf                          ~/.config/
+ln -srf .config/chromium-flags.conf                          ~/.config/chrome-flags.conf
 ln -srf .config/containers                                   ~/.config/
 ln -srf .config/environment.d/*                              ~/.config/environment.d/
 ln -srf .config/fontconfig/conf.d                            ~/.config/fontconfig/

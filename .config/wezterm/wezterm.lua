@@ -1,3 +1,4 @@
+-- https://wezfurlong.org/wezterm/config/files.html
 local wezterm = require 'wezterm'
 local act = wezterm.action
 

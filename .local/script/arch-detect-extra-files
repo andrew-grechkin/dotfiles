@@ -28,6 +28,14 @@ use constant {
             'level' => 2,
             'match' => qr{\A /var/lib/AccountsService/}x,
         },
+        'Bluetooth paired devices' => {
+            'level' => 2,
+            'match' => qr{\A /var/lib/bluetooth/}x,
+        },
+        'Cache' => {
+            'level' => 2,
+            'match' => qr{\A /var/cache/}x,
+        },
         'Certificates' => {
             'level' => 2,
             'match' => qr{\A (/etc/ca-certificates/|/etc/ssl/certs/)}x,
@@ -44,6 +52,10 @@ use constant {
             'level' => 2,
             'match' => qr{\A /var/cache/fontconfig/|/etc/fonts/conf[.]d/}x,
         },
+        'Fwupd' => {
+            'level' => 2,
+            'match' => qr{\A /var/lib/fwupd/}x,
+        },
         'Haskel modules config' => {
             'level' => 2,
             'match' => qr{\A /usr/lib/ghc-\d+[.]\d+[.]\d+/package[.]conf[.]d/}xi,
@@ -55,6 +67,14 @@ use constant {
         'Kernel (boot)' => {
             'level' => 2,
             'match' => qr{\A /boot/.*-linux}x,
+        },
+        'Kernel modules' => {
+            'level' => 2,
+            'match' => qr{\A /usr/lib/modules/}x,
+        },
+        'Lightdm' => {
+            'level' => 2,
+            'match' => qr{\A /var/lib/lightdm/}x,
         },
         'Logs' => {
             'level' => 2,
@@ -72,6 +92,14 @@ use constant {
             'level' => 2,
             'match' => qr{\A /usr/share/.mono/(?:new-)?certs/}x,
         },
+        'NetworkManager' => {
+            'level' => 2,
+            'match' => qr{\A /var/lib/NetworkManager/}x,
+        },
+        'PackageKit' => {
+            'level' => 2,
+            'match' => qr{\A /var/lib/PackageKit/alpm/}x,
+        },
         'Pacman cache' => {
             'level' => 2,
             'match' => qr{\A /var/cache/pacman/}x,
@@ -83,6 +111,10 @@ use constant {
         'Pacman local database' => {
             'level' => 2,
             'match' => qr{\A (/usr)?/var/lib/pacman/(local|sync)/}x,
+        },
+        'Python crap' => {
+            'level' => 2,
+            'match' => qr{\A /usr/lib/python .* pyc}x,
         },
         'SDDM cache' => {
             'level' => 2,
@@ -100,9 +132,21 @@ use constant {
             'level' => 2,
             'match' => qr{\A (/etc|/var/lib)/systemd/}x,
         },
+        'Texmf crap' => {
+            'level' => 1,
+            'match' => qr{\A /var/lib/texmf/}x,
+        },
         'Upower history' => {
             'level' => 2,
             'match' => qr{\A /var/lib/upower/history-}x,
+        },
+        'Wallpapers (dynamic)' => {
+            'level' => 2,
+            'match' => qr{\A /var/tmp/ [\w-]* wallpaper [\w-]* /}x,
+        },
+        'colord' => {
+            'level' => 2,
+            'match' => qr{\A /var/lib/colord/}x,
         },
         'undefined' => {
             'level' => 0,
