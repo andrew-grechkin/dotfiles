@@ -662,7 +662,9 @@ nnoremap <c-@> :sync<CR>
 
 nnoremap rp :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -PHah  %f %D<CR>
 vnoremap rp :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -PHah  %f %D<CR>
+nnoremap ru :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -PHahu %f %D<CR>
 vnoremap ru :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -PHahu %f %D<CR>
+nnoremap rs :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -PHahuXx --delete %f %D<CR>
 vnoremap rs :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -PHahuXx --delete %f %D<CR>
 nnoremap rP :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -PHah --remove-source-files %f %D/ && tsp -d find %f -type d -empty -exec rmdir --ignore-fail-on-non-empty -p {} \+<CR>
 vnoremap rP :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -PHah --remove-source-files %f %D/ && tsp -d find %f -type d -empty -exec rmdir --ignore-fail-on-non-empty -p {} \+<CR>
