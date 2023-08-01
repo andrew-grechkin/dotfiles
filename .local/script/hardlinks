@@ -24,7 +24,7 @@ sub main() {
                     or return;
 
                 my $stat = $path->stat;
-                say decode('UTF-8', $path->stringify, Encode::FB_CROAK) if $stat->nlink > 1;
+                say Encode::decode('UTF-8', $path->stringify, Encode::FB_CROAK) if $stat->nlink > 1;
             },
             {
                 'recurse'         => 1,

@@ -9,8 +9,8 @@ NPROC=4
 	NPROC="$(nproc)"
 }
 
-perlbrew install perl-5.36.0 -nf -j "$NPROC"
-perlbrew lib create perl-5.36.0@default
+perlbrew install perl-5.38.0 -nf -j "$NPROC"
+perlbrew lib create perl-5.38.0@default
 
 # perlbrew install perl-5.36.0 -nf -j "$NPROC" --as='booking-perl5360' -Accflags="-DSILENT_NO_TAINT_SUPPORT" -Duseshrplib -Doptimize="-O3" -UDEBUGGING
 # perlbrew lib create booking-perl5360@default

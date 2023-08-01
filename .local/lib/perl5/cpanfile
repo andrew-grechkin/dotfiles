@@ -12,6 +12,8 @@ requires "Role::Tiny";
 
 # => Misc --------------------------------------------------------------------------------------------------------- {{{1
 
+requires "assign";
+requires "App::perlimports";
 requires "App::cpanminus";
 requires "Carp::Always";
 requires "Code::TidyAll";
@@ -30,6 +32,9 @@ requires "Perl::Critic::Pulp";
 requires "Sereal";
 requires "Sort::Naturally";
 requires "Sub::StrictDecl";
+requires "Syntax::Keyword::Match";
+requires "Syntax::Operator::Eqr";
+requires "Syntax::Operator::Equ";
 requires "Time::Moment";
 requires "YAML::XS";
 
