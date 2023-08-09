@@ -4,7 +4,7 @@ set -Eeuo pipefail
 
 PATH="$(dirname "$0"):$PATH"
 
-DOMAIN_PARTS=(paste . book ing . com)
+DOMAIN_PARTS=(paste . boo king . com)
 DOMAIN=$(printf "%s" "${DOMAIN_PARTS[@]}")
 CMD=(
 	curl --noproxy "$DOMAIN" -s

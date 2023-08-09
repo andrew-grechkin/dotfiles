@@ -1,11 +1,15 @@
 # vim: filetype=zsh foldmethod=marker
 
-# => aliases ----------------------------------------------------------------------------------------------------- {{{1
+# => exports ------------------------------------------------------------------------------------------------------ {{{1
 
-alias pip-ensure='python -m ensurepip --default-pip'
-alias pip-upgrade='pip freeze | pip install --upgrade -r /dev/stdin'
+export PYENV_ROOT="${PYENV_ROOT:-$XDG_DATA_HOME/pyenv}"
 
-# => functions --------------------------------------------------------------------------------------------------- {{{1
+# => aliases ------------------------------------------------------------------------------------------------------ {{{1
+
+# alias pip-ensure='python -m ensurepip --default-pip'
+# alias pip-upgrade='pip freeze | pip install --upgrade -r /dev/stdin'
+
+# => functions ---------------------------------------------------------------------------------------------------- {{{1
 
 function activate-local-python() {
 	if (( $+commands[poetry] )); then
@@ -17,3 +21,14 @@ function activate-local-python() {
 
 	source-file "$PYTHON_LOCAL/bin/activate"
 }
+
+function enable-pyenv() {
+	export PATH="$PYENV_ROOT/bin:$PATH"
+	eval "$(pyenv init -)"
+}
+
+# => main --------------------------------------------------------------------------------------------------------- {{{1
+
+if (( $+commands[pyenv] )); then
+	enable-pyenv
+fi

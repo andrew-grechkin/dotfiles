@@ -24,7 +24,7 @@ my $output = '';
 
 if ($xprop =~ m/_KDE_NET_WM_WINDOW_TYPE_ON_SCREEN_DISPLAY/xms) {
     $output = 'layer=above center=on manage=on focus=off';
-} elsif ($data[1] || $data[2]) {
+} elsif (defined $loc_x && defined $loc_y && defined $size_w && defined $size_h) {
     $output = "center=off rectangle=${size_w}x${size_h}+${loc_x}+${loc_y}";
 }
 

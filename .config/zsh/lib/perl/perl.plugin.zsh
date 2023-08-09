@@ -1,6 +1,6 @@
 # vim: filetype=zsh foldmethod=marker
 
-# => exports ----------------------------------------------------------------------------------------------------- {{{1
+# => exports ------------------------------------------------------------------------------------------------------ {{{1
 
 # export        PERLTIDY="$XDG_CONFIG_HOME/perltidyrc"
 # export      PERLCRITIC="$XDG_CONFIG_HOME/perlcriticrc"
@@ -11,12 +11,13 @@ export   PERLBREW_ROOT="${PERLBREW_ROOT:-$XDG_DATA_HOME/perlbrew}"
 # work specific
 export USING_PERL_MODULE_INSTALL=1
 
-# => aliases ----------------------------------------------------------------------------------------------------- {{{1
+# => aliases ------------------------------------------------------------------------------------------------------ {{{1
 
 alias perldebug='PERLDB_OPTS="RemotePort=localhost:9000" perl -I${PERL_LOCAL_LIB_ROOT}/lib/perl5/x86_64-linux-thread-multi/dbgp-helper -d '
 alias perlverbose='export PERL5OPT="-MCarp=verbose"'
+alias ojo='perl -Mojo -E'
 
-# => functions --------------------------------------------------------------------------------------------------- {{{1
+# => functions ---------------------------------------------------------------------------------------------------- {{{1
 
 function enable-perlbrew() {
 	[[ -d "$PERLBREW_ROOT" ]] || {
@@ -65,7 +66,7 @@ function export-perl5lib() {
 	perl5lib=("/usr/local/git_tree/main/dist/dev/bcritical/policies/lib" ${perl5lib[@]})
 }
 
-# => main -------------------------------------------------------------------------------------------------------- {{{1
+# => main --------------------------------------------------------------------------------------------------------- {{{1
 
 if (( $+commands[perlbrew] )); then                                            # perlbrew is the preferred way of managing perl and libraries
 	enable-perlbrew

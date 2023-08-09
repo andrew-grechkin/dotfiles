@@ -49,10 +49,10 @@ requires "Mojolicious::Plugin::SwaggerUI";
 
 # => Test --------------------------------------------------------------------------------------------------------- {{{1
 
-requires "Test2::Harness";
-requires "Test2::Suite";
 requires "Code::TidyAll";
 requires "Parallel::ForkManager";
+requires "Test2::Harness";
+requires "Test2::Suite";
 
 # => repl --------------------------------------------------------------------------------------------------------- {{{1
 
