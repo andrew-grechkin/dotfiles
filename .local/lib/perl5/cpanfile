@@ -12,9 +12,9 @@ requires "Role::Tiny";
 
 # => Misc --------------------------------------------------------------------------------------------------------- {{{1
 
-requires "assign";
-requires "App::perlimports";
 requires "App::cpanminus";
+requires "App::perlimports";
+requires "CHI";
 requires "Carp::Always";
 requires "Code::TidyAll";
 requires "Data::Dump";
@@ -24,6 +24,7 @@ requires "EV";
 requires "File::Map";
 requires "Image::ExifTool";
 requires "Image::Hash";
+requires "List::UtilsBy";
 requires "Log::Any";
 requires "Neovim::Ext";
 requires "Path::Tiny";
@@ -33,10 +34,10 @@ requires "Sereal";
 requires "Sort::Naturally";
 requires "Sub::StrictDecl";
 requires "Syntax::Keyword::Match";
-requires "Syntax::Operator::Eqr";
 requires "Syntax::Operator::Equ";
 requires "Time::Moment";
 requires "YAML::XS";
+requires "assign";
 
 # => Web ---------------------------------------------------------------------------------------------------------- {{{1
 

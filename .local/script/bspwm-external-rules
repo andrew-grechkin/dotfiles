@@ -5,17 +5,21 @@ use autodie;
 use warnings     qw(FATAL utf8);
 use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
-my ($window_id, $class_name, $instance_name, $params) = @ARGV;
-my $xprop_hints
-    = `xprop -id "$window_id" -f WM_NORMAL_HINTS 0bi '\$0 \$1 \$2 \$3 \$4 \$5 \$6 \$7 \$8 \$9' WM_NORMAL_HINTS`;
-my $xprop = `xprop -id "$window_id"`;
-
-my @data = split m/ /, $xprop_hints;
-my ($data, $loc_x, $loc_y, $size_w, $size_h, $min_size_w, $min_size_h, $max_size_w, $max_size_h) = @data;
-
 open(my $log, '>', '/tmp/bspwm-external-rule.log') or die "open failed: $!";
 say {$log} "args: @ARGV";
-say {$log} `xprop -id "$window_id"`;
+defer {close $log}
+
+my ($window_id, $class_name, $instance_name, $params) = @ARGV;
+
+my $xprop = `xprop -id "$window_id"`;
+say {$log} "xprop: $xprop";
+
+my $xprop_hints
+    = `xprop -id "$window_id" -f WM_NORMAL_HINTS 0bi ' \$0 \$1 \$2 \$3 \$4 \$5 \$6 \$7 \$8 \$9' WM_NORMAL_HINTS`;
+say {$log} "hints: $xprop_hints";
+
+my @data = split m/ /, $xprop_hints;
+my (undef, undef, $loc_x, $loc_y, $size_w, $size_h, $min_size_w, $min_size_h, $max_size_w, $max_size_h) = @data;
 
 # _KDE_NET_WM_WINDOW_TYPE_ON_SCREEN_DISPLAY, _NET_WM_WINDOW_TYPE_NOTIFICATION
 # _NET_WM_WINDOW_TYPE_DIALOG, _KDE_NET_WM_WINDOW_TYPE_OVERRIDE, _NET_WM_WINDOW_TYPE_NORMAL
@@ -24,13 +28,11 @@ my $output = '';
 
 if ($xprop =~ m/_KDE_NET_WM_WINDOW_TYPE_ON_SCREEN_DISPLAY/xms) {
     $output = 'layer=above center=on manage=on focus=off';
-} elsif (defined $loc_x && defined $loc_y && defined $size_w && defined $size_h) {
+} elsif (defined $loc_x && defined $loc_y && defined $size_w && defined $size_h && ($size_h || $size_w)) {
     $output = "center=off rectangle=${size_w}x${size_h}+${loc_x}+${loc_y}";
 }
 
-print $output if $output;
-say {$log} $output;
-
-close $log;
+print {*STDOUT} $output if $output;
+say   {$log} "output: $output";
 
 __END__

@@ -12,7 +12,7 @@ super + alt + x
 
 # reload
 super + ctrl + Escape
-	pkill -USR1 -x sxhkd
+	pkill --signal USR1 -x sxhkd
 
 # => bspwm hotkeys ----------------------------------------------------------------------------------------------- {{{1
 
@@ -27,27 +27,37 @@ super + {_,shift + }q
 alt + F4
 	bspc node -c
 
-# alternate between the tiled and monocle layout
-super + ctrl + m
-	bspc desktop -l next
-
 # send the newest marked node to the newest preselected node
 # super + y
 # 	bspc node newest.marked.local -n newest.!automatic.local
 
 # swap the current node and the biggest window
-super + g
-	bspc node -s biggest.window
+# super + g
+# 	bspc node -s biggest.window
+
+# alternate between the tiled and monocle layout
+super + m
+	bspc desktop -l next
 
 # state/flags
 
+# toggle state
+super + f
+	bspc node -t "~fullscreen"
+super + g
+	bspc node -t "~tiled"
+super + v
+	bspc node -t "~floating"
+
 # set the window state
-super + ctrl + {t,shift + t,s,f}
-	bspc node -t {tiled,pseudo_tiled,floating,fullscreen}
+super + ctrl + {t,shift + t}
+	bspc node -t {tiled,pseudo_tiled}
 
 # set the node flags
-super + ctrl + {m,x,y,z}
-	bspc node -g {marked,locked,sticky,private}
+super + b
+	bspc node -g sticky
+super + ctrl + {x,z}
+	bspc node -g {locked,private}
 
 # focus/swap
 
@@ -102,16 +112,19 @@ alt + {_,shift + }Tab
 
 # move/resize
 
-# expand a window by moving one of its side outward
-super + alt + {h,j,k,l}
-	bspc node -z {left -20 0,bottom 0 20,top 0 -20,right 20 0}
+# # expand a window by moving one of its side outward
+# super + alt + {h,j,k,l}
+# 	bspc node -z {left -50 0,bottom 0 50,top 0 -50,right 50 0}
 
-# contract a window by moving one of its side inward
-super + alt + shift + {h,j,k,l}
-	bspc node -z {right -20 0,top 0 20,bottom 0 -20,left 20 0}
+# # contract a window by moving one of its side inward
+# super + alt + shift + {h,j,k,l}
+# 	bspc node -z {right -50 0,top 0 50,bottom 0 -50,left 50 0}
+
+super + {Left,Down,Up,Right}
+	bspc node -z {right -50 0,bottom 0 50,bottom 0 -50,right 50 0}
 
 # move a floating window
-super + {Left,Down,Up,Right}
+super + alt + {Left,Down,Up,Right}
 	bspc node -v {-20 0,0 20,0 -20,20 0}
 
 # => kde + bspwm ------------------------------------------------------------------------------------------------- {{{1
@@ -131,22 +144,16 @@ super + c
 	rofi -show calc -modi "calc:qalc +u8" -no-show-match -no-sort
 super + d
 	rofi -show run
-# super + m
-# 	google-chrome-stable
 super + o
 	opera
 #super + p
 #	exo-open --launch TerminalEmulator "profanity"
-# super + r
-# 	alacritty -e zsh -c "vifm $HOME $HOME"
 super + s
 	$HOME/.local/script/rofi-pass
-super + shift + t
-	alacritty --class 'Alacritty,Main-Tmux' -e tmux
 super + t
-	wezterm start  --class 'Alacritty,Main-Tmux' tmux
+	wezterm start --class 'Main-Tmux' tmux
 super + u
-	alacritty --class 'Alacritty,floating' -e "$HOME/.local/script/fzf-select" unicode
+	wezterm start --class 'TermFloating' "$HOME/.local/script/fzf-select" unicode
 
 # => ------------------------------------------------------------------------------------------------------------- {{{1
 
@@ -155,17 +162,17 @@ super + u
 super + shift + c
 	qalculate-gtk
 super + shift + n
-	alacritty --class 'Alacritty,floating' --command "$HOME/.local/script/create-note"
+	wezterm start --class 'TermFloating' "$HOME/.local/script/create-note"
 # super + shift + r
 # 	exo-open --launch FileManager
 super + shift + s
 	$HOME/.local/script/rofi-cheatsheet
 super + shift + u
-	alacritty --class 'Alacritty,floating' --command "$HOME/.local/script/fzf-select" emoji
+	wezterm start --class 'TermFloating' "$HOME/.local/script/fzf-select" emoji
 super + shift + v
 	$HOME/.local/script/play-clipboard-url
 super + shift + w
-	alacritty --class 'Alacritty,floating' --command "$HOME/.local/script/open-vim-wiki"
+	wezterm start --class 'TermFloating' "$HOME/.local/script/open-vim-wiki"
 
 # => ------------------------------------------------------------------------------------------------------------- {{{1
 

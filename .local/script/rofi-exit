@@ -22,7 +22,7 @@ function action() {
 			loginctl lock-session
 			;;
 		logout)
-			loginctl terminate-session self
+			qdbus org.kde.ksmserver /KSMServer logout 0 0 3 || loginctl terminate-session self
 			;;
 		suspend)
 			systemctl suspend

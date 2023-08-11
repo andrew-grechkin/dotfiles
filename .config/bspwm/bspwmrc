@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-exec 1> "/tmp/bspwm.log" 2>&1
+exec 1>"/tmp/bspwm.log"  2>&1
 set -x
 
 BACKGROUND_APPS=(
@@ -12,7 +12,12 @@ BACKGROUND_APPS=(
 
 echo 'Starting background apps...'
 for BAPP in "${BACKGROUND_APPS[@]}"; do
-	pgrep -x "$BAPP" > /dev/null || {
+	if [[ "$BAPP" == *"/"* ]]; then
+		OPT=-xf
+	else
+		OPT=-x
+	fi
+	pgrep "$OPT" "$BAPP" >/dev/null || {
 		echo "  Starting $BAPP"
 		"$BAPP" &
 	}
@@ -33,9 +38,11 @@ bspc config window_gap              0
 bspc rule -r '*'
 bspc config external_rules_command "$(realpath ~/.local/script/bspwm-external-rules)"
 bspc rule -a '*:*:Picture in Picture' state=floating sticky=on rectangle=564x317-600-360
-bspc rule -a 'floating'               state=floating           rectangle=1280x720
-bspc rule -a 'matplotlib'             state=floating           rectangle=1280x720
+bspc rule -a 'TermFloating'           state=floating center=on rectangle=1280x720+0+0
+bspc rule -a 'floating'               state=floating center=on rectangle=1280x720+0+0
 bspc rule -a 'gpclient'               state=floating sticky=on
+bspc rule -a 'kscreen_osd_service'    state=floating sticky=on
+bspc rule -a 'matplotlib'             state=floating center=on rectangle=1280x720+0+0
 bspc rule -a 'mpv'                    state=floating sticky=on rectangle=564x317-600-360
 bspc rule -a 'pinentry'               state=floating sticky=on
 
@@ -44,12 +51,12 @@ bspc rule -a '*:*:Zoom Meeting'            desktop='6'
 bspc rule -a 'Chromium'                    desktop='1'
 bspc rule -a 'Gimp'                        desktop='8' state=floating follow=on
 bspc rule -a 'Google-chrome'               desktop='1'
+bspc rule -a 'Main-Tmux'                   desktop='0' follow=on
 bspc rule -a 'Opera'                       desktop='2'
+bspc rule -a 'Qemu-system-x86_64'          desktop='5'
 bspc rule -a 'Screenkey'                   manage=off
 bspc rule -a 'Steam'                       desktop='6'
-bspc rule -a 'dolphin'                     desktop='4'
 bspc rule -a 'VirtualBox Manager'          desktop='4'
 bspc rule -a 'VirtualBoxVM'                desktop='5'
-bspc rule -a 'Main-Tmux'                   desktop='0'
-bspc rule -a 'Qemu-system-x86_64'          desktop='5'
-bspc rule -a 'Zathura'                     desktop='5' state=tiled follow=on
+bspc rule -a 'Zathura'                     state=floating center=on rectangle=1280x720+0+0
+bspc rule -a 'dolphin'                     desktop='4'
