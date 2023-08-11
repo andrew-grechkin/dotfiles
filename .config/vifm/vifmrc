@@ -129,7 +129,8 @@ command! diff   vimdiff %f %F
 
 " search
 command! vgrep  vim "+grep %a"
-command! hlinks sudo btrfs inspect-internal inode-resolve "$(inode %c)" "$(findmnt -n --raw --output=target -T %d)" %u
+command! hlinks hlinks %c %u
+" command! hlinks sudo btrfs inspect-internal inode-resolve "$(inode %c)" "$(findmnt -n --raw --output=target -T %d)" %u
 
 " pack
 command! p      tar -cvaf   %c.tzst %f
