@@ -1,0 +1,20 @@
+#!/usr/bin/env perl
+
+use v5.38;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin class declared_refs defer for_list refaliasing try);
+
+use Mojo::File qw(path);
+
+my $path   = path($ARGV[0]);
+my $parent = $path->dirname;
+my $inode  = path($ARGV[0])->stat->ino;
+
+chomp(my $mnt_target = `findmnt -n --raw --output=target -T $parent`);
+system(qw(sudo btrfs inspect-internal inode-resolve), $inode, $mnt_target) == 0
+    or die("Unable to run comand: $!\n");
+
+__END__
