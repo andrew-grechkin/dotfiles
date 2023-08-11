@@ -1,0 +1,15 @@
+#!/usr/bin/env perl
+
+
+use v5.38;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin class declared_refs defer for_list refaliasing try);
+
+use Path::Tiny qw(path);
+
+print path($ARGV[0])->stat->ino;
+
+__END__

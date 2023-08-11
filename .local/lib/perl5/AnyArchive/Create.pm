@@ -16,21 +16,18 @@ my @supported = (
 );
 
 sub execute ($archive_path, $items_aref, $root = undef) {
+    my $format = first {$archive_path =~ $_->{'suffix'}} @supported
+        or croak "Unsupported archive format: $archive_path";
+
     my @items
         = $root
         ? ('--directory', $root, map {$_->relative($root)->stringify} $items_aref->@*)
         : (map {$_->stringify} $items_aref->@*);
 
-    system('tar', _get_options($archive_path), '-vcf', $archive_path, @items) == 0
+    system('tar', $format->{'options'}->@*, '-vcf', $archive_path, @items) == 0
         or croak "Unable to execute compress command: $!";
 
     return;
-}
-
-sub _get_options ($archive_path) {
-    my $result = first {$archive_path =~ $_->{'suffix'}} @supported
-        or croak "Unsupported archive format: $archive_path";
-    return $result->{'options'}->@*;
 }
 
 1;

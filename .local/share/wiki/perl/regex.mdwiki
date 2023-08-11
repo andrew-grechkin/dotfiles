@@ -1,5 +1,6 @@
 # Regex
 
+[perlcharclass](https://perldoc.perl.org/perlrecharclass)
 [Test regex](https://regex101.com/)
 [Learn regex](https://regexr.com/)
 [Tutorial](https://www.regular-expressions.info)
@@ -69,12 +70,19 @@
 * \D            - non-digit
 * \O            - octal digit
 * \S            - non-whitespace character
+* \H            - not horizontal-whitespace character
+* \V            - not vertical-whitespace character
+* \N            - not a new line
 * \W            - non-word character
 * \c            - control character
 * \d            - digit, same as[0-9]
 * \s            - whitespace character[ \t\n\r\f]
+* \h            - horizontal whitespace character
+* \v            - vertical whitespace character
 * \w            - word character[0-9A-Za-z_]
 * \x            - hexadecimal digit
+* \p{Prop}      - a character that has the given Unicode property.
+* \P{Prop}      - a character that doesn't have the Unicode property
 * \xhh          - hexadecimal character hh
 * \Oooo         - octal character ooo
 

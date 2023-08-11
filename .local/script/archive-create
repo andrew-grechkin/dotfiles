@@ -35,7 +35,7 @@ sub main() {
     }
 
     my $suffix   = $options{'GZ'} ? '.tgz' : '.tzst';
-    my $basename = $items[0]->basename =~ s{(?<!^)[.]\w*$}{}xr;
+    my $basename = $items[0]->basename =~ s{(?<!^)(?:[.]tar)?(?:[.][^.]+)$}{}xr; # remove ext
     my $archive  = Path::Tiny->cwd->child($basename . $suffix);
 
     $archive->exists
