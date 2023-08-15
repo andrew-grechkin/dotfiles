@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+PATH="$(dirname "$0"):$PATH"
+TMUX_SESSION=$(echo "$TMUX" | cut -f1 -d',')
+HOSTNAME="$(hostname)"
+
+CMD=("ssh" "$HOSTNAME" "tmux" "-S" "$TMUX_SESSION" "attach")
+
+chmod o+rwx "$TMUX_SESSION"
+echo "${CMD[@]}" | tee /dev/tty | tr -d '\n' | clipcopy

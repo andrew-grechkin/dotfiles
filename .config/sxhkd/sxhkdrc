@@ -45,7 +45,7 @@ super + m
 super + f
 	bspc node -t "~fullscreen"
 super + g
-	bspc node -t "~tiled"
+	bspc node -t "tiled"
 super + v
 	bspc node -t "~floating"
 
