@@ -2,7 +2,7 @@
 	aa           = add --all
 	b            = branch -vv
 	behind       = !"MAIN_UBRANCH=\"$(git gmu)\"; echo \"Behind $MAIN_UBRANCH:\" &>/dev/stderr; git log --oneline \"HEAD..$MAIN_UBRANCH\" | wc -l"
-	bleach       = !"f(){ git fall; git b | perl -alE 'm/: gone]/ && $F[0] ne q(*) && system(qq(git branch -D $F[0]))'; }; f"
+	bleach       = !"f(){ git fall; git b | perl -alE 'm/: gone]/ && $F[0] ne q(*) && system(qq(git branch -d $F[0]))'; }; f"
 	bname        = rev-parse --abbrev-ref HEAD
 	branches     = !"git branch --list --no-column --format='%(refname:lstrip=2)' \"$@\""
 	bush         = !"f(){ while true; do git push && break; git pull --no-tags --rebase || break; done }; f"
