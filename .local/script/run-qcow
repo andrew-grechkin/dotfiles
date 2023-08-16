@@ -5,18 +5,16 @@ set -Eeuo pipefail
 QCOW_PATH="$1"
 
 qemu-system-x86_64                                                  \
-    -audiodev pa,id=snd0                                            \
-    -bios /usr/share/ovmf/x64/OVMF.fd                               \
-    -cpu host                                                       \
-    -device ich9-intel-hda                                          \
-    -device hda-output,audiodev=snd0                                \
+	-audiodev pa,id=snd0                                            \
+	-bios /usr/share/ovmf/x64/OVMF.fd                               \
+	-cpu host                                                       \
+	-device ich9-intel-hda                                          \
+	-device hda-output,audiodev=snd0                                \
 	-drive "file=$QCOW_PATH,if=ide,index=0,media=disk,format=qcow2" \
 	-enable-kvm                                                     \
-    -k en-us                                                        \
+	-k en-us                                                        \
 	-m 4G                                                           \
-    -name archiso,process=archiso_0                                 \
 	-nic user,model=virtio-net-pci                                  \
-    -no-reboot                                                      \
-    -serial stdio                                                   \
+	-serial stdio                                                   \
 	-smp 2                                                          \
 	-vga virtio
