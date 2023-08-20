@@ -19,7 +19,7 @@ Icon=youtube-dl
 Output=0
 
 [Action_0/Command_2]
-Commandline[$e]=yt-dlp --format-sort=res:720 --format-sort=codec:h264 -f 'bv*[ext=mp4]+ba[ext=m4a] / b[ext=mp4] / bv*+ba/b' -o '~/videos/%%(title)s.%%(ext)s' '%s'
+Commandline[$e]=yt-dlp --format-sort=res:1080 --format-sort=codec:h264 -f 'bv*[ext=mp4]+ba[ext=m4a] / b[ext=mp4] / bv*+ba/b' -o '~/videos/%%(title)s.%%(ext)s' '%s'
 Description=Download youtube video
 Enabled=true
 Icon=youtube-dl
