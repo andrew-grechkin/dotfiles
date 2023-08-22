@@ -1,6 +1,13 @@
 # vim: filetype=sh foldmethod=marker
 
-# => Automatically start tmux on ssh connection. Logout on detach ------------------------------------------------ {{{1
+# => Automatically grant permissions on shared session ------------------------------------------------------------ {{{1
+
+TMUX_SHARED_SOCKET="/tmp/tmux-shared-socket-$USER"
+if [[ -S "$TMUX_SHARED_SOCKET" ]]; then
+	chmod go+rw "$TMUX_SHARED_SOCKET"
+fi
+
+# => Automatically start tmux on ssh connection. Logout on detach ------------------------------------------------- {{{1
 
 if [[ -z "$TMUX" ]] && ! [[ "${SSH_CLIENT}" =~ /::1/ ]] && ! [[ "${SSH_CLIENT}" =~ /127.0.0/ ]]; then
 	tmux new-session -s ssh-auto -A
