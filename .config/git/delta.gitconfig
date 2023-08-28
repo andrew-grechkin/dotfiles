@@ -7,6 +7,7 @@
 	features     = line-numbers decorations
 	side-by-side = false
 	syntax-theme = "zenburn"
+    tabs         = 4
 
 [delta "decorations"]
 	commit-decoration-style      = brightblue ul ol

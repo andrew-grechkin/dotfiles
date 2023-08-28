@@ -663,14 +663,14 @@ nnoremap <f8>  :delete<CR>
 nnoremap <f10> :quit<CR>
 nnoremap <c-@> :sync<CR>
 
-nnoremap rp :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -Hah    --partial --info=name1 %f %D/<CR>
-vnoremap rp :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -Hah    --partial --info=name1 %f %D/<CR>
-nnoremap ru :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -Hahu   --partial --info=name1 %f %D/<CR>
-vnoremap ru :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -Hahu   --partial --info=name1 %f %D/<CR>
-nnoremap rs :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -HahuXx --partial --info=name1 --delete %f %D/<CR>
-vnoremap rs :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -HahuXx --partial --info=name1 --delete %f %D/<CR>
-nnoremap rP :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -Hah    --partial --info=name1 --remove-source-files %f %D/ && tsp -d find %f -type d -empty -exec rmdir --ignore-fail-on-non-empty -p {} \+<CR>
-vnoremap rP :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -Hah    --partial --info=name1 --remove-source-files %f %D/ && tsp -d find %f -type d -empty -exec rmdir --ignore-fail-on-non-empty -p {} \+<CR>
+nnoremap rp :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -Hah    --partial --info=name1 %f:p %D/<CR>
+vnoremap rp :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -Hah    --partial --info=name1 %f:p %D/<CR>
+nnoremap ru :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -Hahu   --partial --info=name1 %f:p %D/<CR>
+vnoremap ru :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -Hahu   --partial --info=name1 %f:p %D/<CR>
+nnoremap rs :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -HahuXx --partial --info=name1 --delete %f:p %D/<CR>
+vnoremap rs :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -HahuXx --partial --info=name1 --delete %f:p %D/<CR>
+nnoremap rP :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -Hah    --partial --info=name1 --remove-source-files %f:p %D/ && tsp -d find %f -type d -empty -exec rmdir --ignore-fail-on-non-empty -p {} \+<CR>
+vnoremap rP :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -Hah    --partial --info=name1 --remove-source-files %f:p %D/ && tsp -d find %f -type d -empty -exec rmdir --ignore-fail-on-non-empty -p {} \+<CR>
 
 " => fzf integration (ctrl-t, ctrl-p) ---------------------------------------------------------------------------- {{{1
 

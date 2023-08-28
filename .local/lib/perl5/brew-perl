@@ -2,15 +2,52 @@
 
 set -Euo pipefail
 
+# => support synology --------------------------------------------------------------------------------------------- {{{1
+
 [[ -d "/volume1/local/arch/usr" ]] && export OPENSSL_PREFIX="/volume1/local/arch/usr"
 
+# => environment -------------------------------------------------------------------------------------------------- {{{1
+
+REQUIRED_PERL_VERSION=5.38.0
 NPROC=4
+
 [[ -x "$(command which -- nproc)" ]] && {
 	NPROC="$(nproc)"
 }
 
-perlbrew install perl-5.38.0 -nf -j "$NPROC"
-perlbrew lib create perl-5.38.0@default
+# => check prerequisites ------------------------------------------------------------------------------------------ {{{1
+
+[[ -x "$(command which -- perlbrew)" ]] || {
+	echo "Please install perlbrew (https://perlbrew.pl/)"
+	return
+}
+
+[[ -x "$(command which -- cpanm)" ]] || {
+	perlbrew install-cpanm || return
+}
+
+# => install default perl and library ----------------------------------------------------------------------------- {{{1
+
+PERL_NAME="perl-$REQUIRED_PERL_VERSION"
+PERL_NAME_MATCH="\b${PERL_NAME}\b"
+[[ $(perlbrew list) =~ $PERL_NAME_MATCH ]] || {
+	echo "Installing required perl: $PERL_NAME (nproc: $NPROC)"
+	nice perlbrew install -nf -j "$NPROC" "$REQUIRED_PERL_VERSION" --as "$PERL_NAME" || return
+	echo
+}
+
+LIBRARY_NAME="${PERL_NAME}@default"
+LIBRARY_NAME_MATCH="\b${LIBRARY_NAME}\b"
+[[ $(perlbrew lib-list) =~ $LIBRARY_NAME_MATCH ]] || {
+	echo "Creating Perl local dev library: $LIBRARY_NAME"
+	perlbrew lib create "$LIBRARY_NAME" || return
+	echo
+	echo "Installing required modules"
+	nice perlbrew exec --with "$LIBRARY_NAME" cpanm -nq --installdeps "$(dirname "$0")"
+	echo "perlbrew switch '$LIBRARY_NAME'"
+}
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
 
 # perlbrew install perl-5.36.0 -nf -j "$NPROC" --as='booking-perl5360' -Accflags="-DSILENT_NO_TAINT_SUPPORT" -Duseshrplib -Doptimize="-O3" -UDEBUGGING
 # perlbrew lib create booking-perl5360@default
