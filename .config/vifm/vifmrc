@@ -153,6 +153,7 @@ command! decrypt gpg-decrypt %f
 " processing
 command! hardlinker hardlinker -av
 
+command! tail tail -f %f
 
 " => File associations ------------------------------------------------------------------------------------------- {{{1
 

@@ -31,8 +31,12 @@ NPROC=4
 PERL_NAME="perl-$REQUIRED_PERL_VERSION"
 PERL_NAME_MATCH="\b${PERL_NAME}\b"
 [[ $(perlbrew list) =~ $PERL_NAME_MATCH ]] || {
+	# https://raw.githubusercontent.com/Perl/perl5/blead/INSTALL
 	echo "Installing required perl: $PERL_NAME (nproc: $NPROC)"
-	nice perlbrew install -nf -j "$NPROC" "$REQUIRED_PERL_VERSION" --as "$PERL_NAME" || return
+	nice perlbrew install -nf -j "$NPROC" "$REQUIRED_PERL_VERSION" --as "$PERL_NAME" \
+		-Dinc_version_list=none                                                      \
+		-Duserelocatableinc                                                          \
+		|| return
 	echo
 }
 
@@ -43,8 +47,10 @@ LIBRARY_NAME_MATCH="\b${LIBRARY_NAME}\b"
 	perlbrew lib create "$LIBRARY_NAME" || return
 	echo
 	echo "Installing required modules"
-	nice perlbrew exec --with "$LIBRARY_NAME" cpanm -nq --installdeps "$(dirname "$0")"
-	echo "perlbrew switch '$LIBRARY_NAME'"
+	nice perlbrew exec --with "$LIBRARY_NAME" cpanm -nq --installdeps "$HOME/.local/lib/perl5"
+
+	PERLBREW_ROOT="${PERLBREW_ROOT:-$HOME/perl5/perlbrew}"
+	rm -f "$PERLBREW_ROOT/init" && perlbrew switch '$LIBRARY_NAME'
 }
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1

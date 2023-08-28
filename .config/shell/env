@@ -27,7 +27,7 @@ export                GOPATH="$XDG_CACHE_HOME/go"
 export            PYLINTHOME="$XDG_CACHE_HOME/pylint.d"
 export     REDISCLI_HISTFILE="$XDG_DATA_HOME/redis/cli-history"
 
-[[ -f "$XDG_CONFIG_HOME/wgetrc"        ]] && export  WGETRC="$XDG_CONFIG_HOME/wgetrc"
+[[ -e "$XDG_CONFIG_HOME/wgetrc" ]] && export WGETRC="$XDG_CONFIG_HOME/wgetrc"
 
 # => make necessary dirs ----------------------------------------------------------------------------------------- {{{1
 
