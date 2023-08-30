@@ -1,11 +1,11 @@
 #!/usr/bin/env perl
 
-use v5.36;
+use v5.38;
 use autodie;
 use open ':locale';
 use utf8;
 use warnings     qw(FATAL utf8);
-use experimental qw(builtin declared_refs defer for_list refaliasing try);
+use experimental qw(builtin class declared_refs defer for_list refaliasing try);
 
 use Errno        qw(ENOENT);
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
@@ -15,14 +15,14 @@ use Path::Tiny qw(path);
 
 use AnyArchive::Create qw();
 
-our $VERSION = 1.000;
+our $VERSION = 2.000;
 
-my %options = ('GZ' => 0);
+my %options = ('TYPE' => 'tzst');
 
 sub main() {
     GetOptions(
-        'gz'     => \$options{'GZ'},
-        'help|h' => sub {pod2usage(-verbose => 99, exitval => 0)},
+        'type|t=s' => \$options{'TYPE'},
+        'help|h'   => sub {pod2usage(-verbose => 99, exitval => 0)},
     ) or die "Unable to process command line options\n";
 
     my @items  = map  {path($_)} @ARGV;
@@ -34,9 +34,8 @@ sub main() {
         return ENOENT;
     }
 
-    my $suffix   = $options{'GZ'} ? '.tgz' : '.tzst';
-    my $basename = $items[0]->basename =~ s{(?<!^)(?:[.]tar)?(?:[.][^.]+)$}{}xr; # remove ext
-    my $archive  = Path::Tiny->cwd->child($basename . $suffix);
+    my $basename = $items[0]->basename =~ s{(?<!^)(?:[.]tar)?(?:[.][^.\d]+)$}{}xr;    # remove ext
+    my $archive  = Path::Tiny->cwd->child($basename . '.' . $options{'TYPE'});
 
     $archive->exists
         and die "File already exists: $archive\n";
