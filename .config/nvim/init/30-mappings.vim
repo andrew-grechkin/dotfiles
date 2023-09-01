@@ -10,8 +10,8 @@ if has('mouse')
 	set mouse=a
 "	noremap <ScrollWheelUp>            <C-Y>
 "	noremap <ScrollWheelDown>          <C-E>
-	noremap <S-ScrollWheelUp>          <C-U>
-	noremap <S-ScrollWheelDown>        <C-D>
+	nnoremap <S-ScrollWheelUp>         <C-U>
+	nnoremap <S-ScrollWheelDown>       <C-D>
 endif
 
 " => Keys remap -------------------------------------------------------------------------------------------------- {{{1
@@ -23,7 +23,7 @@ let mapleader = "\<Space>"                                                     "
 " xnoremap p "_dP
 
 " Easy insertion of a trailing ; or , from insert mode
-		imap     ;;                    <Esc>A;<Esc>
+" 		imap     ;;                    <Esc>A;<Esc>
 
 " When text is wrapped, move by terminal rows, not lines, unless a count is provided
 noremap <silent> <expr> j              (v:count == 0 ? 'gj' : 'j')
@@ -40,23 +40,6 @@ silent! tnoremap <A-l>                 <C-\><C-N><C-w><Right>
 " silent! tnoremap <C-j>                 <C-\><C-N><C-w><Down>
 " silent! tnoremap <C-k>                 <C-\><C-N><C-w><Up>
 " silent! tnoremap <C-l>                 <C-\><C-N><C-w><Right>
-" 		inoremap <A-h>                 <C-\><C-N><C-w><Left>
-" 		inoremap <A-j>                 <C-\><C-N><C-w><Down>
-" 		inoremap <A-k>                 <C-\><C-N><C-w><Up>
-" 		inoremap <A-l>                 <C-\><C-N><C-w><Right>
-" 		noremap  <A-h>                 <C-w><Left>
-" 		noremap  <A-j>                 <C-w><Down>
-" 		noremap  <A-k>                 <C-w><Up>
-" 		noremap  <A-l>                 <C-w><Right>
-		nnoremap <silent> <A-h>        :TmuxNavigateLeft<CR>
-		nnoremap <silent> <A-j>        :TmuxNavigateDown<CR>
-		nnoremap <silent> <A-k>        :TmuxNavigateUp<CR>
-		nnoremap <silent> <A-l>        :TmuxNavigateRight<CR>
-		nnoremap <silent> <A-\>        :TmuxNavigatePrevious<CR>
-		inoremap <silent> <A-h>        :TmuxNavigateLeft<CR>
-		inoremap <silent> <A-j>        :TmuxNavigateDown<CR>
-		inoremap <silent> <A-k>        :TmuxNavigateUp<CR>
-		inoremap <silent> <A-l>        :TmuxNavigateRight<CR>
 
 " => Old/new ----------------------------------------------------------------------------------------------------- {{{1
 

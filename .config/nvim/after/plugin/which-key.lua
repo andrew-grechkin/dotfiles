@@ -71,29 +71,22 @@ local setup = {
 }
 
 local leader_opts = {nowait = true, prefix = '<leader>'}
-
 local normal_opts = {
     nowait = true, -- use `nowait` when creating keymaps
 }
-
+local insert_opts = {mode = 'i', nowait = true}
+local visual_opts = {mode = 'v', nowait = true}
+--
 -- local terminal_opts = {
 --     mode = 't',
 --     nowait = true,
 -- }
 
-local insert_opts = {mode = 'i', nowait = true}
-
-local visual_opts = {mode = 'v', nowait = true}
-
 local leader_mappings = {
-    -- ['a'] = {'<cmd>Alpha<CR>', 'Alpha'},
     -- ['b'] = {
     --     '<cmd>lua require(\'telescope.builtin\').buffers(require(\'telescope.themes\').get_dropdown{previewer = false})<CR>',
     --     'Buffers',
     -- },
-    -- ['e'] = {'<cmd>NvimTreeToggle<CR>', 'Explorer'},
-    -- ['w'] = {'<cmd>w!<CR>', 'Save'},
-    -- ['q'] = {'<cmd>q!<CR>', 'Quit'},
     -- ['c'] = {'<cmd>Bdelete!<CR>', 'Close Buffer'},
     -- ['h'] = {'<cmd>nohlsearch<CR>', 'No Highlight'},
     -- ['f'] = {
@@ -101,7 +94,6 @@ local leader_mappings = {
     --     'Find files',
     -- },
     -- ['F'] = {'<cmd>Telescope live_grep theme=ivy<CR>', 'Find Text'},
-    -- ['P'] = {'<cmd>Telescope projects<CR>', 'Projects'},
     -- p = {
     --     name = 'Packer',
     --     c = {'<cmd>PackerCompile<CR>', 'Compile'},
@@ -110,68 +102,73 @@ local leader_mappings = {
     --     S = {'<cmd>PackerStatus<CR>', 'Status'},
     --     u = {'<cmd>PackerUpdate<CR>', 'Update'},
     -- },
-    -- g = {
-    --     name = 'Git',
-    --     g = {'<cmd>lua _LAZYGIT_TOGGLE()<CR>', 'Lazygit'},
-    --     j = {'<cmd>lua require \'gitsigns\'.next_hunk()<CR>', 'Next Hunk'},
-    --     k = {'<cmd>lua require \'gitsigns\'.prev_hunk()<CR>', 'Prev Hunk'},
-    --     l = {'<cmd>lua require \'gitsigns\'.blame_line()<CR>', 'Blame'},
-    --     p = {'<cmd>lua require \'gitsigns\'.preview_hunk()<CR>', 'Preview Hunk'},
-    --     r = {'<cmd>lua require \'gitsigns\'.reset_hunk()<CR>', 'Reset Hunk'},
-    --     R = {'<cmd>lua require \'gitsigns\'.reset_buffer()<CR>', 'Reset Buffer'},
-    --     s = {'<cmd>lua require \'gitsigns\'.stage_hunk()<CR>', 'Stage Hunk'},
-    --     u = {
-    --         '<cmd>lua require \'gitsigns\'.undo_stage_hunk()<CR>',
-    --         'Undo Stage Hunk',
-    --     },
-    --     o = {'<cmd>Telescope git_status<CR>', 'Open changed file'},
-    --     b = {'<cmd>Telescope git_branches<CR>', 'Checkout branch'},
-    --     c = {'<cmd>Telescope git_commits<CR>', 'Checkout commit'},
-    --     d = {'<cmd>Gitsigns diffthis HEAD<CR>', 'Diff'},
-    -- },
-    -- l = {
-    --     name = 'LSP',
-    --     a = {'<cmd>lua vim.lsp.buf.code_action()<CR>', 'Code Action'},
-    --     d = {
-    --         '<cmd>Telescope lsp_document_diagnostics<CR>',
-    --         'Document Diagnostics',
-    --     },
-    --     w = {
-    --         '<cmd>Telescope lsp_workspace_diagnostics<CR>',
-    --         'Workspace Diagnostics',
-    --     },
-    --     f = {'<cmd>lua vim.lsp.buf.formatting()<CR>', 'Format'},
-    --     i = {'<cmd>LspInfo<CR>', 'Info'},
-    --     I = {'<cmd>LspInstallInfo<CR>', 'Installer Info'},
-    --     j = {'<cmd>lua vim.lsp.diagnostic.goto_next()<CR>', 'Next Diagnostic'},
-    --     k = {'<cmd>lua vim.lsp.diagnostic.goto_prev()<CR>', 'Prev Diagnostic'},
-    --     l = {'<cmd>lua vim.lsp.codelens.run()<CR>', 'CodeLens Action'},
-    --     q = {'<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>', 'Quickfix'},
-    --     r = {'<cmd>lua vim.lsp.buf.rename()<CR>', 'Rename'},
-    --     s = {'<cmd>Telescope lsp_document_symbols<CR>', 'Document Symbols'},
-    --     S = {
-    --         '<cmd>Telescope lsp_dynamic_workspace_symbols<CR>',
-    --         'Workspace Symbols',
-    --     },
-    -- },
+    ['<leader>'] = {
+        name = 'Setup',
+        ['.'] = {':execute "lcd" dir#git_root()<CR>', 'cd to git-root'},
+        ['h'] = {'<cmd>checkhealth<CR>', 'Health'},
+        ['m'] = {':belowright 10split term://zsh<CR>', 'open terminal'},
+        ['t'] = {':tab split<CR>', 'tab: split'},
+        ['v'] = {':tabedit <C-R>=VIM_CONFIG_FILE<CR><CR><CR>', 'init.vim'},
+    },
     b = {
-        name = 'fast buffers',
+        name = 'Fast buffers',
         ['0'] = {':blast<CR>', 'buffer: last'},
         ['1'] = {':bfirst<CR>', 'buffer: first'},
     },
     d = {'"_d', 'delete to a black hole'},
-    -- p = {'`[ . strpart(getregtype(), 0, 1) . `]', 'select latest pasted'},
+    l = {
+        name = 'LSP',
+        I = {'<cmd>LspInfo<CR>', 'Info'},
+        S = {'<cmd>Telescope lsp_dynamic_workspace_symbols<CR>', 'symbols: workspace'},
+        a = {'<cmd>lua vim.lsp.buf.code_action()<CR>', 'code action'},
+        c = {'<cmd>Telescope lsp_incoming_calls<CR>', 'calls: incoming'},
+        d = {'<cmd>Telescope lsp_definitions<CR>', 'definitions'},
+        f = {'<cmd>lua vim.lsp.buf.format()<CR>', 'format'},
+        i = {'<cmd>Telescope lsp_implementations<CR>', 'implementations'},
+        j = {'<cmd>lua vim.diagnostic.goto_next()<CR>', 'diagnostic: next'},
+        k = {'<cmd>lua vim.diagnostic.goto_prev()<CR>', 'diagnostics: previous'},
+        o = {'<cmd>Telescope lsp_outgoing_calls<CR>', 'calls: outgoing'},
+        q = {'<cmd>lua vim.diagnostic.setloclist()<CR>', 'quickfix'},
+        r = {'<cmd>Telescope lsp_references<CR>', 'references'},
+        R = {'<cmd>lua vim.lsp.buf.rename()<CR>', 'rename'},
+        s = {'<cmd>Telescope lsp_document_symbols<CR>', 'document symbols'},
+        t = {'<cmd>Telescope lsp_type_definitions<CR>', 'type definitions'},
+        w = {'<cmd>Telescope lsp_workspace_diagnostics<CR>', 'diagnostics: workspace'},
+    },
+    -- p = {'`[ . strpart(getregtype(), 0, 1) . `]', 'Select latest pasted'},
+    r = {
+        name = 'Repo (git)',
+        b = {'<cmd>Telescope git_branches<CR>', 'branches'},
+        c = {'<cmd>Telescope git_bcommits<CR>', 'commits for buffer'},
+        f = {'<cmd>Telescope git_files<CR>', 'files'},
+        l = {'<cmd>Telescope git_bcommits_range<CR>', 'commits for current line'},
+        o = {'<cmd>Telescope git_status<CR>', 'status'},
+        r = {'<cmd>Telescope git_commits<CR>', 'commits'},
+        s = {'<cmd>Telescope git_stash<CR>', 'stashes'},
+        --     g = {'<cmd>lua _LAZYGIT_TOGGLE()<CR>', 'Lazygit'},
+        --     j = {'<cmd>lua require \'gitsigns\'.next_hunk()<CR>', 'Next Hunk'},
+        --     k = {'<cmd>lua require \'gitsigns\'.prev_hunk()<CR>', 'Prev Hunk'},
+        --     l = {'<cmd>lua require \'gitsigns\'.blame_line()<CR>', 'Blame'},
+        --     p = {'<cmd>lua require \'gitsigns\'.preview_hunk()<CR>', 'Preview Hunk'},
+        --     r = {'<cmd>lua require \'gitsigns\'.reset_hunk()<CR>', 'Reset Hunk'},
+        --     R = {'<cmd>lua require \'gitsigns\'.reset_buffer()<CR>', 'Reset Buffer'},
+        --     s = {'<cmd>lua require \'gitsigns\'.stage_hunk()<CR>', 'Stage Hunk'},
+        --     u = {
+        --         '<cmd>lua require \'gitsigns\'.undo_stage_hunk()<CR>',
+        --         'Undo Stage Hunk',
+        --     },
+        --     d = {'<cmd>Gitsigns diffthis HEAD<CR>', 'Diff'},
+    },
     s = {
         name = 'Search',
-        C = {'<cmd>Telescope commands<CR>', 'Commands'},
-        M = {'<cmd>Telescope man_pages<CR>', 'Man Pages'},
-        R = {'<cmd>Telescope registers<CR>', 'Registers'},
-        b = {'<cmd>Telescope git_branches<CR>', 'Checkout branch'},
-        c = {'<cmd>Telescope colorscheme<CR>', 'Colorscheme'},
-        h = {'<cmd>Telescope help_tags<CR>', 'Find Help'},
-        k = {'<cmd>Telescope keymaps<CR>', 'Keymaps'},
-        l = {'<cmd>Telescope live_grep<CR>', 'Live grep'},
-        r = {'<cmd>Telescope oldfiles<CR>', 'Open Recent File'},
+        C = {'<cmd>Telescope colorscheme<CR>', 'colorschemes'},
+        R = {'<cmd>Telescope registers<CR>', 'registers'},
+        c = {'<cmd>Telescope commands<CR>', 'commands'},
+        g = {'<cmd>Telescope live_grep<CR>', 'live grep'},
+        h = {'<cmd>Telescope help_tags<CR>', 'help'},
+        k = {'<cmd>Telescope keymaps<CR>', 'keymaps'},
+        m = {'<cmd>Telescope man_pages<CR>', 'man pages'},
+        r = {'<cmd>Telescope oldfiles<CR>', 'recent files'},
     },
     -- t = {
     --     name = 'Terminal',
@@ -183,23 +180,20 @@ local leader_mappings = {
     --     h = {'<cmd>ToggleTerm size=10 direction=horizontal<CR>', 'Horizontal'},
     --     v = {'<cmd>ToggleTerm size=80 direction=vertical<CR>', 'Vertical'},
     -- },
-    x = {':!xdg-open %<CR><CR>', 'Open the current file in the default program'},
-    ['<leader>'] = {
-        name = 'Setup',
-        ['.'] = {':execute "lcd" dir#git_root()<CR>', 'cd to git-root'},
-        ['h'] = {'<cmd>checkhealth<CR>', 'Health'},
-        ['m'] = {':belowright 10split term://zsh<CR>', 'Open terminal'},
-        ['t'] = {':tab split<CR>', 'tab: split'},
-        ['v'] = {':tabedit <C-R>=VIM_CONFIG_FILE<CR><CR><CR>', 'init.vim'},
-    },
+    x = {':!xdg-open %<CR><CR>', 'Open in the default program'},
 }
 
 local normal_mappings = {
+    ['<A-\\>'] = {'<Esc>:TmuxNavigatePrevious<CR>', 'tmux: navigate previous'},
+    ['<A-h>'] = {'<Esc>:TmuxNavigateLeft<CR>', 'tmux: navigate left'},
+    ['<A-j>'] = {'<Esc>:TmuxNavigateDown<CR>', 'tmux: navigate down'},
+    ['<A-k>'] = {'<Esc>:TmuxNavigateUp<CR>', 'tmux: navigate up'},
+    ['<A-l>'] = {'<Esc>:TmuxNavigateRight<CR>', 'tmux: navigate right'},
     ['<C-a>'] = {'gg<S-v>G', 'select all'},
     ['<C-d>'] = {'<C-d>zz', 'scroll down and centralize'},
     ['<C-u>'] = {'<C-u>zz', 'scroll up and centralize'},
-    ['<F12>'] = {':call hl#show()<CR>', 'Show highlight info'},
-    N = {'Nzzzv', 'N and center'},
+    ['<F12>'] = {':call hl#show()<CR>', 'show highlight info'},
+    N = {'Nzzzv', 'N and centralize'},
     g = {
         name = 'fast buffers',
         h = {':bprevious<CR>', 'buffer: previous'},
@@ -224,7 +218,13 @@ local norm_term_mappings = {
 }
 
 local visual_mappings = {
-    ['<leader>'] = {d = {'"_dd', 'delete to a black hole'}},
+    ['<leader>'] = {
+        d = {'"_dd', 'delete to a black hole'},
+        r = {
+            name = 'Repo (git)',
+            l = {'<cmd>Telescope git_bcommits_range<CR>', 'commits for selected lines'},
+        },
+    },
     ['<'] = {'<gv', 'don\'t loose selection when changing indentation'},
     ['>'] = {'>gv', 'don\'t loose selection when changing indentation'},
     g = {
@@ -236,8 +236,13 @@ local visual_mappings = {
 }
 
 local insert_mappings = {
-    ['<C-a>'] = {'<Esc>I', 'Edit beginning of the line'},
-    ['<C-e>'] = {'<Esc>A', 'Edit end of the line'},
+    ['<C-a>'] = {'<Esc>I', 'edit beginning of the line'},
+    ['<C-e>'] = {'<Esc>A', 'edit end of the line'},
+    ['<A-\\>'] = {'<Esc>:TmuxNavigatePrevious<CR>', 'tmux: navigate previous'},
+    ['<A-h>'] = {'<Esc>:TmuxNavigateLeft<CR>', 'tmux: navigate left'},
+    ['<A-j>'] = {'<Esc>:TmuxNavigateDown<CR>', 'tmux: navigate down'},
+    ['<A-k>'] = {'<Esc>:TmuxNavigateUp<CR>', 'tmux: navigate up'},
+    ['<A-l>'] = {'<Esc>:TmuxNavigateRight<CR>', 'tmux: navigate right'},
 }
 
 which_key.setup(setup)

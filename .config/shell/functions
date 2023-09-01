@@ -61,20 +61,17 @@ function _start_ssh_agent() {
 	# fi
 }
 
-# => kubectl ------------------------------------------------------------------------------------------------------ {{{1
-
-function kpatch() {
-	kubectl patch -p '{"spec":{"targetStep":2}}' --type="merge" "$@"
-}
-
 # => local development activation --------------------------------------------------------------------------------- {{{1
 
 # shellcheck source=/dev/null
 function activate() {
-	FILES=("./dev.rc" "./.venv/bin/activate")
+	FILES=("dev.rc" ".venv/bin/activate")
 
 	if command git rev-parse HEAD &>/dev/null; then
-		FILES+=("$(git root)/projects/deployments/dev.rc")
+		REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+		FILES=("${FILES[@]/#/$REPO_ROOT/}")
+		FILES+=("$REPO_ROOT/projects/deployments/dev.rc")
 	fi
 
 	for FILE in "${FILES[@]}"; do
@@ -92,8 +89,7 @@ function activate() {
 		fi
 	fi
 
-	tput bold
-	tput setaf 1
+	tput bold && tput setaf 1
 	echo "Unable to find any activation scripts"
 	tput sgr0
 }
