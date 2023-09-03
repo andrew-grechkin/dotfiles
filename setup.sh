@@ -33,6 +33,7 @@ ln -srf .config/environment.d/*                              ~/.config/environme
 ln -srf .config/fontconfig/conf.d                            ~/.config/fontconfig/
 ln -srf .config/git                                          ~/.config/
 ln -srf .config/luaformatter                                 ~/.config/
+ln -srf .config/markdownlint.yaml                            ~/.config/
 ln -srf .config/mpv                                          ~/.config/
 ln -srf .config/mutt                                         ~/.config/
 ln -srf .config/nvim                                         ~/.config/

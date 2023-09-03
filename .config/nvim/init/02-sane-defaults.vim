@@ -10,8 +10,4 @@ set undofile                                                                   "
 " set exrc
 set secure
 
-" Netrw should be silent and run wget without saving history
-let g:netrw_silent=1
-let g:netrw_http_xcmd='-q --no-hsts -O'
-
 let g:zeal_app='org.zealdocs.Zeal'

@@ -22,7 +22,7 @@ let g:ale_fix_on_save_ignore = {
 \   'fb2':        ['xmllint'],
 \   'html':       ['prettier', 'eslint'],
 \   'javascript': ['eslint'],
-\   'json':       ['fixjson', 'jq'],
+\   'json':       ['jq'],
 \   'lua':        ['lua-format'],
 \   'perl':       ['perltidy'],
 \   'python':     ['black'],
@@ -30,7 +30,7 @@ let g:ale_fix_on_save_ignore = {
 \   'typescript': ['prettier', 'deno', 'tslint', 'xo'],
 \   'vue':        ['prettier', 'eslint'],
 \   'xml':        ['xmllint'],
-\   'yaml':       ['yaml-sanitize', 'prettier'],
+\   'yaml':       ['yaml-sanitize'],
 \}
 let g:ale_fixers = {
 \   '*':          [                             'remove_trailing_lines', 'trim_whitespace'],
@@ -51,17 +51,17 @@ let g:ale_fixers = {
 \   'typescript': [            'eslint',        'remove_trailing_lines', 'trim_whitespace'],
 \   'vue':        ['prettier', 'eslint',        'remove_trailing_lines', 'trim_whitespace'],
 \   'xml':        ['xmllint',                   'remove_trailing_lines', 'trim_whitespace'],
-\   'yaml':       ['prettier',                  'remove_trailing_lines', 'trim_whitespace'],
+\   'yaml':       ['yamlfix','yaml-sanitize',   'remove_trailing_lines', 'trim_whitespace'],
 \}
 "\		'autoimport',
 "\		'autoflake',
 
 "let g:ale_linters_explicit = 1
-let g:ale_linters          = {
-\   'html':       ['eslint', 'stylelint'],
-\   'perl':       ['perl', 'perlcritic', 'perlart'],
-\   'typescript': ['eslint'],
-\}
+" let g:ale_linters          = {
+" \   'html':       ['eslint', 'stylelint'],
+" \   'perl':       ['perl', 'perlcritic', 'perlart'],
+" \   'typescript': ['eslint'],
+" \}
 " let g:ale_linter_aliases   = {
 " \   'vue':        ['vue', 'javascript'],
 " \}
@@ -91,6 +91,8 @@ let g:ale_cpp_parse_makefile         = 1
 
 " ale-lua-luacheck
 let g:ale_lua_luacheck_options = '--allow_defined_top'
+
+let g:ale_markdown_markdownlint_options = '--config ~/.config/markdownlint.yaml'
 
 " ale_perl
 let g:ale_perl_perl_executable      = 'perl'

@@ -1,11 +1,20 @@
-local status, plugin = pcall(require, 'dap')
-if not status then return end
+-- https://github.com/mfussenegger/nvim-dap
+local dap_ok, dap = pcall(require, 'dap')
+if not dap_ok then return end
 
--- plugin.setup {}
--- plugin.set_log_level('TRACE')
--- plugin.defaults.fallback.terminal_win_cmd = '50vsplit new'
--- plugin.defaults.fallback.focus_terminal = true
+-- dap.setup {}
+-- dap.set_log_level('TRACE')
+-- dap.defaults.fallback.terminal_win_cmd = '50vsplit new'
+-- dap.defaults.fallback.focus_terminal = true
 
+-- => ------------------------------------------------------------------------------------------------------------- {{{1
+
+local lua_ok, lua = pcall(require, 'dap-lua')
+if lua_ok then lua.setup() end
+
+-- => ------------------------------------------------------------------------------------------------------------- {{{1
+
+-- https://github.com/mfussenegger/nvim-dap-python
 local python_ok, python = pcall(require, 'dap-python')
 if python_ok then
     -- python.setup('~/.local/share/nvim/mason/packages/debugpy/venv/bin/python')
@@ -13,9 +22,56 @@ if python_ok then
     python.test_runner = 'pytest'
 end
 
-local lua_ok, lua = pcall(require, 'dap-lua')
-if lua_ok then lua.setup() end
+-- => ------------------------------------------------------------------------------------------------------------- {{{1
 
+dap.adapters.bashdb = {
+    command = vim.fn.stdpath('data') .. '/mason/packages/bash-debug-adapter/bash-debug-adapter',
+    name = 'bashdb',
+    type = 'executable',
+}
+
+dap.configurations.sh = {
+    {
+        args = {},
+        cwd = '${workspaceFolder}',
+        env = {},
+        file = '${file}',
+        name = 'Launch file',
+        pathBash = '/bin/bash',
+        pathBashdb = vim.fn.stdpath('data') .. '/mason/packages/bash-debug-adapter/extension/bashdb_dir/bashdb',
+        pathBashdbLib = vim.fn.stdpath('data') .. '/mason/packages/bash-debug-adapter/extension/bashdb_dir',
+        pathCat = 'cat',
+        pathMkfifo = 'mkfifo',
+        pathPkill = 'pkill',
+        program = '${file}',
+        request = 'launch',
+        showDebugOutput = true,
+        terminalKind = 'integrated',
+        trace = true,
+        type = 'bashdb',
+    },
+}
+
+-- => ------------------------------------------------------------------------------------------------------------- {{{1
+
+dap.adapters.perl = {
+    type = 'executable',
+    command = vim.env.MASON .. '/bin/perl-debug-adapter',
+    args = {},
+}
+
+dap.configurations.perl = {
+    {
+        name = 'Launch Perl',
+        program = '${workspaceFolder}/${relativeFile}',
+        request = 'launch',
+        type = 'perl',
+    },
+}
+
+-- => ------------------------------------------------------------------------------------------------------------- {{{1
+
+-- https://github.com/theHamsta/nvim-dap-virtual-text
 local text_ok, text = pcall(require, 'nvim-dap-virtual-text')
 if text_ok then
     text.setup({
@@ -37,12 +93,15 @@ if text_ok then
     })
 end
 
+-- => ------------------------------------------------------------------------------------------------------------- {{{1
+
+-- https://github.com/rcarriga/nvim-dap-ui
 local ui_ok, ui = pcall(require, 'dapui')
 if ui_ok then ui.setup() end
 
-plugin.listeners.after.event_initialized['dapui_config'] = function() ui.open() end
--- plugin.listeners.before.event_terminated['dapui_config'] = function() ui.close() end
--- plugin.listeners.before.event_exited['dapui_config'] = function() ui.close() end
+dap.listeners.after.event_initialized['dapui_config'] = function() ui.open() end
+-- dap.listeners.before.event_terminated['dapui_config'] = function() ui.close() end
+-- dap.listeners.before.event_exited['dapui_config'] = function() ui.close() end
 
 local which_key_ok, which_key = pcall(require, 'which-key')
 if which_key_ok then
@@ -53,23 +112,23 @@ if which_key_ok then
         ['<leader>'] = {
             b = {
                 name = 'DAP',
-                b = {plugin.toggle_breakpoint, 'DAP: toggle breakpoint'},
-                r = {plugin.repl.open, 'DAP: REPL open'},
-                s = {plugin.continue, 'DAP: start/continue'},
-                t = {python.test_method, 'DAP: test closest method'},
-                u = {ui.toggle, 'DAP: UI toggle'},
-                e = {function() ui.eval(vim.fn.input '[Expression] > ') end, 'DAP: UI expression'},
+                b = {dap.toggle_breakpoint, 'DAP: toggle breakpoint'},
                 c = {
-                    function() plugin.set_breakpoint(vim.fn.input '[Condition] > ') end,
+                    function() dap.set_breakpoint(vim.fn.input '[Condition] > ') end,
                     'DAP: conditional breakpoint',
                 },
+                e = {function() ui.eval(vim.fn.input '[Expression] > ') end, 'DAP: UI expression'},
+                r = {dap.repl.open, 'DAP: REPL open'},
+                s = {dap.continue, 'DAP: start/continue'},
+                t = {python.test_method, 'DAP: test closest method'},
+                u = {ui.toggle, 'DAP: UI toggle'},
             },
         },
-        ['<F6>'] = {plugin.step_over, 'DAP: step over'},
-        ['<S-F6>'] = {plugin.step_back, 'DAP: step back'},
-        ['<F7>'] = {plugin.step_into, 'DAP: step into'},
-        ['<F8>'] = {plugin.step_out, 'DAP: step out'},
-        ['<F9>'] = {plugin.run_to_cursor, 'DAP: run to cursor'},
+        ['<F6>'] = {dap.step_over, 'DAP: step over'},
+        ['<S-F6>'] = {dap.step_back, 'DAP: step back'},
+        ['<F7>'] = {dap.step_into, 'DAP: step into'},
+        ['<F8>'] = {dap.step_out, 'DAP: step out'},
+        ['<F9>'] = {dap.run_to_cursor, 'DAP: run to cursor'},
 
         -- vim.api.nvim_set_keymap('n', '<F12>', [[:lua require"dap.ui.widgets".hover()<CR>]], { noremap = true })
         -- vim.api.nvim_set_keymap('n', '<F5>', [[:lua require"osv".launch({port = 8086})<CR>]], { noremap = true })
@@ -86,5 +145,7 @@ if which_key_ok then
 
     which_key.register(normal_mappings)
 end
+
+-- => ------------------------------------------------------------------------------------------------------------- {{{1
 
 require('telescope').load_extension('dap')

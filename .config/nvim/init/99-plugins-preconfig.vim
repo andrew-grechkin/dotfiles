@@ -63,6 +63,7 @@ let g:apc_enable_ft          = {'*':1, 'json':1, 'markdown':1, 'text':1, 'yaml':
 
 " => vimwiki.vim ------------------------------------------------------------------------------------------------- {{{1
 
+let g:vimwiki_global_ext     = 0
 let g:vimwiki_table_mappings = 0
 let g:vimwiki_list           = [
 	\ {'path': '~/.local/share/wiki', 'syntax': 'markdown', 'ext': '.mdwiki'},

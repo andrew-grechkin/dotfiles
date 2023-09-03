@@ -16,6 +16,7 @@ typeset -U PATH path
 [[ -d "$HOME/.local/usr/bin"                            ]] && path+=("$HOME/.local/usr/bin")
 [[ -d "$HOME/.cache/bin"                                ]] && path+=("$HOME/.cache/bin")
 [[ -d "$HOME/.cache/fzf/bin"                            ]] && path+=("$HOME/.cache/fzf/bin")
+[[ -d "$HOME/.local/share/nvim/mason/bin"               ]] && path+=("$HOME/.local/share/nvim/mason/bin")
 [[ -d "/volume1/local/arch/bin"                         ]] && path+=("/volume1/local/arch/bin")
 [[ -d "/volume1/local/arch/usr/bin"                     ]] && path+=("/volume1/local/arch/usr/bin")
 [[ -d "/volume1/local/arch/usr/bin/core_perl"           ]] && path+=("/volume1/local/arch/usr/bin/core_perl")

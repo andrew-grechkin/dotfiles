@@ -7,6 +7,10 @@ let g:netrw_liststyle  = 3
 "let g:netrw_sizestyle  = 'H'
 "let g:netrw_usetab     = 1
 let g:netrw_winsize    = 25
+"
+" Netrw should be silent and run wget without saving history
+let g:netrw_silent=1
+let g:netrw_http_xcmd='-q --no-hsts -O'
 
 "noremap <leader>n :Lexplore<CR>
 

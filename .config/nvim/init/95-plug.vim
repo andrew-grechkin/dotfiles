@@ -46,9 +46,10 @@ call plug#begin()
 	Plug 'RRethy/vim-illuminate'
 
 	""" LSP
-	Plug 'neovim/nvim-lspconfig'                                               " ~/.config/nvim/after/plugin/nvim-lspconfig.lua
+	Plug 'neovim/nvim-lspconfig'                                               " ~/.config/nvim/after/plugin/30-nvim-lspconfig.lua
 	Plug 'williamboman/mason.nvim'
 	Plug 'williamboman/mason-lspconfig.nvim'
+	Plug 'WhoIsSethDaniel/mason-tool-installer.nvim'
 	Plug 'ray-x/lsp_signature.nvim'
 	" Plug 'glepnir/lspsaga.nvim'                                              " ~/.config/nvim/after/plugin/nvim-lspsaga.vim
 	""" UI
@@ -59,6 +60,7 @@ call plug#begin()
 	""" debug
 	Plug 'mfussenegger/nvim-dap'
 	Plug 'mfussenegger/nvim-dap-python'
+	Plug 'jay-babu/mason-nvim-dap.nvim'
 	Plug 'nvim-telescope/telescope-dap.nvim'
 	Plug 'rcarriga/nvim-dap-ui'
 	Plug 'theHamsta/nvim-dap-virtual-text'
