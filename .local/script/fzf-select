@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -Eeuo pipefail
 
@@ -7,12 +7,12 @@ PATH="$(dirname "$0"):$PATH"
 UNICODE_BIND="ctrl-o:execute(xdg-open \"https://unicode-table.com/en/\$(echo {} | grep -o '^[[:xdigit:]]\{4,\}')\" &>/dev/null)"
 
 case "$1" in
-	emoji)   CHOSEN="$(grep-emoji | LC_ALL='en_US.UTF-8' fzf --no-multi --no-mouse | sed 's/ > .*//')";;
-	unicode) CHOSEN="$(grep-unicode | LC_ALL='en_US.UTF-8' fzf --no-multi --no-mouse --bind="$UNICODE_BIND" | perl -C -aE 'print chr hex $F[0]; exit')";;
-	*)       exit;;
+	emoji)   CHOSEN="$(grep-emoji   | LC_ALL='en_US.UTF-8' fzf --no-multi --no-mouse --layout=reverse | sed 's/ > .*//')" ;;
+	unicode) CHOSEN="$(grep-unicode | LC_ALL='en_US.UTF-8' fzf --no-multi --no-mouse --layout=reverse --bind="$UNICODE_BIND" | perl -C -aE 'print chr hex $F[0]; exit')" ;;
+	*)       exit ;;
 esac
 
-[[ -n "${CHOSEN}" ]] && {
-	echo -n "${CHOSEN}" | clipcopy \
-	&& notify-send -i dialog-password "${CHOSEN}" 'Copied to the clipboard'
+[[ -n "$CHOSEN" ]] && {
+	echo -n "$CHOSEN" | clipcopy \
+		&& notify-send -i dialog-password "$CHOSEN" 'Copied to the clipboard'
 }

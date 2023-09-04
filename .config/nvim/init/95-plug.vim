@@ -14,7 +14,6 @@ call plug#begin()
 	Plug 'junegunn/fzf.vim'                                                    " Fuzzy search
 	Plug 'junegunn/vim-easy-align'
 	Plug 'junegunn/vim-plug'
-	Plug 'preservim/tagbar'
 	Plug 'mhinz/vim-grepper'                                                   " Grep integration
 	Plug 'mhinz/vim-signify'                                                   " Git status/modifications of the file
 	Plug 'nelstrom/vim-visual-star-search'

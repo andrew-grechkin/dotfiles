@@ -8,8 +8,21 @@ function! YamlSanitize(buffer) abort
 	\   'command': 'yaml-sanitize'
 	\}
 endfunction
-
 execute ale#fix#registry#Add('yaml-sanitize', 'YamlSanitize', ['yaml'], 'Sanitize yaml')
+
+function! ShellHarden(buffer) abort
+	return {
+	\   'command': 'shellharden --transform ""'
+	\}
+endfunction
+execute ale#fix#registry#Add('shellharden', 'ShellHarden', ['sh'], 'Shell harden')
+
+function! BeautySh(buffer) abort
+	return {
+	\   'command': 'beautysh -t -i 4 -s fnpar -c -'
+	\}
+endfunction
+execute ale#fix#registry#Add('beautysh', 'BeautySh', ['sh'], 'Beauty sh')
 
 " settings
 
@@ -26,7 +39,7 @@ let g:ale_fix_on_save_ignore = {
 \   'lua':        ['lua-format'],
 \   'perl':       ['perltidy'],
 \   'python':     ['black'],
-\   'sh':         ['shfmt'],
+\   'sh':         ['shellharden', 'beautysh'],
 \   'typescript': ['prettier', 'deno', 'tslint', 'xo'],
 \   'vue':        ['prettier', 'eslint'],
 \   'xml':        ['xmllint'],
@@ -43,11 +56,8 @@ let g:ale_fixers = {
 \   'json':       ['fixjson', 'jq',             'remove_trailing_lines', 'trim_whitespace'],
 \   'lua':        ['lua-format',                'remove_trailing_lines', 'trim_whitespace'],
 \   'perl':       ['perltidy',                  'remove_trailing_lines', 'trim_whitespace'],
-\   'python':     [
-\		'isort',
-\		'black',
-\	],
-\   'sh':         ['shfmt',                     'remove_trailing_lines', 'trim_whitespace'],
+\   'python':     ['isort','black',             'remove_trailing_lines', 'trim_whitespace'],
+\   'sh':         ['shellharden', 'beautysh',   'remove_trailing_lines', 'trim_whitespace'],
 \   'typescript': [            'eslint',        'remove_trailing_lines', 'trim_whitespace'],
 \   'vue':        ['prettier', 'eslint',        'remove_trailing_lines', 'trim_whitespace'],
 \   'xml':        ['xmllint',                   'remove_trailing_lines', 'trim_whitespace'],

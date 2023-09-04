@@ -1,7 +1,7 @@
 " vim: filetype=vifm
 " man: https://vifm.info/manual.shtml
 
-" => Generic settings -------------------------------------------------------------------------------------------- {{{1
+" => Generic settings --------------------------------------------------------------------------------------------- {{{1
 
 " Command used to edit files in various contexts. The default is vim.
 " If you would like to use another vi clone such as Elvis or Vile
@@ -106,7 +106,7 @@ set statusline=" %A %d %u:%g%=%T %E %N %t%="
 
 set sizefmt=units:iec,precision:2,nospace
 
-" => Commands ---------------------------------------------------------------------------------------------------- {{{1
+" => Commands ----------------------------------------------------------------------------------------------------- {{{1
 " man: https://vifm.info/manual.shtml#Command%20macros
 
 command! reload :write | restart
@@ -155,7 +155,7 @@ command! hardlinker hardlinker -av
 
 command! tail tail -f %f
 
-" => File associations ------------------------------------------------------------------------------------------- {{{1
+" => File associations -------------------------------------------------------------------------------------------- {{{1
 
 " The file type is for the default programs to be used with a file extension.
 " :filetype pattern1,pattern2 defaultprogram,program2
@@ -180,7 +180,7 @@ command! tail tail -f %f
 "
 " You can also add %CLEAR if you want to clear screen before running FUSE program.
 
-" => File associations: ebooks ----------------------------------------------------------------------------------- {{{1
+" => File associations: ebooks ------------------------------------------------------------------------------------ {{{1
 
 filextype *.chm,*.epub,*.fb2,*.fbz,*.mobi,*.rtf,*.tcr
 	\ {Open with xdg-open}
@@ -199,7 +199,7 @@ filextype *.fb2,*.xml,*.gpx,*.xsd,*.kdenlive
 	\ {Reformat hard xml}
 	\ reformat2-fb2 %f,
 
-" => File associations: Djvu, Pdf -------------------------------------------------------------------------------- {{{1
+" => File associations: Djvu, Pdf --------------------------------------------------------------------------------- {{{1
 " cat helps to properly show djvu over nfs volumes
 
 filextype *.djvu,*.pdf
@@ -224,7 +224,7 @@ filextype *.mmd,*.mermaid,*.plantuml,*.puml,*.pu
 	\ {Render to svg}
 	\ diagram-render-view -k %f,
 
-" => File associations: PostScript ------------------------------------------------------------------------------- {{{1
+" => File associations: PostScript -------------------------------------------------------------------------------- {{{1
 
 filextype *.ps,*.eps,*.ps.gz
 	\ {View in zathura}
@@ -232,7 +232,7 @@ filextype *.ps,*.eps,*.ps.gz
 	\ {View in gv}
 	\ gv %c %i &,
 
-" => File associations: Audio ------------------------------------------------------------------------------------ {{{1
+" => File associations: Audio ------------------------------------------------------------------------------------- {{{1
 
 filetype *.cue,
 	\*.aac,*.ac3,*.ape,*.flac,*.m4a,*.m4b,*.mp3,*.og[agx],*.opus,*.spx,*.wav,*.wma,*.wv
@@ -274,7 +274,7 @@ filextype *.kar,*.mid,*.midi
 "filetype *.kar,*.mid,*.midi
 	"\ timidity -inq -- %c,
 
-" => File associations: Video ------------------------------------------------------------------------------------ {{{1
+" => File associations: Video ------------------------------------------------------------------------------------- {{{1
 
 filextype *.3gp,
 	\*.as[fx],*.avi,*.dat,*.divx,*.fl[icv],*.lrv,*.m2v,*.m4v,*.mkv,*.mov,*.mp4,*.mpeg,*.mpg,*.mts,*.ts,
@@ -291,7 +291,7 @@ fileviewer *.3gp,
 	\ mediainfo,
 	\ ffprobe -pretty %c 2>&1,
 
-" => File associations: HTML ------------------------------------------------------------------------------------- {{{1
+" => File associations: HTML -------------------------------------------------------------------------------------- {{{1
 
 filextype *.html,*.htm,*.mht,*.mhtml
 	\ {Open with default browser}
@@ -306,7 +306,7 @@ fileviewer *.htm,*.html
 fileviewer *.mht,*.mhtml
 	\ mhtml-parse -l %f
 
-" => File associations: Images ----------------------------------------------------------------------------------- {{{1
+" => File associations: Images ------------------------------------------------------------------------------------ {{{1
 
 filextype *.bmp,*.dng,*.gif,.*.ico,*.icon,*.jp2,*.jpg,*.jpeg,*.png,*.xpm,*.svg,*.tif,*.thm
 	\ {View in sxiv}
@@ -324,7 +324,7 @@ fileviewer *.bmp,*.dng,*.gif,.*.ico,*.icon,*.jp2,*.jpg,*.jpeg,*.png,*.xpm,*.svg,
 	\ mediainfo,
 	\ identify -verbose,
 
-" => File associations: misc ------------------------------------------------------------------------------------- {{{1
+" => File associations: misc -------------------------------------------------------------------------------------- {{{1
 
 filetype *.spec
 	\ {Edit}
@@ -433,7 +433,7 @@ filetype cpanfile
 	\ {Install Perl modules}
 	\ cpanm -nq --installdeps .
 
-" => File associations: office files ----------------------------------------------------------------------------- {{{1
+" => File associations: office files ------------------------------------------------------------------------------ {{{1
 
 filextype *.odt,*.doc,*.docx,*.xls,*.xlsx,*.odp,*.pptx
 	\ libreoffice %f &,
@@ -446,7 +446,7 @@ filextype *.ttf
 	\ {Open with fontforge}
 	\ fontforge %c %i &,
 
-" => File associations: IsoMount --------------------------------------------------------------------------------- {{{1
+" => File associations: IsoMount ---------------------------------------------------------------------------------- {{{1
 
 filetype *.iso,*.mdf,*.nrg
 	\ {Mount with fuseiso}
@@ -460,7 +460,7 @@ filetype *.qcow2
 	\ {Run with qemu}
 	\ run-qcow %c,
 
-" => File associations: archives --------------------------------------------------------------------------------- {{{1
+" => File associations: archives ---------------------------------------------------------------------------------- {{{1
 
 " ArchiveMount
 filetype *.tar,
@@ -502,25 +502,25 @@ fileviewer *.7z,*.whl,
 	\*.qcow,*.qcow2,*.qcow2c,*.r00,*.rar,*.raw,*.rpm,*.squashfs,*.swf,*.swm,*.sys,*.vdi,*.vhd,*.vmdk,*.wim,*.xar,*.xls
 	\ 7z l %c &,
 
-" => File associations: S3 mount --------------------------------------------------------------------------------- {{{1
+" => File associations: S3 mount ---------------------------------------------------------------------------------- {{{1
 
 filetype *.s3fs
 	\ {Mount with s3fs}
 	\ FUSE_MOUNT2|s3fs %PARAM %DESTINATION_DIR %FOREGROUND,
 
-" => File associations: ssh mount -------------------------------------------------------------------------------- {{{1
+" => File associations: ssh mount --------------------------------------------------------------------------------- {{{1
 
 filetype *.ssh
 	\ {Mount with sshfs}
 	\ FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR %FOREGROUND,
 
-" => File associations: ftp mount -------------------------------------------------------------------------------- {{{1
+" => File associations: ftp mount --------------------------------------------------------------------------------- {{{1
 
 filetype *.ftp
 	\ {Mount with curlftpfs}
 	\ FUSE_MOUNT2|curlftpfs -o ftp_port=-,,disable_eprt %PARAM %DESTINATION_DIR %FOREGROUND,
 
-" => File associations: encrypted fs mount ----------------------------------------------------------------------- {{{1
+" => File associations: encrypted fs mount ------------------------------------------------------------------------ {{{1
 
 filetype cryfs.config
 	\ {Mount with cryfs}
@@ -530,7 +530,7 @@ filetype *.encfs
 	\ {Mount with encfs}
 	\ FUSE_MOUNT2|encfs %PARAM %DESTINATION_DIR %FOREGROUND,
 
-" => File associations: ansible role ----------------------------------------------------------------------------- {{{1
+" => File associations: ansible role ------------------------------------------------------------------------------ {{{1
 
 filetype main.yaml
 	\ {Execute ansible role}
@@ -540,7 +540,7 @@ filetype *.svct
 	\ {Execute service-test}
 	\ test-service -vv %c,
 
-" => Default file execution -------------------------------------------------------------------------------------- {{{1
+" => Default file execution --------------------------------------------------------------------------------------- {{{1
 
 " Open all other files with default system programs (you can also remove all
 " :file[x]type commands above to ensure they don't interfere with system-wide
@@ -585,7 +585,7 @@ filetype */,.*/
 	\ {Compress tar.gz}
 	\ archive-create --type="tar.gz" %f,
 
-" => Preview ----------------------------------------------------------------------------------------------------- {{{1
+" => Preview ------------------------------------------------------------------------------------------------------ {{{1
 
 " Default file viewer
 fileviewer *[^/],.*[^/]
@@ -595,13 +595,13 @@ fileviewer *[^/],.*[^/]
 fileviewer */,.*/
 	\ show-dir,
 
-" => Save state between sessions --------------------------------------------------------------------------------- {{{1
+" => Save state between sessions ---------------------------------------------------------------------------------- {{{1
 
 " What should be saved automatically between vifm sessions. Drop "savedirs"
 " value if you don't want vifm to remember last visited directories for you.
 set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,phistory,fhistory,dirstack,registers,bookmarks,bmarks
 
-" => Examples of configuring both panels ------------------------------------------------------------------------- {{{1
+" => Examples of configuring both panels -------------------------------------------------------------------------- {{{1
 
 " Customize view columns a bit (enable ellipsis for truncated file names)
 "
@@ -611,7 +611,7 @@ set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,phistory,fhistory,dir
 "
 " filter! /^.*\.(lo|o|d|class|py[co])$|.*~$/
 
-" => mappings ---------------------------------------------------------------------------------------------------- {{{1
+" => mappings ----------------------------------------------------------------------------------------------------- {{{1
 
 " Start shell in current directory
 nnoremap s :shell<CR>
@@ -682,15 +682,15 @@ vnoremap Ru :!rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="
 nnoremap Rs :!rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -HahuXx --partial --info=progress2 --delete %f:p %D/<CR>
 vnoremap Rs :!rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -HahuXx --partial --info=progress2 --delete %f:p %D/<CR>
 
-" => fzf integration (ctrl-t, ctrl-p) ---------------------------------------------------------------------------- {{{1
+" => fzf integration (ctrl-t, ctrl-p) ----------------------------------------------------------------------------- {{{1
 
 command! FZFfind   :set noquickview | :execute 'goto "'.system('unset REPORTTIME; _fzf_compgen_helper "." f | fzf --reverse 2>/dev/tty || echo "./dummy"').'"%IU' | redraw
 command! FZFlocate :set noquickview | :execute 'goto "'.system('unset REPORTTIME; command locate / | fzf --reverse 2>/dev/tty || echo "./dummy"').'"%IU' | redraw
 
-nnoremap <c-p> :FZFfind<CR>
-nnoremap <c-t> :FZFlocate<CR>
+nnoremap <C-p> :FZFfind<CR>
+nnoremap <C-t> :FZFlocate<CR>
 
-" => Various customization examples ------------------------------------------------------------------------------ {{{1
+" => Various customization examples ------------------------------------------------------------------------------- {{{1
 
 " Use ag (the silver searcher) instead of grep
 " set grepprg='ag --hidden --line-numbers %i %a %s'
@@ -716,7 +716,7 @@ set findprg='fd --hidden -- %A'
 "
 " let $VIFM_SERVER_NAME = v:servername
 
-" => bookmarks --------------------------------------------------------------------------------------------------- {{{1
+" => bookmarks ---------------------------------------------------------------------------------------------------- {{{1
 
 mark b ~/.local/script/
 mark c ~/git/private/dotfiles/.config
@@ -730,7 +730,7 @@ mark s ~/.local/state                            nvim
 mark u /run/media/$USER
 mark v ~/.local/share/vault
 
-" => file icons -------------------------------------------------------------------------------------------------- {{{1
+" => file icons --------------------------------------------------------------------------------------------------- {{{1
 
 set classify=' ::../::, :dir:/, :exe:, :reg:, :link:'
 set classify+=' ::*.sh::, ::*.cpp::, ::*.c::, ::*.hpp::, ::*.js::, ::*.pl,,*.pm::, ::*.py::, ::*.rb::, ::*.go::, ::*.json::, ::*.ts::'

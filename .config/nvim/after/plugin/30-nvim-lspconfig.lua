@@ -106,12 +106,12 @@ if status then
     local lsps = {'bash-language-server', 'bzl', 'lua-language-server', 'vim-language-server'}
     local daps = {'perl-debug-adapter'}
     local linters = {
-        'actionlint', 'ansible-lint', 'cmakelang', 'cmakelint', 'commitlint', 'jsonlint',
-        'luacheck', 'markdownlint', 'markuplint', 'proselint', 'stylelint', 'vint', 'yamllint',
+        'actionlint', 'ansible-lint', 'cmakelang', 'cmakelint', 'jsonlint', 'luacheck',
+        'markdownlint', 'markuplint', 'proselint', 'stylelint', 'vint', 'yamllint',
     }
     local formatters = {
         'beautysh', 'cmakelang', 'doctoc', 'fixjson', 'gersemi', -- 'luaformatter',
-        'markdown-toc', 'mdformat', 'shellharden', 'shfmt', 'sql-formatter', 'sqlfmt', 'yamlfix',
+        'shellharden', 'shfmt', 'sql-formatter', 'sqlfmt', 'yamlfix',
     }
     mason_tool.setup {
         ensure_installed = {
