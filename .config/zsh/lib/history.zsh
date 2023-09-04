@@ -2,7 +2,7 @@
 # Based on https://github.com/robbyrussell/oh-my-zsh
 
 alias h='history'
-alias h-disable='fc -p'
+alias h-disable='HF="$HISTFILE"; fc -p; fc -R "$HF"'
 # alias crap='history -d $((HISTCMD-1))'
 
 # do not save failed command in history
