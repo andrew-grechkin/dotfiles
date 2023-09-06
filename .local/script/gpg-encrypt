@@ -9,5 +9,5 @@ RECIPIENTS=(
 
 for FILE in "$@"; do
 	FILENAMEFULL=$(basename "$FILE")
-	command gpg --encrypt "${RECIPIENTS[@]/#/'--recipient='}" --output "./${FILENAMEFULL}.gpg" "$FILE"
+	command gpg --armor --encrypt "${RECIPIENTS[@]/#/'--recipient='}" --output "./${FILENAMEFULL}.gpg" "$FILE"
 done

@@ -102,6 +102,7 @@ local leader_mappings = {
     --     S = {'<cmd>PackerStatus<CR>', 'Status'},
     --     u = {'<cmd>PackerUpdate<CR>', 'Update'},
     -- },
+    ['<CR>'] = {'!!bash<CR>', 'execute line in shell'},
     ['<leader>'] = {
         name = 'Setup',
         ['.'] = {':execute "lcd" dir#git_root()<CR>', 'cd to git-root'},
@@ -200,6 +201,7 @@ local norm_term_mappings = {
 
 local visual_mappings = {
     ['<leader>'] = {
+        ['<CR>'] = {':!bash<CR>', 'execute lines in shell'},
         d = {'"_dd', 'delete to a black hole'},
         r = {
             name = 'Repo (git)',
