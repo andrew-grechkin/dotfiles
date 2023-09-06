@@ -384,8 +384,14 @@ filetype *.asc,*.sig
 	\ {Check signature}
 	\ !!gpg --verify,
 
-fileviewer *.pem,*.crt,*.csr
-	\ openssl x509 -inform PEM -in %f -text
+fileviewer *.pem,*.crt
+	\ openssl x509 -inform PEM -text -in %f
+
+fileviewer *.key
+	\ openssl rsa -check -text -noout -in %c
+
+fileviewer *.csr,*.req
+	\ openssl req -verify -text -noout -in %c
 
 filetype *.key
 	\ {Convert to p12}
