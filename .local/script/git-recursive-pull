@@ -8,7 +8,7 @@ set -Euo pipefail
 if [[ "$#" -eq "1" ]] && [[ "$1" =~ .git/?$ ]]; then
 	REPO=$(dirname "$1")
 
-	if [[ -n "$(git branch --show-current)" ]]; then
+	if [[ -n "$(git -C "$REPO" branch --show-current)" ]]; then
 		echo -n "$(tput setaf 3)"
 		echo "Updating $REPO"
 		echo -n "$(tput sgr0)"
