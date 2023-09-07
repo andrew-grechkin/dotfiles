@@ -1,6 +1,8 @@
-# References
+# Git
 
-## RefLog Shortnames
+## References
+
+### RefLog Shortnames
 
 ```bash
 git reflog
@@ -17,7 +19,7 @@ git show main@{yesterday}
 git show :/some-text-to-search-in-commit-message
 ```
 
-## Ancestry References
+### Ancestry References
 
 - previous commit
 
@@ -39,9 +41,9 @@ git show :/some-text-to-search-in-commit-message
     git show HEAD^^^
     ```
 
-## Commit Ranges
+### Commit Ranges
 
-- all commits reachable by feature that aren’t reachable by main
+- all commits reachable by feature that aren’t reachable by main (difference: feature \ main)
 
     ```bash
     git log main..feature
@@ -51,22 +53,24 @@ git show :/some-text-to-search-in-commit-message
     git log feature bugfix --not main
     ```
 
-- commits reachable from feature and main but not common
+- commits reachable from feature and main but not common (symmetric difference: feature Δ main)
 
     ```bash
     git log main...feature
+    git log --left-right main feature --not $(git merge-base --all main feature)
     git log --left-right main...featrure
+
     ```
 
-# Log
+## Log
 
 - Show commits in ours branch but not in theirs
 
     ```bash
-    git log --left-right theirs..ours
+    git log theirs..ours
     ```
 
-# Rebase
+## Rebase
 
 - mnemonic
 
@@ -83,11 +87,11 @@ git show :/some-text-to-search-in-commit-message
     # rebase but keep the branch point as is (don't advance forward)
     git rebase -i --keep-base main topic
     # same as
-    git rebase -i --onto main...topic main topic
+    git rebase -i --reapply-cherry-picks --no-fork-point --onto main...topic main topic
     ```
 
-- Auto resolve conflicts using changes from working branch (current, counterintuitive - theirs is the branch which is
-  checked out, opposite to merge)
+- Auto resolve conflicts using changes from working branch (ours - is the changes which we ared doing during rebase,
+  theirs is the branch which is being rebased)
 
     ```bash
     git rebase -Xtheirs main
@@ -108,7 +112,7 @@ git show :/some-text-to-search-in-commit-message
     git -c rebase.instructionFormat='%s%nexec GIT_COMMITTER_DATE="%cD" git commit --amend --no-edit' rebase -i
     ```
 
-# Conflict resolve
+## Conflict resolve
 
 - Resolve conflict using the changes from the target branch (main)
 
@@ -122,7 +126,7 @@ git show :/some-text-to-search-in-commit-message
     git checkout --theirs -- path/file
     ```
 
-# plumbing
+## plumbing
 
 - Provide content or type and size information for repository objects
 
@@ -194,7 +198,7 @@ git show :/some-text-to-search-in-commit-message
     git describe HEAD
     ```
 
-# examples
+## examples
 
 ```mermaid
 %%{init: { 'logLevel': 'debug', 'theme': 'base', 'gitGraph': {'rotateCommitLabel': true}} }%%

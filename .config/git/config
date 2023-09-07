@@ -1,9 +1,10 @@
 [alias]
 	aa           = add --all
 	b            = branch -vv
-	behind       = !"MAIN_UBRANCH=\"$(git gmu)\"; echo \"Behind $MAIN_UBRANCH:\" &>/dev/stderr; git log --oneline \"HEAD..$MAIN_UBRANCH\" | wc -l"
+	behind       = !"MUB=\"$(git gmu)\"; echo \"Behind $MUB:\" &>/dev/stderr; git log --oneline HEAD..$MUB | wc -l"
 	bleach       = !"f(){ git fall; git b | perl -alE 'm/: gone]/ && $F[0] ne q(*) && system(qq(git branch -d $F[0]))'; }; f"
-	bname        = rev-parse --abbrev-ref HEAD
+	bname        = !"f(){ git name-rev --name-only --no-undefined --refs=\"refs/heads/*\"   --exclude=HEAD \"${@:-HEAD}\" 2>/dev/null; }; f"
+	brname       = !"f(){ git name-rev --name-only --no-undefined --refs=\"refs/remotes/*\" --exclude=HEAD \"${@:-HEAD}\" 2>/dev/null | grep -Po \"(?<=\\bremotes/).+$\"; }; f"
 	branches     = !"git branch --list --no-column --format='%(refname:lstrip=2)' \"$@\""
 	bush         = !"f(){ while true; do git push && break; git pull --no-tags --rebase || break; done }; f"
 	cl           = clone --filter=blob:none
@@ -18,18 +19,24 @@
 	dt           = difftool
 	dtw          = !"git difftool -b -t vimdiff $(git gmb)..HEAD"
 	dw           = !"git diff -b --color=always $(git gmb)..HEAD"
+	f            = !"fzf-git-log-branch"
+	fa           = !"fzf-git-log-all"
+	fag          = !"fzf-git-log-all-graph"
 	fall         = fetch --all --prune --prune-tags
-	gmb          = !"MAIN_REMOTE=\"$(git gmr)\"; [[ -n \"$MAIN_REMOTE\" ]] && { git gmu | grep -Po \"(?<=$MAIN_REMOTE/)\\w+$\"; } || git rev-parse --abbrev-ref --symbolic-full-name HEAD"
-	gmr          = !"git branch --list --no-column --all | grep -Po '(?<=remotes/)\\w+(?=/HEAD)'"
-	gmu          = !"MAIN_REMOTE=\"$(git gmr)\"; git rev-parse --abbrev-ref \"$MAIN_REMOTE/HEAD\" 2>&1"
+	fg           = !"fzf-git-log-branch-graph"
+	fw           = !"fzf-git-log-branch $(git gmu)..HEAD"
+	gmb          = !"f(){ R=\"$(git gmr \"${@:-HEAD}\")\"; [[ -n \"$R\" ]] && { git gmu \"${@:-HEAD}\" | grep -Po \"(?<=\\b$R/)\\w+$\"; } || git rev-parse --abbrev-ref --symbolic-full-name HEAD; }; f"
+	gmr          = !"f(){ git config --local --get \"branch.$(git pbranch \"${@:-HEAD}\").remote\" 2>/dev/null || git show-ref 2>/dev/null | grep -Po '(?<=\\brefs/remotes/)[^\\/]+(?=/HEAD\\b)' | head -1; }; f"
+	gmrh         = !"f(){ git show-ref | grep -Po '(?<=\\brefs/remotes/)[^\\/]+/HEAD\\b' 2>/dev/null | head -1; }; f"
+	gmu          = !"f(){ git pbranch $(git gmrh); }; f"
 	gu           = rev-parse --abbrev-ref --symbolic-full-name @{upstream}
 	ha           = !"git --no-pager log --abbrev-commit --all --color=always --graph --pretty=oneline --topo-order"
-	l            = !"fzf-git-log-branch"
-	la           = !"fzf-git-log-all"
-	lag          = !"fzf-git-log-all-graph"
-	lg           = !"fzf-git-log-branch-graph"
+	l            = !"git-log-branch"
+	la           = !"git-log-all"
+	lag          = !"git-log-all-graph"
+	lg           = !"git-log-branch-graph"
 	lrg          = !"git-log-reflog-graph"
-	lw           = !"fzf-git-log-branch $(git gmu)..HEAD"
+	lw           = !"git-log-branch $(git gmrh)..HEAD"
 	m            = !"git checkout $(git gmb)"
 	m-base       = !"f(){ git merge-base ${1:-$(git gmb)} HEAD; }; f"
 	m-diff       = !"f(){ git diff     -b  --color=always `git m-span .. $@`; }; f"
@@ -39,6 +46,9 @@
 	mt           = mergetool
 	mtg          = mergetool --gui
 	pall         = !"git-push-all"
+	pbranch      = !"f(){ git rev-parse --abbrev-ref --verify \"${@:-HEAD}\" 2>/dev/null; }; f"
+	pcommit      = !"f(){ git rev-parse \"${@:-HEAD}\"; }; f"
+	pdesc        = !"f(){ git describe --always \"${@:-HEAD}\"; }; f"
 	pub          = !"git push -u origin $(git bname) -o merge_request.create -o merge_request.remove_source_branch"
 	puba         = !"git push -u origin $(git bname) -o merge_request.create -o merge_request.remove_source_branch -o merge_request.merge_when_pipeline_succeeds"
 	redow        = !"f(){ git rebase -i --autosquash --keep-base --committer-date-is-author-date --update-refs `git gmb` \"$@\"; }; f"

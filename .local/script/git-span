@@ -28,18 +28,17 @@ fi
 		PARENT1="$(git rev-parse --verify "$COMMIT^1")"
 		SPAN="$PARENT1..$PARENT2"
 	else
-		REMOTE=$(git branch --list --no-column --remotes | grep -Po '\b\w+(?=/HEAD\b)')
-		if [[ -n "$REMOTE" ]]; then
-			# there is remote configured for this repo
-			MAIN_BRANCH="$REMOTE/HEAD"
-		else
-			# no remote configured for the repo
-			MAIN_BRANCH="$(git branch --list --no-column --all | grep -Po '\b(main|master)\b')"
-			if [[ -z "$MAIN_BRANCH" ]]; then
-				# this repo is a complete nonsense it doesn't have the main branch
-				echo "$COMMIT"
-				exit 0
-			fi
+		MAIN_BRANCH="$(git branch --list --no-column --remotes | grep -m 1 -Po '\b(origin/(HEAD|main|master))\b' | head -1)"
+
+		if [[ -z "$MAIN_BRANCH" ]]; then
+			# there is no remote main branch configured for this repo
+			MAIN_BRANCH="$(git branch --list --no-column --all | grep -m 1 -Po '\b(origin/(HEAD|main|master))\b' | head -1)"
+		fi
+
+		if [[ -z "$MAIN_BRANCH" ]]; then
+			# this repo is a complete nonsense it doesn't have any main branch
+			echo "$COMMIT"
+			exit 0
 		fi
 
 		if [[ "$COMMIT" == "$(git rev-parse "$MAIN_BRANCH")" ]]; then
