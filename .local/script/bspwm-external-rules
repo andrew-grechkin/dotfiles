@@ -5,6 +5,7 @@ use autodie;
 use warnings     qw(FATAL utf8);
 use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
+use List::Util qw(none);
 open(my $log, '>', '/tmp/bspwm-external-rule.log') or die "open failed: $!";
 say {$log} "args: @ARGV";
 defer {close $log}
@@ -26,10 +27,12 @@ my (undef, undef, $loc_x, $loc_y, $size_w, $size_h, $min_size_w, $min_size_h, $m
 
 my $output = '';
 
-if ($xprop =~ m/_KDE_NET_WM_WINDOW_TYPE_ON_SCREEN_DISPLAY/xms) {
-    $output = 'layer=above center=on manage=on focus=off';
-} elsif (defined $loc_x && defined $loc_y && defined $size_w && defined $size_h && ($size_h || $size_w)) {
-    $output = "center=off rectangle=${size_w}x${size_h}+${loc_x}+${loc_y}";
+if (none {m/\brectangle=\d/} @ARGV) {
+    if ($xprop =~ m/_KDE_NET_WM_WINDOW_TYPE_ON_SCREEN_DISPLAY/xms) {
+        $output = 'layer=above center=on manage=on focus=off';
+    } elsif (defined $loc_x && defined $loc_y && defined $size_w && defined $size_h && ($size_h || $size_w)) {
+        $output = "center=off rectangle=${size_w}x${size_h}+${loc_x}+${loc_y}";
+    }
 }
 
 print {*STDOUT} $output if $output;

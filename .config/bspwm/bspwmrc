@@ -49,6 +49,7 @@ bspc rule -a 'pinentry'               state=floating sticky=on
 bspc rule -a '*:*:Zoom - Licensed Account' desktop='6'
 bspc rule -a '*:*:Zoom Meeting'            desktop='6'
 bspc rule -a 'Chromium'                    desktop='1'
+bspc rule -a 'Crow Translate'              state=floating rectangle=1280x720-600-360
 bspc rule -a 'Gimp'                        desktop='8' state=floating follow=on
 bspc rule -a 'Google-chrome'               desktop='1'
 bspc rule -a 'Main-Tmux'                   desktop='0' follow=on

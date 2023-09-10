@@ -34,7 +34,7 @@ set formatoptions=tcqjl                                                        "
 
 " => Copy & paste ------------------------------------------------------------------------------------------------ {{{1
 
-set clipboard=unnamedplus                                                      " Copy into system clipboard (*, +) registers
+set clipboard=unnamedplus,unnamed                                              " Copy into system clipboard (*, +) registers
 
 "vnoremap <C-c>                         "*y :let @+=@*<CR>
 "vmap <C-c>                             y

@@ -294,6 +294,7 @@ short_subroutine_statements = 2
 # Allow map and grep blocks to return lists.
 allow_last_statement_to_be_comma_separated_in_map_and_grep = 0
 
+[-Modules::RequireEndWithOne]
 
 # => 3 ----------------------------------------------------------------------------------------------------------- {{{1
 

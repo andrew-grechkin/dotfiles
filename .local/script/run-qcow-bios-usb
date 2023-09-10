@@ -1,0 +1,20 @@
+#!/bin/bash
+
+set -Eeuo pipefail
+
+IMAGE_PATH="$1"
+
+qemu-system-x86_64                                                   \
+	-audiodev pa,id=snd0                                             \
+	-cpu host                                                        \
+	-device ich9-intel-hda                                           \
+	-device hda-output,audiodev=snd0                                 \
+	-device qemu-xhci,id=xhci                                        \
+	-device usb-storage,bus=xhci.0,drive=stick                       \
+	-drive "file=$IMAGE_PATH,if=none,id=stick,format=qcow2"          \
+	-enable-kvm                                                      \
+	-k en-us                                                         \
+	-m 4G                                                            \
+	-nic user,model=virtio-net-pci                                   \
+	-smp 2                                                           \
+	-vga virtio

@@ -17,17 +17,12 @@ call plug#begin()
 	Plug 'mhinz/vim-grepper'                                                   " Grep integration
 	Plug 'mhinz/vim-signify'                                                   " Git status/modifications of the file
 	Plug 'nelstrom/vim-visual-star-search'
-	Plug 'pearofducks/ansible-vim'
 	Plug 'sbdchd/vim-run'
-	Plug 'simnalamburt/vim-mundo', {'on': 'MundoToggle'}                       " Visualize the undo tree
 	Plug 'suy/vim-context-commentstring'
-	Plug 'tpope/vim-abolish'
 	Plug 'tpope/vim-commentary'                                                " Commenting helpers
 	Plug 'tpope/vim-fugitive'                                                  " Git support
-	Plug 'tpope/vim-projectionist'
 	Plug 'tpope/vim-repeat'                                                    " Repeat everything
 	Plug 'tpope/vim-surround'                                                  " Better surround commands
-	Plug 'tpope/vim-unimpaired'                                                " Pairs of helpful commands
 	Plug 'vifm/vifm.vim'
 
 	if 1
@@ -40,37 +35,45 @@ call plug#begin()
 		Plug 'kyazdani42/nvim-web-devicons'                                    " lua fork of ryanoasis/vim-devicons
 	endif
 
-	Plug 'nvim-lua/plenary.nvim'
-	Plug 'nvim-telescope/telescope.nvim'
-	Plug 'RRethy/vim-illuminate'
+
+	Plug 'nvim-lua/plenary.nvim'                                               " async library many plugins depend on
+	if has('nvim-0.9')                                                         " Neovim with lua only
+		Plug 'nvim-telescope/telescope.nvim'
+	else
+		Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.1' }
+	endif
+	Plug 'RRethy/vim-illuminate'                                               " highlight selected word
 
 	""" LSP
 	Plug 'neovim/nvim-lspconfig'                                               " ~/.config/nvim/after/plugin/30-nvim-lspconfig.lua
 	Plug 'williamboman/mason.nvim'
 	Plug 'williamboman/mason-lspconfig.nvim'
 	Plug 'WhoIsSethDaniel/mason-tool-installer.nvim'
-	Plug 'ray-x/lsp_signature.nvim'
+	Plug 'ray-x/lsp_signature.nvim'                                            " signature hints
 	" Plug 'glepnir/lspsaga.nvim'                                              " ~/.config/nvim/after/plugin/nvim-lspsaga.vim
+
 	""" UI
-	" Plug folke/lsp-colors.nvim'
-	Plug 'antoinemadec/FixCursorHold.nvim'
 	Plug 'lukas-reineke/indent-blankline.nvim'
 
 	""" debug
-	Plug 'mfussenegger/nvim-dap'
-	Plug 'mfussenegger/nvim-dap-python'
-	Plug 'jay-babu/mason-nvim-dap.nvim'
-	Plug 'nvim-telescope/telescope-dap.nvim'
-	Plug 'rcarriga/nvim-dap-ui'
-	Plug 'theHamsta/nvim-dap-virtual-text'
-	Plug 'jbyuki/one-small-step-for-vimkind'
+	if 1
+		Plug 'mfussenegger/nvim-dap'
+		Plug 'mfussenegger/nvim-dap-python'
+		Plug 'jay-babu/mason-nvim-dap.nvim'
+		Plug 'jbyuki/one-small-step-for-vimkind'
+		Plug 'nvim-telescope/telescope-dap.nvim'
+		Plug 'rcarriga/nvim-dap-ui'
+		Plug 'theHamsta/nvim-dap-virtual-text'
+	endif
 
 	""" test
-	Plug 'janko/vim-test'
-	Plug 'nvim-neotest/neotest'
-	Plug 'nvim-neotest/neotest-plenary'
-	Plug 'nvim-neotest/neotest-python'
-	Plug 'nvim-neotest/neotest-vim-test'
+	if 1                                                                       " completion
+		Plug 'janko/vim-test'
+		Plug 'nvim-neotest/neotest'
+		Plug 'nvim-neotest/neotest-plenary'
+		Plug 'nvim-neotest/neotest-python'
+		Plug 'nvim-neotest/neotest-vim-test'
+	endif
 
 	if 1                                                                       " completion
 		let g:loaded_completion = 1
@@ -86,15 +89,12 @@ call plug#begin()
 		Plug 'quangnguyen30192/cmp-nvim-ultisnips'
 		" Plug 'uga-rosa/cmp-dictionary'
 		Plug 'lukas-reineke/cmp-rg'
-	else
-		Plug 'ms-jpq/coq_nvim', {'branch': 'coq'}
-		Plug 'ms-jpq/coq.artifacts', {'branch': 'artifacts'}
-		Plug 'ms-jpq/coq.thirdparty', {'branch': '3p'}
 	endif
 
 	if 1                                                                       " work related plugins
 "		Plug 'elixir-editors/vim-elixir', {'for': 'elixir'}
 "		Plug 'fatih/vim-go', {'for': 'go'}
+		Plug 'pearofducks/ansible-vim'
 		Plug 'rodjek/vim-puppet'                                               " For Puppet syntax highlighting
 		Plug 'towolf/vim-helm'
 "		Plug 'vim-ruby/vim-ruby', {'for': 'ruby'}                              " For Facts, Ruby functions, and custom providers
@@ -107,8 +107,9 @@ call plug#begin()
 	if empty($KDEHOME)                                                         " Install these pluggins only at work remote machines
 		Plug 'junegunn/fzf', {'dir': '~/.cache/fzf', 'do': './install --bin'}
 	else                                                                       " Install these pluggins only on personal machines
-	Plug 'nvim-treesitter/nvim-treesitter', { 'do': ':TSUpdate' }
-	Plug 'nvim-treesitter/playground'
+		Plug 'potamides/pantran.nvim'
+		Plug 'nvim-treesitter/nvim-treesitter', { 'do': ':TSUpdate' }
+		Plug 'nvim-treesitter/playground'
 "		Plug 'szw/vim-g'                                                       " Search on Google
 "		Plug 'inkarkat/vim-localrc'
 		Plug 'ellisonleao/glow.nvim'                                           " Preview markdown code directly in your neovim terminal"
@@ -119,11 +120,10 @@ call plug#begin()
 		Plug 'tpope/vim-rhubarb'                                               " fugitive Github module
 		Plug 'vimwiki/vimwiki'                                                 " Personal wiki
 		""" coloring
-		Plug 'RRethy/vim-hexokinase', {'do': 'make hexokinase'}
+		Plug 'RRethy/vim-hexokinase', {'do': 'make hexokinase'}                " highlight colors
 	endif
 
 "	Plug 'easymotion/vim-easymotion'                                           " Better move commands
-"	Plug 'masukomi/vim-markdown-folding'
 
 	if 0                                                                       " These plugins are disabled
 		Plug 'chrisbra/csv.vim'
