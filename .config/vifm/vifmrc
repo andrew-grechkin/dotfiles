@@ -281,6 +281,8 @@ filextype *.3gp,
 	\*.ogv,*.qt,*.r[am],*.vob,*.webm,*.wmv
 	\ {View using mpv}
 	\ mpv %f %i &,
+	\ {View using mpv True color terminal}
+	\ mpv %f -vo tct 2>/dev/null,
 	\ {View using ffplay}
 	\ ffplay -fs -autoexit,
 	\ {View using mplayer}

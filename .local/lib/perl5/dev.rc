@@ -33,6 +33,9 @@ export PERLBREW_HOME="${PERLBREW_HOME:-$PERLBREW_ROOT}"
 export PATH="$PATH:$PERLBREW_ROOT/bin"
 export PERL5LIB="$REPO_ROOT/lib:$PERL5LIB"
 
+PERL_NAME="perl-$REQUIRED_PERL_VERSION"
+LIBRARY_NAME="${PERL_NAME}@dev-$REPO_NAME"
+
 # => check prerequisites ------------------------------------------------------------------------------------------ {{{1
 
 function check_prerequisites() {
@@ -57,19 +60,20 @@ function check_prerequisites() {
 # => install default perl and library ----------------------------------------------------------------------------- {{{1
 
 function install_perl() {
-	PERL_NAME="perl-$REQUIRED_PERL_VERSION"
 	PERL_NAME_MATCH="\b${PERL_NAME}\b"
 	[[ $(perlbrew list) =~ $PERL_NAME_MATCH ]] || {
 		# https://raw.githubusercontent.com/Perl/perl5/blead/INSTALL
 		echo "Installing required perl: $PERL_NAME (nproc: $NPROC)"
-		nice perlbrew install -nf -j "$NPROC" "$REQUIRED_PERL_VERSION" --as "$PERL_NAME" || return 1
+		nice perlbrew install -nf -j "$NPROC" "$REQUIRED_PERL_VERSION" --as "$PERL_NAME" \
+			-Dinc_version_list=none                                                      \
+			-Duserelocatableinc                                                          \
+			|| return 1
 		echo
 	}
 	return 0
 }
 
 function install_modules() {
-	LIBRARY_NAME="${PERL_NAME}@dev-$REPO_NAME"
 	LIBRARY_NAME_MATCH="\b${LIBRARY_NAME}\b"
 	[[ $(perlbrew lib-list) =~ $LIBRARY_NAME_MATCH ]] || {
 		echo "Creating Perl local dev library: $LIBRARY_NAME"

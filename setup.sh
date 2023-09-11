@@ -22,7 +22,6 @@ ln -srf .xprofile                                            ~/
 ln -srf .zshenv                                              ~/
 
 ln -srf ".config/Crow Translate"                             ~/.config/
-ln -srf .config/alacritty                                    ~/.config/
 ln -srf .config/autorandr                                    ~/.config/
 ln -srf .config/black                                        ~/.config/
 ln -srf .config/bspwm                                        ~/.config/
