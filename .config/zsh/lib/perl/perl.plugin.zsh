@@ -36,8 +36,8 @@ function enable-perlbrew() {
 	source-file "$PERLBREW_ROOT/etc/perlbrew-completion.bash"
 
 	if (( $NEED_PERLBREW_INIT )); then
-		perlbrew lib create system@default
-		perlbrew switch system@default
+		perlbrew lib create system@dev-default
+		perlbrew switch system@dev-default
 	fi
 }
 
