@@ -467,10 +467,10 @@ filetype *.iso
 	\ run-iso-bios %c,
 
 filetype *_usb.qcow2
-	\ {Run USB stich with qemu BIOS}
-	\ run-qcow-usb-bios %c,
+	\ {Run with qemu BIOS}
+	\ run-qcow-bios %c,
 
-filetype *.qcow2
+filetype *_disk.qcow2
 	\ {Run with qemu}
 	\ run-qcow-uefi %c,
 
