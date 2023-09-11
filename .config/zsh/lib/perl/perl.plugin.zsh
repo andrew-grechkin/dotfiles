@@ -68,7 +68,9 @@ function export-perl5lib() {
 
 # => main --------------------------------------------------------------------------------------------------------- {{{1
 
-if (( $+commands[perlbrew] )); then                                            # perlbrew is the preferred way of managing perl and libraries
+PATH="$PATH:$PERLBREW_ROOT/bin"
+
+if (( $+commands[perlbrew] )); then           # perlbrew is the preferred way of managing perl and libraries
 	enable-perlbrew
 else                                                                           # fallback onto local::lib if perlbrew is not available but cpanm is
 	(( $+commands[cpanm] )) && activate-local-perl

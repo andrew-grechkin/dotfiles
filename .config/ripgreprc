@@ -13,7 +13,14 @@
 # --colors=line:none
 # --colors=line:style:bold
 
+# --debug
+--follow
+# --iglob
+# "!$HOME/.cache/"
+# --iglob
+# "!$HOME/.config/"
+# --iglob
+# '!fuse/'
+--hidden
 --smart-case
 --with-filename
---follow
---hidden

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -Euo pipefail
+set -Eo pipefail
 
 # => support synology --------------------------------------------------------------------------------------------- {{{1
 
@@ -9,21 +9,32 @@ set -Euo pipefail
 # => environment -------------------------------------------------------------------------------------------------- {{{1
 
 REQUIRED_PERL_VERSION=5.38.0
-NPROC=4
 
+NPROC=4
 [[ -x "$(command which -- nproc)" ]] && {
 	NPROC="$(nproc)"
 }
 
+export PERLBREW_ROOT="${PERLBREW_ROOT:-$HOME/perl5/perlbrew}"
+export PERLBREW_HOME="${PERLBREW_HOME:-$PERLBREW_ROOT}"
+export PATH="$PATH:$PERLBREW_ROOT/bin"
+
 # => check prerequisites ------------------------------------------------------------------------------------------ {{{1
 
-[[ -x "$(command which -- perlbrew)" ]] || {
-	echo "Please install perlbrew (https://perlbrew.pl/)"
-	return
+[[ -x "$(command which -- perlbrew 2>/dev/null)" ]] || {
+	echo "perlbrew not found, installing it from (https://perlbrew.pl/)"
+	curl -sL https://install.perlbrew.pl | bash
 }
 
-[[ -x "$(command which -- cpanm)" ]] || {
-	perlbrew install-cpanm || return
+[[ -f "$PERLBREW_ROOT/etc/bashrc" ]] || {
+	perlbrew init
+}
+
+# shellcheck disable=SC1091
+[[ -n "$PERLBREW_VERSION" ]] || source "$PERLBREW_ROOT/etc/bashrc"
+
+[[ -x "$(command which -- cpanm 2>/dev/null)" ]] || {
+	perlbrew install-cpanm || exit 1
 }
 
 # => install default perl and library ----------------------------------------------------------------------------- {{{1
@@ -36,7 +47,7 @@ PERL_NAME_MATCH="\b${PERL_NAME}\b"
 	nice perlbrew install -nf -j "$NPROC" "$REQUIRED_PERL_VERSION" --as "$PERL_NAME" \
 		-Dinc_version_list=none                                                      \
 		-Duserelocatableinc                                                          \
-		|| return
+		|| exit 1
 	echo
 }
 
@@ -44,13 +55,12 @@ LIBRARY_NAME="${PERL_NAME}@default"
 LIBRARY_NAME_MATCH="\b${LIBRARY_NAME}\b"
 [[ $(perlbrew lib-list) =~ $LIBRARY_NAME_MATCH ]] || {
 	echo "Creating Perl local dev library: $LIBRARY_NAME"
-	perlbrew lib create "$LIBRARY_NAME" || return
+	perlbrew lib create "$LIBRARY_NAME" || exit 1
 	echo
 	echo "Installing required modules"
-	nice perlbrew exec --with "$LIBRARY_NAME" cpanm -nq --installdeps "$HOME/.local/lib/perl5"
+	perlbrew exec --with "$LIBRARY_NAME" nice cpanm -nq --installdeps "$HOME/.local/lib/perl5"
 
-	PERLBREW_ROOT="${PERLBREW_ROOT:-$HOME/perl5/perlbrew}"
-	rm -f "$PERLBREW_ROOT/init" && perlbrew switch '$LIBRARY_NAME'
+	rm -f "$PERLBREW_ROOT/init" && perlbrew switch "$LIBRARY_NAME"
 }
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1

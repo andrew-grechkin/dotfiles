@@ -97,6 +97,7 @@ function activate() {
 # => generate CDPATH ---------------------------------------------------------------------------------------------- {{{1
 
 function gen-cdpath() {
+	setopt NULL_GLOB
 	declare -a DIRS
 	for FILE in "$HOME"/* "$HOME"/git/* "/usr/local/git_tree"; do
 		[[ -d "${FILE%/}" ]] && DIRS+=("${FILE%/}")
