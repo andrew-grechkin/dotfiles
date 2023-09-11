@@ -120,7 +120,7 @@ if status then
         auto_update = true,
         run_on_start = true,
         start_delay = 3000,
-        debounce_hours = 5, -- at least 5 hours between attempts to install/update
+        debounce_hours = 1, -- at least 1 hours between attempts to install/update
     }
     -- setup pre-install and post-install hook
     vim.api.nvim_create_autocmd('User', {

@@ -57,7 +57,7 @@ function _start_ssh_agent() {
 	# add ssh keys if empty
 	# RESULT=$(ssh-add -l 2>/dev/null | grep '.ssh/id_')
 	# if [[ "0" = "${#RESULT}" ]]; then
-	#     ssh-add
+	# ssh-add
 	# fi
 }
 
@@ -98,7 +98,7 @@ function activate() {
 
 function gen-cdpath() {
 	declare -a DIRS
-	for FILE in "$HOME"/git/* "$HOME"/*; do
+	for FILE in "$HOME"/* "$HOME"/git/* "/usr/local/git_tree"; do
 		[[ -d "${FILE%/}" ]] && DIRS+=("${FILE%/}")
 	done
 
