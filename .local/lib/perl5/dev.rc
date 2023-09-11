@@ -92,10 +92,9 @@ function install_modules() {
 check_prerequisites && install_perl && install_modules && {
 	# different actions if running as part of another script or directly in a user shell
 	if [[ -z "$PS1" ]]; then
-		perlbrew exec --with "$LIBRARY_NAME" "$@"
+		[[ -n "$*" ]] && perlbrew exec --with "$LIBRARY_NAME" "$@"
 	else
 		perlbrew use "$LIBRARY_NAME"
-		perlbrew info >/dev/stderr
 	fi
 	return 0
 }
