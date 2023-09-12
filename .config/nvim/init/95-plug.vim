@@ -15,15 +15,20 @@ call plug#begin()
 	Plug 'junegunn/vim-easy-align'
 	Plug 'junegunn/vim-plug'
 	Plug 'mhinz/vim-grepper'                                                   " Grep integration
-	Plug 'mhinz/vim-signify'                                                   " Git status/modifications of the file
 	Plug 'nelstrom/vim-visual-star-search'
 	Plug 'sbdchd/vim-run'
 	Plug 'suy/vim-context-commentstring'
 	Plug 'tpope/vim-commentary'                                                " Commenting helpers
-	Plug 'tpope/vim-fugitive'                                                  " Git support
 	Plug 'tpope/vim-repeat'                                                    " Repeat everything
 	Plug 'tpope/vim-surround'                                                  " Better surround commands
 	Plug 'vifm/vifm.vim'
+
+	if 1
+		Plug 'tpope/vim-fugitive'                                              " Git support
+		Plug 'lewis6991/gitsigns.nvim'
+	else
+		Plug 'mhinz/vim-signify'                                               " Git status/modifications of the file
+	endif
 
 	if 1
 		Plug 'vim-airline/vim-airline'                                         " Most informative status line

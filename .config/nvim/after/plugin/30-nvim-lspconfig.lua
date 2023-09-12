@@ -8,7 +8,6 @@ local function on_attach(_, bufnr)
 
     local normal_mappings = {
         ['<leader>'] = {
-            ['h'] = {vim.lsp.buf.hover, 'LSP: hover'},
             ['k'] = {vim.lsp.buf.signature_help, 'LSP: signature help'},
             ['l'] = {
                 name = 'LSP',
@@ -16,6 +15,7 @@ local function on_attach(_, bufnr)
                 S = {'<cmd>Telescope lsp_dynamic_workspace_symbols<CR>', 'symbols: workspace'},
                 c = {'<cmd>Telescope lsp_incoming_calls<CR>', 'calls: incoming'},
                 d = {'<cmd>Telescope lsp_definitions<CR>', 'definitions'},
+                h = {vim.lsp.buf.hover, 'LSP: hover'},
                 i = {'<cmd>Telescope lsp_implementations<CR>', 'implementations'},
                 o = {'<cmd>Telescope lsp_outgoing_calls<CR>', 'calls: outgoing'},
                 r = {'<cmd>Telescope lsp_references<CR>', 'references'},
@@ -24,8 +24,8 @@ local function on_attach(_, bufnr)
                 w = {'<cmd>Telescope lsp_workspace_diagnostics<CR>', 'diagnostics: workspace'},
             },
         },
-        ['[d'] = {vim.diagnostic.goto_prev, 'LSP: diagnostic prev'},
-        [']d'] = {vim.diagnostic.goto_next, 'LSP: diagnostic next'},
+        ['['] = {name = 'Prev', ['d'] = {vim.diagnostic.goto_prev, 'LSP: diagnostic prev'}},
+        [']'] = {name = 'Next', ['d'] = {vim.diagnostic.goto_next, 'LSP: diagnostic next'}},
         ['\\'] = {
             name = 'LSP',
             ['\\'] = {vim.diagnostic.setloclist, 'show diagnostic'},
