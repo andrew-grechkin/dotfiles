@@ -4,9 +4,9 @@
 
 # export        PERLTIDY="$XDG_CONFIG_HOME/perltidyrc"
 # export      PERLCRITIC="$XDG_CONFIG_HOME/perlcriticrc"
-export PERL_CPANM_HOME="$XDG_CACHE_HOME/cpanm"
-export   PERLBREW_HOME="${PERLBREW_HOME:-$XDG_DATA_HOME/perlbrew}"
 export   PERLBREW_ROOT="${PERLBREW_ROOT:-$XDG_DATA_HOME/perlbrew}"
+export   PERLBREW_HOME="$PERLBREW_ROOT"
+export PERL_CPANM_HOME="$XDG_RUNTIME_DIR/cpanm"
 
 # work specific
 export USING_PERL_MODULE_INSTALL=1
@@ -14,7 +14,8 @@ export USING_PERL_MODULE_INSTALL=1
 # => aliases ------------------------------------------------------------------------------------------------------ {{{1
 
 alias perldebug='PERLDB_OPTS="RemotePort=localhost:9000" perl -I${PERL_LOCAL_LIB_ROOT}/lib/perl5/x86_64-linux-thread-multi/dbgp-helper -d '
-alias perlverbose='export PERL5OPT="-MCarp=verbose"'
+alias perlverbose='export PERL5OPT="-MCarp=verbose $PERL5OPT"'
+alias perlcarp='export PERL5OPT="-MCarp::Always $PERL5OPT"'
 alias ojo='perl -Mojo -E'
 
 # => functions ---------------------------------------------------------------------------------------------------- {{{1
