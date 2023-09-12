@@ -18,12 +18,12 @@ plugin.setup {
     word_diff = false, -- Toggle with `:Gitsigns toggle_word_diff`
     watch_gitdir = {follow_files = true},
     attach_to_untracked = true,
-    current_line_blame = false, -- Toggle with `:Gitsigns toggle_current_line_blame`
+    current_line_blame = true, -- Toggle with `:Gitsigns toggle_current_line_blame`
     current_line_blame_opts = {
         delay = 1000,
         ignore_whitespace = false,
         virt_text = true,
-        virt_text_pos = 'eol', -- 'eol' | 'overlay' | 'right_align'
+        virt_text_pos = 'right_align', -- 'eol' | 'overlay' | 'right_align'
     },
     current_line_blame_formatter = '<author>, <author_time:%Y-%m-%d> - <summary>',
     sign_priority = 6,
@@ -46,17 +46,17 @@ plugin.setup {
 
         local gs = package.loaded.gitsigns
 
-        local function map(mode, l, r, opts)
-            opts = opts or {}
-            opts.buffer = bufnr
-            vim.keymap.set(mode, l, r, opts)
-        end
+        -- local function map(mode, l, r, opts)
+        --     opts = opts or {}
+        --     opts.buffer = bufnr
+        --     vim.keymap.set(mode, l, r, opts)
+        -- end
 
         -- Navigation
         local normal_mappings = {
             ['['] = {
                 name = 'Prev',
-                ['c'] = {
+                ['h'] = {
                     function()
                         if vim.wo.diff then return ']c' end
                         vim.schedule(function() gs.prev_hunk() end)
@@ -66,7 +66,7 @@ plugin.setup {
             },
             [']'] = {
                 name = 'Next',
-                ['c'] = {
+                ['h'] = {
                     function()
                         if vim.wo.diff then return '[c' end
                         vim.schedule(function() gs.next_hunk() end)
