@@ -195,6 +195,8 @@ if &termguicolors ==# 1
 	hi VisualNOS                           guibg=#403D3D
 	hi WarningMsg            guifg=#FFFFFF guibg=#333333               gui=standout
 	hi WildMenu              guifg=#66D9EF guibg=#000000
+
+	hi GitSignsCurrentLineBlame guifg=#605e66
 else
 	if $TERM =~# '256'
 		hi Boolean           ctermfg=135

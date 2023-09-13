@@ -18,7 +18,7 @@ if lua_ok then lua.setup() end
 local python_ok, python = pcall(require, 'dap-python')
 if python_ok then
     -- python.setup('~/.local/share/nvim/mason/packages/debugpy/venv/bin/python')
-    python.setup('/usr/bin/python', {console = 'integratedTerminal'})
+    python.setup('python', {console = 'integratedTerminal'})
     python.test_runner = 'pytest'
 end
 
@@ -110,16 +110,17 @@ if which_key_ok then
     -- nnoremap <silent> <Leader>dl <Cmd>lua require'dap'.run_last()<CR>
     local normal_mappings = {
         ['<leader>'] = {
-            b = {
+            d = {
                 name = 'DAP',
-                b = {dap.toggle_breakpoint, 'DAP: toggle breakpoint'},
-                c = {
+                B = {
                     function() dap.set_breakpoint(vim.fn.input '[Condition] > ') end,
                     'DAP: conditional breakpoint',
                 },
+                b = {dap.toggle_breakpoint, 'DAP: toggle breakpoint'},
+                c = {dap.continue, 'DAP: start/continue'},
                 e = {function() ui.eval(vim.fn.input '[Expression] > ') end, 'DAP: UI expression'},
+                q = {dap.disconnect, 'DAP: quit'},
                 r = {dap.repl.open, 'DAP: REPL open'},
-                s = {dap.continue, 'DAP: start/continue'},
                 t = {python.test_method, 'DAP: test closest method'},
                 u = {ui.toggle, 'DAP: UI toggle'},
             },
@@ -138,9 +139,7 @@ if which_key_ok then
         -- h = { "<cmd>lua require'dap.ui.widgets'.hover()<cr>", "Hover Variables" },
         -- S = { "<cmd>lua require'dap.ui.widgets'.scopes()<cr>", "Scopes" },
         -- p = { "<cmd>lua require'dap'.pause.toggle()<cr>", "Pause" },
-        -- q = { "<cmd>lua require'dap'.close()<cr>", "Quit" },
         -- r = { "<cmd>lua require'dap'.repl.toggle()<cr>", "Toggle Repl" },
-        -- x = { "<cmd>lua require'dap'.terminate()<cr>", "Terminate" },
     }
 
     which_key.register(normal_mappings)

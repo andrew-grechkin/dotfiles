@@ -14,7 +14,7 @@ plugin.setup {
     signcolumn = true, -- Toggle with `:Gitsigns toggle_signs`
     numhl = false, -- Toggle with `:Gitsigns toggle_numhl`
     linehl = false, -- Toggle with `:Gitsigns toggle_linehl`
-    word_diff = false, -- Toggle with `:Gitsigns toggle_word_diff`
+    word_diff = true, -- Toggle with `:Gitsigns toggle_word_diff`
     watch_gitdir = {follow_files = true},
     attach_to_untracked = true,
     current_line_blame = true, -- Toggle with `:Gitsigns toggle_current_line_blame`
@@ -25,6 +25,7 @@ plugin.setup {
         virt_text_pos = 'right_align', -- 'eol' | 'overlay' | 'right_align'
     },
     current_line_blame_formatter = '<author>, <author_time:%Y-%m-%d> - <summary>',
+    show_deleted = false,
     sign_priority = 6,
     update_debounce = 100,
     status_formatter = nil, -- Use default

@@ -112,7 +112,7 @@ local normal_mappings = {
             ['0'] = {':blast<CR>', 'buffer: last'},
             ['1'] = {':bfirst<CR>', 'buffer: first'},
         },
-        d = {'"_d', 'delete to a black hole'},
+        -- d = {'"_d', 'delete to a black hole'},
         -- p = {'`[ . strpart(getregtype(), 0, 1) . `]', 'Select latest pasted'},
         r = {
             name = 'Repo (git)',
@@ -178,7 +178,7 @@ local normal_mappings = {
 local visual_mappings = {
     ['<leader>'] = {
         ['<CR>'] = {':!bash<CR>', 'execute lines in shell'},
-        d = {'"_dd', 'delete to a black hole'},
+        -- d = {'"_dd', 'delete to a black hole'},
         r = {
             name = 'Repo (git)',
             l = {'<cmd>Telescope git_bcommits_range<CR>', 'commits for selected lines'},
