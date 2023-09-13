@@ -15,12 +15,16 @@
 
 # --debug
 --follow
-# --iglob
-# "!$HOME/.cache/"
-# --iglob
-# "!$HOME/.config/"
-# --iglob
-# '!fuse/'
 --hidden
+
+--iglob
+!.git/
+--iglob
+!$HOME/.cache/
+--iglob
+!$HOME/.config/
+--iglob
+!fuse/
+
 --smart-case
 --with-filename

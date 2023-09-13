@@ -52,7 +52,7 @@
 	pub          = !"git push -u origin $(git bname) -o merge_request.create -o merge_request.remove_source_branch"
 	puba         = !"git push -u origin $(git bname) -o merge_request.create -o merge_request.remove_source_branch -o merge_request.merge_when_pipeline_succeeds"
 	redow        = !"f(){ git rebase -i --autosquash --keep-base --committer-date-is-author-date --update-refs `git gmb` \"$@\"; }; f"
-	root         = rev-parse --show-toplevel
+	root         = !"git rev-parse --show-superproject-working-tree --show-toplevel | head -1"
 	sh           = show --show-signature
 	shd          = -c delta.side-by-side=true show --show-signature
 	st           = status -b

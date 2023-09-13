@@ -3,7 +3,6 @@
 call plug#begin()
 	Plug 'Raimondi/delimitMate'
 	Plug 'SirVer/ultisnips'
-	Plug 'andrew-grechkin/vim-rooter'                                          " Cwd if file is in git repo should be repo root
 	Plug 'andrew-grechkin/vim-snippets'
 	Plug 'chrisbra/unicode.vim'
 	Plug 'christoomey/vim-tmux-navigator'                                      " Better tmux integration
