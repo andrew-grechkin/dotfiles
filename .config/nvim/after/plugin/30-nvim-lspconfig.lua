@@ -1,4 +1,5 @@
 -- => h: lsp ------------------------------------------------------------------------------------------------------ {{{1
+
 local status_lspconfig, lspconfig = pcall(require, 'lspconfig')
 if not status_lspconfig then return end
 
@@ -6,6 +7,7 @@ local function on_attach(_, bufnr)
     local ok, which_key = pcall(require, 'which-key')
     if not ok then return end
 
+    -- h: lsp-buf
     local normal_mappings = {
         ['<leader>'] = {
             ['k'] = {vim.lsp.buf.signature_help, 'LSP: signature help'},
@@ -24,8 +26,8 @@ local function on_attach(_, bufnr)
                 w = {'<cmd>Telescope lsp_workspace_diagnostics<CR>', 'diagnostics: workspace'},
             },
         },
-        ['['] = {name = 'Prev', ['d'] = {vim.diagnostic.goto_prev, 'LSP: diagnostic prev'}},
-        [']'] = {name = 'Next', ['d'] = {vim.diagnostic.goto_next, 'LSP: diagnostic next'}},
+        ['['] = {name = 'Prev', ['d'] = {vim.diagnostic.goto_prev, 'LSP: prev diagnostic'}},
+        [']'] = {name = 'Next', ['d'] = {vim.diagnostic.goto_next, 'LSP: next diagnostic'}},
         ['\\'] = {
             name = 'LSP',
             ['\\'] = {vim.diagnostic.setloclist, 'show diagnostic'},

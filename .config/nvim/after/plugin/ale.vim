@@ -1,8 +1,7 @@
 ﻿scriptencoding=utf-8
 if !plugin#is_loaded('ale') | finish | endif
 
-command! ALEDisableFixersBuffer let b:ale_fix_on_save=0
-command! ALEEnableFixersBuffer  let b:ale_fix_on_save=0
+command! ALEToggleBufferFixers  let b:ale_fix_on_save=!get(b:, 'ale_fix_on_save', g:ale_fix_on_save)
 
 " register custom fixers
 

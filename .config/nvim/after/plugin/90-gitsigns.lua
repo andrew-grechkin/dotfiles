@@ -1,7 +1,6 @@
+-- https://github.com/lewis6991/gitsigns.nvim
 local status, plugin = pcall(require, 'gitsigns')
 if not status then return end
-
--- https://github.com/lewis6991/gitsigns.nvim
 
 plugin.setup {
     signs = {
@@ -44,63 +43,33 @@ plugin.setup {
         local ok, which_key = pcall(require, 'which-key')
         if not ok then return end
 
-        local gs = package.loaded.gitsigns
-
-        -- local function map(mode, l, r, opts)
-        --     opts = opts or {}
-        --     opts.buffer = bufnr
-        --     vim.keymap.set(mode, l, r, opts)
-        -- end
-
-        -- Navigation
         local normal_mappings = {
-            ['['] = {
-                name = 'Prev',
-                ['h'] = {
-                    function()
-                        if vim.wo.diff then return ']c' end
-                        vim.schedule(function() gs.prev_hunk() end)
-                        return '<Ignore>'
-                    end, 'GIT: previous hunk',
-                },
-            },
-            [']'] = {
-                name = 'Next',
-                ['h'] = {
-                    function()
-                        if vim.wo.diff then return '[c' end
-                        vim.schedule(function() gs.next_hunk() end)
-                        return '<Ignore>'
-                    end, 'GIT: next hunk',
-                },
-            },
+            ['['] = {name = 'Prev', ['h'] = {plugin.prev_hunk, 'GIT: previous hunk'}},
+            [']'] = {name = 'Next', ['h'] = {plugin.next_hunk, 'GIT: next hunk'}},
             ['<leader>'] = {
                 ['h'] = {
                     name = 'GIT',
-                    D = {function() gs.diffthis('~') end, 'GIT: diff with revision'},
-                    S = {gs.stage_buffer, 'GIT: stage buffer'},
-                    b = {function() gs.blame_line {full = true} end, 'GIT: blame line'},
-                    d = {gs.diffthis, 'GIT: diff with index'},
-                    p = {gs.preview_hunk, 'GIT: preview hunk'},
-                    r = {gs.reset_hunk, 'GIT: reset hunk'},
-                    s = {gs.stage_hunk, 'GIT: stage hunk'},
-                    t = {
-                        b = {gs.toggle_current_line_blame, 'GIT: toggle blame'},
-                        d = {gs.toggle_deleted, 'GIT: toggle deleted'},
+                    D = {function() plugin.diffthis('~') end, 'GIT: diff with revision'},
+                    S = {plugin.stage_buffer, 'GIT: stage buffer'},
+                    b = {function() plugin.blame_line {full = true} end, 'GIT: blame line'},
+                    c = {
+                        name = 'GIT: checkout',
+                        O = {plugin.reset_buffer, 'GIT: checkout buffer'},
+                        o = {plugin.reset_hunk, 'GIT: checkout hunk'},
                     },
-                    u = {gs.undo_stage_hunk, 'GIT: undo stage hunk'},
+                    d = {plugin.diffthis, 'GIT: diff with index'},
+                    p = {plugin.preview_hunk, 'GIT: preview hunk'},
+                    s = {plugin.stage_hunk, 'GIT: stage hunk'},
+                    t = {
+                        b = {plugin.toggle_current_line_blame, 'GIT: toggle blame'},
+                        d = {plugin.toggle_deleted, 'GIT: toggle deleted'},
+                    },
+                    u = {plugin.undo_stage_hunk, 'GIT: unstage hunk'},
+                    v = {plugin.select_hunk, 'GIT: select hunk'},
                 },
             },
         }
 
         which_key.register(normal_mappings, {bufer = bufnr})
-
-        -- -- Actions
-        -- map('v', '<leader>hs', function() gs.stage_hunk {vim.fn.line('.'), vim.fn.line('v')} end)
-        -- map('v', '<leader>hr', function() gs.reset_hunk {vim.fn.line('.'), vim.fn.line('v')} end)
-        -- map('n', '<leader>hR', gs.reset_buffer)
-
-        -- -- Text object
-        -- map({'o', 'x'}, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
     end,
 }

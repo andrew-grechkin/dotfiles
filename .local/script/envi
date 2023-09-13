@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+# shellcheck disable=SC2016
+PREVIEW='echo ${}'
+
+FZF_CMD=(
+	fzf
+	--ansi
+	--bind="ctrl-v:toggle-preview,ctrl-w:toggle-preview-wrap,ctrl-s:toggle-sort"
+	--bind="enter:execute(bash -c 'echo -n \"{}=\"; $PREVIEW')+abort"
+	--bind="esc:cancel"
+	--header='Press C-v to preview, C-Up/S-Down to scroll, Enter to echo'
+	--preview-window=right:60%:wrap:nohidden
+	--preview="bash -c '$PREVIEW'"
+)
+
+{
+	env | sort | sed 's/=.*//'
+} | "${FZF_CMD[@]}"

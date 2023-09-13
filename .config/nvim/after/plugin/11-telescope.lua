@@ -9,7 +9,7 @@ telescope.setup {
     defaults = {
         layout_strategy = 'bottom_pane',
         layout_config = {
-            height = 0.80,
+            height = 0.95,
             preview_cutoff = 120,
             prompt_position = 'bottom',
         },

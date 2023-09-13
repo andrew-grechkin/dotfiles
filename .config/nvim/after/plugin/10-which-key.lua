@@ -70,102 +70,85 @@ local setup = {
     },
 }
 
-local leader_opts = {nowait = true, prefix = '<leader>'}
-local normal_opts = {
-    nowait = true, -- use `nowait` when creating keymaps
-}
+-- => ------------------------------------------------------------------------------------------------------------- {{{1
+
+local normal_opts = {nowait = true}
 local insert_opts = {mode = 'i', nowait = true}
 local visual_opts = {mode = 'v', nowait = true}
---
--- local terminal_opts = {
---     mode = 't',
---     nowait = true,
--- }
-
-local leader_mappings = {
-    -- ['b'] = {
-    --     '<cmd>lua require(\'telescope.builtin\').buffers(require(\'telescope.themes\').get_dropdown{previewer = false})<CR>',
-    --     'Buffers',
-    -- },
-    -- ['c'] = {'<cmd>Bdelete!<CR>', 'Close Buffer'},
-    -- ['h'] = {'<cmd>nohlsearch<CR>', 'No Highlight'},
-    -- ['f'] = {
-    --     '<cmd>lua require(\'telescope.builtin\').find_files(require(\'telescope.themes\').get_dropdown{previewer = false})<CR>',
-    --     'Find files',
-    -- },
-    -- ['F'] = {'<cmd>Telescope live_grep theme=ivy<CR>', 'Find Text'},
-    -- p = {
-    --     name = 'Packer',
-    --     c = {'<cmd>PackerCompile<CR>', 'Compile'},
-    --     i = {'<cmd>PackerInstall<CR>', 'Install'},
-    --     s = {'<cmd>PackerSync<CR>', 'Sync'},
-    --     S = {'<cmd>PackerStatus<CR>', 'Status'},
-    --     u = {'<cmd>PackerUpdate<CR>', 'Update'},
-    -- },
-    ['<CR>'] = {'!!bash<CR>', 'execute line in shell'},
-    ['<leader>'] = {
-        name = 'Setup',
-        ['.'] = {':execute "lcd" dir#git_root()<CR>', 'cd to git-root'},
-        ['h'] = {'<cmd>checkhealth<CR>', 'Health'},
-        ['m'] = {':belowright 10split term://zsh<CR>', 'open terminal'},
-        ['t'] = {':tab split<CR>', 'tab: split'},
-        ['v'] = {':tabedit <C-R>=VIM_CONFIG_FILE<CR><CR><CR>', 'init.vim'},
-    },
-    b = {
-        name = 'Fast buffers',
-        ['0'] = {':blast<CR>', 'buffer: last'},
-        ['1'] = {':bfirst<CR>', 'buffer: first'},
-    },
-    d = {'"_d', 'delete to a black hole'},
-    -- p = {'`[ . strpart(getregtype(), 0, 1) . `]', 'Select latest pasted'},
-    r = {
-        name = 'Repo (git)',
-        b = {'<cmd>Telescope git_branches<CR>', 'branches'},
-        c = {'<cmd>Telescope git_bcommits<CR>', 'commits for buffer'},
-        f = {'<cmd>Telescope git_files<CR>', 'files'},
-        l = {'<cmd>Telescope git_bcommits_range<CR>', 'commits for current line'},
-        o = {'<cmd>Telescope git_status<CR>', 'status'},
-        r = {'<cmd>Telescope git_commits<CR>', 'commits'},
-        s = {'<cmd>Telescope git_stash<CR>', 'stashes'},
-        --     g = {'<cmd>lua _LAZYGIT_TOGGLE()<CR>', 'Lazygit'},
-        --     j = {'<cmd>lua require \'gitsigns\'.next_hunk()<CR>', 'Next Hunk'},
-        --     k = {'<cmd>lua require \'gitsigns\'.prev_hunk()<CR>', 'Prev Hunk'},
-        --     l = {'<cmd>lua require \'gitsigns\'.blame_line()<CR>', 'Blame'},
-        --     p = {'<cmd>lua require \'gitsigns\'.preview_hunk()<CR>', 'Preview Hunk'},
-        --     r = {'<cmd>lua require \'gitsigns\'.reset_hunk()<CR>', 'Reset Hunk'},
-        --     R = {'<cmd>lua require \'gitsigns\'.reset_buffer()<CR>', 'Reset Buffer'},
-        --     s = {'<cmd>lua require \'gitsigns\'.stage_hunk()<CR>', 'Stage Hunk'},
-        --     u = {
-        --         '<cmd>lua require \'gitsigns\'.undo_stage_hunk()<CR>',
-        --         'Undo Stage Hunk',
-        --     },
-        --     d = {'<cmd>Gitsigns diffthis HEAD<CR>', 'Diff'},
-    },
-    s = {
-        name = 'Search',
-        C = {'<cmd>Telescope colorscheme<CR>', 'colorschemes'},
-        R = {'<cmd>Telescope registers<CR>', 'registers'},
-        c = {'<cmd>Telescope commands<CR>', 'commands'},
-        g = {'<cmd>Telescope live_grep<CR>', 'live grep'},
-        h = {'<cmd>Telescope help_tags<CR>', 'help'},
-        k = {'<cmd>Telescope keymaps<CR>', 'keymaps'},
-        m = {'<cmd>Telescope man_pages<CR>', 'man pages'},
-        r = {'<cmd>Telescope oldfiles<CR>', 'recent files'},
-    },
-    -- t = {
-    --     name = 'Terminal',
-    --     n = {'<cmd>lua _NODE_TOGGLE()<CR>', 'Node'},
-    --     u = {'<cmd>lua _NCDU_TOGGLE()<CR>', 'NCDU'},
-    --     t = {'<cmd>lua _HTOP_TOGGLE()<CR>', 'Htop'},
-    --     p = {'<cmd>lua _PYTHON_TOGGLE()<CR>', 'Python'},
-    --     f = {'<cmd>ToggleTerm direction=float<CR>', 'Float'},
-    --     h = {'<cmd>ToggleTerm size=10 direction=horizontal<CR>', 'Horizontal'},
-    --     v = {'<cmd>ToggleTerm size=80 direction=vertical<CR>', 'Vertical'},
-    -- },
-    x = {':!xdg-open %<CR><CR>', 'Open in the default program'},
-}
+-- local terminal_opts = {mode = 't', nowait = true}
 
 local normal_mappings = {
+    ['<leader>'] = {
+        -- ['b'] = {
+        --     '<cmd>lua require(\'telescope.builtin\').buffers(require(\'telescope.themes\').get_dropdown{previewer = false})<CR>',
+        --     'Buffers',
+        -- },
+        -- ['c'] = {'<cmd>Bdelete!<CR>', 'Close Buffer'},
+        -- ['h'] = {'<cmd>nohlsearch<CR>', 'No Highlight'},
+        -- ['f'] = {
+        --     '<cmd>lua require(\'telescope.builtin\').find_files(require(\'telescope.themes\').get_dropdown{previewer = false})<CR>',
+        --     'Find files',
+        -- },
+        -- ['F'] = {'<cmd>Telescope live_grep theme=ivy<CR>', 'Find Text'},
+        -- p = {
+        --     name = 'Packer',
+        --     c = {'<cmd>PackerCompile<CR>', 'Compile'},
+        --     i = {'<cmd>PackerInstall<CR>', 'Install'},
+        --     s = {'<cmd>PackerSync<CR>', 'Sync'},
+        --     S = {'<cmd>PackerStatus<CR>', 'Status'},
+        --     u = {'<cmd>PackerUpdate<CR>', 'Update'},
+        -- },
+        ['<CR>'] = {'!!bash<CR>', 'execute line in shell'},
+        ['<leader>'] = {
+            name = 'Setup',
+            ['.'] = {':execute "lcd" dir#git_root()<CR>', 'cd to git-root'},
+            ['h'] = {'<cmd>checkhealth<CR>', 'Health'},
+            ['m'] = {':belowright 10split term://zsh<CR>', 'open terminal'},
+            ['t'] = {':tab split<CR>', 'tab: split'},
+            ['v'] = {':tabedit <C-R>=VIM_CONFIG_FILE<CR><CR><CR>', 'init.vim'},
+        },
+        b = {
+            name = 'Fast buffers',
+            ['0'] = {':blast<CR>', 'buffer: last'},
+            ['1'] = {':bfirst<CR>', 'buffer: first'},
+        },
+        d = {'"_d', 'delete to a black hole'},
+        -- p = {'`[ . strpart(getregtype(), 0, 1) . `]', 'Select latest pasted'},
+        r = {
+            name = 'Repo (git)',
+            b = {'<cmd>Telescope git_branches<CR>', 'branches'},
+            c = {'<cmd>Telescope git_bcommits<CR>', 'commits for buffer'},
+            f = {'<cmd>Telescope git_files<CR>', 'files'},
+            l = {'<cmd>Telescope git_bcommits_range<CR>', 'commits for current line'},
+            o = {'<cmd>Telescope git_status<CR>', 'status'},
+            r = {'<cmd>Telescope git_commits<CR>', 'commits'},
+            s = {'<cmd>Telescope git_stash<CR>', 'stashes'},
+            --     g = {'<cmd>lua _LAZYGIT_TOGGLE()<CR>', 'Lazygit'},
+            --     R = {'<cmd>lua require \'gitsigns\'.reset_buffer()<CR>', 'Reset Buffer'},
+        },
+        s = {
+            name = 'Search',
+            C = {'<cmd>Telescope colorscheme<CR>', 'colorschemes'},
+            R = {'<cmd>Telescope registers<CR>', 'registers'},
+            c = {'<cmd>Telescope commands<CR>', 'commands'},
+            g = {'<cmd>Telescope live_grep<CR>', 'live grep'},
+            h = {'<cmd>Telescope help_tags<CR>', 'help'},
+            k = {'<cmd>Telescope keymaps<CR>', 'keymaps'},
+            m = {'<cmd>Telescope man_pages<CR>', 'man pages'},
+            r = {'<cmd>Telescope oldfiles<CR>', 'recent files'},
+        },
+        -- t = {
+        --     name = 'Terminal',
+        --     n = {'<cmd>lua _NODE_TOGGLE()<CR>', 'Node'},
+        --     u = {'<cmd>lua _NCDU_TOGGLE()<CR>', 'NCDU'},
+        --     t = {'<cmd>lua _HTOP_TOGGLE()<CR>', 'Htop'},
+        --     p = {'<cmd>lua _PYTHON_TOGGLE()<CR>', 'Python'},
+        --     f = {'<cmd>ToggleTerm direction=float<CR>', 'Float'},
+        --     h = {'<cmd>ToggleTerm size=10 direction=horizontal<CR>', 'Horizontal'},
+        --     v = {'<cmd>ToggleTerm size=80 direction=vertical<CR>', 'Vertical'},
+        -- },
+        x = {':!xdg-open %<CR><CR>', 'Open in the default program'},
+    },
     ['<A-\\>'] = {'<Esc>:TmuxNavigatePrevious<CR>', 'tmux: navigate previous'},
     ['<A-h>'] = {'<Esc>:TmuxNavigateLeft<CR>', 'tmux: navigate left'},
     ['<A-j>'] = {'<Esc>:TmuxNavigateDown<CR>', 'tmux: navigate down'},
@@ -175,12 +158,12 @@ local normal_mappings = {
     ['<C-d>'] = {'<C-d>zz', 'scroll down and centralize'},
     ['<C-u>'] = {'<C-u>zz', 'scroll up and centralize'},
     ['<F12>'] = {':call hl#show()<CR>', 'show highlight info'},
-    N = {'Nzzzv', 'N and centralize'},
     g = {
         name = 'fast buffers',
         h = {':bprevious<CR>', 'buffer: previous'},
         l = {':bnext<CR>', 'buffer: next'},
     },
+    N = {'Nzzzv', 'N and centralize'},
     n = {'nzzzv', 'n and centralize'},
     t = {
         name = 'fast tabs',
@@ -189,13 +172,6 @@ local normal_mappings = {
         ['2'] = {':tabnext 2<CR>', 'tab: 2'},
         h = {':tabprevious<CR>', 'tab: previous'},
         l = {':tabnext<CR>', 'tab: next'},
-    },
-}
-
-local norm_term_mappings = {
-    ['<leader>'] = {
-        ['\''] = {':belowright vsplit<CR>', 'vsplit right'},
-        ['"'] = {':belowright split<CR>', 'split below'},
     },
 }
 
@@ -228,8 +204,14 @@ local insert_mappings = {
     ['<A-l>'] = {'<Esc>:TmuxNavigateRight<CR>', 'tmux: navigate right'},
 }
 
+local norm_term_mappings = {
+    ['<leader>'] = {
+        ['\''] = {':belowright vsplit<CR>', 'vsplit right'},
+        ['"'] = {':belowright split<CR>', 'split below'},
+    },
+}
+
 which_key.setup(setup)
-which_key.register(leader_mappings, leader_opts)
 which_key.register(normal_mappings, normal_opts)
 which_key.register(visual_mappings, visual_opts)
 which_key.register(insert_mappings, insert_opts)

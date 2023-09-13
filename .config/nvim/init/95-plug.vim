@@ -26,8 +26,6 @@ call plug#begin()
 	if 1
 		Plug 'tpope/vim-fugitive'                                              " Git support
 		Plug 'lewis6991/gitsigns.nvim'
-	else
-		Plug 'mhinz/vim-signify'                                               " Git status/modifications of the file
 	endif
 
 	if 1
