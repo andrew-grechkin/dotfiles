@@ -7,7 +7,7 @@ PATH="$(dirname "$0"):$PATH"
 cat <<- "EOF" | fzf-execute
 lock				loginctl lock-session
 logout				qdbus org.kde.ksmserver /KSMServer logout 0 0 3 || loginctl terminate-session self
-suspend				systemctl suspend
+suspend/sleep		systemctl suspend
 hibernate			systemctl hibernate
 hybrid				systemctl hybrid-sleep
 reboot/restart		systemctl reboot
