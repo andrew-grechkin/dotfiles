@@ -30,7 +30,7 @@ fi
 
 export PERLBREW_ROOT="${PERLBREW_ROOT:-$HOME/perl5/perlbrew}"
 export PERLBREW_HOME="${PERLBREW_HOME:-$PERLBREW_ROOT}"
-export PATH="$PATH:$PERLBREW_ROOT/bin"
+export PATH="$REPO_ROOT/bin:$REPO_ROOT/script:$PATH:$PERLBREW_ROOT/bin"
 export PERL5LIB="$REPO_ROOT/lib:$PERL5LIB"
 
 PERL_NAME="perl-$REQUIRED_PERL_VERSION"
@@ -66,6 +66,7 @@ function install_perl() {
 		echo "Installing required perl: $PERL_NAME (nproc: $NPROC)"
 		nice perlbrew install -nf -j "$NPROC" "$REQUIRED_PERL_VERSION" --as "$PERL_NAME" \
 			-Dinc_version_list=none                                                      \
+			-Doptimize="-g1 -O3"                                                         \
 			-Duserelocatableinc                                                          \
 			|| return 1
 		echo

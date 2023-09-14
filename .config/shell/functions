@@ -70,7 +70,7 @@ function activate() {
 	if command git rev-parse HEAD &>/dev/null; then
 		REPO_ROOT="$(git rev-parse --show-toplevel)"
 
-		FILES=("${FILES[@]/#/$REPO_ROOT/}")
+		FILES+=("${FILES[@]/#/$REPO_ROOT/}")
 		FILES+=("$REPO_ROOT/projects/deployments/dev.rc")
 	fi
 
