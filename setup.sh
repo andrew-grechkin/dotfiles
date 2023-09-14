@@ -42,7 +42,6 @@ ln -srf .config/perltidyrc                                   ~/.perltidyrc
 ln -srf .config/picom.conf                                   ~/.config/
 ln -srf .config/pylintrc                                     ~/.config/
 ln -srf .config/ripgreprc                                    ~/.config/
-ln -srf .config/rofi                                         ~/.config/
 ln -srf .config/shell                                        ~/.config/
 ln -srf .config/sxhkd                                        ~/.config/
 ln -srf .config/systemd                                      ~/.config/

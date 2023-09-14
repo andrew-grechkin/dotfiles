@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+FZF_CMD=(
+	fzf
+	--bind="enter:execute('{2..}')+abort"
+	--bind="esc:cancel"
+	--delimiter="	"
+	--no-multi
+	--reverse
+	--with-nth=1
+)
+
+"${FZF_CMD[@]}" "$@"

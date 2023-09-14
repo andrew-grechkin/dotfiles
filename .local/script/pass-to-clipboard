@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -Euo pipefail
+
+set -x
+STORE=${PASSWORD_STORE_DIR:-${XDG_DATA_HOME}/password-store}
+PASS_PATH="$(realpath --relative-to="$STORE" "$1")"
+PASS_PATH="${PASS_PATH%".gpg"*}"
+USERNAME=$(basename "$PASS_PATH")
+
+gpg --card-status &>/dev/null
+
+MSG=''
+
+echo -n "$USERNAME" | secondarycopy \
+	&& MSG="Username copied to secondary buffer"
+{
+	pass otp code "$PASS_PATH" || echo -n ''
+} | primarycopy && MSG="${MSG}
+OTP code $(primarypaste) copied to primary buffer"
+{
+	pass show --clip "$PASS_PATH" && MSG="${MSG}
+Password copied to clipboard"
+} || notify-send "Something went wrong" "Error: $?" -i dialog-password
+
+notify-send "$MSG" "$USERNAME" -i dialog-password

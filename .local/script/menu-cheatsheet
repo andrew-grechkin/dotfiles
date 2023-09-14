@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+PATH="$(dirname "$0"):$PATH"
+FOLDER="${XDG_DATA_HOME}/cheatsheet"
+
+function list_files() {
+	shopt -s nullglob globstar
+
+	FILES=("$FOLDER"/*)
+	FILES=("${FILES[@]#*"$FOLDER/"}")
+
+	printf "%s	zathura \"${FOLDER}/%s\" &>/dev/null\n" "${FILES[@]}"
+}
+
+list_files | fzf-execute

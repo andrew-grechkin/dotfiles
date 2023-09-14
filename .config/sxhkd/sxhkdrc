@@ -1,6 +1,6 @@
 # vim: filetype=conf
 
-# => control windows --------------------------------------------------------------------------------------------- {{{1
+# => control windows ---------------------------------------------------------------------------------------------- {{{1
 
 super + ctrl + alt + x
 	xkill
@@ -8,13 +8,13 @@ super + ctrl + alt + x
 super + alt + x
 	xprop > /tmp/xprop.log
 
-# => sxhkd hotkeys ----------------------------------------------------------------------------------------------- {{{1
+# => sxhkd hotkeys ------------------------------------------------------------------------------------------------ {{{1
 
 # reload
 super + ctrl + Escape
 	pkill --signal USR1 -x sxhkd
 
-# => bspwm hotkeys ----------------------------------------------------------------------------------------------- {{{1
+# => bspwm hotkeys ------------------------------------------------------------------------------------------------ {{{1
 
 # quit/restart bspwm
 super + ctrl + {q,r}
@@ -29,17 +29,15 @@ alt + F4
 
 # send the newest marked node to the newest preselected node
 # super + y
-# 	bspc node newest.marked.local -n newest.!automatic.local
+#	bspc node newest.marked.local -n newest.!automatic.local
 
 # swap the current node and the biggest window
 # super + g
-# 	bspc node -s biggest.window
+#	bspc node -s biggest.window
 
 # alternate between the tiled and monocle layout
 super + m
 	bspc desktop -l next
-
-# state/flags
 
 # toggle state
 super + f
@@ -71,15 +69,15 @@ super + {_,shift + }{h,j,k,l}
 
 # focus the node for the given path jump
 # super + {p,b,comma,period}
-# 	bspc node -f @{parent,brother,first,second}
+#	bspc node -f @{parent,brother,first,second}
 
 # focus the next/previous window in the current desktop
 # super + {_,shift + }c
-# 	bspc node -f {next,prev}.local.!hidden.window
+#	bspc node -f {next,prev}.local.!hidden.window
 
 # focus the next/previous desktop in the current monitor
 # super + bracket{left,right}
-# 	bspc desktop -f {prev,next}.local
+#	bspc desktop -f {prev,next}.local
 
 # focus the last node/desktop
 super + {Tab,grave}
@@ -96,29 +94,29 @@ alt + {_,shift + }Tab
 
 # preselect the direction
 # super + ctrl + {h,j,k,l}
-# 	bspc node -p {west,south,north,east}
+#	bspc node -p {west,south,north,east}
 
 # preselect the ratio
 # super + ctrl + {1-9}
-# 	bspc node -o 0.{1-9}
+#	bspc node -o 0.{1-9}
 
 # cancel the preselection for the focused node
 # super + ctrl + space
-# 	bspc node -p cancel
+#	bspc node -p cancel
 
 # cancel the preselection for the focused desktop
 # super + ctrl + shift + space
-# 	bspc query -N -d | xargs -I id -n 1 bspc node id -p cancel
+#	bspc query -N -d | xargs -I id -n 1 bspc node id -p cancel
 
 # move/resize
 
 # # expand a window by moving one of its side outward
 # super + alt + {h,j,k,l}
-# 	bspc node -z {left -50 0,bottom 0 50,top 0 -50,right 50 0}
+#	bspc node -z {left -50 0,bottom 0 50,top 0 -50,right 50 0}
 
 # # contract a window by moving one of its side inward
 # super + alt + shift + {h,j,k,l}
-# 	bspc node -z {right -50 0,top 0 50,bottom 0 -50,left 50 0}
+#	bspc node -z {right -50 0,top 0 50,bottom 0 -50,left 50 0}
 
 super + {Left,Down,Up,Right}
 	bspc node -z {right -50 0,bottom 0 50,bottom 0 -50,right 50 0}
@@ -127,35 +125,31 @@ super + {Left,Down,Up,Right}
 super + alt + {Left,Down,Up,Right}
 	bspc node -v {-20 0,0 20,0 -20,20 0}
 
-# => kde + bspwm ------------------------------------------------------------------------------------------------- {{{1
+# => kde + bspwm -------------------------------------------------------------------------------------------------- {{{1
 
 # super
-#     qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.activateLauncherMenu
+#	  qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.activateLauncherMenu
 
-# => applications ------------------------------------------------------------------------------------------------ {{{1
+# => applications ------------------------------------------------------------------------------------------------- {{{1
 
 super + BackSpace
-	$HOME/.local/script/rofi-exit
+	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-system-exit"
 super + Return
 	wezterm start /usr/bin/zsh
 # super + b
-# 	exo-open --launch WebBrowser
-super + c
-	rofi -show calc -modi "calc:qalc +u8" -no-show-match -no-sort
+#	exo-open --launch WebBrowser
 super + d
-	rofi -show run
+	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-app"
 super + o
 	opera
-#super + p
-#	exo-open --launch TerminalEmulator "profanity"
 super + s
-	$HOME/.local/script/rofi-pass
+	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-pass"
 super + t
 	wezterm start --class 'Main-Tmux' tmux
 super + u
 	wezterm start --class 'TermFloating' "$HOME/.local/script/fzf-select" unicode
 
-# => ------------------------------------------------------------------------------------------------------------- {{{1
+# => -------------------------------------------------------------------------------------------------------------- {{{1
 
 #super + shift + Return
 #	exo-open --launch TerminalEmulator "$HOME/.local/script/tmux-default-session"
@@ -164,9 +158,11 @@ super + shift + c
 super + shift + n
 	wezterm start --class 'TermFloating' "$HOME/.local/script/create-note"
 # super + shift + r
-# 	exo-open --launch FileManager
+#	exo-open --launch FileManager
+super + shift + p
+	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-pacman"
 super + shift + s
-	$HOME/.local/script/rofi-cheatsheet
+	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-cheatsheet"
 super + shift + u
 	wezterm start --class 'TermFloating' "$HOME/.local/script/fzf-select" emoji
 super + shift + v
@@ -174,62 +170,62 @@ super + shift + v
 super + shift + w
 	wezterm start --class 'TermFloating' "$HOME/.local/script/open-vim-wiki"
 
-# => ------------------------------------------------------------------------------------------------------------- {{{1
+# => -------------------------------------------------------------------------------------------------------------- {{{1
 
 super + F9
 	$HOME/.local/script/touchpad-toggle
-super + F10
-	$HOME/.local/script/cliptrans
+# super + F10
+#	$HOME/.local/script/cliptrans
 super + F12
 	$HOME/.local/script/passgen
 
-# => ------------------------------------------------------------------------------------------------------------- {{{1
+# => -------------------------------------------------------------------------------------------------------------- {{{1
 
 super + control + F5
 	$HOME/.local/script/bing-wallpaper -s
 
-# => ------------------------------------------------------------------------------------------------------------- {{{1
+# => -------------------------------------------------------------------------------------------------------------- {{{1
 
-# XF86AudioMedia
-# 	cmus-remote
+XF86AudioMedia
+	audacious
 # XF86AudioNext
-# 	cmus-remote
+#	cmus-remote
 # XF86AudioPlay
-# 	cmus-remote --pause
+#	cmus-remote --pause
 # XF86AudioPrev
-# 	cmus-remote
+#	cmus-remote
 # XF86Battery
-# 	xfce4-power-manager-settings
+#	xfce4-power-manager-settings
 XF86Calculator
 	qalculate-gtk
 # XF86Display
-# 	xfce4-display-settings
+#	xfce4-display-settings
 # XF86Favorites
-# 	exo-open --launch TerminalEmulator "$HOME/.local/script/tmux-default-session"
+#	exo-open --launch TerminalEmulator "$HOME/.local/script/tmux-default-session"
 # XF86HomePage
-# 	exo-open --launch FileManager
+#	exo-open --launch FileManager
 # XF86Launch5
-# 	google-chrome-stable
+#	google-chrome-stable
 # XF86Launch6
-# 	opera
+#	opera
 # XF86Launch7
-# 	code
+#	code
 # XF86Launch8
-# 	code
+#	code
 # XF86Launch9
-# 	exo-open --launch TerminalEmulator
+#	exo-open --launch TerminalEmulator
 # XF86Mail
-# 	exo-open --launch MailReader
+#	exo-open --launch MailReader
 # XF86Search
-# 	catfish
+#	catfish
 #XF86WWW
 #	exo-open --launch WebBrowser
 # XF86Back
-# 	cmus-remote --prev
+#	cmus-remote --prev
 # XF86Forward
-# 	cmus-remote --next
+#	cmus-remote --next
 
-# => mouse ------------------------------------------------------------------------------------------------------- {{{1
+# => mouse -------------------------------------------------------------------------------------------------------- {{{1
 
 #button8
 #	cmus-remote --prev
@@ -238,7 +234,7 @@ XF86Calculator
 #	cmus-remote --next
 #	xte "keydown Alt_R" "keydown F2" "keyup Alt_R" "keyup F2"
 
-# => ------------------------------------------------------------------------------------------------------------- {{{1
+# => -------------------------------------------------------------------------------------------------------------- {{{1
 
 #super + @x
 #	xdotool key --clearmodifiers ctrl+shift+v
@@ -246,3 +242,7 @@ XF86Calculator
 #	xdotool key --clearmodifiers ctrl+c
 #super + @v
 #	xdotool key --clearmodifiers ctrl+shift+v
+
+# paste secondary buffer
+alt + shift + @v
+	$HOME/.local/script/secondarypaste | xdotool type --clearmodifiers --delay 5 --file -
