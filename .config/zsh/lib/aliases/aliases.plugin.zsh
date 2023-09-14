@@ -102,7 +102,7 @@ alias cget='command curl -LO -C - --'
 
 alias -g xa='xargs -d "\n" -ri'
 alias fm='vifm . .'
-alias dd='dd oflag=sync conv=sparse,excl status=progress'
+alias dd='command dd oflag=sync conv=sparse,excl status=progress'
 alias :q='exit'
 alias :qa='exit'
 

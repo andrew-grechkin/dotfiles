@@ -25,6 +25,8 @@
 !$HOME/.config/
 --iglob
 !fuse/
+--iglob
+!/media/
 
 --smart-case
 --with-filename

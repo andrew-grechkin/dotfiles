@@ -153,10 +153,12 @@ super + u
 
 #super + shift + Return
 #	exo-open --launch TerminalEmulator "$HOME/.local/script/tmux-default-session"
+super + shift + b
+	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-book"
 super + shift + c
 	qalculate-gtk
 super + shift + f
-	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-fonts"
+	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-font"
 super + shift + n
 	wezterm start --class 'TermFloating' "$HOME/.local/script/create-note"
 # super + shift + r

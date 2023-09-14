@@ -11,7 +11,9 @@ function list_files() {
 	FILES=("$FOLDER"/*)
 	FILES=("${FILES[@]#*"$FOLDER/"}")
 
-	printf "%s	zathura \"${FOLDER}/%s\" &>/dev/null\n" "${FILES[@]}"
+	for FILE in "${FILES[@]}"; do
+		printf "%s	zathura \"${FOLDER}/%s\" &>/dev/null\n" "$FILE" "$FILE"
+	done
 }
 
 list_files | fzf-execute
