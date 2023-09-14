@@ -1,7 +1,0 @@
-#!/bin/bash
-
-set -Eeuo pipefail
-
-command kubectl config view --minify -o json 2>/dev/null \
-	| jq -r '.contexts | .[0].context.cluster' \
-	| perl -n -E'say $_ =~ "prod" ? "bplatform-eu-nl-prod-m" : "bplatform-eu-nl-dqs-m"'
