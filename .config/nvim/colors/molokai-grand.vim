@@ -197,6 +197,7 @@ if &termguicolors ==# 1
 	hi WildMenu              guifg=#66D9EF guibg=#000000
 
 	hi GitSignsCurrentLineBlame guifg=#605e66
+	hi NotifyBackground guibg=#000000
 else
 	if $TERM =~# '256'
 		hi Boolean           ctermfg=135

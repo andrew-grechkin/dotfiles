@@ -39,8 +39,10 @@ call plug#begin()
 
 
 	Plug 'nvim-lua/plenary.nvim'                                               " async library many plugins depend on
+	Plug 'rcarriga/nvim-notify'
 	if has('nvim-0.9')                                                         " Neovim with lua only
 		Plug 'nvim-telescope/telescope.nvim'
+		Plug 'nvim-telescope/telescope-ui-select.nvim'
 	else
 		Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.1' }
 	endif

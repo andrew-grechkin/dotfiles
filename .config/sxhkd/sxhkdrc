@@ -154,11 +154,15 @@ super + u
 #super + shift + Return
 #	exo-open --launch TerminalEmulator "$HOME/.local/script/tmux-default-session"
 super + shift + b
-	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-book"
+	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-book" "/media/nfs/home/doc/@technical"
 super + shift + c
 	qalculate-gtk
 super + shift + f
 	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-font"
+super + shift + i
+	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-book" "/media/nfs/home/doc/@fiction"
+super + shift + m
+	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-mpv-history"
 super + shift + n
 	wezterm start --class 'TermFloating' "$HOME/.local/script/create-note"
 # super + shift + r
@@ -166,7 +170,7 @@ super + shift + n
 super + shift + p
 	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-pacman"
 super + shift + s
-	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-cheatsheet"
+	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-book" "${XDG_DATA_HOME}/cheatsheet"
 super + shift + u
 	wezterm start --class 'TermFloating' "$HOME/.local/script/fzf-select" emoji
 super + shift + v

@@ -8,11 +8,7 @@ if not ta_status_ok then return end
 telescope.setup {
     defaults = {
         layout_strategy = 'bottom_pane',
-        layout_config = {
-            height = 0.95,
-            preview_cutoff = 120,
-            prompt_position = 'bottom',
-        },
+        layout_config = {height = 0.95, preview_cutoff = 120, prompt_position = 'bottom'},
         prompt_prefix = ': ',
         selection_caret = ' ',
         path_display = {'truncate'},
@@ -96,5 +92,26 @@ telescope.setup {
         --   extension_config_key = value,
         -- }
         -- please take a look at the readme of the extension you want to configure
+        ['ui-select'] = {
+            -- require('telescope.themes').get_dropdown {
+            --     -- even more opts
+            -- },
+
+            -- pseudo code / specification for writing custom displays, like the one
+            -- for "codeactions"
+            -- specific_opts = {
+            --   [kind] = {
+            --     make_indexed = function(items) -> indexed_items, width,
+            --     make_displayer = function(widths) -> displayer
+            --     make_display = function(displayer) -> function(e)
+            --     make_ordinal = function(e) -> string
+            --   },
+            --   -- for example to disable the custom builtin "codeactions" display
+            --      do the following
+            --   codeactions = false,
+            -- }
+        },
     },
 }
+
+telescope.load_extension('ui-select')
