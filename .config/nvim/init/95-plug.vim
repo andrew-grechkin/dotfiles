@@ -57,6 +57,7 @@ call plug#begin()
 	" Plug 'glepnir/lspsaga.nvim'                                              " ~/.config/nvim/after/plugin/nvim-lspsaga.vim
 
 	""" UI
+	Plug 'nmac427/guess-indent.nvim'
 	Plug 'lukas-reineke/indent-blankline.nvim'
 
 	""" debug
@@ -124,7 +125,7 @@ call plug#begin()
 		Plug 'tpope/vim-rhubarb'                                               " fugitive Github module
 		Plug 'vimwiki/vimwiki'                                                 " Personal wiki
 		""" coloring
-		Plug 'RRethy/vim-hexokinase', {'do': 'make hexokinase'}                " highlight colors
+		Plug 'NvChad/nvim-colorizer.lua'
 	endif
 
 "	Plug 'easymotion/vim-easymotion'                                           " Better move commands

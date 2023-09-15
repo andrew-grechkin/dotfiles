@@ -1,4 +1,4 @@
-local HISTFILE = os.getenv('XDG_CACHE_HOME') .. '/mpv-history.log';
+local HISTFILE = os.getenv('XDG_CACHE_HOME') .. '/mpv/history.log';
 
 mp.register_event('file-loaded', function()
     local title, fp;

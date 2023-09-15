@@ -3,6 +3,6 @@
 set -Eeuo pipefail
 
 PATH="$(dirname "$0"):$PATH"
-FILE="$XDG_CACHE_HOME/mpv-history.log"
+FILE="$XDG_CACHE_HOME/mpv/history.log"
 
 perl -nlE 'my ($time, $title, $path) = m/^(\[.+?\])\s*(.+?)\t(.+)$/; $d{$path} = [sprintf("%s\t%s", $title, $path), $time]; END {say ($_->[0]) foreach reverse sort {$a->[1] cmp $b->[1]} values %d }' "$FILE" | fzf-execute
