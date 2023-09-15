@@ -4,17 +4,4 @@ set -Eeuo pipefail
 
 PATH="$(dirname "$0"):$PATH"
 
-FZF_CMD=(
-	fzf
-	--bind="esc:cancel"
-	--no-multi
-	--reverse
-)
-
-function eval_bg() {
-	eval "nohup $* </dev/null &>/dev/null & disown";
-	# bash -c "nohup arianna &>/dev/null & disown" &
-}
-
-eval_bg "$(compgen -c | sort -u | grep -v '^\W' | "${FZF_CMD[@]}")";
-sleep 0.01
+compgen -c | sort -u | perl -nlE 'next if m/^\W/; say "$_\t$_"' | fzf-execute
