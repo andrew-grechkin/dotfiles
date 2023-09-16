@@ -3,6 +3,7 @@
 *.spl
 *.sug
 .config/mpv/watch_later
+.config/nvim/.luarc.json
 .config/shell/*.work
 .config/systemd/user/default.target.wants
 .config/systemd/user/git-maintenance*
