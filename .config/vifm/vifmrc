@@ -184,60 +184,60 @@ command! tail tail -f %f
 
 filextype *.chm,*.epub,*.fb2,*.fbz,*.mobi,*.rtf,*.tcr
 	\ {Open with xdg-open}
-	\ xdg-open %c %i &,
-	\ FBReader %c %i &,
-	\ foliate  %c %i &,
-	\ calibre  %c %i &,
-	\ okular   %c %i &,
-	\ cr3      %c %i &,
+	\ xdg-open %c:p %i &,
+	\ FBReader %c:p %i &,
+	\ foliate  %c:p %i &,
+	\ calibre  %c:p %i &,
+	\ okular   %c:p %i &,
+	\ cr3      %c:p %i &,
 
 filextype *.fb2,*.xml,*.gpx,*.xsd,*.kdenlive
 	\ {Open with Kate}
-	\ kate          %f %i &,
+	\ kate          %f:p %i &,
 	\ {Reformat xml}
-	\ reformat -a    %f,
+	\ reformat -a   %f:p,
 	\ {Reformat hard xml}
-	\ reformat2-fb2 %f,
+	\ reformat2-fb2 %f:p,
 
 " => File associations: Djvu, Pdf --------------------------------------------------------------------------------- {{{1
 " cat helps to properly show djvu over nfs volumes
 
 filextype *.djvu,*.pdf
 	\ {View in zathura}
-	\ cat %c | zathura %i - &,
+	\ zathura %i - < %c:p &,
 	\ {Open with xdg-open}
-	\ xdg-open %c %i &,
+	\ xdg-open %c:p %i &,
 	\ {View in apvlv}
 	\ apvlv,
 filextype *.md,*.mkd,*.Rmd,*.mdwiki
 	\ {View in glow}
-	\ glow -p %f,
+	\ glow -p %f:p,
 filextype *.md,*.mkd,*.Rmd,*.mdwiki
 	\ {Render to pdf and view}
-	\ md-render-view %f,
+	\ md-render-view %f:p,
 filextype *.pdf
 	\ xpdf,
 fileviewer *.pdf
-	\ pdftotext -nopgbrk %c -,
+	\ pdftotext -nopgbrk %c:p -,
 
 filextype *.mmd,*.mermaid,*.plantuml,*.puml,*.pu
 	\ {Render to svg}
-	\ diagram-render-view -k %f,
+	\ diagram-render-view -k %f:p,
 
 " => File associations: PostScript -------------------------------------------------------------------------------- {{{1
 
 filextype *.ps,*.eps,*.ps.gz
 	\ {View in zathura}
-	\ cat %c | zathura %i - &,
+	\ zathura %i - < %c:p &,
 	\ {View in gv}
-	\ gv %c %i &,
+	\ gv %c:p %i &,
 
 " => File associations: Audio ------------------------------------------------------------------------------------- {{{1
 
 filetype *.cue,
 	\*.aac,*.ac3,*.ape,*.flac,*.m4a,*.m4b,*.mp3,*.og[agx],*.opus,*.spx,*.wav,*.wma,*.wv
 	\ {Play using mpv}
-	\ mpv --no-osc --term-osd=force --no-audio-display %c %s,
+	\ mpv --no-osc --term-osd=force --no-audio-display %c:p %s,
 	\ {Play using ffplay}
 	\ ffplay -nodisp -autoexit,
 	\ {Play using MPlayer}
