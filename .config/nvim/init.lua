@@ -1,7 +1,13 @@
-﻿-- Compatible with neovim only
+-- Compatible with neovim only
 -- Author: Andrew Grechkin
-vim.cmd('runtime! init/**/*.lua')
-vim.cmd('runtime! init/**/*.vim')
+-- https://github.com/rockerBOO/awesome-neovim
+vim.cmd('runtime! init/*.lua')
+vim.cmd('runtime! init/*.vim')
+
+require('setup-plugins')
+
+-- vim.cmd('runtime! init/**/*.lua')
+-- vim.cmd('runtime! init/**/*.vim')
 
 -- => Cheat sheet ------------------------------------------------------------------------------------------------- {{{1
 
