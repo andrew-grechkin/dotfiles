@@ -169,6 +169,8 @@ super + shift + n
 #	exo-open --launch FileManager
 super + shift + p
 	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-pacman"
+super + shift + o
+	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-man"
 super + shift + s
 	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-book" "${XDG_DATA_HOME}/cheatsheet"
 super + shift + u

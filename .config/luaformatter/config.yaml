@@ -1,7 +1,7 @@
-# https://github.com/Koihik/LuaFormatter/blob/master/docs/Style-Config.md
 ---
-align_args: true
-align_parameter: true
+# https://github.com/Koihik/LuaFormatter/blob/master/docs/Style-Config.md
+align_args: false
+align_parameter: false
 align_table_field: true
 break_after_functioncall_lp: false
 break_after_functiondef_lp: false
@@ -12,7 +12,7 @@ break_before_functiondef_rp: false
 break_before_table_rb: true
 chop_down_kv_table: true
 chop_down_parameter: false
-chop_down_table: false
+chop_down_table: true
 column_limit: 120
 column_table_limit: 100
 continuation_indent_width: 4

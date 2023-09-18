@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+FZF_CMD=(
+	fzf
+	--bind="ctrl-v:toggle-preview,ctrl-w:toggle-preview-wrap,ctrl-s:toggle-sort"
+	--bind="enter:execute('{2..}')+abort"
+	--bind="esc:cancel"
+	--delimiter="	"
+	--no-multi
+	--preview-window=right:60%:wrap:hidden
+	--preview="echo {2..}"
+	--reverse
+	--with-nth=1
+)
+
+"${FZF_CMD[@]}" "$@"
