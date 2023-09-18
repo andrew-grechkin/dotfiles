@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 
-set -Eeuo pipefail
+set -Eo pipefail
 
 PATH="$(dirname "$0"):$PATH"
-man -k . \
+
+export PERLBREW_ROOT="${PERLBREW_ROOT:-$XDG_DATA_HOME/perlbrew}"
+export PERLBREW_HOME="$PERLBREW_ROOT"
+[[ -r "$PERLBREW_ROOT/etc/bashrc" ]] && source "$PERLBREW_ROOT/etc/bashrc"
+
+man -ak . \
 	| perl -nlE '($n, $s, $t) = m/\A(.+?) \s+ [(] (\d+.*) [)] \s+ - \s+ (.+) \z/xx; next unless $n; say sprintf "%-40s (%d) %s\texport MANPAGER=\"nvim +Man!\"; man -s $s $n", $n, $s, $t' \
 	| sort -u \
 	| fzf-execute-term
