@@ -1,6 +1,13 @@
+if vim.version().major < 1 and vim.version().minor < 9 then
+    VERSION = 'v0.1.1'
+else
+    VERSION = false
+end
+
 return {
     { -- url: https://github.com/nvim-telescope/telescope.nvim
         'nvim-telescope/telescope.nvim',
+        version = VERSION,
         dependencies = {'nvim-telescope/telescope-ui-select.nvim'},
         config = function()
             local ok, plugin = pcall(require, 'telescope')

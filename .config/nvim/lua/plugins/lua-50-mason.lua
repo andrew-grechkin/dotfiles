@@ -108,7 +108,7 @@ return {
                 'markdownlint', 'markuplint', 'proselint', 'stylelint', 'vint', 'yamllint',
             }
             local formatters = {
-                'beautysh', 'cmakelang', 'doctoc', 'fixjson', 'gersemi', -- 'luaformatter',
+                'beautysh', 'cmakelang', 'doctoc', 'fixjson', 'gersemi', 'luaformatter',
                 'shellharden', 'shfmt', 'sql-formatter', 'sqlfmt', 'yamlfix',
             }
             mason_tool.setup {

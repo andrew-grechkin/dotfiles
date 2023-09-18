@@ -4,6 +4,14 @@
 vim.cmd('runtime! init/*.lua')
 vim.cmd('runtime! init/*.vim')
 
+GIT_NAME = vim.fn.system({'git', 'config', 'user.name'})
+GIT_NAME = string.gsub(GIT_NAME, '%s+$', '')
+IS_WORK = GIT_NAME and GIT_NAME == 'Andrei Grechkin'
+
+-- checking empty($KDEHOME) here is a weird way to check if this config is used in personal/work environment
+-- KDEHOME is always defined on personal machines. I need to do something smarter in future
+IS_KVM = not (vim.env.KDEHOME and vim.env.KDEHOME ~= '')
+
 require('setup-plugins')
 
 -- vim.cmd('runtime! init/**/*.lua')
