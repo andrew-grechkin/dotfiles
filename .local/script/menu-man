@@ -9,6 +9,9 @@ export PERLBREW_HOME="$PERLBREW_ROOT"
 [[ -r "$PERLBREW_ROOT/etc/bashrc" ]] && source "$PERLBREW_ROOT/etc/bashrc"
 
 man -ak . \
-	| perl -nlE '($n, $s, $t) = m/\A(.+?) \s+ [(] (\d+.*) [)] \s+ - \s+ (.+) \z/xx; next unless $n; say sprintf "%-40s (%d) %s\texport MANPAGER=\"nvim +Man!\"; man -s $s $n", $n, $s, $t' \
-	| sort -u \
+	| perl -nlE '
+		($n, $s, $t) = m/\A(.+?) \s+ [(] (\d+.*) [)] \s+ - \s+ (.+) \z/xx;
+		$r{$n} = sprintf("%-40s (%d) %s\texport MANPAGER=\"nvim +Man!\"; man -s $s $n", $n, $s, $t) if $n;
+		END { say $r{$_} foreach sort keys %r }
+' \
 	| fzf-execute-term

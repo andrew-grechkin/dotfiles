@@ -48,19 +48,20 @@ export FZF_ALT_C_COMMAND='_fzf_compgen_helper . d'
 
 export FZF_DEFAULT_BINDS=(
 	--bind 'ctrl-d:page-down,ctrl-u:page-up'
-	--bind 'f1:toggle-preview,f2:toggle-preview-wrap,f12:toggle-sort'
-	--bind 'tab:accept,shift-tab:accept'
-	--bind 'home:top'
+	--bind 'ctrl-v:toggle-preview'
 	--bind 'ctrl-y:execute-silent(echo -n {} | clipcopy)'
+	--bind 'f1:toggle-preview,f2:toggle-preview-wrap,f12:toggle-sort'
+	--bind 'home:top'
+	--bind 'tab:accept,shift-tab:accept'
 )
 export FZF_FILE_BINDS=(
+	--bind 'ctrl-alt-d:execute(rm -i {+} < /dev/tty > /dev/tty)+abort'
+	--bind 'ctrl-b:execute((show-dir {} || binwalk {}) | $PAGER > /dev/tty 2>&1)'
+	--bind 'ctrl-g:execute((show-dir {} || md5sum {}) | $PAGER > /dev/tty 2>&1)'
+	--bind 'ctrl-h:execute((show-dir {} || hexdump -C {}) | $PAGER > /dev/tty 2>&1)'
+	--bind 'ctrl-t:execute((show-dir {} || sha1sum {}) | $PAGER > /dev/tty 2>&1)'
 	--bind 'f3:execute((show-dir {} || show-file {} ) | $PAGER > /dev/tty 2>&1)'
 	--bind 'f4:execute($EDITOR {} < /dev/tty > /dev/tty 2>&1)'
-	--bind 'ctrl-h:execute((show-dir {} || hexdump -C {}) | $PAGER > /dev/tty 2>&1)'
-	--bind 'ctrl-b:execute((show-dir {} || binwalk {}) | $PAGER > /dev/tty 2>&1)'
-	--bind 'ctrl-t:execute((show-dir {} || sha1sum {}) | $PAGER > /dev/tty 2>&1)'
-	--bind 'ctrl-g:execute((show-dir {} || md5sum {}) | $PAGER > /dev/tty 2>&1)'
-	--bind 'ctrl-alt-d:execute(rm -i {+} < /dev/tty > /dev/tty)+abort'
 )
 export FZF_FILE_PREVIEW=(
 	--preview-window=right:40%:wrap:hidden
