@@ -179,6 +179,8 @@ super + shift + v
 	$HOME/.local/script/play-clipboard-url
 super + shift + w
 	wezterm start --class 'TermFloating' "$HOME/.local/script/open-vim-wiki"
+super + shift + y
+	wezterm start --class 'TermFloating' "$HOME/.local/script/fzf-select" nerd
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1
 
@@ -253,6 +255,9 @@ XF86Calculator
 #super + @v
 #	xdotool key --clearmodifiers ctrl+shift+v
 
+# paste primary buffer
+alt + shift + @p
+	$HOME/.local/script/primarypaste | xdotool type --clearmodifiers --delay 5 --file -
 # paste secondary buffer
-alt + shift + @v
+alt + shift + @s
 	$HOME/.local/script/secondarypaste | xdotool type --clearmodifiers --delay 5 --file -

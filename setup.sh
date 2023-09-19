@@ -21,7 +21,6 @@ ln -sr  .ssh                                                 ~/ 2>/dev/null
 ln -srf .xprofile                                            ~/
 ln -srf .zshenv                                              ~/
 
-ln -srf ".config/Crow Translate"                             ~/.config/
 ln -srf .config/autorandr                                    ~/.config/
 ln -srf .config/black                                        ~/.config/
 ln -srf .config/bspwm                                        ~/.config/
@@ -62,8 +61,9 @@ ln -srf .local/share/vim-plug                                ~/.local/share/
 ln -srf .local/share/wiki                                    ~/.local/share/
 
 
-[[ -f "$HOME/.config/npm" ]] || command cp -rf .config/npm          ~/.config/
-command                                 cp -rf .config/kdedefaults  ~/.config/
+command                                 cp -rf ".config/Crow Translate" ~/.config/
+[[ -f "$HOME/.config/npm" ]] || command cp -rf ".config/npm"            ~/.config/
+command                                 cp -rf ".config/kdedefaults"    ~/.config/
 
 chmod -R u=rwX,go-rwx .ssh
 

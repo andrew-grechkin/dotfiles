@@ -266,8 +266,8 @@ strict = 0
 # 4 Variables::RequireLocalizedPunctuationVars [bugs certrec core pbp]
 # 4 Variables::RequireNegativeIndices [core maintenance pbp]
 
-[InputOutput::RequireBriefOpen]
-lines = 20
+[-InputOutput::RequireBriefOpen]
+# lines = 20
 
 [Freenode::DollarAB]
 extra_pair_functions = reduce
