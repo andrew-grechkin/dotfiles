@@ -744,7 +744,7 @@ mark v ~/.local/share/vault
 
 " => file icons --------------------------------------------------------------------------------------------------- {{{1
 
-set classify=' ::../::, :dir:/, :exe:, :reg:, :link:'
+set classify=' ::../::, :dir:/, :exe:, :reg:, :link:'
 set classify+=' ::*.sh::, ::*.cpp::, ::*.c::, ::*.hpp::, ::*.js::, ::*.pl,,*.pm::, ::*.py::, ::*.rb::, ::*.go::, ::*.json::, ::*.ts::'
 set classify+='© ::/^copying|license$/::, ::.git/,,*.git/::'
 set classify+=' ::*.fb2,,*.epub,,*.djvu,,*.pdf::'
