@@ -8,11 +8,21 @@ return {
     { -- url: https://github.com/nvim-telescope/telescope.nvim
         'nvim-telescope/telescope.nvim',
         version = VERSION,
-        dependencies = {'nvim-telescope/telescope-ui-select.nvim'},
+        dependencies = {
+            'nvim-lua/plenary.nvim',
+            {
+                'nvim-telescope/telescope-fzf-native.nvim',
+                build = 'make',
+                cond = function() return vim.fn.executable 'make' == 1 end,
+            },
+            'nvim-telescope/telescope-ui-select.nvim',
+        },
         config = function()
             local ok, plugin = pcall(require, 'telescope')
             if not ok then return end
 
+            -- Enable telescope fzf native, if installed
+            pcall(plugin.load_extension, 'fzf')
             local ta_ok, actions = pcall(require, 'telescope.actions')
             if not ta_ok then return end
 
@@ -148,6 +158,7 @@ return {
                         },
                         s = {
                             name = 'Search',
+                            ['/'] = {'<cmd>Telescope current_buffer_fuzzy_find<CR>', ': search'},
                             B = {'<cmd>Telescope builtin<CR>', ': builtin'},
                             C = {'<cmd>Telescope colorscheme<CR>', ': colorschemes'},
                             H = {'<cmd>Telescope highlights<CR>', ': highlights'},
@@ -155,15 +166,18 @@ return {
                             a = {'<cmd>Telescope autocommands<CR>', ': autocommands'},
                             b = {'<cmd>Telescope buffers<CR>', ': buffers'},
                             c = {'<cmd>Telescope commands<CR>', ': commands'},
+                            d = {'<cmd>Telescope diagnostics<CR>', ': diagnostics'},
+                            f = {'<cmd>Telescope oldfiles<CR>', ': recent files'},
                             g = {'<cmd>Telescope live_grep<CR>', ': live grep'},
+                            h = {'<cmd>Telescope help_tags<CR>', ': help'},
                             j = {'<cmd>Telescope jumplist<CR>', ': jumplist'},
-                            h = {'<cmd>Telescope oldfiles<CR>', ': recent files'},
                             k = {'<cmd>Telescope keymaps<CR>', ': keymaps'},
                             m = {'<cmd>Telescope man_pages<CR>', ': man pages'},
                             p = {'<cmd>Telescope find_files<CR>', ': files'},
+                            r = {'<cmd>Telescope resume<CR>', ': resume previous'},
                             s = {'<cmd>Telescope search_history<CR>', ': search history'},
-                            t = {'<cmd>Telescope help_tags<CR>', ': help'},
                             v = {'<cmd>Telescope vim_options<CR>', ': vim options'},
+                            w = {'<cmd>Telescope grep_string<CR>', ': grep word'},
                         },
                     },
                 }

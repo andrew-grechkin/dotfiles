@@ -45,7 +45,16 @@ return {
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/neovim/nvim-lspconfig
         'neovim/nvim-lspconfig',
-        dependencies = {'folke/neoconf.nvim'},
+        dependencies = {
+            { -- https://github.com/j-hui/fidget.nvim
+                'j-hui/fidget.nvim',
+                tag = 'legacy',
+                opts = {},
+            },
+            { -- https://github.com/folke/neoconf.nvim
+                'folke/neoconf.nvim',
+            },
+        },
         config = function()
             require('neoconf').setup()
             local ok, plugin = pcall(require, 'lspconfig')

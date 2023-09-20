@@ -20,9 +20,11 @@ return {
     --     },
     -- },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
+    { -- https://github.com/tpope/vim-sleuth
+        'tpope/vim-sleuth',
+    },
     { -- https://github.com/lukas-reineke/indent-blankline.nvim
         'lukas-reineke/indent-blankline.nvim',
-        -- event = {'BufReadPost', 'BufNewFile'},
         config = function()
             local ok, plugin = pcall(require, 'indent_blankline')
             if not ok then return end
@@ -32,6 +34,7 @@ return {
             -- vim.opt.listchars:append 'space:⋅'
 
             local config = {
+                char = '┊',
                 filetype_exclude = {
                     'Trouble',
                     'alpha',
@@ -46,6 +49,7 @@ return {
                 },
                 show_current_context = true,
                 show_current_context_start = true,
+                show_trailing_blankline_indent = false,
             }
 
             plugin.setup(config)

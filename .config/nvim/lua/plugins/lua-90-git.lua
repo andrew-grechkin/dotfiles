@@ -10,7 +10,7 @@ return {
                 signs = {
                     add = {text = '│'},
                     change = {text = '║'},
-                    changedelete = {text = '╠'},
+                    changedelete = {text = '╟'},
                     delete = {text = '_'},
                     topdelete = {text = '‾'},
                     untracked = {text = '┆'},
@@ -88,6 +88,11 @@ return {
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/tpope/vim-fugitive
         'tpope/vim-fugitive',
+        dependencies = {
+            { -- https://github.com/tpope/vim-rhubarb
+                'tpope/vim-rhubarb',
+            },
+        },
         config = function()
             local PRIVATE_DOMAIN = vim.api.nvim_get_var('PRIVATE_DOMAIN')
             vim.g.fugitive_gitlab_domains = 'https://gitlab.' .. PRIVATE_DOMAIN .. '.com'

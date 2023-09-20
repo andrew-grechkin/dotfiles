@@ -52,14 +52,14 @@ return {
                         a = {vim.lsp.buf.code_action, 'code action'},
                         f = {vim.diagnostic.open_float, 'open diagnostic in floating window'},
                         i = {vim.lsp.buf.implementation, 'goto: implementation'},
-                        n = {vim.lsp.buf.rename, 'rename'},
                         q = {vim.lsp.buf.format, 'format'},
-                        r = {vim.lsp.buf.references, 'goto: references'},
+                        r = {vim.lsp.buf.rename, 'rename'},
                         t = {vim.lsp.buf.type_definition, 'goto: type definition'},
                     },
                     ['g'] = {
                         D = {vim.lsp.buf.declaration, 'goto: declaration'},
                         d = {vim.lsp.buf.definition, 'goto: definition'},
+                        r = {vim.lsp.buf.references, 'goto: references'},
                     },
                 }
 

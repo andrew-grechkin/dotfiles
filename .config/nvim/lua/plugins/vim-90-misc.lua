@@ -8,7 +8,6 @@ if not IS_KVM then
             'pearofducks/ansible-vim',
             'potamides/pantran.nvim',
             'tmux-plugins/vim-tmux',
-            'tpope/vim-rhubarb',
             'vimwiki/vimwiki',
             -- 'vim-ruby/vim-ruby',
             -- '~/.local/share/vim-plug/perlart',

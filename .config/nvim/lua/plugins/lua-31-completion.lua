@@ -2,11 +2,18 @@ return {
     { -- url: https://github.com/hrsh7th/nvim-cmp
         'hrsh7th/nvim-cmp',
         dependencies = {
-            'andersevenrud/cmp-tmux', 'f3fora/cmp-spell', 'hrsh7th/cmp-buffer',
-            'hrsh7th/cmp-cmdline', 'hrsh7th/cmp-nvim-lsp', 'hrsh7th/cmp-nvim-lua',
-            'hrsh7th/cmp-path', 'lukas-reineke/cmp-rg', 'quangnguyen30192/cmp-nvim-tags',
+            'andersevenrud/cmp-tmux',
+            'f3fora/cmp-spell',
+            'hrsh7th/cmp-buffer',
+            'hrsh7th/cmp-cmdline',
+            'hrsh7th/cmp-nvim-lsp',
+            'hrsh7th/cmp-nvim-lua',
+            'hrsh7th/cmp-path',
+            'lukas-reineke/cmp-rg',
+            'quangnguyen30192/cmp-nvim-tags',
             'quangnguyen30192/cmp-nvim-ultisnips', -- 'uga-rosa/cmp-dictionary'
-            'SirVer/ultisnips', 'andrew-grechkin/vim-snippets',
+            'SirVer/ultisnips',
+            'andrew-grechkin/vim-snippets',
         },
         config = function()
             local ok, plugin = pcall(require, 'cmp')
@@ -76,6 +83,7 @@ return {
                         i = plugin.mapping.abort(),
                         c = plugin.mapping.close(),
                     },
+                    ['<C-Space>'] = plugin.mapping.complete {},
                     -- Accept currently selected item. If none selected, `select` first item.
                     -- Set `select` to `false` to only confirm explicitly selected items.
                     ['<CR>'] = plugin.mapping.confirm {select = false},
@@ -103,10 +111,16 @@ return {
                     end,
                 },
                 sources = {
-                    {name = 'ultisnips'}, {name = 'nvim_lsp'}, {name = 'nvim_lua'}, {name = 'path'},
+                    {name = 'ultisnips'},
+                    {name = 'nvim_lsp'},
+                    {name = 'nvim_lua'},
+                    {name = 'path'},
                     {name = 'buffer', keyword_length = 4},
-                    {name = 'dictionary', keyword_length = 4}, {name = 'tags', keyword_length = 4},
-                    {name = 'spell', keyword_length = 5}, {name = 'tmux', keyword_length = 5}, {
+                    {name = 'dictionary', keyword_length = 4},
+                    {name = 'tags', keyword_length = 4},
+                    {name = 'spell', keyword_length = 5},
+                    {name = 'tmux', keyword_length = 5},
+                    {
                         name = 'rg',
                         keyword_length = 5,
                         option = {debounce = 500, additional_arguments = '--max-depth 4'},
