@@ -39,7 +39,7 @@ local config = {
 
 config.keys = {
     {key = 'L', mods = 'CTRL', action = wezterm.action.ShowDebugOverlay},
-    {key = 'P', mods = 'CTRL', action = wezterm.action.ActivateCommandPalette},
+    {key = 'O', mods = 'CTRL', action = wezterm.action.ActivateCommandPalette},
     {key = 'C', mods = 'CTRL', action = act.CopyTo 'Clipboard'},
     {key = 'C', mods = 'SHIFT|CTRL', action = act.CopyTo 'Clipboard'},
     {key = 'V', mods = 'CTRL', action = act.PasteFrom 'Clipboard'},
