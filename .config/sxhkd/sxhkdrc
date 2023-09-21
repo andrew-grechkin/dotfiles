@@ -168,7 +168,7 @@ super + shift + n
 # super + shift + r
 #	exo-open --launch FileManager
 super + shift + p
-	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-pacman"
+	wezterm --config="enable_csi_u_key_encoding=false" start --class 'TermFloating' "$HOME/.local/script/menu-pacman"
 super + shift + o
 	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-man"
 super + shift + s
