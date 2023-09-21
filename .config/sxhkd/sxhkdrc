@@ -151,8 +151,8 @@ super + u
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1
 
-#super + shift + Return
-#	exo-open --launch TerminalEmulator "$HOME/.local/script/tmux-default-session"
+super + shift + Return
+	wezterm --config="enable_csi_u_key_encoding=false" start /usr/bin/zsh
 super + shift + b
 	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-book" "/media/nfs/home/doc/@technical"
 super + shift + c
