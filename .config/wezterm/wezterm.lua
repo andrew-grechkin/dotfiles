@@ -22,7 +22,7 @@ local config = {
     },
     disable_default_key_bindings = true,
     -- https://wezfurlong.org/wezterm/config/key-encoding.html
-    enable_csi_u_key_encoding = true,
+    -- enable_csi_u_key_encoding = true,
     enable_scroll_bar = false,
     enable_tab_bar = false,
     font = wezterm.font_with_fallback {

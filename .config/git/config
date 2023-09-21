@@ -44,6 +44,7 @@
 	m-log        = !"f(){ git log          --color=always `git m-span .. $@`; }; f"
 	m-span       = !"git-merge-span"
 	mt           = mergetool
+	mt4          = mergetool --tool=nvimdiff4
 	mtg          = mergetool --gui
 	pall         = !"git-push-all"
 	pbranch      = !"f(){ git rev-parse --abbrev-ref --verify \"${@:-HEAD}\" 2>/dev/null; }; f"
@@ -142,7 +143,7 @@
 
 [merge]
 	tool          = fugitive
-	guitool       = kompare
+	guitool       = meld
 	conflictstyle = diff3
 
 [mergetool]
@@ -157,7 +158,7 @@
 	cmd = meld "$LOCAL" "$BASE" "$REMOTE" --output "$MERGED"
 
 [mergetool "nvimdiff4"]
-	cmd = nvim -d "$LOCAL" "$BASE" "$REMOTE" "$MERGED" -c '$wincmd w' -c 'wincmd J'
+	cmd = nvim -d "$LOCAL" "$BASE" "$REMOTE" "$MERGED" -c 'windo setlocal nomodifiable' -c '$wincmd w' -c 'setlocal modifiable' -c 'wincmd J'
 
 [pager]
 	blame  = delta

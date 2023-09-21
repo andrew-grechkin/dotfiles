@@ -54,7 +54,7 @@ return {
                         ['<leader>'] = {
                             ['h'] = {
                                 name = 'GIT',
-                                D = {function() plugin.diffthis('~') end, 'GIT: diff with revision'},
+                                D = {function() plugin.diffthis('~') end, 'GIT: diff with HEAD'},
                                 S = {plugin.stage_buffer, 'GIT: stage buffer'},
                                 b = {
                                     function() plugin.blame_line {full = true} end,
