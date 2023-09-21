@@ -39,7 +39,7 @@ function spectrum_bls() {
 # => test terminal ----------------------------------------------------------------------------------------------- {{{1
 # url: https://misc.flogisoft.com/bash/tip_colors_and_formatting
 
-function test-terminal() {
+function term-test() {
 	COLS=$(tput cols)
 	awk -v cols="$COLS" 'BEGIN{
 		p="/\\/\\/\\/\\/\\";

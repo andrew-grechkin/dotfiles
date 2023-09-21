@@ -9,6 +9,10 @@
 # use ctrl-v to find current terminal key sequence
 # man zshzle to find more settings
 
+
+alias term-enable-csi="printf '\033[>4;1m'"
+alias term-showkey="showkey -a"
+
 # => Prepare terminfo -------------------------------------------------------------------------------------------- {{{1
 # Make sure the terminal is in application mode, when zle is active. Only then are the values from $terminfo are valid.
 
