@@ -47,21 +47,22 @@ export FZF_ALT_C_COMMAND='_fzf_compgen_helper . d'
 # => Setup options ----------------------------------------------------------------------------------------------- {{{1
 
 export FZF_DEFAULT_BINDS=(
-	--bind 'ctrl-d:page-down,ctrl-u:page-up'
-	--bind 'ctrl-v:toggle-preview'
-	--bind 'ctrl-y:execute-silent(echo -n {} | clipcopy)'
-	--bind 'f1:toggle-preview,f2:toggle-preview-wrap,f12:toggle-sort'
-	--bind 'home:top'
-	--bind 'tab:accept,shift-tab:accept'
+	--bind="ctrl-d:page-down,ctrl-u:page-up"
+	--bind="ctrl-h:preview-up,ctrl-l:preview-down"
+	--bind="ctrl-v:toggle-preview,ctrl-w:toggle-preview-wrap,ctrl-s:toggle-sort"
+	--bind="ctrl-y:execute-silent(echo -n {} | clipcopy)"
+	--bind="esc:cancel"
+	--bind="home:top"
+	--bind="tab:accept,shift-tab:accept"
 )
 export FZF_FILE_BINDS=(
-	--bind 'ctrl-alt-d:execute(rm -i {+} < /dev/tty > /dev/tty)+abort'
-	--bind 'ctrl-b:execute((show-dir {} || binwalk {}) | $PAGER > /dev/tty 2>&1)'
-	--bind 'ctrl-g:execute((show-dir {} || md5sum {}) | $PAGER > /dev/tty 2>&1)'
-	--bind 'ctrl-h:execute((show-dir {} || hexdump -C {}) | $PAGER > /dev/tty 2>&1)'
-	--bind 'ctrl-t:execute((show-dir {} || sha1sum {}) | $PAGER > /dev/tty 2>&1)'
-	--bind 'f3:execute((show-dir {} || show-file {} ) | $PAGER > /dev/tty 2>&1)'
-	--bind 'f4:execute($EDITOR {} < /dev/tty > /dev/tty 2>&1)'
+	--bind='ctrl-alt-d:execute(rm -i {+} < /dev/tty > /dev/tty)+abort'
+	--bind='ctrl-b:execute((show-dir {} || binwalk {}) | $PAGER > /dev/tty 2>&1)'
+	--bind='ctrl-g:execute((show-dir {} || md5sum {}) | $PAGER > /dev/tty 2>&1)'
+	--bind='ctrl-t:execute((show-dir {} || sha1sum {}) | $PAGER > /dev/tty 2>&1)'
+	--bind='ctrl-x:execute((show-dir {} || hexdump -C {}) | $PAGER > /dev/tty 2>&1)'
+	--bind='f3:execute((show-dir {} || show-file {} ) | $PAGER > /dev/tty 2>&1)'
+	--bind='f4:execute($EDITOR {} < /dev/tty > /dev/tty 2>&1)'
 )
 export FZF_FILE_PREVIEW=(
 	--preview-window=right:40%:wrap:hidden
@@ -70,12 +71,12 @@ export FZF_FILE_PREVIEW=(
 
 export FZF_NO_MULTI_OPTIONS=(
 	--no-multi
-	--bind 'tab:accept,shift-tab:accept'
+	--bind='tab:accept,shift-tab:accept'
 )
 
 export FZF_MULTI_OPTIONS=(
 	--multi
-	--bind 'tab:toggle-out,shift-tab:toggle-in'
+	--bind='tab:toggle-out,shift-tab:toggle-in'
 )
 
 export FZF_DEFAULT_OPTS=$(printf " '%s'" ${FZF_NO_MULTI_OPTIONS[@]} ${FZF_DEFAULT_BINDS[@]} ${FZF_FILE_BINDS[@]} ${FZF_FILE_PREVIEW[@]})

@@ -1,13 +1,34 @@
 return {
     { -- https://github.com/nvim-treesitter/nvim-treesitter
         'nvim-treesitter/nvim-treesitter',
-        dependencies = {'nvim-treesitter/nvim-treesitter-textobjects', 'nvim-treesitter/playground'},
+        dependencies = {
+            { -- https://github.com/nvim-treesitter/nvim-treesitter-textobjects
+                'nvim-treesitter/nvim-treesitter-textobjects',
+            },
+            { -- https://github.com/nvim-treesitter/playground
+                'nvim-treesitter/playground',
+            },
+        },
         -- build = ':TSUpdate',
         config = function()
             local ok, plugin = pcall(require, 'nvim-treesitter.configs')
             if not ok then return end
 
-            local config = {
+            local ensure_installed = {
+                'bash',
+                'dockerfile',
+                'gitignore',
+                'json',
+                'lua',
+                'make',
+                'regex',
+                'toml',
+                'vim',
+                'vimdoc',
+                'yaml',
+            }
+
+            if not IS_KVM then
                 ensure_installed = {
                     'bash',
                     'c',
@@ -39,7 +60,10 @@ return {
                     'vimdoc',
                     'vue',
                     'yaml',
-                },
+                }
+            end
+            local config = {
+                ensure_installed = ensure_installed,
                 highlight = {enable = true, disable = {}},
                 indent = {enable = false, disable = {}},
                 incremental_selection = {
@@ -73,11 +97,11 @@ return {
                         goto_previous_start = {['[m'] = '@function.outer', ['[o'] = '@class.outer'},
                         goto_previous_end = {['[M'] = '@function.outer', ['[O'] = '@class.outer'},
                     },
-                    swap = {
-                        enable = true,
-                        swap_next = {['<leader>a'] = '@parameter.inner'},
-                        swap_previous = {['<leader>A'] = '@parameter.inner'},
-                    },
+                    -- swap = {
+                    --     enable = true,
+                    --     swap_next = {['<leader>a'] = '@parameter.inner'},
+                    --     swap_previous = {['<leader>A'] = '@parameter.inner'},
+                    -- },
                 },
             }
 

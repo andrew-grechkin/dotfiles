@@ -15,7 +15,7 @@ return {
                     ['<C-b>'] = {':Buffers<CR>', 'fzf: buffers'},
                     ['<C-h>'] = {':History<CR>', 'fzf: history'},
                     ['<C-p>'] = {':FilesProject<CR>', 'fzf: files repo'},
-                    ['<C-0>'] = {':FilesCurrentDir<CR>', 'fzf: files curdir'},
+                    ['<leader>'] = {['<C-p>'] = {':FilesCurrentDir<CR>', 'fzf: files curdir'}},
                 }
 
                 which_key.register(normal_mappings, {mode = 'n', nowait = true, noremap = true})

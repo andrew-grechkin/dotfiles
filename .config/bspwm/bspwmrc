@@ -53,6 +53,7 @@ bspc rule -a 'Crow Translate'              state=floating rectangle=1280x720-600
 bspc rule -a 'Gimp'                        desktop='8' state=floating follow=on
 bspc rule -a 'Google-chrome'               desktop='1'
 bspc rule -a 'Main-Tmux'                   desktop='0' follow=on
+bspc rule -a 'Meld'                        desktop='7' follow=on
 bspc rule -a 'Opera'                       desktop='2'
 bspc rule -a 'Qemu-system-x86_64'          desktop='5'
 bspc rule -a 'Screenkey'                   manage=off

@@ -14,9 +14,9 @@
 	compress-a   = !"git-compress-aggressive"
 	d            = -c delta.side-by-side=true diff -b
 	dc           = -c delta.side-by-side=true diff -b --cached
-	dg           = difftool --gui
 	ds           = diff -b --submodule=diff
 	dt           = difftool
+	dtg          = difftool --gui
 	dtw          = !"git difftool -b -t vimdiff $(git gmb)..HEAD"
 	dw           = !"git diff -b --color=always $(git gmb)..HEAD"
 	f            = !"fzf-git-log-branch"
@@ -89,7 +89,7 @@
 
 [diff]
 	tool            = fugitive
-	guitool         = kompare
+	guitool         = meld
 	algorithm       = patience
 	colorMoved      = plain
 	colorMovedWS    = ignore-space-change

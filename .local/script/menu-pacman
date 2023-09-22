@@ -44,27 +44,28 @@ sub _start_fzf() {
     local %ENV = %ENV;
     delete $ENV{FZF_DEFAULT_OPTS};
 
-    my @cmd = (
-        'fzf', '--with-nth', '2..',
-        '--multi',
-        '--bind',           'tab:toggle-out,shift-tab:toggle-in',
-        '--bind',           'ctrl-d:page-down',
-        '--bind',           'ctrl-u:page-up',
-        '--bind',           'f1:toggle-preview',
-        '--bind',           'f2:toggle-preview-wrap',
-        '--bind',           'f3:toggle-sort',
-        '--bind',           'home:top',
-        '--bind',           'ctrl-alt-i:execute(sudo pacman -S {+1} </dev/tty >/dev/tty)+abort',
-        '--bind',           'ctrl-alt-d:execute(sudo pacman -Rcs {+1} </dev/tty >/dev/tty)+abort',
-        '--header',         'Ctrl-Alt-I: install; Ctrl-Alt-D: remove',
-        '--preview-window', 'right:50%:wrap', '--preview',
-        q{
+    my $preview = q{
             if [[ {2} == "available" ]]; then
                 cat <(pacman -Si {1}) <(pacman -Fl {1} | awk '{print $2}')
             else
                 cat <(pacman -Qi {1}) <(pacman -Ql {1} | awk '{print $2}')
             fi
-        },
+        };
+    my @cmd = (
+        'fzf', '--with-nth', '2..', '--multi', '--reverse',
+
+        # tidy
+        '--bind',           'ctrl-alt-d:execute(sudo pacman -Rcs {+1} </dev/tty >/dev/tty)+abort',
+        '--bind',           'ctrl-alt-i:execute(sudo pacman -S {+1} </dev/tty >/dev/tty)+abort',
+        '--bind',           'ctrl-d:page-down,ctrl-u:page-up',
+        '--bind',           "ctrl-m:execute( ( $preview ) | $ENV{PAGER} >/dev/tty)",
+        '--bind',           'ctrl-v:toggle-preview,ctrl-w:toggle-preview-wrap,ctrl-s:toggle-sort',
+        '--bind',           'ctrl-y:execute-silent(echo -n {+1} | $HOME/.local/script/clipcopy)',
+        '--bind',           'home:top',
+        '--bind',           'tab:toggle-out,shift-tab:toggle-in,`:clear-selection',
+        '--header',         'C-A-i: install; C-A-d: remove',
+        '--preview',        $preview,
+        '--preview-window', 'right:50%:wrap:nohidden',
     );
 
     my $pid = open2(my $chld_out, my $chld_in, @cmd);

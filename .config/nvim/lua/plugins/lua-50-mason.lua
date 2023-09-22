@@ -2,7 +2,8 @@ return {
     { -- https://github.com/williamboman/mason.nvim
         'williamboman/mason.nvim',
         dependencies = {
-            'williamboman/mason-lspconfig.nvim', 'WhoIsSethDaniel/mason-tool-installer.nvim',
+            'williamboman/mason-lspconfig.nvim',
+            'WhoIsSethDaniel/mason-tool-installer.nvim',
             'jay-babu/mason-nvim-dap.nvim',
         },
         config = function()
@@ -40,12 +41,8 @@ return {
                             },
                         },
                     },
-                    ['['] = {
-                        ['d'] = {vim.diagnostic.goto_prev, 'LSP: prev diagnostic'},
-                    },
-                    [']'] = {
-                        ['d'] = {vim.diagnostic.goto_next, 'LSP: next diagnostic'},
-                    },
+                    ['['] = {['d'] = {vim.diagnostic.goto_prev, 'LSP: prev diagnostic'}},
+                    [']'] = {['d'] = {vim.diagnostic.goto_next, 'LSP: next diagnostic'}},
                     ['\\'] = {
                         name = 'LSP',
                         ['\\'] = {vim.diagnostic.setloclist, 'show diagnostic'},
@@ -68,14 +65,37 @@ return {
             end
 
             local mason_lspconfig = require('mason-lspconfig')
-            mason_lspconfig.setup {
+            local ensure_installed = {'bashls', 'jsonls', 'perlnavigator', 'puppet', 'yamlls'}
+            if not IS_KVM then
                 ensure_installed = {
-                    'ansiblels', 'awk_ls', 'bashls', 'clangd', 'cmake',
-                    'docker_compose_language_service', 'dockerls', 'eslint', -- 'flux_lsp',
-                    'graphql', 'helm_ls', 'jqls', 'jsonls', 'lua_ls', 'marksman', 'perlnavigator',
-                    'pkgbuild_language_server', 'puppet', 'pyright', 'sqlls', 'stylelint_lsp',
-                    'tsserver', 'vimls', 'yamlls',
-                },
+                    'ansiblels',
+                    'awk_ls',
+                    'bashls',
+                    'clangd',
+                    'cmake',
+                    'docker_compose_language_service',
+                    'dockerls',
+                    'eslint',
+                    'flux_lsp',
+                    'graphql',
+                    'helm_ls',
+                    'jqls',
+                    'jsonls',
+                    'lua_ls',
+                    'marksman',
+                    'perlnavigator',
+                    'pkgbuild_language_server',
+                    'puppet',
+                    'pyright',
+                    'sqlls',
+                    'stylelint_lsp',
+                    'tsserver',
+                    'vimls',
+                    'yamlls',
+                }
+            end
+            mason_lspconfig.setup {
+                ensure_installed = ensure_installed,
                 automatic_installation = true,
             }
 
@@ -99,21 +119,46 @@ return {
             local mason_tool = require('mason-tool-installer')
             -- https://github.com/hrsh7th/nvim-cmp/issues/1017#issuecomment-1141440976
             table.unpack = table.unpack or unpack
-            local lsps = {
-                'bash-language-server', 'bzl', 'lua-language-server', 'vim-language-server',
-            }
-            local daps = {'perl-debug-adapter'}
-            local linters = {
-                'actionlint', 'ansible-lint', 'cmakelang', 'cmakelint', 'jsonlint', 'luacheck',
-                'markdownlint', 'markuplint', 'proselint', 'stylelint', 'vint', 'yamllint',
-            }
-            local formatters = {
-                'beautysh', 'cmakelang', 'doctoc', 'fixjson', 'gersemi', 'luaformatter',
-                'shellharden', 'shfmt', 'sql-formatter', 'sqlfmt', 'yamlfix',
-            }
+            local lsps = {'bash-language-server', 'bzl'}
+            local daps = {}
+            local linters = {'jsonlint', 'yamllint'}
+            local formatters = {'beautysh', 'fixjson', 'shfmt', 'yamlfix'}
+            if not IS_KVM then
+                lsps = {'bash-language-server', 'bzl', 'lua-language-server', 'vim-language-server'}
+                daps = {'perl-debug-adapter'}
+                linters = {
+                    'actionlint',
+                    'ansible-lint',
+                    'cmakelang',
+                    'cmakelint',
+                    'jsonlint',
+                    'luacheck',
+                    'markdownlint',
+                    'markuplint',
+                    'proselint',
+                    'stylelint',
+                    'vint',
+                    'yamllint',
+                }
+                formatters = {
+                    'beautysh',
+                    'cmakelang',
+                    'doctoc',
+                    'fixjson',
+                    'gersemi',
+                    'luaformatter',
+                    'shellharden',
+                    'shfmt',
+                    'sql-formatter',
+                    'sqlfmt',
+                    'yamlfix',
+                }
+            end
             mason_tool.setup {
                 ensure_installed = {
-                    table.unpack(lsps), table.unpack(daps), table.unpack(linters),
+                    table.unpack(lsps),
+                    table.unpack(daps),
+                    table.unpack(linters),
                     table.unpack(formatters),
                 },
                 auto_update = true,
@@ -141,9 +186,15 @@ return {
             })
 
             local mason_nvim_dap = require('mason-nvim-dap')
+            local ensure_installed = {'bash-debug-adapter', 'perl-debug-adapter'}
+            if not IS_KVM then ensure_installed = {
+                'bash-debug-adapter',
+                'perl-debug-adapter',
+                'python',
+            } end
             mason_nvim_dap.setup {
                 automatic_installation = true,
-                ensure_installed = {'bash-debug-adapter', 'perl-debug-adapter', 'python'},
+                ensure_installed = ensure_installed,
                 handlers = {},
             }
         end,
