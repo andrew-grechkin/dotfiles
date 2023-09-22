@@ -132,7 +132,9 @@ return {
 
             local insert_mappings = {
                 ['<C-a>'] = {'<Esc>I', 'edit beginning of the line'},
+                ['<C-d>'] = {'<C-o>x', 'delete char forward'},
                 ['<C-e>'] = {'<Esc>A', 'edit end of the line'},
+                ['<M-d>'] = {'<C-o>de', 'delete word forward'},
             }
             local command_mappings = {
                 ['<C-a>'] = {'<Home>', 'edit beginning of the line'},
