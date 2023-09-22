@@ -118,7 +118,7 @@ return {
             local table = require('table')
             local mason_tool = require('mason-tool-installer')
             -- https://github.com/hrsh7th/nvim-cmp/issues/1017#issuecomment-1141440976
-            table.unpack = table.unpack or unpack
+            -- table.unpack = table.unpack or unpack
             local lsps = {'bash-language-server', 'bzl'}
             local daps = {}
             local linters = {'jsonlint', 'yamllint'}
@@ -154,13 +154,13 @@ return {
                     'yamlfix',
                 }
             end
+            local ensure_installed2 = {}
+			for i, v in ipairs(lsps) do table.insert(ensure_installed2, v) end
+			for i, v in ipairs(daps) do table.insert(ensure_installed2, v) end
+			for i, v in ipairs(linters) do table.insert(ensure_installed2, v) end
+			for i, v in ipairs(formatters) do table.insert(ensure_installed2, v) end
             mason_tool.setup {
-                ensure_installed = {
-                    table.unpack(lsps),
-                    table.unpack(daps),
-                    table.unpack(linters),
-                    table.unpack(formatters),
-                },
+                ensure_installed = ensure_installed2,
                 auto_update = true,
                 run_on_start = true,
                 start_delay = 3000,
