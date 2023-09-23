@@ -51,6 +51,7 @@ ln -srf .config/wezterm                                      ~/.config/
 ln -srf .config/wgetrc                                       ~/.config/
 ln -srf .config/wireplumber                                  ~/.config/
 ln -srf .config/yamllint                                     ~/.config/
+ln -srf .config/yt-dlp                                       ~/.config/
 ln -srf .config/zathura                                      ~/.config/
 ln -srf .config/zsh                                          ~/.config/
 

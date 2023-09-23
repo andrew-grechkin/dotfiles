@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+PATH="$(dirname "$0"):$PATH"
+
+URL="$1"
+HEIGHT="${2:-1440}"
+
+[[ "${#URL}" -lt 16 ]] && {
+	URL="https://www.youtube.com/watch?v=$URL"
+}
+
+OPTIONS=(
+	--prefer-free-formats
+	--format="bv*[ext=webm][height<=${HEIGHT}]+ba/bv*[ext=mp4][height<=${HEIGHT}]+ba/b"
+	--list-formats
+	--no-simulate
+	--write-info-json
+	--write-thumbnail
+)
+
+yt-dlp "${OPTIONS[@]}" "$URL"
