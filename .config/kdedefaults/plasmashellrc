@@ -12,14 +12,14 @@ Icon=mpv
 Output=0
 
 [Action_0/Command_1]
-Commandline[$e]=yt-dlp -f 'ba[ext=m4a]' -o '~/music/%%(title)s.%%(ext)s' '%0'
+Commandline[$e]=tsp yt-dlp --no-config -f 'ba[ext=m4a]' -P '~/music/' '%0'
 Description=Download youtube audio
 Enabled=true
 Icon=youtube-dl
 Output=0
 
 [Action_0/Command_2]
-Commandline[$e]=yt-dlp --format-sort=res:1080 --format-sort=codec:h264 -f 'bv*[ext=mp4]+ba[ext=m4a] / b[ext=mp4] / bv*+ba/b' -o '~/videos/%%(title)s.%%(ext)s' '%0'
+Commandline[$e]=tsp yt-dlp -P '~/videos/' '%0'
 Description=Download youtube video
 Enabled=true
 Icon=youtube-dl
