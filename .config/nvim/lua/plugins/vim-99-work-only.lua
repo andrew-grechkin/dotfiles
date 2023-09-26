@@ -15,13 +15,11 @@ if IS_WORK then
         }
     else
         return {
-            {
-                'rodjek/vim-puppet',
-                'shumphrey/fugitive-gitlab.vim',
-                'towolf/vim-helm',
-                -- 'elixir-editors/vim-elixir',
-                -- 'fatih/vim-go',
-            },
+            'rodjek/vim-puppet',
+            'shumphrey/fugitive-gitlab.vim',
+            'towolf/vim-helm',
+            -- 'elixir-editors/vim-elixir',
+            -- 'fatih/vim-go',
         }
     end
 else

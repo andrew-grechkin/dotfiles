@@ -27,13 +27,16 @@ export                GOPATH="$XDG_CACHE_HOME/go"
 export            PYLINTHOME="$XDG_CACHE_HOME/pylint.d"
 export     REDISCLI_HISTFILE="$XDG_DATA_HOME/redis/cli-history"
 
-[[ -e "$XDG_CONFIG_HOME/wgetrc" ]] && export WGETRC="$XDG_CONFIG_HOME/wgetrc"
-
 # => make necessary dirs ------------------------------------------------------------------------------------------ {{{1
 
 [[ -e "$XDG_CONFIG_HOME" ]] || mkdir -p "$XDG_CONFIG_HOME"
 [[ -e "$XDG_CACHE_HOME"  ]] || mkdir -p "$XDG_CACHE_HOME"
 [[ -e "$XDG_DATA_HOME"   ]] || mkdir -p "$XDG_DATA_HOME"
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+[[ -e "$XDG_CONFIG_HOME/ripgreprc" ]] && export RIPGREP_CONFIG_PATH="$XDG_CONFIG_HOME/ripgreprc"
+[[ -e "$XDG_CONFIG_HOME/wgetrc"    ]] && export WGETRC="$XDG_CONFIG_HOME/wgetrc"
 
 # => yamlfix ------------------------------------------------------------------------------------------------------ {{{1
 
