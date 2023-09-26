@@ -1,6 +1,10 @@
 -- Compatible with neovim only
 -- Author: Andrew Grechkin
 -- https://github.com/rockerBOO/awesome-neovim
+-- https://neovim.io/doc/user/starting.html
+-- https://neovim.io/doc/user/lua.html
+-- https://neovim.io/doc/user/api.html
+-- https://github.com/nanotee/nvim-lua-guide
 vim.cmd('runtime! init/*.lua')
 vim.cmd('runtime! init/*.vim')
 
@@ -8,9 +12,9 @@ GIT_NAME = vim.fn.system({'git', 'config', 'user.name'})
 GIT_NAME = string.gsub(GIT_NAME, '%s+$', '')
 IS_WORK = GIT_NAME and GIT_NAME == 'Andrei Grechkin'
 
--- checking empty($KDEHOME) here is a weird way to check if this config is used in personal/work environment
--- KDEHOME is always defined on personal machines. I need to do something smarter in future
 IS_KVM = not (vim.env.KDEHOME and vim.env.KDEHOME ~= '')
+HOSTNAME = vim.fn.system({'hostname'})
+IS_KVM = not string.find(HOSTNAME, '.ams')
 
 require('setup-plugins')
 

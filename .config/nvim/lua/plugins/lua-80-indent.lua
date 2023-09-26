@@ -20,9 +20,6 @@ return {
     --     },
     -- },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
-    { -- https://github.com/tpope/vim-sleuth
-        'tpope/vim-sleuth',
-    },
     { -- https://github.com/lukas-reineke/indent-blankline.nvim
         'lukas-reineke/indent-blankline.nvim',
         config = function()
