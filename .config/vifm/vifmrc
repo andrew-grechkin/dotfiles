@@ -11,6 +11,11 @@
 " set vicmd=elvis\ -G\ termcap
 " set vicmd=vile
 
+set iooptions=fastfilecloning
+set dirsize=nitems
+set mouse='a'
+set slowfs+=/media/nfs
+
 " This makes vifm perform file operations on its own instead of relying on
 " standard utilities like `cp`.  While using `cp` and alike is a more universal
 " solution, it's also much slower when processing large amounts of files and
@@ -114,10 +119,9 @@ command! reload :write | restart
 " create
 command! take    :mkdir %a | cd %a
 command! ln      ln %f:p %D
-command! cp      cp -rv --sparse=auto --reflink=never  -- %f:p %D/
-command! cpl     cp -rvl                               -- %f:p %D/
-command! cpr     cp -rv --sparse=auto --reflink=always -- %f:p %D/
-command! cprsync rsync-copy-fat %f:p %D
+command! cp      cp -av --sparse=auto --reflink=auto -- %f:p %D/
+command! cpl     cp -av --link                       -- %f:p %D/
+command! cprsync rsync-copy-fat                         %f:p %D/
 
 " execute
 command! run    !! ./%c
@@ -626,6 +630,8 @@ set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,phistory,fhistory,dir
 " filter! /^.*\.(lo|o|d|class|py[co])$|.*~$/
 
 " => mappings ----------------------------------------------------------------------------------------------------- {{{1
+
+nnoremap <Esc> :hideui<CR>
 
 " Start shell in current directory
 nnoremap s :shell<CR>
