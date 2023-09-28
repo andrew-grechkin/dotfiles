@@ -155,10 +155,10 @@ return {
                 }
             end
             local ensure_installed2 = {}
-            for i, v in ipairs(lsps) do table.insert(ensure_installed2, v) end
-            for i, v in ipairs(daps) do table.insert(ensure_installed2, v) end
-            for i, v in ipairs(linters) do table.insert(ensure_installed2, v) end
-            for i, v in ipairs(formatters) do table.insert(ensure_installed2, v) end
+            for _, v in ipairs(lsps) do table.insert(ensure_installed2, v) end
+            for _, v in ipairs(daps) do table.insert(ensure_installed2, v) end
+            for _, v in ipairs(linters) do table.insert(ensure_installed2, v) end
+            for _, v in ipairs(formatters) do table.insert(ensure_installed2, v) end
 
             mason_tool.setup {
                 ensure_installed = ensure_installed2,

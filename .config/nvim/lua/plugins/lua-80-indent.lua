@@ -23,30 +23,45 @@ return {
     { -- https://github.com/lukas-reineke/indent-blankline.nvim
         'lukas-reineke/indent-blankline.nvim',
         config = function()
-            local ok, plugin = pcall(require, 'indent_blankline')
+            local ok, plugin = pcall(require, 'ibl')
             if not ok then return end
 
             vim.opt.list = true
             -- vim.opt.listchars:append 'eol:␤'
             -- vim.opt.listchars:append 'space:⋅'
 
+            local highlight = {
+                'RainbowRed',
+                'RainbowOrange',
+                'RainbowYellow',
+                'RainbowGreen',
+                'RainbowCyan',
+                'RainbowBlue',
+                'RainbowViolet',
+            }
+
+            local hooks = require('ibl.hooks')
+            -- create the highlight groups in the highlight setup hook, so they are reset
+            -- every time the colorscheme changes
+            hooks.register(hooks.type.HIGHLIGHT_SETUP, function()
+                vim.api.nvim_set_hl(0, 'RainbowBlue', {fg = '#3d6e96'})
+                vim.api.nvim_set_hl(0, 'RainbowCyan', {fg = '#428e96'})
+                vim.api.nvim_set_hl(0, 'RainbowGreen', {fg = '#76965d'})
+                vim.api.nvim_set_hl(0, 'RainbowOrange', {fg = '#966e49'})
+                vim.api.nvim_set_hl(0, 'RainbowRed', {fg = '#962729'})
+                vim.api.nvim_set_hl(0, 'RainbowViolet', {fg = '#865196'})
+                vim.api.nvim_set_hl(0, 'RainbowYellow', {fg = '#afa856'})
+            end)
             local config = {
-                char = '┊',
-                filetype_exclude = {
-                    'Trouble',
-                    'alpha',
-                    'dashboard',
-                    'help',
-                    'lazy',
-                    'lazyterm',
-                    'mason',
-                    'neo-tree',
-                    'notify',
-                    'toggleterm',
+                indent = {highlight = highlight, char = '┊', tab_char = '│'},
+                whitespace = {highlight = highlight, remove_blankline_trail = true},
+                scope = {
+                    char = '┃',
+                    enabled = true,
+                    highlight = {'Label', 'Function'},
+                    show_end = true,
+                    show_start = true,
                 },
-                show_current_context = true,
-                show_current_context_start = true,
-                show_trailing_blankline_indent = false,
             }
 
             plugin.setup(config)
