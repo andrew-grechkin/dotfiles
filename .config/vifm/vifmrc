@@ -114,7 +114,9 @@ command! reload :write | restart
 " create
 command! take    :mkdir %a | cd %a
 command! ln      ln %f:p %D
-command! cpl     cp -rlv %f:p %D
+command! cp      cp -rv --sparse=auto --reflink=never  -- %f:p %D/
+command! cpl     cp -rvl                               -- %f:p %D/
+command! cpr     cp -rv --sparse=auto --reflink=always -- %f:p %D/
 command! cprsync rsync-copy-fat %f:p %D
 
 " execute
