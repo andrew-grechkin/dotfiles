@@ -62,6 +62,10 @@ ln -srf .local/share/vim-plug                                ~/.local/share/
 ln -srf .local/share/wiki                                    ~/.local/share/
 
 
+[[ -x "/volume1/local/arch/usr/bin/vim" ]] && {
+	ln -srfn .config/vim                                     ~/.vim
+}
+
 command                                 cp -rf ".config/Crow Translate" ~/.config/
 [[ -f "$HOME/.config/npm" ]] || command cp -rf ".config/npm"            ~/.config/
 command                                 cp -rf ".config/kdedefaults"    ~/.config/
