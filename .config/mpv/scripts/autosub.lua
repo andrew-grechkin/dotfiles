@@ -1,6 +1,7 @@
 -- default keybinding: b
 -- add the following to your input.conf to change the default keybinding:
 -- keyname script_binding auto_load_subs
+local mp = require 'mp'
 local utils = require 'mp.utils'
 
 local function display_error()

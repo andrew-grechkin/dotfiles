@@ -58,6 +58,7 @@
 -- `--msg-level='reload=debug'`. You may also need to add the `--no-msg-color`
 -- option to make the debug logs visible if you are using a dark colorscheme
 -- in terminal.
+local mp = require 'mp'
 local msg = require 'mp.msg'
 local options = require 'mp.options'
 local utils = require 'mp.utils'
@@ -152,9 +153,7 @@ local function reload_resume()
         reload(path, nil)
     end
     msg.info('file ', playlist_pos + 1, 'of', playlist_count, 'in playlist')
-    for i = 0, playlist_pos - 1 do
-        mp.commandv('loadfile', playlist[i], 'append')
-    end
+    for i = 0, playlist_pos - 1 do mp.commandv('loadfile', playlist[i], 'append') end
     mp.commandv('playlist-move', 0, playlist_pos + 1)
     for i = playlist_pos + 1, playlist_count - 1 do
         mp.commandv('loadfile', playlist[i], 'append')
@@ -196,9 +195,7 @@ function demuxer_cache.reset_state()
 end
 
 -- Has 'demuxer_cache_time' changed
-function demuxer_cache.has_progress_since(t)
-    return demuxer_cache.state.demuxer_cache_time ~= t
-end
+function demuxer_cache.has_progress_since(t) return demuxer_cache.state.demuxer_cache_time ~= t end
 
 function demuxer_cache.is_state_fetch()
     return demuxer_cache.state.name == demuxer_cache.events.continue_fetch.to
@@ -219,17 +216,11 @@ function demuxer_cache.transition(event)
         demuxer_cache.state.demuxer_cache_time = event.demuxer_cache_time
 
         if event.name == 'continue_fetch' then
-            demuxer_cache.state.in_state_time = demuxer_cache.state
-                                                    .in_state_time +
-                                                    event.interval
+            demuxer_cache.state.in_state_time = demuxer_cache.state.in_state_time + event.interval
         elseif event.name == 'continue_stale' then
-            demuxer_cache.state.in_state_time = demuxer_cache.state
-                                                    .in_state_time +
-                                                    event.interval
+            demuxer_cache.state.in_state_time = demuxer_cache.state.in_state_time + event.interval
         elseif event.name == 'continue_stuck' then
-            demuxer_cache.state.in_state_time = demuxer_cache.state
-                                                    .in_state_time +
-                                                    event.interval
+            demuxer_cache.state.in_state_time = demuxer_cache.state.in_state_time + event.interval
         elseif event.name == 'fetch_to_stale' then
             demuxer_cache.state.in_state_time = 0
         elseif event.name == 'stale_to_fetch' then
@@ -243,20 +234,17 @@ function demuxer_cache.transition(event)
         -- state transition
         demuxer_cache.state.name = event.to
 
-        msg.debug('demuxer_cache.transition', event.name,
-                  utils.to_string(demuxer_cache.state))
+        msg.debug('demuxer_cache.transition', event.name, utils.to_string(demuxer_cache.state))
     else
-        msg.error('demuxer_cache.transition', 'illegal transition', event.name,
-                  'from state', demuxer_cache.state.name)
+        msg.error('demuxer_cache.transition', 'illegal transition', event.name, 'from state',
+            demuxer_cache.state.name)
     end
 end
 
 function demuxer_cache.initialize(demuxer_cache_timer_interval)
     demuxer_cache.reset_state()
-    demuxer_cache.timer = mp.add_periodic_timer(demuxer_cache_timer_interval,
-                                                function()
-        demuxer_cache.demuxer_cache_timer_tick(
-            mp.get_property_native('demuxer-cache-time'),
+    demuxer_cache.timer = mp.add_periodic_timer(demuxer_cache_timer_interval, function()
+        demuxer_cache.demuxer_cache_timer_tick(mp.get_property_native('demuxer-cache-time'),
             demuxer_cache_timer_interval)
     end)
 end
@@ -264,11 +252,9 @@ end
 -- If there is no progress of demuxer_cache_time in
 -- settings.demuxer_cache_timer_timeout time interval switch state to
 -- 'stuck' and switch back to 'fetch' as soon as any progress is made
-function demuxer_cache.demuxer_cache_timer_tick(demuxer_cache_time,
-                                                demuxer_cache_timer_interval)
+function demuxer_cache.demuxer_cache_timer_tick(demuxer_cache_time, demuxer_cache_timer_interval)
     local event = nil
-    local cache_has_progress = demuxer_cache.has_progress_since(
-                                   demuxer_cache_time)
+    local cache_has_progress = demuxer_cache.has_progress_since(demuxer_cache_time)
 
     -- I miss pattern matching so much
     if demuxer_cache.is_state_fetch() then
@@ -280,8 +266,7 @@ function demuxer_cache.demuxer_cache_timer_tick(demuxer_cache_time,
     elseif demuxer_cache.is_state_stale() then
         if cache_has_progress then
             event = demuxer_cache.events.stale_to_fetch
-        elseif demuxer_cache.state.in_state_time <
-            settings.demuxer_cache_timer_timeout then
+        elseif demuxer_cache.state.in_state_time < settings.demuxer_cache_timer_timeout then
             event = demuxer_cache.events.continue_stale
         else
             event = demuxer_cache.events.stale_to_stuck
@@ -313,8 +298,7 @@ end
 function paused_for_cache.start_timer(interval_seconds, timeout_seconds)
     msg.debug('paused_for_cache.start_timer', paused_for_cache.time)
     if not paused_for_cache.timer then
-        paused_for_cache.timer = mp.add_periodic_timer(interval_seconds,
-                                                       function()
+        paused_for_cache.timer = mp.add_periodic_timer(interval_seconds, function()
             paused_for_cache.time = paused_for_cache.time + interval_seconds
             if paused_for_cache.time >= timeout_seconds then
                 paused_for_cache.reset_timer()
@@ -325,7 +309,7 @@ function paused_for_cache.start_timer(interval_seconds, timeout_seconds)
     end
 end
 
-function paused_for_cache.handler(property, is_paused)
+function paused_for_cache.handler(_, is_paused)
     if is_paused then
 
         if demuxer_cache.is_state_stuck() then
@@ -337,7 +321,7 @@ function paused_for_cache.handler(property, is_paused)
         end
 
         paused_for_cache.start_timer(settings.paused_for_cache_timer_interval,
-                                     settings.paused_for_cache_timer_timeout)
+            settings.paused_for_cache_timer_timeout)
     else
         paused_for_cache.reset_timer()
     end
@@ -379,8 +363,7 @@ end
 read_settings()
 
 if settings.reload_key_binding ~= '' then
-    mp.add_key_binding(settings.reload_key_binding, 'reload_resume',
-                       reload_resume)
+    mp.add_key_binding(settings.reload_key_binding, 'reload_resume', reload_resume)
 end
 
 if settings.paused_for_cache_timer_enabled then

@@ -5,7 +5,7 @@
 -- the internal playlist. (It stops if the it would add an already existing
 -- playlist entry at the same position - this makes it "stable".)
 -- Add at most 5000 * 2 files when starting a file (before + after).
-
+local mp = require 'mp'
 local msg = require 'mp.msg'
 local mp_options = require 'mp.options'
 local utils = require 'mp.utils'
@@ -21,9 +21,28 @@ local function Set(t)
 end
 
 EXTENSIONS = Set {
-    'ape', '3gp', 'avi', 'flac', 'flv', 'm4a', 'm4v', 'mkv', 'mp3', 'mp4',
-    'mpeg', 'mpg', 'ogg', 'ogm', 'ogv', 'opus', 'rmvb', 'wav', 'webm', 'wma',
-    'wmv', 'wv',
+    '3gp',
+    'ape',
+    'avi',
+    'flac',
+    'flv',
+    'm4a',
+    'm4v',
+    'mkv',
+    'mp3',
+    'mp4',
+    'mpeg',
+    'mpg',
+    'ogg',
+    'ogm',
+    'ogv',
+    'opus',
+    'rmvb',
+    'wav',
+    'webm',
+    'wma',
+    'wmv',
+    'wv',
 }
 
 local function add_files_at(index, files)
@@ -44,9 +63,7 @@ local function get_extension(path)
     end
 end
 
-table.filter = function(t, iter)
-    for i = #t, 1, -1 do if not iter(t[i]) then table.remove(t, i) end end
-end
+table.filter = function(t, iter) for i = #t, 1, -1 do if not iter(t[i]) then table.remove(t, i) end end end
 
 -- splitbynum and alnumcomp from alphanum.lua (C) Andre Bogus
 -- Released under the MIT License
@@ -99,8 +116,7 @@ local function find_and_add_entries()
     local pl_count = mp.get_property_number('playlist-count', 1)
     -- check if this is a manually made playlist
     if (pl_count > 1 and autoloaded == nil) or
-        (pl_count == 1 and EXTENSIONS[string.lower(get_extension(filename))] ==
-            nil) then
+        (pl_count == 1 and EXTENSIONS[string.lower(get_extension(filename))] == nil) then
         return
     else
         autoloaded = true
@@ -108,12 +124,11 @@ local function find_and_add_entries()
 
     local pl = mp.get_property_native('playlist', {})
     local pl_current = mp.get_property_number('playlist-pos-1', 1)
-    msg.trace(('playlist-pos-1: %s, playlist: %s'):format(pl_current,
-                                                          utils.to_string(pl)))
+    msg.trace(('playlist-pos-1: %s, playlist: %s'):format(pl_current, utils.to_string(pl)))
 
     local files = utils.readdir(dir, 'files')
     if files == nil then return end
-    table.filter(files, function(v, k)
+    table.filter(files, function(v, _)
         if string.match(v, '^%.') then return false end
         local ext = get_extension(v)
         if ext == nil then return false end

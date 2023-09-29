@@ -1,5 +1,7 @@
 -- https://mpv.io/manual/master/#lua-scripting
 -- https://github.com/mpv-player/mpv/blob/master/DOCS/man/input.rst
+local mp = require 'mp'
+
 local function do_nothing() end
 
 local function disable_quit()
