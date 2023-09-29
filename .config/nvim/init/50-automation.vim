@@ -9,9 +9,10 @@ augroup END
 
 augroup SettingsByFileType
 	autocmd!
-	autocmd FileType *           setlocal textwidth=120 wrapmargin=0
-	autocmd FileType qf,help,man setlocal nobuflisted | nnoremap <silent> <buffer> <nowait> q :bwipeout!<CR>
-	autocmd FileType Run         setlocal nobuflisted | nnoremap <silent> <buffer> <nowait> q :bwipeout!<CR>
+	autocmd FileType *              setlocal textwidth=120 wrapmargin=0
+	autocmd FileType qf,help,man    setlocal nobuflisted | nnoremap <silent> <buffer> <nowait> q :bwipeout!<CR>
+	autocmd FileType Run            setlocal nobuflisted | nnoremap <silent> <buffer> <nowait> q :bwipeout!<CR>
+	autocmd FileType neotest-output setlocal nobuflisted | nnoremap <silent> <buffer> <nowait> q :bwipeout!<CR>
 augroup END
 
 augroup SettingsByBufType

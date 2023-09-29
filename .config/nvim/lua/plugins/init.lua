@@ -9,6 +9,8 @@ return {
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/folke/neodev.nvim
         'folke/neodev.nvim',
-        config = function() require('neodev').setup() end,
+        config = function()
+            require('neodev').setup({library = {plugins = {'neotest'}, types = true}})
+        end,
     },
 }

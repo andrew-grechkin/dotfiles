@@ -136,4 +136,9 @@ vnoremap <silent> <plug>(GrepperOperatorFile) :<c-u>let g:grepper.operator.dir='
             end
         end,
     },
+    -- => --------------------------------------------------------------------------------------------------------- {{{1
+    { -- https://github.com/sourcegraph/sg.nvim
+        'sourcegraph/sg.nvim',
+        dependencies = {'nvim-lua/plenary.nvim'},
+    },
 }
