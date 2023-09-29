@@ -14,7 +14,7 @@
 set iooptions=fastfilecloning
 set dirsize=nitems
 set mouse='a'
-set slowfs+=/media/nfs
+" set slowfs+=/media/nfs
 
 " This makes vifm perform file operations on its own instead of relying on
 " standard utilities like `cp`.  While using `cp` and alike is a more universal
@@ -349,20 +349,18 @@ filetype CMakeLists.txt
 	\ {Build...}
 	\ build-cmake %d,
 
-filetype *.[1-8]
-	\ man ./%c,
-fileviewer *.[1-8]
-	\ man ./%c | col -b,
+" filetype *.[1-8]
+" 	\ man ./%c,
+" fileviewer *.[1-8]
+" 	\ man ./%c | col -b,
 
 filetype *.json
 	\ {View json}
-	\ jq -CS --indent 4 < %c | less -r,
+	\ jq -S --indent 2 < %c | bat -l JSON --paging=always,
 	\ {Reformat json}
 	\ reformat -a %f,
 	\ {Convert json -> yaml}
 	\ json2yaml %c > %c:r.yaml &,
-fileviewer *.json
-	\ jq -CS --indent 4 < %c,
 
 filetype *.yaml,*.yml
 	\ {View yaml}

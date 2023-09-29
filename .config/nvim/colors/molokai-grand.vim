@@ -253,7 +253,7 @@ else
 		hi ModeMsg           ctermfg=229
 		hi MoreMsg           ctermfg=229
 		hi NonText           ctermfg=59
-		hi Normal            ctermfg=252         ctermbg=233
+		hi Normal            ctermfg=252
 		hi Pmenu             ctermfg=81          ctermbg=16
 		hi PmenuSbar                             ctermbg=232
 		hi PmenuSel          ctermfg=255         ctermbg=242

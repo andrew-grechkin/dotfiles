@@ -17,33 +17,30 @@ function header() {
 
 function body() {
 	TYPE=$(file -bi "$1")
-	echo -n "  MIME: "
-	echo "$TYPE"
+	echo "  MIME: $TYPE"
 
-	# NAME=$(basename "$1")
+	FILE=$(basename "$1")
 	# DIR=$(dirname "$1")
-	# BASE="${NAME%.*}"
-	# EXT="${NAME##*.}"
+	# BASE="${FILE%.*}"
+	EXT="${FILE##*.}"
 
-	if echo "$TYPE" | grep 'application/x-.*executable' &>/dev/null; then
-		{ readelf -dW "$1" && echo && nm -DC "$1"; } \
-		|| true
-		exit 0;
-	elif echo "$TYPE" | grep 'application/x-sharedlib' &>/dev/null; then
-		{ readelf -dW "$1" && echo && nm -DC "$1"; } \
-		|| { objdump -xfTC "$1"; } \
-		|| true
-		exit 0;
-	elif echo "$TYPE" | grep 'application/x-object' &>/dev/null; then
-		{ nm -ClS "$1"; echo; objdump -afltSd "$1"; } \
-		|| true
-		exit 0;
-	elif echo "$TYPE" | grep 'application/x-archive' &>/dev/null; then
-		{ nm -C "$1"; } \
-		|| true
-		exit 0;
-	elif echo "$TYPE" | grep 'image/' &>/dev/null; then
-		FILE=$(basename "$1")
+	if grep 'application/json' <<<"$TYPE" &>/dev/null; then
+		jq -S  --indent 2 < "$1" | bat -l JSON --style=numbers --color=always --tabs=4 && exit 0
+	elif grep 'text/plain' <<<"$TYPE" &>/dev/null && [[ "$EXT" =~ yaml? ]]; then
+		yaml-sanitize < "$1" | yamlfix - | bat -l yaml --style=numbers --color=always --tabs=4 && exit 0
+	elif grep 'application/x-.*executable' <<<"$TYPE" &>/dev/null; then
+		{ readelf -dW "$1" && echo && nm -DC "$1"; } && exit 0
+	elif grep 'application/x-sharedlib' <<<"$TYPE" &>/dev/null; then
+		{
+			{ readelf -dW "$1" && echo && nm -DC "$1"; } || { objdump -xfTC "$1"; }
+		} && exit 0
+	elif grep 'text/x-shellscript' <<<"$TYPE" &>/dev/null; then
+		bat -l 'Bourne Again Shell (bash)' --style=numbers --color=always --tabs=4 "$1" && exit 0
+	elif grep 'application/x-object' <<<"$TYPE" &>/dev/null; then
+		{ nm -ClS "$1"; echo; objdump -afltSd "$1"; } && exit 0
+	elif grep 'application/x-archive' <<<"$TYPE" &>/dev/null; then
+		nm -C "$1" && exit 0
+	elif grep 'image/' <<<"$TYPE" &>/dev/null; then
 		YAML_FILE="${FILE%%.jpg}.yml"
 		[[ -r "$YAML_FILE" ]] && cat "$YAML_FILE"
 		FILESIZE=$2
@@ -51,9 +48,9 @@ function body() {
 			COLS=$(tput cols)
 			COLS=${COLS:-120}
 			{ chafa --clear -c full -s "${COLS}x${COLS}" "$1"; } \
-			|| true
+				|| true
 		}
-		exit 0;
+		exit 0
 	else
 		echo
 	fi
@@ -63,25 +60,25 @@ function footer() {
 	FILESIZE=$2
 	(( FILESIZE > 10000000)) && return
 
-	if echo "$TYPE" | grep 'charset=binary' &>/dev/null; then
-		hexdump -C "$1" \
-		|| true
+	if grep 'charset=binary' <<<"$TYPE" &>/dev/null; then
+		hexdump -C "$1" && exit 0
 	elif (( FILESIZE < 1000000 )); then
-		bat --style=numbers --color=always --tabs=4 "$1" \
-		|| pygmentize -O style=monokai -f console256 -g "$1" \
-		|| cat "$1"
+		bat --style=numbers --color=always --tabs=4 "$1"         \
+			|| pygmentize -O style=monokai -f console256 -g "$1" \
+			|| cat "$1"
 		(( FILESIZE > 255)) && return
 		echo
-		hexdump -C "$1" \
-		|| true
-	else
-		cat "$1"
+		hexdump -C "$1" && exit 0
 	fi
+
+	cat "$1"
 }
 
 [[ -f "$1" ]] && {
 	FILESIZE=$(command stat -c %s "$1")
-	header "$1" "$FILESIZE"
-	body   "$1" "$FILESIZE"
-	footer "$1" "$FILESIZE"
+	header "$1"        "$FILESIZE"
+
+	FILEPATH="$(realpath "$1")"
+	body   "$FILEPATH" "$FILESIZE"
+	footer "$FILEPATH" "$FILESIZE"
 } 2> /dev/null

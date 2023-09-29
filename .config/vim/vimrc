@@ -15,15 +15,9 @@ let &runtimepath.=','.rtp.',~/.cache/vim/after,~/.config/nvim,~/.config/nvim/aft
 set viminfo+=n~/.cache/vim/info
 silent! set undodir=~/.cache/vim/undo                                      " Set undodir explicitly for vim
 
-"	set belloff=all                                                        " Disable the bell
-"	set cscopeverbose                                                      " Verbose cscope output
-"	set display=lastline,msgsep                                            " Display more message text
-"	set fillchars=vert:|,fold:                                             " Separator characters
-"	set fsync                                                              " Call fsync() for robust file saving
 silent! set langnoremap                                                    " Helps avoid mappings breaking
 silent! set nrformats=bin,hex                                              " <c-a> and <c-x> support
 set ruler                                                                  " Display current line # in a corner
-"	set sessionoptions-=options                                                " Do not carry options across sessions
 set showcmd                                                                " Show last command in the status line
 set sidescroll=1                                                           " Smoother sideways scrolling
 set tabpagemax=50                                                          " Maximum number of tabs open by -p flag
@@ -44,7 +38,6 @@ set tags+=tags;                                                                "
 set pumheight=8                                                                " Maximum height of autocomplete popup window
 set undofile                                                                   " Enable persistent undo
 
-" set exrc
 set secure
 
 " => UI ----------------------------------------------------------------------------------------------------------- {{{1
@@ -53,12 +46,9 @@ set scrolloff=5                                                                "
 set sidescrolloff=5
 
 set wildmenu                                                                   " Enhanced command line completion
-"set wildmode=longest:full
 set wildignorecase
 set wildignore+=*.a,*.o,*.obj,.git,*~,*.pyc,*.so,*.swp,*.zip,*.exe             " Ignore compiled files
 set wildignore+=tmp/**,node_modules/**                                         " MacOSX/Linux
-" set wildignore+=*/tmp/*,*/node_modules/*                                       " MacOSX/Linux
-" set wildignore+=*\\tmp\\*                                                      " Windows
 
 set number                                                                     " Enable numbers
 set relativenumber                                                             " Display relative column numbers
@@ -83,9 +73,7 @@ set laststatus=2                                                               "
 
 set cursorcolumn cursorline                                                    " Highlight current column
 
-":silent! colorscheme last256
 :silent! colorscheme molokai-grand
-":silent! colorscheme woju
 
 syntax enable
 
@@ -100,7 +88,6 @@ silent! set completeopt=menuone,noinsert,noselect,preview
 set foldcolumn=2 foldmethod=syntax
 
 set list listchars=tab:↹\ ,trail:␣,extends:>,precedes:<,nbsp:+                 " Visual form of special characters
-"set listchars+=eol:↵                                                          " Visible end of line
 
 set showmatch matchpairs+=<:>,«:»
 
@@ -122,5 +109,3 @@ set noexpandtab smarttab shiftwidth=4 softtabstop=4 tabstop=4
 set noshiftround
 
 set formatoptions=tcqjl                                                        " More intuitive autoformatting
-
-"set linebreak                                                                  " Soft word wrap
