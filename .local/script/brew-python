@@ -1,4 +1,4 @@
-j!/usr/bin/env bash
+#!/usr/bin/env bash
 
 set -Eo pipefail
 
@@ -8,5 +8,6 @@ set -Eo pipefail
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1
 
-pyenv install -v 3.11.4
-pyenv global 3.11.4
+pyenv install -v 3.11.5
+pyenv global 3.11.5
+pip install pynvim
