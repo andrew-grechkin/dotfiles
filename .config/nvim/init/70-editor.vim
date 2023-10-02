@@ -41,10 +41,3 @@ set clipboard=unnamedplus,unnamed                                              "
 "vmap <C-x>                             c<ESC>
 "vmap <C-v>                             "0c<ESC>p
 "imap <C-v>                             <C-r><C-o>+
-
-" disable indent while inserting from buffer
-if !has('nvim')
-	let &t_SI .= "\<Esc>[?2004h"
-	let &t_EI .= "\<Esc>[?2004l"
-	inoremap <special> <expr> <nowait> <Esc>[200~ xterm#begin_paste()
-endif
