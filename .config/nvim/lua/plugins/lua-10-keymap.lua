@@ -90,6 +90,7 @@ return {
                     b = {name = 'Buffer'},
                     -- p = {'`[ . strpart(getregtype(), 0, 1) . `]', 'Select latest pasted'},
                     x = {':!xdg-open %<CR><CR>', 'Open in the default program'},
+                    S = {name = 'Search'},
                 },
                 ['['] = {
                     name = 'Prev',

@@ -1,4 +1,5 @@
 return {
+    -- https://github.com/mfussenegger/nvim-dap/wiki/Debug-Adapter-installation
     { -- https://github.com/mfussenegger/nvim-dap
         'mfussenegger/nvim-dap',
         dependencies = {
@@ -67,11 +68,7 @@ return {
 
             -- => perl -------------------------------------------------------------------------------------------- {{{1
 
-            dap.adapters.perl = {
-                args = {},
-                command = 'perl-debug-adapter',
-                type = 'executable',
-            }
+            dap.adapters.perl = {args = {}, command = 'perl-debug-adapter', type = 'executable'}
             dap.configurations.perl = {
                 {
                     name = 'Launch Perl',

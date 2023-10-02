@@ -157,7 +157,7 @@ return {
                             s = {'<cmd>Telescope git_stash<CR>', ': stashes'},
                         },
                         s = {
-                            name = 'Search',
+                            name = 'Search ',
                             ['/'] = {'<cmd>Telescope current_buffer_fuzzy_find<CR>', ': search'},
                             B = {'<cmd>Telescope builtin<CR>', ': builtin'},
                             C = {'<cmd>Telescope colorscheme<CR>', ': colorschemes'},
@@ -188,7 +188,7 @@ return {
                             l = {'<cmd>Telescope git_bcommits_range<CR>', 'commits for sel lines'},
                         },
                         s = {
-                            name = 'Search',
+                            name = 'Search ',
                             g = {'<cmd>Telescope grep_string<CR>', ': grep string'},
                         },
                     },

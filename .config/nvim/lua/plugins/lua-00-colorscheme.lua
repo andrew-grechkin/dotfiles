@@ -5,7 +5,7 @@ return {
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/folke/tokyonight.nvim
         'folke/tokyonight.nvim',
-        lazy = false, -- make sure we load this during startup if it is your main colorscheme
+        lazy = true,
         opts = {style = 'moon'},
         config = function()
             -- load the colorscheme here
@@ -15,7 +15,7 @@ return {
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/catppuccin/nvim
         'catppuccin/nvim',
-        lazy = false,
+        lazy = true,
         name = 'catppuccin',
         opts = {
             integrations = {

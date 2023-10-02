@@ -104,9 +104,28 @@ vnoremap <silent> <plug>(GrepperOperatorFile) :<c-u>let g:grepper.operator.dir='
     -- search/replace in multiple files
     { -- https://github.com/nvim-pack/nvim-spectre
         'nvim-pack/nvim-spectre',
+        dependencies = {'nvim-lua/plenary.nvim'},
         cmd = 'Spectre',
         opts = {open_cmd = 'noswapfile vnew'},
-        keys = {{'<leader>sr', function() require('spectre').open() end, desc = 'spectre: replace'}},
+        keys = {
+            {'<leader>SS', function() require('spectre').toggle() end, desc = 'spectre: toggle'},
+            {
+                '<leader>Sw',
+                function() require('spectre').open_visual({select_word = true}) end,
+                desc = 'spectre: cur word',
+            },
+            {
+                '<leader>Sw',
+                function() require('spectre').open_visual() end,
+                mode = 'v',
+                desc = 'spectre: cur word',
+            },
+            {
+                '<leader>Sf',
+                function() require('spectre').open_file_search({select_word = true}) end,
+                desc = 'spectre: cur word in file',
+            },
+        },
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/dyng/ctrlsf.vim
