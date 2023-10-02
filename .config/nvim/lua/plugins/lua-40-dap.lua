@@ -19,8 +19,10 @@ return {
             },
         },
         config = function()
-            local dap_ok, dap = pcall(require, 'dap')
-            if not dap_ok then return end
+            local dap = require('dap')
+
+            -- this is optional but can be helpful when starting out
+            -- dap.set_log_level 'TRACE'
 
             local lua_ok, lua = pcall(require, 'dap-lua')
             if lua_ok then lua.setup() end
@@ -32,8 +34,10 @@ return {
                 python.test_runner = 'pytest'
             end
 
+            -- => bash -------------------------------------------------------------------------------------------- {{{1
+
             dap.adapters.bashdb = {
-                command = vim.fn.stdpath('data') .. '/mason/packages/bash-debug-adapter/bash-debug-adapter',
+                command = 'bash-debug-adapter',
                 name = 'bashdb',
                 type = 'executable',
             }
@@ -61,6 +65,13 @@ return {
                 },
             }
 
+            -- => perl -------------------------------------------------------------------------------------------- {{{1
+
+            dap.adapters.perl = {
+                args = {},
+                command = 'perl-debug-adapter',
+                type = 'executable',
+            }
             dap.configurations.perl = {
                 {
                     name = 'Launch Perl',
