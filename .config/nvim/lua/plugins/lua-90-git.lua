@@ -94,8 +94,6 @@ return {
             },
         },
         config = function()
-            local PRIVATE_DOMAIN = vim.api.nvim_get_var('PRIVATE_DOMAIN')
-            vim.g.fugitive_gitlab_domains = 'https://gitlab.' .. PRIVATE_DOMAIN .. '.com'
             vim.api.nvim_del_user_command('Gbrowse')
         end,
     },

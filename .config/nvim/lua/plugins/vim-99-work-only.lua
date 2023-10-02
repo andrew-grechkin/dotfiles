@@ -15,8 +15,14 @@ if IS_WORK then
         }
     else
         return {
+            { -- url: https://github.com/shumphrey/fugitive-gitlab.vim
+                'shumphrey/fugitive-gitlab.vim',
+                config = function()
+                    local PRIVATE_DOMAIN = vim.api.nvim_get_var('PRIVATE_DOMAIN')
+                    vim.g.fugitive_gitlab_domains = {'https://gitlab.' .. PRIVATE_DOMAIN .. '.com'}
+                end,
+            },
             'rodjek/vim-puppet',
-            'shumphrey/fugitive-gitlab.vim',
             'towolf/vim-helm',
             -- 'elixir-editors/vim-elixir',
             -- 'fatih/vim-go',
