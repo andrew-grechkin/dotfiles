@@ -2,10 +2,12 @@
 
 # => History file configuration ----------------------------------------------------------------------------------- {{{1
 
-HISTSIZE=65535
-SAVEHIST=65535
+HISTSIZE=655350
+SAVEHIST=655350
 
 # => History command configuration https://zsh.sourceforge.io/Doc/Release/Options.html#History -------------------- {{{1
+
+# man: zshoptions
 
 setopt HIST_FCNTL_LOCK
 setopt HIST_IGNORE_ALL_DUPS                                                    # ignore duplicated commands history list
@@ -13,7 +15,14 @@ setopt HIST_IGNORE_SPACE                                                       #
 setopt HIST_REDUCE_BLANKS
 setopt HIST_SAVE_BY_COPY
 setopt HIST_VERIFY                                                             # show command with history expansion to user before running it
-setopt SHARE_HISTORY                                                           # share command history data
+setopt INC_APPEND_HISTORY
+
+if (( $(stat -c%s "$HISTFILE") < 10000 )); then
+    echo 'History file is lower than 10 kbytes, restoring backup...'
+    cp -f "${HISTFILE}.back" "$HISTFILE"
+else
+    cp -f "$HISTFILE" "${HISTFILE}.back"
+fi
 
 # => alias -------------------------------------------------------------------------------------------------------- {{{1
 
