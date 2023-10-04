@@ -121,7 +121,7 @@ return {
             -- table.unpack = table.unpack or unpack
             local lsps = {'bash-language-server', 'bzl'}
             local daps = {}
-            local linters = {'jsonlint', 'yamllint'}
+            local linters = {'jsonlint',  'shellcheck', 'yamllint'}
             local formatters = {'beautysh', 'fixjson', 'shfmt', 'yamlfix'}
             if not IS_KVM then
                 lsps = {'bash-language-server', 'bzl', 'lua-language-server', 'vim-language-server'}
@@ -136,6 +136,7 @@ return {
                     'markdownlint',
                     'markuplint',
                     'proselint',
+                    'shellcheck',
                     'stylelint',
                     'vint',
                     'yamllint',
