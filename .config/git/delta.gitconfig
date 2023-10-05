@@ -1,7 +1,15 @@
 ; vim: filetype=gitconfig
 
 [interactive]
-	diffFilter = delta --color-only
+	diffFilter = delta --color-only --features=interactive
+
+[pager]
+	blame  = delta
+	diff   = delta
+	log    = delta
+	reflog = delta
+	sh     = delta
+	show   = delta
 
 [delta]
 	features     = line-numbers decorations
@@ -23,6 +31,3 @@
 [delta "line-numbers"]
 	line-numbers-left-style  = cyan
 	line-numbers-right-style = cyan
-
-[interactive]
-	diffFilter = delta --color-only --features=interactive

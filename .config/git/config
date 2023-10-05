@@ -161,13 +161,7 @@
 	cmd = nvim -d "$LOCAL" "$BASE" "$REMOTE" "$MERGED" -c 'windo setlocal nomodifiable' -c '$wincmd w' -c 'setlocal modifiable' -c 'wincmd J'
 
 [pager]
-	blame  = delta
 	branch = false
-	diff   = delta
-	log    = delta
-	reflog = delta
-	sh     = delta
-	show   = delta
 
 [pull]
 	rebase = true
@@ -188,4 +182,4 @@
 
 [include]
 	path = ~/.config/gitconfig.overrides
-	path = ~/.config/git/delta.gitconfig
+	path = ~/.config/git/delta.gitconfig.conditional

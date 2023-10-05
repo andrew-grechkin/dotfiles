@@ -2,6 +2,7 @@
 **/autoload/plug.vim
 *.spl
 *.sug
+.config/git/delta.gitconfig.conditional
 .config/mpv/watch_later
 .config/nvim/.luarc.json
 .config/shell/*.work
