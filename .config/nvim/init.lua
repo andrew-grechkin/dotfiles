@@ -12,9 +12,8 @@ GIT_NAME = vim.fn.system({'git', 'config', 'user.name'})
 GIT_NAME = string.gsub(GIT_NAME, '%s+$', '')
 IS_WORK = GIT_NAME and GIT_NAME == 'Andrei Grechkin'
 
-IS_KVM = not (vim.env.KDEHOME and vim.env.KDEHOME ~= '')
 HOSTNAME = vim.fn.system({'hostname'})
-IS_KVM = not string.find(HOSTNAME, '.ams')
+IS_KVM = not not string.find(HOSTNAME, 'king.com')
 
 require('setup-plugins')
 

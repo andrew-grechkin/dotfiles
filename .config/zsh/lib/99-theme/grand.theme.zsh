@@ -50,11 +50,17 @@ ${ZSH_THEME['USER']}%F{cyan}@%f${ZSH_THEME['HOST']}${ZSH_THEME['CWD']}${ZSH_THEM
 
 zstyle    ':vcs_info:*'                 debug                    false
 zstyle    ':vcs_info:*'                 enable                   git
-zstyle    ':vcs_info:*'                 check-for-changes        true
-zstyle    ':vcs_info:*'                 check-for-staged-changes true
+if [[ -n "$HOSTNAME" && "$HOSTNAME" =~ .boo.ing.com$ ]]; then
+	# this is too slow on a virtual machine in monorepo
+	zstyle    ':vcs_info:*'                 check-for-changes        false
+	zstyle    ':vcs_info:*'                 check-for-staged-changes false
+else
+	zstyle    ':vcs_info:*'                 check-for-changes        true
+	zstyle    ':vcs_info:*'                 check-for-staged-changes true
+	zstyle -e ':vcs_info:git+set-message:*' hooks                    'reply=(${${(k)functions[(I)[+]vi-git-set-message*]}#+vi-})'
+fi
 zstyle    ':vcs_info:*'                 get-revision             true
 zstyle    ':vcs_info:*'                 stagedstr                '%B%F{green}+'
 zstyle    ':vcs_info:*'                 unstagedstr              '%B%F{yellow}*'
-zstyle -e ':vcs_info:git+set-message:*' hooks                    'reply=(${${(k)functions[(I)[+]vi-git-set-message*]}#+vi-})'
 zstyle    ':vcs_info:*'                 formats                  '%K{23}%F{231}%b%K{29}%F{23} %F{233}%i%k%F{29} %u%c%m '
 zstyle    ':vcs_info:*'                 actionformats            '%K{23}%F{231}%b%K{29}%F{23} %F{233}%i%k%F{29} %a %m '
