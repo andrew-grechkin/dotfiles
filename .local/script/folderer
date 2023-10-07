@@ -34,6 +34,9 @@ sub main() {
     my \%state = path('.')->visit(
         sub {
             my ($path, $state) = @_;
+            $path !~ m/\@eaDir/
+                or return;
+
             $path->is_file
                 or return;
 
