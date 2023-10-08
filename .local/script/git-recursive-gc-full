@@ -16,7 +16,7 @@ if [[ "$#" -eq "1" ]] && [[ "$1" =~ \.git/?$ ]]; then
 	echo "Gc $REPO"
 	echo -n "$(tput sgr0)"
 
-	nice git -C "$REPO" gc --keep-largest-pack
+	nice git -C "$REPO" gc --prune=now
 else
 	fd -uL -td -tf -0 '\.git\z' "${1:-$PWD}" | {
 		if [[ -n "$(command -v parallel)" ]]; then
