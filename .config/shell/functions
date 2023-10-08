@@ -13,7 +13,7 @@ function nas-fix-permissions() {
 	fd -u -E '@eaDir' -t d -x chmod g+s
 }
 
-function nas-remove-executable() {
+function nas-unset-executable() {
 	fd -u -E '@eaDir' -t x -x chmod a-x
 }
 
