@@ -10,12 +10,11 @@ function nas-clear-cruft() {
 function nas-fix-permissions() {
 	sudo chown "${USER}:users" -R -- *
 	sudo chmod -R a+rX,ug+w,o-w -- *
-	fd -u -t d -x chmod g+s
-	# fd -u -t x -x chmod a-x
+	fd -u -E '@eaDir' -t d -x chmod g+s
 }
 
 function nas-remove-executable() {
-	fd -u -t x -x chmod a-x
+	fd -u -E '@eaDir' -t x -x chmod a-x
 }
 
 # => proxy related ------------------------------------------------------------------------------------------------ {{{1
