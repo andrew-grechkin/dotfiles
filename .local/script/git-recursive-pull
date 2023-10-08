@@ -5,23 +5,22 @@
 
 set -Euo pipefail
 
-if [[ "$#" -eq "1" ]] && [[ "$1" =~ .git/?$ ]]; then
+if [[ "$#" -eq "1" ]] && [[ "$1" =~ \.git/?$ ]]; then
 	REPO=$(dirname "$1")
 
 	if [[ -n "$(git -C "$REPO" branch --show-current)" ]]; then
 		echo -n "$(tput setaf 3)"
 		echo "Updating $REPO"
 		echo -n "$(tput sgr0)"
-		# echo -e '\033[0;33m'"Updating $REPO"'\033[0m'
 
-		git -C "$REPO" fetch \
+		git -C "$REPO" fetch              \
 			&& nice git -C "$REPO" bleach \
 			&& nice git -C "$REPO" pull
 	fi
 else
-	fd -HIL -td -tf -0 '\A.git\z' "${1:-$PWD}" | {
+	fd -uL -td -tf -0 '\A.git\z' "${1:-$PWD}" | {
 		if [[ -n "$(command -v parallel)" ]]; then
-			parallel -k -j-2 --delay 0.3 -0 "$0" {}
+			parallel -j-2 --delay 0.3 -0 "$0" {}
 		else
 			xargs -0 --max-args=1 --no-run-if-empty "$0"
 		fi

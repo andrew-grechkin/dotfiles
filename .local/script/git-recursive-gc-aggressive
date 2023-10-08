@@ -1,12 +1,16 @@
 #!/usr/bin/env zsh
 
+# vim: filetype=sh
 # man: zshexpn
 
 set -Euo pipefail
 
 if [[ "$#" -eq "1" ]] && [[ "$1" =~ \.git/?$ ]]; then
-	if [[ "$1" =~ ^\.git/?$ ]]; then
+	if [[ "$1" =~ \\\.git/?$ ]]; then
 		REPO=$(dirname "$1")
+	else
+		REPO="$1"
+	fi
 
 	echo -n "$(tput setaf 3)"
 	echo "Gc aggressive  $REPO"
@@ -17,9 +21,9 @@ if [[ "$#" -eq "1" ]] && [[ "$1" =~ \.git/?$ ]]; then
 	nice git -C "$REPO" reflog expire --all --expire=now \
 		&& nice git -C "$REPO" gc --prune=now --aggressive
 else
-	fd -HIL -td -tf -0 '\A.git\z' "${1:-$PWD}" | {
+	fd -uL -td -tf -0 '.git\z' "${1:-$PWD}" | {
 		if [[ -n "$(command -v parallel)" ]]; then
-			parallel -k -j-2 --delay 0.3 -0 "$0" {}
+			parallel -j-2 --delay 0.3 -0 "$0" {}
 		else
 			xargs -0 --max-args=1 --no-run-if-empty "$0"
 		fi
