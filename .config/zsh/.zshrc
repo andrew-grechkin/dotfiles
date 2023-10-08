@@ -3,7 +3,6 @@
 source-file "$XDG_CONFIG_HOME/shell/rc"
 source-file "$XDG_CONFIG_HOME/shell/rc.work"
 
-export HISTFILE="${HISTFILE:-$XDG_CONFIG_HOME/zsh-history}"
 export HISTORY_IGNORE='(exit( *)#|history( *)#|[bfr]g *|cd *|l[alsh] *|less *|vi[m]# *|kill *)'
 
 # => PATH prepare (tail) ----------------------------------------------------------------------------------------- {{{1

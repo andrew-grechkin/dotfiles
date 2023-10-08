@@ -1,54 +1,18 @@
 # vim: filetype=sh foldmethod=marker
 
-export       XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
-export        XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
-export         XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
-export       XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-$HOME/.cache}"
-export        XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
-
-export           TMUX_TMPDIR="$XDG_RUNTIME_DIR"
 if [[ -d "/volume1/local/arch/usr" ]]; then
-	export                  LESS='-x4 -iRSw'
+	unsetopt GLOBAL_RCS
+	export PAGER="less"
 else
-	export                  LESS='-x4 -iRSw --mouse'
+	export HAS_MOUSE='1'
+	export LESS='-x4 -iRSw --mouse'
 fi
-
-export                EDITOR="${EDITOR:-vim}"
-export                 PAGER="${PAGER:-less}"
-export                VISUAL="${VISUAL:-vim}"
-
-# => cleanup some litter in $HOME --------------------------------------------------------------------------------- {{{1
-
-export            CARGO_HOME="$XDG_CACHE_HOME/cargo"
-export         DOCKER_CONFIG="$XDG_CONFIG_HOME/docker"
-export               INPUTRC="$XDG_CONFIG_HOME/inputrc"
-export NPM_CONFIG_USERCONFIG="$XDG_CONFIG_HOME/npm/npmrc"
-export            TIGRC_USER="$XDG_CONFIG_HOME/tigrc"
-export        MYSQL_HISTFILE="$XDG_CACHE_HOME/mysql_history"
-# export              GEM_HOME="$XDG_CACHE_HOME/gem"
-# export              GEM_PATH="$XDG_CACHE_HOME/gem"
-# export        GEM_SPEC_CACHE="$GEM_HOME/spec"
-export                GOPATH="$XDG_CACHE_HOME/go"
-export            PYLINTHOME="$XDG_CACHE_HOME/pylint.d"
-export     REDISCLI_HISTFILE="$XDG_DATA_HOME/redis/cli-history"
 
 # => make necessary dirs ------------------------------------------------------------------------------------------ {{{1
 
 [[ -e "$XDG_CONFIG_HOME" ]] || mkdir -p "$XDG_CONFIG_HOME"
 [[ -e "$XDG_CACHE_HOME"  ]] || mkdir -p "$XDG_CACHE_HOME"
 [[ -e "$XDG_DATA_HOME"   ]] || mkdir -p "$XDG_DATA_HOME"
-
-# => -------------------------------------------------------------------------------------------------------------- {{{1
-
-[[ -e "$XDG_CONFIG_HOME/ripgreprc" ]] && export RIPGREP_CONFIG_PATH="$XDG_CONFIG_HOME/ripgreprc"
-[[ -e "$XDG_CONFIG_HOME/wgetrc"    ]] && export WGETRC="$XDG_CONFIG_HOME/wgetrc"
-
-# => yamlfix ------------------------------------------------------------------------------------------------------ {{{1
-
-export YAMLFIX_LINE_LENGTH="120"
-export YAMLFIX_NONE_REPRESENTATION="null"
-export YAMLFIX_SECTION_WHITELINES="1"
-export YAMLFIX_WHITELINES="1"
 
 # => source common functions -------------------------------------------------------------------------------------- {{{1
 
