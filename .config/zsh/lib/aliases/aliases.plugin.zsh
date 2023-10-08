@@ -8,7 +8,7 @@ alias e='menu-environment'
 # => ls ----------------------------------------------------------------------------------------------------------- {{{1
 
 if [[ -n "$(command -v exa)"  ]]; then
-	alias l='exa -lFh --group-directories-first'
+	alias l='exa -lFh --group --group-directories-first'
 	alias la='l -a --sort=name'
 else
 	alias l='ls -lFhv --group-directories-first' # long list, show type, human readable, group dirs
