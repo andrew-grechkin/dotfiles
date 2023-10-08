@@ -15,6 +15,7 @@
 .config/vifm/scripts/README
 .config/vifm/vifm-help.txt
 .config/vifm/vifminfo*
+.config/vim/.netrwhist
 .config/zsh/completion/_bk
 .local/bin
 .ssh/authorized_keys

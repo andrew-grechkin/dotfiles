@@ -33,7 +33,7 @@ sub main() {
 
     my %links;
     foreach my $inode (@inodes) {
-        my @cmd = (qw(btrfs inspect-internal inode-resolve), $inode, '.');
+        my @cmd = (qw(sudo btrfs inspect-internal inode-resolve), $inode, '.');
         chomp(my @links = `@cmd`);
         $links{$inode} = [sort map {_find_absolute_path($_)} @links];
     }

@@ -7,7 +7,11 @@ export       XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-$HOME/.cache}"
 export        XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 
 export           TMUX_TMPDIR="$XDG_RUNTIME_DIR"
-export                  LESS='-x4 -iRSw --mouse'
+if [[ -d "/volume1/local/arch/usr" ]]; then
+	export                  LESS='-x4 -iRSw'
+else
+	export                  LESS='-x4 -iRSw --mouse'
+fi
 
 export                EDITOR="${EDITOR:-vim}"
 export                 PAGER="${PAGER:-less}"
