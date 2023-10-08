@@ -6,7 +6,7 @@
 set -Euo pipefail
 
 if [[ "$#" -eq "1" ]] && [[ "$1" =~ \.git/?$ ]]; then
-	if [[ "$1" =~ \\\.git/?$ ]]; then
+	if [[ "$1" =~ /\.git/?$ ]]; then
 		REPO=$(dirname "$1")
 	else
 		REPO="$1"
