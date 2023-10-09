@@ -90,15 +90,15 @@ function install_modules() {
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1
 
-check_prerequisites && install_perl && install_modules && {
+if check_prerequisites && install_perl && install_modules; then
 	# different actions if running as part of another script or directly in a user shell
 	if [[ -z "$PS1" ]]; then
 		[[ -n "$*" ]] && perlbrew exec --with "$LIBRARY_NAME" "$@"
 	else
 		perlbrew use "$LIBRARY_NAME"
 	fi
-	return 0
-}
-
-echo "Something went wront" >/dev/stderr
-return 1
+	(exit 0)
+else
+	echo "Something went wront" >/dev/stderr
+	(exit 1)
+fi
