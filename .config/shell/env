@@ -1,8 +1,13 @@
 # vim: filetype=sh foldmethod=marker
 
+export HOSTNAME="${HOSTNAME:-$(hostname)}"
+
 if [[ -d "/volume1/local/arch/usr" ]]; then
 	unsetopt GLOBAL_RCS
 	export PAGER="less"
+elif [[ -n "$HOSTNAME" && "$HOSTNAME" =~ king\.com$ ]]; then
+	# on kvm use defaults
+	true
 else
 	export HAS_MOUSE='1'
 	export LESS='-x4 -iRSw --mouse'

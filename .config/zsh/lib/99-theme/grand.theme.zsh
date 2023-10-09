@@ -50,7 +50,7 @@ ${ZSH_THEME['USER']}%F{cyan}@%f${ZSH_THEME['HOST']}${ZSH_THEME['CWD']}${ZSH_THEM
 
 zstyle    ':vcs_info:*'                 debug                    false
 zstyle    ':vcs_info:*'                 enable                   git
-if [[ -n "$HOSTNAME" && "$HOSTNAME" =~ .boo.ing.com$ ]]; then
+if [[ -n "$HOSTNAME" && "$HOSTNAME" =~ king\.com$ ]]; then
 	# this is too slow on a virtual machine in monorepo
 	zstyle    ':vcs_info:*'                 check-for-changes        false
 	zstyle    ':vcs_info:*'                 check-for-staged-changes false

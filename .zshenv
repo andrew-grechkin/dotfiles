@@ -1,7 +1,5 @@
 # vim: filetype=zsh foldmethod=marker
 
-unsetopt GLOBAL_RCS
-
 [[ -d "$HOME/.config/environment.d" ]] && {
 	for FILE in "$HOME/.config/environment.d"/*; do
 		source "$FILE" && {
