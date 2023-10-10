@@ -17,13 +17,15 @@ setopt HIST_SAVE_BY_COPY
 setopt HIST_VERIFY                                                             # show command with history expansion to user before running it
 setopt INC_APPEND_HISTORY
 
-if (( $(stat -c%s "$HISTFILE") < 10000 )); then
-	[[ -r "${HISTFILE}.back" ]] && {
-	echo 'History file is lower than 10 kbytes, restoring backup...'
-	cp -f "${HISTFILE}.back" "$HISTFILE"
-	}
-else
-	cp -f "$HISTFILE" "${HISTFILE}.back"
+if [[ -r "$HISTFILE" ]]; then
+	if (( $(stat -c%s "$HISTFILE") < 10000 )); then
+		[[ -r "${HISTFILE}.back" ]] && {
+			echo 'History file is lower than 10 kbytes, restoring backup...'
+			cp -f "${HISTFILE}.back" "$HISTFILE"
+		}
+	else
+		cp -f "$HISTFILE" "${HISTFILE}.back"
+	fi
 fi
 
 # => alias -------------------------------------------------------------------------------------------------------- {{{1
