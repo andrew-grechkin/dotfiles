@@ -16,6 +16,8 @@
 .config/vifm/vifm-help.txt
 .config/vifm/vifminfo*
 .config/vim/.netrwhist
+.config/zsh/.zcompdump
+.config/zsh/3rdparty/
 .config/zsh/completion/_bk
 .local/bin
 .ssh/authorized_keys

@@ -26,7 +26,7 @@ function body() {
 
 	if grep 'application/json' <<<"$TYPE" &>/dev/null; then
 		jq -S  --indent 2 < "$1" | bat -l JSON --style=numbers --color=always --tabs=4 && exit 0
-	elif grep 'text/plain' <<<"$TYPE" &>/dev/null && [[ "$EXT" =~ yaml? ]]; then
+	elif [[ "$EXT" =~ yaml? ]]; then
 		yaml-sanitize < "$1" | yamlfix - | bat -l yaml --style=numbers --color=always --tabs=4 && exit 0
 	elif grep 'application/x-.*executable' <<<"$TYPE" &>/dev/null; then
 		{ readelf -dW "$1" && echo && nm -DC "$1"; } && exit 0

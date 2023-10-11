@@ -1,6 +1,22 @@
 # vim: filetype=zsh foldmethod=marker
+# shellcheck shell=bash
 
-source-file "$XDG_CONFIG_HOME/shell/rc"
+export                 LANG=${LANG:-en_US.utf8}
+export         LESSHISTFILE=-
+
+# => set PATH ---------------------------------------------------------------------------------------------------- {{{1
+
+if [[ "$(hostname)" = "home" ]]; then
+	_prependvar PATH "/volume1/@appstore/ffmpeg/bin"
+fi
+
+[[ -d "/var/packages/arch/bin"      ]] && _prependvar PATH "/var/packages/arch/bin"
+[[ -d "/volume1/local/arch/bin"     ]] && _prependvar PATH "/volume1/local/arch/bin"
+[[ -d "/volume1/local/arch/usr/bin" ]] && _prependvar PATH "/volume1/local/arch/usr/bin"
+export PATH
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
 source-file "$XDG_CONFIG_HOME/shell/rc.work"
 
 export HISTORY_IGNORE='(exit( *)#|history( *)#|[bfr]g *|cd *|l[alsh] *|less *|vi[m]# *|kill *)'

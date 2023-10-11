@@ -23,7 +23,7 @@
 --no-ignore-exclude
 --no-ignore-global
 --no-ignore-parent
---no-ignore-vcs
+# --no-ignore-vcs
 
 --glob
 !.git/

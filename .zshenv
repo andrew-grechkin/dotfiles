@@ -1,5 +1,9 @@
 # vim: filetype=zsh foldmethod=marker
 
+if [[ "$IS_NAS" == "1" ]]; then
+	unsetopt GLOBAL_RCS
+fi
+
 [[ -d "$HOME/.config/environment.d" ]] && {
 	for FILE in "$HOME/.config/environment.d"/*; do
 		source "$FILE" && {
@@ -9,8 +13,8 @@
 	done
 }
 
-[[ -z "$ZSH_INITED" ]] && {
-	export ZSH_INITED=1
-
-	[[ -r "$XDG_CONFIG_HOME/zsh/.zshenv" ]] && source "$XDG_CONFIG_HOME/zsh/.zshenv"
-}
+if [[ -o login ]]; then
+	exec "$SHELL" -l
+else
+	exec "$SHELL"
+fi
