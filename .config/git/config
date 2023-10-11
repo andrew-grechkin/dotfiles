@@ -186,4 +186,4 @@
 
 [include]
 	path = ~/.config/gitconfig.overrides
-	path = ~/.config/git/delta.gitconfig.conditional
+	path = ~/.config/gitconfig.delta

@@ -62,7 +62,7 @@ ln -srf .local/share/vim-plug                                ~/.local/share/
 ln -srf .local/share/wiki                                    ~/.local/share/
 
 [[ -x "$(command which -- delta)" ]] && {
-	ln -srfn .config/git/delta.gitconfig                     ~/.config/git/delta.gitconfig.conditional
+	ln -srfn .config/git/gitconfig.delta                     ~/.config/gitconfig.delta
 }
 
 [[ -x "/volume1/local/arch/usr/bin/vim" ]] && {
