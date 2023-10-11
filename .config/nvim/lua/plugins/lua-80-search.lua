@@ -53,18 +53,19 @@ runtime plugin/grepper.vim                                         " initialize 
 let g:grepper.highlight   = 1
 let g:grepper.jump        = 0
 let g:grepper.quickfix    = 0
-let g:grepper.dir         = 'repo,cwd,file'
+"let g:grepper.dir         = 'repo,cwd,file' do not uncomment. operator stops working
 let g:grepper.repo        = ['.git', '.hg', '.svn', '.cache']
 let g:grepper.side        = 0
-let g:grepper.stop        = 255
-let g:grepper.tools       = ['git', 'rg', 'ag', 'ack', 'ack-grep', 'grep']
-let g:grepper.ag.grepprg .= ' --hidden'
-let g:grepper.rg.grepprg .= ' --hidden --smart-case'
+let g:grepper.stop        = 2000
+let g:grepper.tools       = ['rg', 'git', 'ag', 'ack', 'ack-grep', 'grep']
+let g:grepper.git.grepprg .= ' -i'
 
-nnoremap <silent> <plug>(GrepperOperatorRepo) :let g:grepper.operator.dir='repo,cwd,file' <bar> set opfunc=GrepperOperator<cr>g@
-nnoremap <silent> <plug>(GrepperOperatorFile) :let g:grepper.operator.dir='file,repo,cwd' <bar> set opfunc=GrepperOperator<cr>g@
-vnoremap <silent> <plug>(GrepperOperatorRepo) :<c-u>let g:grepper.operator.dir='repo,cwd,file' <bar> call GrepperOperator(visualmode())<CR>
-vnoremap <silent> <plug>(GrepperOperatorFile) :<c-u>let g:grepper.operator.dir='file,repo,cwd' <bar> call GrepperOperator(visualmode())<CR>
+let g:grepper.operator.git.grepprg .= ' -i'
+
+nnoremap <silent> <plug>(GrepperOperatorRepo) :let      g:grepper.operator.dir='repo,cwd,file' <BAR> set opfunc=GrepperOperator<CR>g@
+nnoremap <silent> <plug>(GrepperOperatorFile) :let      g:grepper.operator.dir='file,repo,cwd' <BAR> set opfunc=GrepperOperator<CR>g@
+vnoremap <silent> <plug>(GrepperOperatorRepo) :<C-u>let g:grepper.operator.dir='repo,cwd,file' <BAR> call GrepperOperator(visualmode())<CR>
+vnoremap <silent> <plug>(GrepperOperatorFile) :<C-u>let g:grepper.operator.dir='file,repo,cwd' <BAR> call GrepperOperator(visualmode())<CR>
 
 ]], false)
             local wk_ok, which_key = pcall(require, 'which-key')
@@ -72,26 +73,26 @@ vnoremap <silent> <plug>(GrepperOperatorFile) :<c-u>let g:grepper.operator.dir='
                 local normal_mappings = {
                     ['<leader>'] = {
                         -- Search for the current word
-                        ['*'] = {'<Esc>:Grepper -dir file -cword -noprompt<CR>', 'grep: dir'},
+                        ['*'] = {'<Esc>:Grepper -dir file -cword -noprompt<CR>', 'grep: file'},
                         ['8'] = {'<Esc>:Grepper -dir repo -cword -noprompt<CR>', 'grep: repo'},
                         -- Start Grepper prompt
-                        ['G'] = {'<Esc>:Grepper -dir file<CR>', 'grep: dir'},
+                        ['G'] = {'<Esc>:Grepper -dir file<CR>', 'grep: file'},
                         ['g'] = {'<Esc>:Grepper -dir repo<CR>', 'grep: repo'},
                     },
                     ['g'] = {
                         -- Search for the current selection or {motion} (see text-objects)
-                        ['S'] = {'<Plug>(GrepperOperatorFile)', 'grep: dir'},
+                        ['S'] = {'<Plug>(GrepperOperatorFile)', 'grep: file'},
                         ['s'] = {'<Plug>(GrepperOperatorRepo)', 'grep: repo'},
                     },
                 }
                 local visual_mappings = {
                     ['<leader>'] = {
                         -- Search current selection (alias for gs in visual mode)
-                        ['G'] = {'<Plug>(GrepperOperatorFile)', 'grep: dir'},
+                        ['G'] = {'<Plug>(GrepperOperatorFile)', 'grep: file'},
                         ['g'] = {'<Plug>(GrepperOperatorRepo)', 'grep: repo'},
                     },
                     ['g'] = {
-                        ['S'] = {'<Plug>(GrepperOperatorFile)', 'grep: dir'},
+                        ['S'] = {'<Plug>(GrepperOperatorFile)', 'grep: file'},
                         ['s'] = {'<Plug>(GrepperOperatorRepo)', 'grep: repo'},
                     },
                 }

@@ -39,3 +39,6 @@
 
 --glob
 !/media/
+
+--glob
+!/slib/
