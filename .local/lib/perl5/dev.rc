@@ -19,7 +19,7 @@ else
 fi
 
 NPROC=4
-[[ -x "$(command which -- nproc)" ]] && {
+[[ -x "$(command which -- nproc 2>/dev/null)" ]] && {
 	NPROC="$(nproc)"
 }
 

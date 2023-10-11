@@ -61,7 +61,7 @@ ln -srf .local/share/vim-dict                                ~/.local/share/
 ln -srf .local/share/vim-plug                                ~/.local/share/
 ln -srf .local/share/wiki                                    ~/.local/share/
 
-[[ -x "$(command which -- delta)" ]] && {
+[[ -x "$(command which -- delta 2>/dev/null)" ]] && {
 	ln -srfn .config/git/gitconfig.delta                     ~/.config/gitconfig.delta
 }
 
