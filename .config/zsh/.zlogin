@@ -4,7 +4,6 @@
 # => environment -------------------------------------------------------------------------------------------------- {{{1
 
 export HISTORY_IGNORE='(exit( *)#|history( *)#|[bfr]g *|cd *|l[alsh] *|less *|vi[m]# *|kill *)'
-export HOSTNAME="${HOSTNAME:-$(hostname)}"
 export LESSHISTFILE=-
 
 if [[ "$IS_NAS" == "1" ]]; then

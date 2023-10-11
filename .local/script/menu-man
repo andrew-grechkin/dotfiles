@@ -2,8 +2,6 @@
 
 set -Eo pipefail
 
-PATH="$(dirname "$0"):$PATH"
-
 export PERLBREW_ROOT="${PERLBREW_ROOT:-$XDG_DATA_HOME/perlbrew}"
 export PERLBREW_HOME="$PERLBREW_ROOT"
 [[ -r "$PERLBREW_ROOT/etc/bashrc" ]] && source "$PERLBREW_ROOT/etc/bashrc"
@@ -11,7 +9,7 @@ export PERLBREW_HOME="$PERLBREW_ROOT"
 man -ak . \
 	| perl -nlE '
 		($n, $s, $t) = m/\A(.+?) \s+ [(] (\d+.*) [)] \s+ - \s+ (.+) \z/xx;
-		$r{$n} = sprintf("%-40s (%d) %s\texport MANPAGER=\"nvim +Man!\"; man -s $s $n", $n, $s, $t) if $n;
+		$r{"$n/$s"} = sprintf("%-40s (%d) %s\texport MANPAGER=\"nvim +Man!\"; man -s $s $n", $n, $s, $t) if $n;
 		END { say $r{$_} foreach sort keys %r }
 ' \
 	| fzf-execute-term

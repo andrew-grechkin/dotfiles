@@ -56,3 +56,34 @@ DIRSTACK['file']="$XDG_CACHE_HOME/z_dirs"
 DIRSTACK['size']=20
 
 tty &>/dev/null && typeset -Hg is_tty=1
+
+# => set PATH ---------------------------------------------------------------------------------------------------- {{{1
+
+if [[ "$IS_NAS" == "1" ]]; then
+	_prependvar PATH "/volume1/@appstore/ffmpeg/bin"
+	[[ -d "/var/packages/arch/bin"      ]] && _prependvar PATH "/var/packages/arch/bin"
+	[[ -d "/volume1/local/arch/bin"     ]] && _prependvar PATH "/volume1/local/arch/bin"
+	[[ -d "/volume1/local/arch/usr/bin" ]] && _prependvar PATH "/volume1/local/arch/usr/bin"
+fi
+
+# => PATH prepare (tail) ----------------------------------------------------------------------------------------- {{{1
+
+typeset -U PATH path
+[[ -d "$HOME/.local/bin"                                ]] && path+=("$HOME/.local/bin")
+[[ -d "$HOME/.local/script"                             ]] && path+=("$HOME/.local/script")
+[[ -d "$HOME/.local/script-private"                     ]] && path+=("$HOME/.local/script-private")
+[[ -d "$HOME/.local/script-work"                        ]] && path+=("$HOME/.local/script-work")
+[[ -d "$HOME/.local/usr/bin"                            ]] && path+=("$HOME/.local/usr/bin")
+[[ -d "$HOME/.cache/bin"                                ]] && path+=("$HOME/.cache/bin")
+[[ -d "$HOME/.cache/fzf/bin"                            ]] && path+=("$HOME/.cache/fzf/bin")
+[[ -d "$HOME/.local/share/nvim/mason/bin"               ]] && path+=("$HOME/.local/share/nvim/mason/bin")
+[[ -d "/volume1/local/arch/bin"                         ]] && path+=("/volume1/local/arch/bin")
+[[ -d "/volume1/local/arch/usr/bin"                     ]] && path+=("/volume1/local/arch/usr/bin")
+[[ -d "/volume1/local/arch/usr/bin/core_perl"           ]] && path+=("/volume1/local/arch/usr/bin/core_perl")
+[[ -d "/volume1/local/arch/usr/bin/site_perl"           ]] && path+=("/volume1/local/arch/usr/bin/core_perl")
+[[ -d "/volume1/local/arch/usr/bin/vendor_perl"         ]] && path+=("/volume1/local/arch/usr/bin/vendor_perl")
+[[ -n "$GOPATH"                ]] && [[ -d "$GOPATH"                ]] && path+=("$GOPATH/bin")
+# [[ -n "$GEM_HOME"              ]] && [[ -d "$GEM_HOME"              ]] && path+=("$GEM_HOME/bin")
+[[ -n "$XDG_DATA_HOME/npm/bin" ]] && [[ -d "$XDG_DATA_HOME/npm/bin" ]] && path+=("$XDG_DATA_HOME/npm/bin")
+
+export PATH
