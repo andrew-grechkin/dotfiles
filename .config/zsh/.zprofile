@@ -7,22 +7,56 @@ if [[ -z "$TMUX" ]] && ! [[ "${SSH_CLIENT}" =~ /::1/ ]] && ! [[ "${SSH_CLIENT}" 
 	exec tmux new-session -s ssh-auto -A
 fi
 
-# => Automatically grant permissions on shared session ------------------------------------------------------------ {{{1
+# => SSH agent ---------------------------------------------------------------------------------------------------- {{{1
 
-TMUX_SHARED_SOCKET="/tmp/tmux-shared-socket-$USER"
-if [[ -S "$TMUX_SHARED_SOCKET" ]]; then
-	chmod go+rw "$TMUX_SHARED_SOCKET"
-fi
+SSH_AGENTS=(
+	"${XDG_RUNTIME_DIR}/keyring/ssh" # Gnome keyring agent
+	"${XDG_RUNTIME_DIR}/S.ssh-agent" # OpenSSH agent
+	"${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.ssh" # Gnupg ssh agent
+)
 
-# => -------------------------------------------------------------------------------------------------------------- {{{1
+function _is_ssh_auth_sock_ok() {
+	[[ -n "$SSH_AUTH_SOCK" ]] && [[ -S "$SSH_AUTH_SOCK" ]]
+}
 
-# if [[ -z "$TMUX" ]]; then
-# 	typeset -Hg dotprofile_executed="login"
-# else
-# 	typeset -Hg dotprofile_executed="tmux"
-# fi
+function _try_existing_ssh_auth_sock_term() {
+	test -S "$AGENT" && export SSH_AUTH_SOCK="${SSH_AGENTS[1]}" && return 0
+	return 2
+}
 
-# => SSH agent --------------------------------------------------------------------------------------------------- {{{1
+function _try_existing_ssh_auth_sock() {
+	for AGENT in "${SSH_AGENTS[@]}"; do
+		test -S "$AGENT" && export SSH_AUTH_SOCK="$AGENT" && return 0
+	done
+	return 2
+}
+
+function _check_gpg_agent() {
+	source-file "$XDG_CACHE_HOME/gpg-agent.rc" && _check_auth_sock
+}
+
+function _check_ssh_agent() {
+	source-file "$XDG_CACHE_HOME/ssh-agent.rc" && _check_auth_sock && [[ -n "$SSH_AGENT_PID" && -e "/proc/$SSH_AGENT_PID" ]]
+}
+
+function _start_ssh_agent() {
+	local SSHAGENT='/usr/bin/ssh-agent'
+	local SSHAGENTARGS=(-s)
+
+	if [[ -x "$SSHAGENT" ]]; then
+		# eval `$SSHAGENT $SSHAGENTARGS`
+		# trap "kill $SSH_AGENT_PID" 0
+		# shellcheck disable=2091
+		$("$SSHAGENT" "${SSHAGENTARGS[@]}" >"$XDG_CACHE_HOME/ssh-agent.rc")
+		source-file "$XDG_CACHE_HOME/ssh-agent.rc"
+	fi
+
+	# add ssh keys if empty
+	# RESULT=$(ssh-add -l 2>/dev/null | grep '.ssh/id_')
+	# if [[ "0" = "${#RESULT}" ]]; then
+	# ssh-add
+	# fi
+}
 
 if [[ -n "$SSH_CLIENT" ]] || [[ -n "$SSH_CONNECTION" ]] || [[ -n "$SSH_TTY" ]]; then
 ### for remote sessions

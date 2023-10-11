@@ -25,20 +25,7 @@
 --no-ignore-parent
 # --no-ignore-vcs
 
---glob
-!.git/
-
---glob
-!$HOME/.cache/
-
---glob
-!$HOME/.config/
-
---glob
-!fuse/
-
---glob
-!/media/
-
---glob
-!/slib/
+--glob=!/.git/
+--glob=!/media/
+--glob=!/slib/
+--glob=!fuse/
