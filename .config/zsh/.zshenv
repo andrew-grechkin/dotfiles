@@ -46,16 +46,9 @@ function _appendvar() {
 
 # => hide all ZSH configuration related environment variables ----------------------------------------------------- {{{1
 
-typeset -Hg HISTORY_BASE HYPHEN_INSENSITIVE REPORTTIME ZSH_CACHE_DIR ZSH_COMPDUMP
-HISTORY_BASE=$XDG_CACHE_HOME/per-directory-history
-HYPHEN_INSENSITIVE=1
-REPORTTIME=10
+typeset -Hg ZSH_CACHE_DIR ZSH_COMPDUMP
 ZSH_CACHE_DIR=$XDG_CACHE_HOME
 ZSH_COMPDUMP=$XDG_CACHE_HOME/zcompdump-${ZSH_VERSION}
-
-typeset -AHg DIRSTACK
-DIRSTACK['file']="$XDG_CACHE_HOME/z_dirs"
-DIRSTACK['size']=20
 
 tty &>/dev/null && typeset -Hg is_tty=1
 

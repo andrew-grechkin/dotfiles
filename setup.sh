@@ -13,6 +13,7 @@ mkdir -p ~/{desktop,documents,downloads,music,pictures,public,templates,videos}
 
 SCRIPT=$(realpath -s "$0")
 WORKDIR=$(dirname "$SCRIPT")
+export PATH="$PATH:$WORKDIR/.local/script"
 
 cd "$WORKDIR" || exit 1
 

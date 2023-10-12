@@ -10,6 +10,17 @@ export LANG=${LANG:-en_US.utf8}
 
 source-file "$XDG_CONFIG_HOME/shell/rc.work"
 
+# => hide all ZSH configuration related environment variables ----------------------------------------------------- {{{1
+
+typeset -Hg HISTORY_BASE HYPHEN_INSENSITIVE REPORTTIME
+HISTORY_BASE=$XDG_CACHE_HOME/per-directory-history
+HYPHEN_INSENSITIVE=1
+REPORTTIME=10
+
+typeset -AHg DIRSTACK
+DIRSTACK['file']="$XDG_CACHE_HOME/z_dirs"
+DIRSTACK['size']=20
+
 # => load library and plugins ------------------------------------------------------------------------------------- {{{1
 
 # https://zsh.sourceforge.io/Doc/Release/Completion-System.html#Completion-System
