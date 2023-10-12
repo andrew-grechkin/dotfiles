@@ -10,7 +10,7 @@ export LANG=${LANG:-en_US.utf8}
 
 source-file "$XDG_CONFIG_HOME/shell/rc.work"
 
-# => load library and plugins ------------------------------------------------------------------------------------ {{{1
+# => load library and plugins ------------------------------------------------------------------------------------- {{{1
 
 # https://zsh.sourceforge.io/Doc/Release/Completion-System.html#Completion-System
 # https://thevaluable.dev/zsh-completion-guide-examples/
@@ -29,7 +29,7 @@ for FILE in "${files[@]}"; do
 	builtin source "$FILE"
 done
 
-# => PATH prepare (head) ----------------------------------------------------------------------------------------- {{{1
+# => PATH prepare (head) ------------------------------------------------------------------------------------------ {{{1
 
 [[ -n "$HOMEBREW_PREFIX" ]] && [[ -d "$HOMEBREW_PREFIX" ]] && path=("$HOMEBREW_PREFIX/bin"        "${path[@]}")
 [[ -n "$HOMEBREW_PREFIX" ]] && [[ -d "$HOMEBREW_PREFIX" ]] && path=("$HOMEBREW_PREFIX/sbin"       "${path[@]}")
@@ -44,11 +44,11 @@ export PATH
 
 WORDCHARS=${WORDCHARS/\/}
 
-# => Use zsh help search ----------------------------------------------------------------------------------------- {{{1
+# => Use zsh help search ------------------------------------------------------------------------------------------ {{{1
 
 (( $+aliases[run-help] )) && unalias run-help
 autoload -Uz run-help
 
-# => show profiler ----------------------------------------------------------------------------------------------- {{{1
+# => show profiler ------------------------------------------------------------------------------------------------ {{{1
 
 # zprof

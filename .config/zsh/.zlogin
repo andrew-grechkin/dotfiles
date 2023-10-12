@@ -96,3 +96,7 @@ function gen-cdpath() {
 } &>/dev/null
 
 gen-cdpath
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+source-file "$XDG_CONFIG_HOME/shell/login.work"
