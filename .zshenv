@@ -16,5 +16,5 @@ fi
 if [[ -o login ]]; then
 	exec "$SHELL" -l
 else
-	exec "$SHELL"
+	# do nothing
 fi
