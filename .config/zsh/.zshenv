@@ -14,10 +14,12 @@ fi
 # => zsh init vital helprer functions ----------------------------------------------------------------------------- {{{1
 
 function source-file() {
-	[[ -r "$1" ]] && {
+	if [[ -r "$1" ]]; then
 		# [[ -w "${1}" ]] && [[ "${1}" -nt "${1}.zwc" ]] && zcompile "$1"
 		builtin source "$1"
-	}
+	else
+		true
+	fi
 }
 
 function _prependvar() {
