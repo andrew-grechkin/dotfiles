@@ -4,7 +4,8 @@ set complete+=kspell                                                           "
 set shortmess+=c
 set completeopt=menuone,noinsert,noselect,preview
 
-set foldcolumn=2 foldmethod=syntax
+set foldcolumn=2
+" set foldmethod=syntax
 
 set list listchars=tab:↹\ ,trail:␣,extends:>,precedes:<,nbsp:+                 " Visual form of special characters
 "set listchars+=eol:↵                                                          " Visible end of line

@@ -81,6 +81,7 @@ return {
                     ['<leader>'] = {
                         name = 'Setup',
                         ['.'] = {':execute "lcd" dir#git_root()<CR>', 'cd to git-root'},
+                        ['d'] = {':DBUIToggle<CR>', 'db ui'},
                         ['h'] = {'<cmd>checkhealth<CR>', 'Health'},
                         ['m'] = {':belowright 10split term://zsh<CR>', 'open terminal'},
                         ['t'] = {':tab split<CR>', 'tab: split'},
@@ -120,9 +121,7 @@ return {
             }
 
             local visual_mappings = {
-                ['<leader>'] = {
-                    ['<CR>'] = {':!bash<CR>', 'execute lines in shell'},
-                },
+                ['<leader>'] = {['<CR>'] = {':!bash<CR>', 'execute lines in shell'}},
                 ['<'] = {'<gv', 'don\'t loose selection when changing indentation'},
                 ['>'] = {'>gv', 'don\'t loose selection when changing indentation'},
                 P = {'"zdP', 'paste replace visual selection without copying it'},

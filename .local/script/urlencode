@@ -1,0 +1,12 @@
+#!/usr/bin/env perl
+
+use v5.36;
+use autodie;
+use open ':locale';
+use warnings qw(FATAL utf8);
+
+use Mojo::Util qw(url_escape);
+
+print url_escape(<>);
+
+__END__
