@@ -43,6 +43,7 @@ ln -srf .config/picom.conf                                   ~/.config/
 ln -srf .config/pylintrc                                     ~/.config/
 ln -srf .config/ripgreprc                                    ~/.config/
 ln -srf .config/shell                                        ~/.config/
+ln -srf .config/sqlfluff                                     ~/.config/
 ln -srf .config/sxhkd                                        ~/.config/
 ln -srf .config/systemd                                      ~/.config/
 ln -srf .config/tmux                                         ~/.config/

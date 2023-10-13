@@ -1,0 +1,4 @@
+[sqlfluff]
+dialect = mysql
+max_line_length = 120
+output_line_length = 120
