@@ -15,6 +15,17 @@ IS_WORK = GIT_NAME and GIT_NAME == 'Andrei Grechkin'
 HOSTNAME = vim.fn.system({'hostname'})
 IS_KVM = not not string.find(HOSTNAME, 'king.com')
 
+-- => commands ---------------------------------------------------------------------------------------------------- {{{1
+
+local f = vim.api.nvim_create_user_command
+f('Decode1251', ':edit! ++enc=cp1251 | set fileformat=unix | set fileencoding=utf-8', {bang = true})
+f('Decode866', ':edit! ++enc=cp866 | set fileformat=unix | set fileencoding=utf-8', {bang = true})
+f('DecodeKoi', ':edit! ++enc=koi8-r | set fileformat=unix | set fileencoding=utf-8', {bang = true})
+f('W', ':execute \':silent w !sudo tee % > /dev/null\' | :edit!', {bang = true}) -- Save file with root privileges
+f('Retab', 'call tabs#beginning()', {bang = true})
+
+-- => plugins ----------------------------------------------------------------------------------------------------- {{{1
+
 require('setup-plugins')
 
 -- vim.cmd('runtime! init/**/*.lua')

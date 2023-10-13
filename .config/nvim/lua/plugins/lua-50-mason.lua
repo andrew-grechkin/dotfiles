@@ -137,6 +137,7 @@ return {
                     'markuplint',
                     'proselint',
                     'shellcheck',
+                    'sqlfluff',
                     'stylelint',
                     'vint',
                     'yamllint',

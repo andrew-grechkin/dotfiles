@@ -13,4 +13,7 @@ return {
             require('neodev').setup({library = {plugins = {'neotest'}, types = true}})
         end,
     },
+    { -- https://github.com/lambdalisue/suda.vim
+        'lambdalisue/suda.vim',
+    },
 }
