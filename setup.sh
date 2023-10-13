@@ -22,7 +22,6 @@ ln -sr  .ssh                                                 ~/ 2>/dev/null
 ln -srf .xprofile                                            ~/
 ln -srf .zshenv                                              ~/
 
-ln -srf .config/autorandr                                    ~/.config/
 ln -srf .config/black                                        ~/.config/
 ln -srf .config/bspwm                                        ~/.config/
 ln -srf .config/chromium-flags.conf                          ~/.config/

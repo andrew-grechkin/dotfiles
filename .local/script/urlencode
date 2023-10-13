@@ -4,7 +4,8 @@ use v5.36;
 
 use Mojo::Util qw(url_escape);
 
-chomp;
-say url_escape($_);
+my $removed = chomp;
+print url_escape($_);
+print "\n" if $removed;
 
 __END__

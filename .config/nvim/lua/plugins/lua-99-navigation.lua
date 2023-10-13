@@ -1,6 +1,12 @@
 return {
     { -- url: https://github.com/junegunn/fzf.vim
         'junegunn/fzf.vim',
+        dependencies = {
+            { -- url: https://github.com/junegunn/fzf
+                'junegunn/fzf',
+                build = './install --bin',
+            },
+        },
         config = function()
             vim.api.nvim_create_user_command('FilesCurrentDir', 'execute \'Files\' dir#current()', {
                 bang = true,
