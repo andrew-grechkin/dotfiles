@@ -14,13 +14,13 @@ git-in-repo || {
 
 cd "$(git root)" &>/dev/null
 
-ROLE="$(realpath --relative-to="$(pwd)/roles" "$ROLE")"
+ROLE="$(realpath --relative-to="$PWD/roles" "$ROLE")"
 
 echo "Trying to apply role '$ROLE'"
 
 export ANSIBLE_FORCE_COLOR='True'
 export ANSIBLE_RETRY_FILES_ENABLED='False'
-ANSIBLE_ROLES_PATH="$(pwd)/roles:${ANSIBLE_ROLES_PATH:-}"
+ANSIBLE_ROLES_PATH="$PWD/roles:${ANSIBLE_ROLES_PATH:-}"
 export ANSIBLE_ROLES_PATH
 
 echo "executing: ansible-playbook $*"

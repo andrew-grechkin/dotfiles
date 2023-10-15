@@ -53,12 +53,12 @@ return {
                 vim.api.nvim_set_hl(0, 'RainbowYellow', {fg = '#afa856'})
             end)
             local config = {
-                indent = {highlight = highlight, char = '┊', tab_char = '│'},
+                indent = {char = '┊', highlight = highlight, tab_char = '│'},
                 whitespace = {highlight = highlight, remove_blankline_trail = true},
                 scope = {
                     char = '┃',
                     enabled = true,
-                    highlight = {'Label', 'Function'},
+                    highlight = highlight,
                     show_end = true,
                     show_start = true,
                 },

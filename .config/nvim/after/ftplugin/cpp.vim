@@ -5,6 +5,4 @@ setlocal foldmethod=syntax
 
 setlocal path+=**,/usr/include/**
 
-setlocal formatprg=clang-format
-
 let b:man_default_sections = '3,2'

@@ -12,7 +12,6 @@ setlocal include=
 setlocal define=
 
 setlocal wildignore+=*\\webservice\\*
-setlocal formatprg=perltidy
 setlocal iskeyword+=$,@,%
 
 " Use old verion of syntax highlight regexp which look like working much faster (to check use syntime on -> syntime report)
