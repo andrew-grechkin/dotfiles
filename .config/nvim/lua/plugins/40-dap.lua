@@ -109,6 +109,7 @@ return {
                         },
                         b = {dap.toggle_breakpoint, 'DAP: toggle breakpoint'},
                         c = {dap.continue, 'DAP: start/continue'},
+                        d = {ui.toggle, 'DAP: UI toggle'},
                         e = {
                             function() ui.eval(vim.fn.input '[Expression] > ') end,
                             'DAP: UI expression',
@@ -116,7 +117,6 @@ return {
                         q = {dap.disconnect, 'DAP: quit'},
                         r = {dap.repl.open, 'DAP: REPL open'},
                         -- t = {python.test_method, 'DAP: test closest method'},
-                        u = {ui.toggle, 'DAP: UI toggle'},
                     },
                 },
                 ['<F6>'] = {dap.step_over, 'DAP: step over'},

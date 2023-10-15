@@ -14,6 +14,11 @@ return {
             'quangnguyen30192/cmp-nvim-ultisnips', -- 'uga-rosa/cmp-dictionary'
             'SirVer/ultisnips',
             'andrew-grechkin/vim-snippets',
+            { -- https://github.com/kristijanhusak/vim-dadbod-completion
+                'kristijanhusak/vim-dadbod-completion',
+                ft = {'sql', 'mysql', 'plsql'},
+                lazy = true,
+            },
         },
         config = function()
             local ok, plugin = pcall(require, 'cmp')
@@ -68,6 +73,7 @@ return {
                             tags = '[tags]',
                             tmux = '[tmux]',
                             ultisnips = '[snip]',
+                            ['vim-dadbod-completion'] = '[sql] ',
                         })[entry.source.name]
                         return vim_item
                     end,
@@ -112,6 +118,7 @@ return {
                 },
                 sources = {
                     {name = 'ultisnips'},
+                    {name = 'vim-dadbod-completion'},
                     {name = 'nvim_lsp'},
                     {name = 'nvim_lua'},
                     {name = 'path'},

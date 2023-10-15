@@ -26,7 +26,7 @@ function! BeautySh(buffer) abort
 endfunction
 execute ale#fix#registry#Add('beautysh', 'BeautySh', ['sh'], 'Beauty sh')
 
-execute ale#fix#registry#Add('sqlfluff', 'ale_fixers#mysql#sqlfluff#Fix', ['mysql'], 'Fix MySQL files with sqlfluff.')
+execute ale#fix#registry#Add('mysql_sqlfluff', 'ale_fixers#mysql#sqlfluff#Fix', ['mysql'], 'Fix MySQL files with sqlfluff.')
 
 call ale#linter#Define('mysql', {
 \   'name': 'sqlfluff',
@@ -34,6 +34,13 @@ call ale#linter#Define('mysql', {
 \   'command': function('ale_linters#mysql#sqlfluff#Command'),
 \   'callback': 'ale_linters#mysql#sqlfluff#Handle',
 \})
+
+function! Sql_Formatter(buffer) abort
+	return {
+	\   'command': 'sql-formatter -l mysql -c ~/.config/sql-formatter.json'
+	\}
+endfunction
+execute ale#fix#registry#Add('sql-formatter', 'Sql_Formatter', ['mysql', 'sql'], 'Format SQL')
 ]], false)
 
             vim.api.nvim_create_user_command('ALEToggleBufferFixers',
@@ -58,11 +65,11 @@ call ale#linter#Define('mysql', {
                 ['javascript'] = {'eslint'},
                 ['json'] = {'jq'},
                 ['lua'] = {'lua-format'},
+                ['mysql'] = {'sql-formatter', 'mysql_sqlfluff'},
                 ['perl'] = {'perltidy'},
                 ['python'] = {'black'},
                 ['sh'] = {'shellharden', 'beautysh'},
-                ['sql'] = {'sqlfluff'},
-                ['mysql'] = {'sqlfluff', 'sqlfmt', 'sqlformat'},
+                ['sql'] = {'sql-formatter', 'sqlfluff'},
                 ['typescript'] = {'prettier', 'deno', 'tslint', 'xo'},
                 ['vue'] = {'prettier', 'eslint'},
                 ['xml'] = {'xmllint'},
@@ -79,11 +86,16 @@ call ale#linter#Define('mysql', {
                 ['javascript'] = {'eslint', 'remove_trailing_lines', 'trim_whitespace'},
                 ['json'] = {'fixjson', 'jq', 'remove_trailing_lines', 'trim_whitespace'},
                 ['lua'] = {'lua-format', 'remove_trailing_lines', 'trim_whitespace'},
-                ['mysql'] = {'sqlfluff', 'remove_trailing_lines', 'trim_whitespace'},
+                ['mysql'] = {
+                    'sql-formatter',
+                    'mysql_sqlfluff',
+                    'remove_trailing_lines',
+                    'trim_whitespace',
+                },
                 ['perl'] = {'perltidy', 'remove_trailing_lines', 'trim_whitespace'},
                 ['python'] = {'isort', 'black', 'remove_trailing_lines', 'trim_whitespace'},
                 ['sh'] = {'shellharden', 'beautysh', 'remove_trailing_lines', 'trim_whitespace'},
-                ['sql'] = {'sqlfluff', 'sqlfmt', 'sqlformat', 'remove_trailing_lines', 'trim_whitespace'},
+                ['sql'] = {'sql-formatter', 'sqlfluff', 'remove_trailing_lines', 'trim_whitespace'},
                 ['typescript'] = {'eslint', 'remove_trailing_lines', 'trim_whitespace'},
                 ['vue'] = {'prettier', 'eslint', 'remove_trailing_lines', 'trim_whitespace'},
                 ['xml'] = {'xmllint', 'remove_trailing_lines', 'trim_whitespace'},

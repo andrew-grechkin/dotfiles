@@ -31,7 +31,16 @@ GET_WORKSPACE_DIR = function(path)
                                           ' rev-parse --show-superproject-working-tree --show-toplevel 2>/dev/null | head -1')
     if gitpath and gitpath[1] then return gitpath[1] end
 
-    local detected = vim.fs.dirname(vim.fs.find({'setup.py', 'pyproject.toml'}, {upward = true})[1])
+    local detected = vim.fs.dirname(vim.fs.find({
+        '.bzr',
+        '.hg',
+        '.svn',
+        '.vscode',
+        'Makefile',
+        'package.json',
+        'pyproject.toml',
+        'setup.py',
+    }, {upward = true})[1])
     if detected then return detected end
 
     return vim.loop.cwd()
