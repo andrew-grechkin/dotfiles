@@ -38,7 +38,7 @@ return {
                 separator_style = {'', ''},
                 show_buffer_close_icons = false,
                 show_buffer_icons = true, -- disable filetype icons for buffers
-                sort_by = 'insert_after_current',
+                sort_by = 'id',
             },
         },
     },

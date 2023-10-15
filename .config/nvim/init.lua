@@ -45,7 +45,7 @@ require('setup-plugins')
 
 -- [[ change CWD according to project root ]]
 local group_auto_cd = vim.api.nvim_create_augroup('WindowAutoCD', {clear = true})
-vim.api.nvim_create_autocmd({'BufReadPre'}, {
+vim.api.nvim_create_autocmd({'BufReadPost'}, {
     group = group_auto_cd,
     pattern = {'*'},
     callback = function(ev)
