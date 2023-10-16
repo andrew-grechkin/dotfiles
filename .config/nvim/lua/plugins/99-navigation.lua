@@ -50,23 +50,17 @@ return {
         config = function()
             local wk_ok, which_key = pcall(require, 'which-key')
             if wk_ok then
-                local normal_mappings = {
-                    ['<A-\\>'] = {'<Esc>:TmuxNavigatePrevious<CR>', 'tmux: navigate previous'},
-                    ['<A-h>'] = {'<Esc>:TmuxNavigateLeft<CR>', 'tmux: navigate left'},
-                    ['<A-j>'] = {'<Esc>:TmuxNavigateDown<CR>', 'tmux: navigate down'},
-                    ['<A-k>'] = {'<Esc>:TmuxNavigateUp<CR>', 'tmux: navigate up'},
-                    ['<A-l>'] = {'<Esc>:TmuxNavigateRight<CR>', 'tmux: navigate right'},
+                local mappings = {
+                    ['<M-\\>'] = {'<C-\\><C-n>:TmuxNavigatePrevious<CR>', 'tmux: navigate previous'},
+                    ['<M-h>'] = {'<C-\\><C-n>:TmuxNavigateLeft<CR>', 'tmux: navigate left'},
+                    ['<M-j>'] = {'<C-\\><C-n>:TmuxNavigateDown<CR>', 'tmux: navigate down'},
+                    ['<M-k>'] = {'<C-\\><C-n>:TmuxNavigateUp<CR>', 'tmux: navigate up'},
+                    ['<M-l>'] = {'<C-\\><C-n>:TmuxNavigateRight<CR>', 'tmux: navigate right'},
                 }
 
-                local insert_mappings = {
-                    ['<A-\\>'] = {'<Esc>:TmuxNavigatePrevious<CR>', 'tmux: navigate previous'},
-                    ['<A-h>'] = {'<Esc>:TmuxNavigateLeft<CR>', 'tmux: navigate left'},
-                    ['<A-j>'] = {'<Esc>:TmuxNavigateDown<CR>', 'tmux: navigate down'},
-                    ['<A-k>'] = {'<Esc>:TmuxNavigateUp<CR>', 'tmux: navigate up'},
-                    ['<A-l>'] = {'<Esc>:TmuxNavigateRight<CR>', 'tmux: navigate right'},
-                }
-                which_key.register(normal_mappings, {mode = 'n', nowait = true, noremap = true})
-                which_key.register(insert_mappings, {mode = 'i', nowait = true, noremap = true})
+                which_key.register(mappings, {mode = 'n', nowait = true, noremap = true})
+                which_key.register(mappings, {mode = 'i', nowait = true, noremap = true})
+                which_key.register(mappings, {mode = 't', nowait = true, noremap = true})
             end
         end,
     },

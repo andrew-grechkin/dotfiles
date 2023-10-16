@@ -118,6 +118,9 @@ return {
                 },
                 N = {'Nzzzv', 'N and centralize'},
                 n = {'nzzzv', 'n and centralize'},
+
+                ['<S-ScrollWheelUp>'] = {'<C-u>', 'scroll up'},
+                ['<S-ScrollWheelDown>'] = {'<C-d>', 'scroll down'},
             }
 
             local visual_mappings = {
@@ -132,13 +135,19 @@ return {
 
             local insert_mappings = {
                 ['<C-a>'] = {'<Esc>I', 'edit beginning of the line'},
-                ['<C-d>'] = {'<C-o>x', 'delete char forward'},
+                -- ['<C-d>'] = {'<C-o>x', 'delete char forward'},
                 ['<C-e>'] = {'<Esc>A', 'edit end of the line'},
                 ['<M-d>'] = {'<C-o>de', 'delete word forward'},
             }
             local command_mappings = {
                 ['<C-a>'] = {'<Home>', 'edit beginning of the line'},
                 ['<C-e>'] = {'<End>', 'edit end of the line'},
+            }
+
+            local normal_mappings_expr = {
+                -- When text is wrapped, move by terminal rows, not lines, unless a count is provided
+                ['j'] = {'(v:count == 0 ? \'gj\' : \'j\')', 'next line'},
+                ['k'] = {'(v:count == 0 ? \'gk\' : \'k\')', 'prev line'},
             }
 
             local norm_term_mappings = {
@@ -150,11 +159,12 @@ return {
 
             which_key.setup(config)
             which_key.register(normal_mappings, {mode = 'n', nowait = true, noremap = true})
+            which_key.register(normal_mappings_expr,
+                {mode = 'n', nowait = true, noremap = true, silent = true, expr = true})
             which_key.register(visual_mappings, {mode = 'v', nowait = true, noremap = true})
             which_key.register(insert_mappings, {mode = 'i', nowait = true, noremap = true})
             which_key.register(command_mappings, {mode = 'c', nowait = true, noremap = true})
             which_key.register(norm_term_mappings, {mode = 'n', nowait = true, noremap = true})
-            -- which_key.register(norm_term_mappings, {mode = 't', nowait = true, noremap = true})
         end,
     },
 }

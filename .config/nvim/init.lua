@@ -21,6 +21,13 @@ IS_WORK = GIT_NAME and GIT_NAME == 'Andrei Grechkin'
 HOSTNAME = vim.fn.system({'hostname'})
 IS_KVM = not not string.find(HOSTNAME, 'king.com')
 
+-- => settings ---------------------------------------------------------------------------------------------------- {{{1
+
+vim.o.mouse = 'a'
+
+vim.g.mapleader = ' '
+vim.g.maplocalleader = ' '
+
 -- => functions --------------------------------------------------------------------------------------------------- {{{1
 
 GET_WORKSPACE_DIR = function(path)
