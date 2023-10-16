@@ -107,6 +107,7 @@ return {
                     ['b'] = {':bnext<CR>', 'Buffer: next'},
                     ['t'] = {':tabnext<CR>', 'Tab: next'},
                 },
+                -- ['/'] = {'/\\v', 'search very magically'},
                 ['<C-a>'] = {'gg<S-v>G', 'select all'},
                 ['<C-d>'] = {'<C-d>zz', 'scroll down and centralize'},
                 ['<C-u>'] = {'<C-u>zz', 'scroll up and centralize'},
@@ -165,6 +166,9 @@ return {
             which_key.register(insert_mappings, {mode = 'i', nowait = true, noremap = true})
             which_key.register(command_mappings, {mode = 'c', nowait = true, noremap = true})
             which_key.register(norm_term_mappings, {mode = 'n', nowait = true, noremap = true})
+            vim.api.nvim_exec([[
+                :nnoremap <nowait> / /\v
+            ]], false)
         end,
     },
 }

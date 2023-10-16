@@ -78,7 +78,7 @@
 	autocrlf     = false
 	editor       = vim
 	longpaths    = true
-	pager        = less -x4 -i
+	pager        = less
 	preloadindex = true
 	quotepath    = false
 	tabwidth     = 4
