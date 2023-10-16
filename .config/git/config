@@ -140,6 +140,7 @@
 	color    = auto
 	date     = iso8601
 	decorate = short
+	follow   = true
 
 [merge]
 	tool          = fugitive

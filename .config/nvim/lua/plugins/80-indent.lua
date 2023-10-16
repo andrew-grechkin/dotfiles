@@ -1,26 +1,4 @@
-return {
-    -- { -- https://github.com/nmac427/guess-indent.nvim
-    --     'nmac427/guess-indent.nvim',
-    --     opts = {
-    --         auto_cmd = true, -- Set to false to disable automatic execution
-    --         buftype_exclude = { -- A list of buffer types for which the auto command gets disabled
-    --             'help',
-    --             'nofile',
-    --             'nowrite',
-    --             'prompt',
-    --             'terminal',
-    --         },
-    --         filetype_exclude = { -- A list of filetypes for which the auto command gets disabled
-    --             'fugitive',
-    --             'gitcommit',
-    --             'netrw',
-    --             'tutor',
-    --         },
-    --         override_editorconfig = false, -- Set to true to override settings set by .editorconfig
-    --     },
-    -- },
-    -- => --------------------------------------------------------------------------------------------------------- {{{1
-    { -- https://github.com/lukas-reineke/indent-blankline.nvim
+local indent = { -- https://github.com/lukas-reineke/indent-blankline.nvim
         'lukas-reineke/indent-blankline.nvim',
         config = function()
             local ok, plugin = pcall(require, 'ibl')
@@ -52,6 +30,7 @@ return {
                 vim.api.nvim_set_hl(0, 'RainbowViolet', {fg = '#865196'})
                 vim.api.nvim_set_hl(0, 'RainbowYellow', {fg = '#afa856'})
             end)
+
             local config = {
                 indent = {char = '┊', highlight = highlight, tab_char = '│'},
                 whitespace = {highlight = highlight, remove_blankline_trail = true},
@@ -66,5 +45,65 @@ return {
 
             plugin.setup(config)
         end,
-    },
+    }
+
+if vim.version().major < 1 and vim.version().minor < 9 then
+    indent = { -- https://github.com/lukas-reineke/indent-blankline.nvim
+        'lukas-reineke/indent-blankline.nvim',
+        version = '2.20.8',
+        config = function()
+            local ok, plugin = pcall(require, 'indent_blankline')
+            if not ok then return end
+
+            vim.opt.list = true
+            -- vim.opt.listchars:append 'eol:␤'
+            -- vim.opt.listchars:append 'space:⋅'
+
+            local config = {
+                char = '┊',
+                filetype_exclude = {
+                    'Trouble',
+                    'alpha',
+                    'dashboard',
+                    'help',
+                    'lazy',
+                    'lazyterm',
+                    'mason',
+                    'neo-tree',
+                    'notify',
+                    'toggleterm',
+                },
+                show_current_context = true,
+                show_current_context_start = true,
+                show_trailing_blankline_indent = false,
+            }
+
+            plugin.setup(config)
+        end,
+    }
+end
+
+return {
+    indent,
+    -- => --------------------------------------------------------------------------------------------------------- {{{1
+    -- { -- https://github.com/nmac427/guess-indent.nvim
+    --     'nmac427/guess-indent.nvim',
+    --     opts = {
+    --         auto_cmd = true, -- Set to false to disable automatic execution
+    --         buftype_exclude = { -- A list of buffer types for which the auto command gets disabled
+    --             'help',
+    --             'nofile',
+    --             'nowrite',
+    --             'prompt',
+    --             'terminal',
+    --         },
+    --         filetype_exclude = { -- A list of filetypes for which the auto command gets disabled
+    --             'fugitive',
+    --             'gitcommit',
+    --             'netrw',
+    --             'tutor',
+    --         },
+    --         override_editorconfig = false, -- Set to true to override settings set by .editorconfig
+    --     },
+    -- },
 }
