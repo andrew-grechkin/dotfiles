@@ -150,7 +150,7 @@ execute ale#fix#registry#Add('sql-formatter', 'Sql_Formatter', ['mysql', 'sql'],
             -- ale_sh_fmt
             vim.g.ale_sh_shfmt_options = '--binary-next-line --case-indent --keep-padding'
             -- ale_json
-            vim.g.ale_json_jq_options = '-S --indent 4'
+            vim.g.ale_json_jq_options = '-S --indent 2'
             vim.g.ale_json_spectral_use_global = 1
             -- ale_yaml
             vim.g.ale_yaml_spectral_use_global = 1
