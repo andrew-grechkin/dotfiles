@@ -18,14 +18,22 @@ setopt HIST_VERIFY                                                             #
 setopt INC_APPEND_HISTORY
 
 if [[ -r "$HISTFILE" ]]; then
-	if (( $(stat -c%s "$HISTFILE") < 10000 )); then
-		[[ -r "${HISTFILE}.back" ]] && {
-			echo 'History file is lower than 10 kbytes, restoring backup...'
-			cp -f "${HISTFILE}.back" "$HISTFILE"
-		}
-	else
-		cp -f "$HISTFILE" "${HISTFILE}.back"
-	fi
+	HF_SIZE=$(stat -c%s "$HISTFILE")
+else
+	HF_SIZE=0
+fi
+
+if [[ -r "${HISTFILE}.back" ]]; then
+	BF_SIZE=$(stat -c%s "${HISTFILE}.back")
+else
+	BF_SIZE=0
+fi
+
+if (( HF_SIZE < 10000 && HF_SIZE < BF_SIZE)); then
+	echo 'History file is lower than 10 kbytes, restoring backup...'
+	cp -f "${HISTFILE}.back" "$HISTFILE"
+elif (( HF_SIZE > 10000 && HF_SIZE > BF_SIZE)); then
+	cp -f "$HISTFILE" "${HISTFILE}.back"
 fi
 
 # => alias -------------------------------------------------------------------------------------------------------- {{{1
