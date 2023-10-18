@@ -66,13 +66,7 @@
 	whitespace = fix
 
 [color]
-	branch      = auto
-	diff        = auto
-	grep        = auto
-	interactive = auto
-	showbranch  = auto
-	status      = auto
-	ui          = auto
+	ui          = always
 
 [core]
 	autocrlf     = false
