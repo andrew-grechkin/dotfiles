@@ -24,6 +24,7 @@ IS_KVM = not not string.find(HOSTNAME, 'king.com')
 -- => settings ---------------------------------------------------------------------------------------------------- {{{1
 
 vim.o.mouse = 'a'
+vim.o.spelllang = 'en,nl,ru'
 
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '

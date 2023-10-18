@@ -25,11 +25,6 @@
 	fall         = fetch --all --prune --prune-tags
 	fg           = !"fzf-git-log-branch-graph"
 	fw           = !"fzf-git-log-branch $(git gmu)..HEAD"
-	gmb          = !"f(){ R=\"$(git gmr \"${@:-HEAD}\")\"; [[ -n \"$R\" ]] && { git gmu \"${@:-HEAD}\" | grep -Po \"(?<=\\b$R/)\\w+$\"; } || git rev-parse --abbrev-ref --symbolic-full-name HEAD; }; f"
-	gmr          = !"f(){ git config --local --get \"branch.$(git pbranch \"${@:-HEAD}\").remote\" 2>/dev/null || git show-ref 2>/dev/null | grep -Po '(?<=\\brefs/remotes/)[^\\/]+(?=/HEAD\\b)' | head -1; }; f"
-	gmrh         = !"f(){ git show-ref | grep -Po '(?<=\\brefs/remotes/)[^\\/]+/HEAD\\b' 2>/dev/null | head -1; }; f"
-	gmu          = !"f(){ git pbranch $(git gmrh); }; f"
-	gu           = rev-parse --abbrev-ref --symbolic-full-name @{upstream}
 	ha           = !"git --no-pager log --abbrev-commit --all --color=always --graph --pretty=oneline --topo-order"
 	l            = !"git-log-branch"
 	la           = !"git-log-all"
@@ -47,8 +42,6 @@
 	mt4          = mergetool --tool=nvimdiff4
 	mtg          = mergetool --gui
 	pall         = !"git-push-all"
-	pbranch      = !"f(){ git rev-parse --abbrev-ref --verify \"${@:-HEAD}\" 2>/dev/null; }; f"
-	pcommit      = !"f(){ git rev-parse \"${@:-HEAD}\"; }; f"
 	pdesc        = !"f(){ git describe --always \"${@:-HEAD}\"; }; f"
 	pub          = !"git push -u origin $(git bname) -o merge_request.create -o merge_request.remove_source_branch"
 	puba         = !"git push -u origin $(git bname) -o merge_request.create -o merge_request.remove_source_branch -o merge_request.merge_when_pipeline_succeeds"
@@ -61,6 +54,27 @@
 	untag        = !"f(){ git push origin :$(git describe --exact-match --tags); }; f"
 	up           = pull --no-tags
 	what         = whatchanged --show-signature
+
+	### helper ---------------------------------------------------------------------------------------------------------
+	# detect main remote branch
+	gmb          = !"f(){ R=\"$(git gmr \"${@:-HEAD}\")\"; [[ -n \"$R\" ]] && { git gmu \"${@:-HEAD}\" | grep -Po \"(?<=\\b$R/)\\w+$\"; } || git rev-parse --abbrev-ref --symbolic-full-name HEAD; }; f"
+	# detect main remote name by .git/config branch or refs/remotes/.../HEAD
+	gmr          = !"f(){ git config --local --get \"branch.$(git pbranch \"${@:-HEAD}\").remote\" 2>/dev/null || git show-ref 2>/dev/null | grep -Po '(?<=\\brefs/remotes/)[^\\/]+(?=/HEAD\\b)' | head -1; }; f"
+	# detect main remote/HEAD ref name by refs/remotes/.../HEAD
+	gmrh         = !"f(){ git show-ref  2>/dev/null | grep -Po '(?<=\\brefs/remotes/)[^\\/]+/HEAD\\b' | head -1; }; f"
+	# detect main upstream branch
+	gmu          = !"f(){ git pbranch $(git gmrh); }; f"
+	# print upstream
+	gu           = rev-parse --abbrev-ref --symbolic-full-name @{upstream}
+	# print branch name
+	pbranch      = !"f(){ git rev-parse --verify --abbrev-ref \"${@:-HEAD}\" 2>/dev/null; }; f"
+	# print commit
+	pcommit      = !"f(){ git rev-parse --verify              \"${@:-HEAD}\" 2>/dev/null; }; f"
+
+	### care taking ----------------------------------------------------------------------------------------------------
+	# restore-origin-head = symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/master
+	remove-origin-head = !"f(){ git remote set-head -d \"${@:-origin}\"; }; f"
+	restore-origin-head = !"f(){ git remote set-head --auto \"${@:-origin}\"; }; f"
 
 [apply]
 	whitespace = fix
@@ -77,9 +91,6 @@
 	quotepath    = false
 	tabwidth     = 4
 	whitespace   = trailing-space,space-before-tab,blank-at-eol,blank-at-eof,cr-at-eol
-
-;[credential]
-;	helper = /usr/lib/git-core/git-credential-libsecret
 
 [diff]
 	tool            = fugitive

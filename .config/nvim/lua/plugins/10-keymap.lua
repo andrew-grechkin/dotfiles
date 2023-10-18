@@ -84,6 +84,7 @@ return {
                         ['d'] = {':DBUIToggle<CR>', 'db ui'},
                         ['h'] = {'<cmd>checkhealth<CR>', 'Health'},
                         ['m'] = {':belowright 10split term://zsh<CR>', 'open terminal'},
+                        ['s'] = {':set spell!<CR>', 'toggle spelling'},
                         ['t'] = {':tab split<CR>', 'tab: split'},
                         ['u'] = {':Lazy install<CR>', 'sync plugins'},
                         ['v'] = {':tabedit <C-R>=VIM_CONFIG_FILE<CR><CR><CR>', 'init.vim'},
