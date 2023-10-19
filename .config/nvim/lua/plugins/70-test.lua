@@ -33,7 +33,7 @@ return {
             if wk_ok then
                 local normal_mappings = {
                     ['<leader>'] = {
-                        ['t'] = {
+                        ['u'] = {
                             name = 'Test',
                             ['m'] = {function() plugin.run.run() end, 'Test: method'},
                             ['M'] = {
@@ -64,15 +64,13 @@ return {
                         },
                     },
                     ['['] = {
-                        name = 'Prev',
-                        ['f'] = {
+                        ['u'] = {
                             function() plugin.jump.prev({status = 'failed'}) end,
                             'Test: previous fail',
                         },
                     },
                     [']'] = {
-                        name = 'Next',
-                        ['f'] = {
+                        ['u'] = {
                             function() plugin.jump.next({status = 'failed'}) end,
                             'Test: next fail',
                         },

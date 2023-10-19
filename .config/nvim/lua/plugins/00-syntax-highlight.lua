@@ -92,10 +92,10 @@ return {
                     move = {
                         enable = true,
                         set_jumps = true, -- whether to set jumps in the jumplist
-                        goto_next_start = {[']m'] = '@function.outer', [']o'] = '@class.outer'},
-                        goto_next_end = {[']M'] = '@function.outer', [']O'] = '@class.outer'},
-                        goto_previous_start = {['[m'] = '@function.outer', ['[o'] = '@class.outer'},
-                        goto_previous_end = {['[M'] = '@function.outer', ['[O'] = '@class.outer'},
+                        goto_next_start = {[']f'] = '@function.outer', [']o'] = '@class.outer'},
+                        goto_next_end = {[']F'] = '@function.outer', [']O'] = '@class.outer'},
+                        goto_previous_start = {['[f'] = '@function.outer', ['[o'] = '@class.outer'},
+                        goto_previous_end = {['[F'] = '@function.outer', ['[O'] = '@class.outer'},
                     },
                     -- swap = {
                     --     enable = true,
@@ -116,26 +116,46 @@ return {
         event = {'BufReadPost', 'BufNewFile'},
         opts = {delay = 200, large_file_cutoff = 2000, large_file_overrides = {providers = {'lsp'}}},
         config = function(_, opts)
-            require('illuminate').configure(opts)
+            local plugin = require('illuminate')
+            plugin.configure(opts)
 
-            local function map(key, dir, buffer)
-                vim.keymap.set('n', key, function()
-                    require('illuminate')['goto_' .. dir .. '_reference'](false)
-                end, {desc = dir:sub(1, 1):upper() .. dir:sub(2) .. ' Reference', buffer = buffer})
+            -- local function map(key, dir, buffer)
+            --     vim.keymap.set('n', key, function()
+            --         plugin['goto_' .. dir .. '_reference'](false)
+            --     end, {desc = dir:sub(1, 1):upper() .. dir:sub(2) .. ' reference', buffer = buffer})
+            -- end
+
+            -- map(']r', 'next')
+            -- map('[r', 'prev')
+
+            -- -- also set it after loading ftplugins, since a lot overwrite [[ and ]]
+            -- vim.api.nvim_create_autocmd('FileType', {
+            --     callback = function()
+            --         local buffer = vim.api.nvim_get_current_buf()
+            --         map(']r', 'next', buffer)
+            --         map('[r', 'prev', buffer)
+            --     end,
+            -- })
+
+            local wk_ok, which_key = pcall(require, 'which-key')
+            if wk_ok then
+                local normal_mappings = {
+                    ['['] = {
+                        ['r'] = {
+                            function() plugin.goto_prev_reference(false) end,
+                            'TreeSitter: prev reference',
+                        },
+                    },
+                    [']'] = {
+                        ['r'] = {
+                            function() plugin.goto_next_reference(false) end,
+                            'TreeSitter: next reference',
+                        },
+                    },
+                }
+
+                which_key.register(normal_mappings, {mode = 'n', nowait = true, noremap = true})
             end
-
-            map(']r', 'next')
-            map('[r', 'prev')
-
-            -- also set it after loading ftplugins, since a lot overwrite [[ and ]]
-            vim.api.nvim_create_autocmd('FileType', {
-                callback = function()
-                    local buffer = vim.api.nvim_get_current_buf()
-                    map(']r', 'next', buffer)
-                    map('[r', 'prev', buffer)
-                end,
-            })
         end,
-        -- keys = {{']r', desc = 'Next Reference'}, {'[r', desc = 'Prev Reference'}},
     },
 }
