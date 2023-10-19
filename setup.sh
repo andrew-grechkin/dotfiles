@@ -71,9 +71,9 @@ ln -srf .local/share/wiki                                    ~/.local/share/
 	ln -srfn .config/vim                                     ~/.vim
 }
 
-command                                 cp -rf ".config/Crow Translate" ~/.config/
-[[ -f "$HOME/.config/npm" ]] || command cp -rf ".config/npm"            ~/.config/
+command                                 cp -rf ".config/crow-translate" ~/.config/
 command                                 cp -rf ".config/kdedefaults"    ~/.config/
+[[ -f "$HOME/.config/npm" ]] || command cp -rf ".config/npm"            ~/.config/
 
 chmod -R u=rwX,go-rwx .ssh
 
