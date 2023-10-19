@@ -114,24 +114,28 @@ return {
             for _, v in ipairs(linters) do table.insert(ensure_installed2, v) end
             for _, v in ipairs(formatters) do table.insert(ensure_installed2, v) end
 
-            -- setup pre-install and post-install hook
-            vim.api.nvim_create_autocmd('User', {
-                pattern = 'MasonToolsStartingInstall',
-                callback = function()
-                    vim.schedule(function() vim.notify('mason-tool-installer is starting') end)
-                end,
-            })
-            vim.api.nvim_create_autocmd('User', {
-                pattern = 'MasonToolsUpdateCompleted',
-                callback = function(e)
-                    vim.schedule(function()
-                        if next(e.data) ~= nil then
-                            vim.notify('mason-tool-installer finished')
-                            vim.notify(vim.inspect(e.data))
-                        end
-                    end)
-                end,
-            })
+            -- NOTIFY_REC = {id = nil}
+            -- -- setup pre-install and post-install hook
+            -- vim.api.nvim_create_autocmd('User', {
+            --     pattern = 'MasonToolsStartingInstall',
+            --     callback = function()
+            --         vim.schedule(function()
+            --             NOTIFY_REC = vim.notify('mason-tool-installer is starting', 'INFO',
+            --                 {title = 'Mason tools', replace = NOTIFY_REC.id})
+            --         end)
+            --     end,
+            -- })
+            -- vim.api.nvim_create_autocmd('User', {
+            --     pattern = 'MasonToolsUpdateCompleted',
+            --     callback = function(e)
+            --         vim.schedule(function()
+            --             if next(e.data) ~= nil then
+            --                 vim.notify('mason-tool-installer finished')
+            --                 vim.notify(vim.inspect(e.data))
+            --             end
+            --         end)
+            --     end,
+            -- })
 
             plugin.setup {
                 auto_update = true,

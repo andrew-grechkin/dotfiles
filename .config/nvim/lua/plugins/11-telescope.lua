@@ -171,6 +171,7 @@ return {
                             j = {'<cmd>Telescope jumplist<CR>', ': jumplist'},
                             k = {'<cmd>Telescope keymaps<CR>', ': keymaps'},
                             m = {'<cmd>Telescope man_pages<CR>', ': man pages'},
+                            n = {'<cmd>Telescope notify<CR>', ': notifications'},
                             p = {'<cmd>Telescope find_files<CR>', ': files'},
                             r = {'<cmd>Telescope resume<CR>', ': resume previous'},
                             s = {'<cmd>Telescope search_history<CR>', ': search history'},

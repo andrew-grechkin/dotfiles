@@ -25,6 +25,7 @@ IS_KVM = not not string.find(HOSTNAME, 'king.com')
 
 vim.o.mouse = 'a'
 vim.o.spelllang = 'en,nl,ru'
+vim.o.termguicolors = true
 
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
@@ -70,7 +71,7 @@ vim.api.nvim_create_autocmd({'BufReadPost'}, {
         local dir = GET_WORKSPACE_DIR(ev.match)
         if cwd ~= dir then
             vim.cmd('lcd ' .. dir)
-            vim.notify(string.format('CWD changed: %s', dir))
+            vim.notify(string.format('CWD changed: %s', dir), 'INFO', {title = 'rooter'})
         end
         require('dap.ext.vscode').load_launchjs(nil) -- load launch.json
         -- vim.print(vim.inspect(ev))

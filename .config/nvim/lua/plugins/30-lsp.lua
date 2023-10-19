@@ -3,11 +3,11 @@ return {
     { -- https://github.com/neovim/nvim-lspconfig
         'neovim/nvim-lspconfig',
         dependencies = {
-            { -- https://github.com/j-hui/fidget.nvim
-                'j-hui/fidget.nvim',
-                tag = 'legacy',
-                opts = {},
-            },
+            -- { -- https://github.com/j-hui/fidget.nvim
+            --     'j-hui/fidget.nvim',
+            --     tag = 'legacy',
+            --     opts = {},
+            -- },
             { -- https://github.com/folke/neoconf.nvim
                 'folke/neoconf.nvim',
                 opts = {},

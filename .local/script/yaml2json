@@ -20,22 +20,32 @@ use constant {
 };
 
 my %options = (
+    'JSON'    => 0,
     'LENIENT' => 0,
     'PERL'    => 0,
     'UNJSON'  => 0,
     'VERBOSE' => 0,
+    'YAML'    => 0,
 );
 
 sub main() {
     GetOptions(
+        'json|j'      => \$options{'JSON'},
         'lenient|l'   => \$options{'LENIENT'},
         'perl|p'      => \$options{'PERL'},
         'recursive|r' => \$options{'UNJSON'},
         'unjson|u'    => \$options{'UNJSON'},
         'verbose|v+'  => \$options{'VERBOSE'},
+        'yaml|y'      => \$options{'YAML'},
     ) or die "Unable to process command line options\n";
 
     JSON()->relaxed if $options{'LENIENT'};
+
+
+    my @formats = qw(JSON PERL YAML);
+    if (1 < scalar grep {$options{$_}} @formats) {
+        die sprintf "Please use only one format: %s\n", join ' | ', map lc, @formats;
+    }
 
     my @data;
     my $type;
@@ -104,6 +114,16 @@ sub process_file_handle ($data_aref, $type_sref, $fh) {
         $yaml_error = $err;
     };
 
+    use Data::Printer;
+    try {
+        my $decoded = eval $doc; ## no critic [BuiltinFunctions::ProhibitStringyEval]
+        $type ||= 'perl';
+        push @data, $decoded;
+        return;
+    } catch ($err) {
+        ## not a perl
+    };
+
     warn "unable to parse file as json: $json_error\n";
     die "unable to parse file as yaml: $yaml_error\n";
 }
@@ -116,7 +136,18 @@ sub dump_data ($data_aref, $type) {
         unjson_recursive_inplace($it) if $options{'UNJSON'};
         if ($options{'PERL'}) {
             ## prevent hex codes for wide chars in output
-            local *Data::Dumper::qquote  = sub {qq['${\(shift)}']};
+            local *Data::Dumper::qquote = sub {
+                my $str       = shift;
+                my $new_lines = $str =~ s{(\R)}{\\n}g;
+                if ($new_lines) {
+                    $str =~ s{(["\$@])}{\\$1}g;
+                    qq["$str"];
+
+                } else {
+                    $str =~ s{'}{\\'}g;
+                    qq['$str'];
+                }
+            };
             local $Data::Dumper::Useperl = 1;
 
             # other option is to recode after dump
@@ -132,16 +163,17 @@ sub dump_data ($data_aref, $type) {
                     ->Trailingcomma(1)
                     ->Useqq(0)
                     ->Dump,
+
                 Encode::FB_CROAK,
             );
-        } elsif ($type eq 'json') {
-            $result .= YAML::XS::Dump($it);
-        } else {
+        } elsif ($options{'JSON'} || $type eq 'yaml') {
             if (@data > 1) {
                 $result .= JSON_ONE_LINE()->encode($it) . "\n";
             } else {
                 $result .= JSON()->encode($it);
             }
+        } else {
+            $result .= YAML::XS::Dump($it);
         }
     }
 

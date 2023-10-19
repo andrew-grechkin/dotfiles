@@ -18,11 +18,11 @@ return {
                 fps = 30,
                 icons = {DEBUG = '', ERROR = '', INFO = '', TRACE = '✎', WARN = ''},
                 level = 2,
-                minimum_width = 50,
+                minimum_width = 30,
                 render = 'default',
-                stages = 'fade_in_slide_out',
+                stages = 'fade',
                 timeout = 5000,
-                top_down = true,
+                top_down = false,
             }
 
             plugin.setup(config)

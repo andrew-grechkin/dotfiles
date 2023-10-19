@@ -52,7 +52,7 @@
 	st           = status -b
 	unpub        = !"f(){ git push origin :$(git bname); }; f"
 	untag        = !"f(){ git push origin :$(git describe --exact-match --tags); }; f"
-	up           = pull --no-tags
+	up           = pull
 	what         = whatchanged --show-signature
 
 	### helper ---------------------------------------------------------------------------------------------------------
