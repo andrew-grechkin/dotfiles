@@ -2,6 +2,9 @@ return {
     { -- https://github.com/folke/lazy.nvim
         'folke/lazy.nvim',
     },
+    { -- https://github.com/ThePrimeagen/vim-be-good
+        'ThePrimeagen/vim-be-good'
+    },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/nvim-lua/plenary.nvim
         'nvim-lua/plenary.nvim',

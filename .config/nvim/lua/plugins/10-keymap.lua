@@ -115,22 +115,37 @@ return {
                 ['<F12>'] = {':call hl#show()<CR>', 'show highlight info'},
                 g = {
                     name = 'GoTo',
+                    J = {'mzgJ`z', 'join keep cursor'},
                     h = {':bprevious<CR>', 'buffer: previous'},
                     l = {':bnext<CR>', 'buffer: next'},
                 },
+                J = {'mzJ`z', 'join keep cursor'},
                 N = {'Nzzzv', 'N and centralize'},
+                Q = {'<nop>', 'no ex mode'},
                 n = {'nzzzv', 'n and centralize'},
 
                 ['<S-ScrollWheelUp>'] = {'<C-u>', 'scroll up'},
                 ['<S-ScrollWheelDown>'] = {'<C-d>', 'scroll down'},
             }
 
+            local nice_paste = function()
+                vim.cmd.normal('"zd')
+                local col = vim.api.nvim_win_get_cursor(0)[2]
+                local size = string.len(vim.api.nvim_get_current_line())
+                if col == size - 1 then
+                    vim.cmd.normal('p')
+                else
+                    vim.cmd.normal('P')
+                end
+            end
             local visual_mappings = {
                 ['<leader>'] = {['<CR>'] = {':!bash<CR>', 'execute lines in shell'}},
                 ['<'] = {'<gv', 'don\'t loose selection when changing indentation'},
                 ['>'] = {'>gv', 'don\'t loose selection when changing indentation'},
-                P = {'"zdP', 'paste replace visual selection without copying it'},
-                p = {'"zdP', 'paste replace visual selection without copying it'},
+                -- P = {'"zdP', 'paste replace visual without without copying it'},
+                -- p = {'"zdp', 'paste replace visual selection without copying it'},
+                P = {nice_paste, 'paste replace visual selection without copying it'},
+                p = {nice_paste, 'paste replace visual selection without copying it'},
                 Y = {'myY`y', 'Yank without jank'}, -- http://ddrscott.github.io/blog/2016/yank-without-jank
                 y = {'myy`y', 'Yank without jank'},
             }
@@ -167,6 +182,8 @@ return {
             which_key.register(insert_mappings, {mode = 'i', nowait = true, noremap = true})
             which_key.register(command_mappings, {mode = 'c', nowait = true, noremap = true})
             which_key.register(norm_term_mappings, {mode = 'n', nowait = true, noremap = true})
+
+            vim.keymap.set('n', '<leader>Sr', ':%s/\\<<C-r><C-w>\\>/<C-r><C-w>/g<Left><Left>')
             vim.api.nvim_exec([[
                 :nnoremap <nowait> / /\v
             ]], false)

@@ -109,6 +109,10 @@ return {
         end,
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
+    { -- https://github.com/nvim-treesitter/nvim-treesitter-context
+        'nvim-treesitter/nvim-treesitter-context',
+    },
+    -- => --------------------------------------------------------------------------------------------------------- {{{1
     -- Automatically highlights other instances of the word under your cursor.
     -- This works with LSP, Treesitter, and regexp matching to find the other instances.
     { -- https://github.com/RRethy/vim-illuminate

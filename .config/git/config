@@ -80,7 +80,8 @@
 	whitespace = fix
 
 [color]
-	ui          = always
+	grep = auto
+	ui   = always
 
 [core]
 	autocrlf     = false
