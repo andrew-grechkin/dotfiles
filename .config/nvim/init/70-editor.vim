@@ -62,4 +62,4 @@ set clipboard=unnamedplus,unnamed                                              "
 " :help :normal
 " :help c_CTRL-U
 " :help v_:
-onoremap f :<C-u>normal! mzggVG<CR>`z
+onoremap q :<C-u>normal! mzggVG<CR>`z

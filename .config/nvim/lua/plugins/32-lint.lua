@@ -62,7 +62,7 @@ execute ale#fix#registry#Add('sql-formatter', 'Sql_Formatter', ['mysql', 'sql'],
                 ['elixir'] = {'mix_format'},
                 ['fb2'] = {'xmllint'},
                 ['html'] = {'prettier', 'eslint'},
-                ['javascript'] = {'eslint'},
+                ['javascript'] = {'prettier'},
                 ['json'] = {'jq'},
                 ['lua'] = {'lua-format'},
                 ['mysql'] = {'sql-formatter', 'mysql_sqlfluff'},
@@ -83,7 +83,7 @@ execute ale#fix#registry#Add('sql-formatter', 'Sql_Formatter', ['mysql', 'sql'],
                 ['elixir'] = {'mix_format', 'remove_trailing_lines', 'trim_whitespace'},
                 ['fb2'] = {'xmllint', 'remove_trailing_lines', 'trim_whitespace'},
                 ['html'] = {'prettier', 'eslint', 'remove_trailing_lines', 'trim_whitespace'},
-                ['javascript'] = {'eslint', 'remove_trailing_lines', 'trim_whitespace'},
+                ['javascript'] = {'prettier', 'remove_trailing_lines', 'trim_whitespace'},
                 ['json'] = {'fixjson', 'jq', 'remove_trailing_lines', 'trim_whitespace'},
                 ['lua'] = {'lua-format', 'remove_trailing_lines', 'trim_whitespace'},
                 ['mysql'] = {
@@ -137,6 +137,9 @@ execute ale#fix#registry#Add('sql-formatter', 'Sql_Formatter', ['mysql', 'sql'],
             vim.g.ale_cpp_gcc_options = '-std=c++20 -Wall -I ./include -I ./src/include'
             vim.g.ale_cpp_parse_compile_commands = 1
             vim.g.ale_cpp_parse_makefile = 1
+            -- ale_javascript
+            vim.g.ale_javascript_eslint_options = '-c ~/.config/.eslintrc.js'
+            vim.g.ale_javascript_prettier_options = '--config ~/.config/.prettierrc.yaml'
             -- ale-lua-luacheck
             vim.g.ale_lua_luacheck_options = '--allow_defined_top'
             -- ale_markdown
