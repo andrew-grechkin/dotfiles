@@ -57,7 +57,7 @@ end
 
 -- => plugins ----------------------------------------------------------------------------------------------------- {{{1
 
-require('setup-plugins')
+pcall(require, 'setup-plugins')
 
 -- => automation -------------------------------------------------------------------------------------------------- {{{1
 
@@ -73,7 +73,8 @@ vim.api.nvim_create_autocmd({'BufReadPost'}, {
             vim.cmd('lcd ' .. dir)
             vim.notify(string.format('CWD changed: %s', dir), 'INFO', {title = 'rooter'})
         end
-        require('dap.ext.vscode').load_launchjs(nil) -- load launch.json
+        local ok, plugin = pcall(require, 'dap.ext.vscode')
+        if ok then plugin.load_launchjs(nil) end -- load launch.json
         -- vim.print(vim.inspect(ev))
     end,
 })

@@ -65,7 +65,13 @@ return {
             -- h: lsp-buf
             local au_normal_mappings = {
                 ['<leader>'] = {
-                    ['K'] = {vim.lsp.buf.hover, 'LSP: hover'},
+                    ['K'] = {
+                        function() -- run this twice to enter the window
+                            vim.lsp.buf.hover()
+                            vim.lsp.buf.hover()
+                        end,
+                        'LSP: hover',
+                    },
                     ['k'] = {vim.lsp.buf.signature_help, 'LSP: signature help'},
                     ['l'] = {
                         name = 'LSP',

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+PATH="$(dirname "$0"):$PATH"
+
+python -m pydoc "$@" \
+	|| echo "Nothing found"

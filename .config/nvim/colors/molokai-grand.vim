@@ -96,6 +96,10 @@ endif
 " TSWarning
 
 if &termguicolors ==# 1
+	hi manBold                                                         gui=bold
+	hi manUnderline                                                    gui=underline
+	hi manItalic                                                       gui=italic
+
 	hi Boolean               guifg=#AE81FF
 	hi TSBoolean             guifg=#AE81FF
 	hi Character             guifg=#E6DB74
@@ -138,7 +142,7 @@ if &termguicolors ==# 1
 	hi Special               guifg=#66D9EF                             gui=bold
 	hi SpecialChar           guifg=#F92672                             gui=bold
 	hi SpecialComment        guifg=#999999
-	hi Statement             guifg=#F92672                             gui=bold
+	hi Statement             guifg=#f591b6                             gui=bold
 	hi StorageClass          guifg=#FD971F                             gui=italic
 	hi TSStorageClass        guifg=#FD971F                             gui=italic
 	hi String                guifg=#C6BB74
