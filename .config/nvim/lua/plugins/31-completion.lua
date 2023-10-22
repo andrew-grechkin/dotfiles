@@ -54,7 +54,13 @@ return {
                 Variable = '',
             }
 
+            local rg_conf = {
+                name = 'rg',
+                keyword_length = 5,
+                option = {debounce = 500, additional_arguments = '--max-depth 4'},
+            }
             local config = {
+                completion = {keyword_length = 2},
                 confirm_opts = {behavior = plugin.ConfirmBehavior.Replace, select = false},
                 experimental = {ghost_text = true, native_menu = false},
                 formatting = {
@@ -80,16 +86,16 @@ return {
                 },
                 mapping = {
                     -- ['<C-Space>'] = plugin.mapping(plugin.mapping.complete(), {'i', 'c'}),
-                    ['<C-b>'] = plugin.mapping(plugin.mapping.scroll_docs(-1), {'i', 'c'}),
-                    ['<C-f>'] = plugin.mapping(plugin.mapping.scroll_docs(1), {'i', 'c'}),
-                    ['<C-j>'] = plugin.mapping.select_next_item(),
-                    ['<C-k>'] = plugin.mapping.select_prev_item(),
-                    -- ['<C-y>'] = plugin.config.disable, -- Specify `plugin.config.disable` if you want to remove the default `<C-y>` mapping.
+                    ['<C-Space>'] = plugin.mapping.complete(),
                     ['<C-e>'] = plugin.mapping {
                         i = plugin.mapping.abort(),
                         c = plugin.mapping.close(),
                     },
-                    ['<C-Space>'] = plugin.mapping.complete {},
+                    ['<C-d>'] = plugin.mapping(plugin.mapping.scroll_docs(4), {'i', 'c'}),
+                    ['<C-u>'] = plugin.mapping(plugin.mapping.scroll_docs(-4), {'i', 'c'}),
+                    ['<C-j>'] = plugin.mapping.select_next_item(),
+                    ['<C-k>'] = plugin.mapping.select_prev_item(),
+                    -- ['<C-y>'] = plugin.config.disable, -- Specify `plugin.config.disable` if you want to remove the default `<C-y>` mapping.
                     -- Accept currently selected item. If none selected, `select` first item.
                     -- Set `select` to `false` to only confirm explicitly selected items.
                     ['<CR>'] = plugin.mapping.confirm {select = false},
@@ -122,18 +128,17 @@ return {
                     {name = 'nvim_lsp'},
                     {name = 'nvim_lua'},
                     {name = 'path'},
-                    {name = 'buffer', keyword_length = 4},
+                    {name = 'buffer', keyword_length = 3},
                     {name = 'dictionary', keyword_length = 4},
                     {name = 'tags', keyword_length = 4},
                     {name = 'spell', keyword_length = 5},
                     {name = 'tmux', keyword_length = 5},
-                    {
-                        name = 'rg',
-                        keyword_length = 5,
-                        option = {debounce = 500, additional_arguments = '--max-depth 4'},
-                    },
+                    rg_conf,
                 },
-                window = {documentation = {border = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}}},
+                window = {
+                    completion = plugin.config.window.bordered(),
+                    documentation = plugin.config.window.bordered(),
+                },
             }
 
             plugin.setup(config)
@@ -154,11 +159,19 @@ return {
             --     })
             -- end
 
-            -- Use buffer source for `/` (if you enabled `native_menu`, this won't work anymore).
-            -- plugin.setup.cmdline('/', { sources = { { name = 'buffer' } } })
-
+            -- use only together or this will breake native command autocomplete after first usage
+            -- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
+            plugin.setup.cmdline ({'/', '?'},
+                {mapping = plugin.mapping.preset.cmdline(), sources = {{name = 'buffer'}, rg_conf}})
             -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
-            -- plugin.setup.cmdline(':', { sources = plugin.config.sources({ { name = 'path' } }, { { name = 'cmdline' } }) })
+            plugin.setup.cmdline(':', {
+                mapping = plugin.mapping.preset.cmdline(),
+                sources = plugin.config.sources({{name = 'path'}}, {
+                    {name = 'cmdline'},
+                    {name = 'buffer'},
+                    rg_conf,
+                }),
+            })
         end,
     },
 }

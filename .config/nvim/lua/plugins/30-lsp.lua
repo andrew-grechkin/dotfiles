@@ -56,7 +56,10 @@ return {
                 ['\\'] = {
                     name = 'LSP',
                     ['\\'] = {vim.diagnostic.setloclist, 'show diagnostic'},
-                    ['f'] = {vim.diagnostic.open_float, 'open diagnostic in floating window'},
+                    ['f'] = {
+                        function() vim.diagnostic.open_float(nil, {border = 'rounded'}) end,
+                        'open diagnostic in floating window',
+                    },
                 },
             }
 
@@ -72,7 +75,13 @@ return {
                         end,
                         'LSP: hover',
                     },
-                    ['k'] = {vim.lsp.buf.signature_help, 'LSP: signature help'},
+                    ['k'] = {
+                        function() -- run this twice to enter the window
+                            vim.lsp.buf.signature_help()
+                            vim.lsp.buf.signature_help()
+                        end,
+                        'LSP: signature help',
+                    },
                     ['l'] = {
                         name = 'LSP',
                         c = {
@@ -155,7 +164,7 @@ return {
             hint_prefix = '🐼 ', -- Panda for parameter
             hint_scheme = 'String',
             hi_parameter = 'LspSignatureActiveParameter', -- how your parameter will be highlight
-            max_height = 12, -- max height of signature floating_window, if content is more than max_height, you can scroll down
+            -- max_height = 12, -- max height of signature floating_window, if content is more than max_height, you can scroll down
             -- to view the hiding contents
             max_width = 120, -- max_width of signature floating_window, line will be wrapped if exceed max_width
             handler_opts = {

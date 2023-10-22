@@ -46,11 +46,19 @@ return {
                 if data.config.set_on_attach then data.config.set_on_attach(data, bufnr) end
             end
 
+            -- LSP settings (for overriding per client)
+            local handlers = {
+                ['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, {border = 'rounded'}),
+                ['textDocument/signatureHelp'] = vim.lsp.with(vim.lsp.handlers.signature_help, {
+                    border = 'rounded',
+                }),
+            }
+
             local lspconfig = require('lspconfig')
             plugin.setup_handlers {
                 function(server_name)
                     -- vim.notify(vim.inspect(server_name))
-                    local opts = {on_attach = on_attach}
+                    local opts = {on_attach = on_attach, handlers = handlers}
                     local lsp_set_ok, settings = pcall(require, string.format('lsp.settings-%s', server_name))
                     if lsp_set_ok then
                         if settings.set_prepare then settings.set_prepare(server_name, settings) end
