@@ -1,5 +1,9 @@
 # vim: filetype=zsh foldmethod=marker
 
+# => environment -------------------------------------------------------------------------------------------------- {{{1
+
+export HISTORY_IGNORE='(exit( *)#|history( *)#|[bf]g *|cd *|l[alsh] *|less *|kill *)'
+
 # => History file configuration ----------------------------------------------------------------------------------- {{{1
 
 HISTSIZE=655350
