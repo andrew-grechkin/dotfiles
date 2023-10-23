@@ -3,8 +3,8 @@
 set -Eeuo pipefail
 
 if [[ -x "$(command -v nvim)" ]]; then
-	nvim "$@"
+	exec nvim "$@"
 else
 	COMMAND=$(PATH=${PATH//"$(dirname "$0")"/} command -v vim)
-	"$COMMAND" "$@"
+	exec "$COMMAND" "$@"
 fi

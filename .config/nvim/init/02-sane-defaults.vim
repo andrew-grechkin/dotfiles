@@ -1,6 +1,5 @@
 set autowrite                                                                  " Write the content of the file automatically if you call :make
 set fileformats=unix,dos,mac                                                   " Use Unix as the standard file type
-set inccommand=split
 set noswapfile nowritebackup
 set path=.,
 set pumheight=8                                                                " Maximum height of autocomplete popup window

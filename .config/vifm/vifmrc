@@ -7,7 +7,7 @@
 " If you would like to use another vi clone such as Elvis or Vile
 " you will need to change this setting.
 
-" set vicmd=vim
+set vicmd=vi
 " set vicmd=elvis\ -G\ termcap
 " set vicmd=vile
 
@@ -575,7 +575,7 @@ filetype *.svct
 
 filetype *[^/],.*[^/]
 	\ {Edit in vim}
-	\ vim %c %n,
+	\ vi %c %n,
 	\ {View in less}
 	\ less %c %n,
 	\ {Show file}

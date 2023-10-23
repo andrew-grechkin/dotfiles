@@ -6,25 +6,25 @@ scriptencoding=utf-8
 
 " => Sane defaults ------------------------------------------------------------------------------------------------ {{{1
 
-set nocompatible                                                           " Disable Vi compatibility
+set nocompatible                                                               " Disable Vi compatibility
 
 " move all configs out of $HOME
 let rtp=&runtimepath
 set runtimepath=~/.cache/vim
-let &runtimepath.=','.rtp.',~/.cache/vim/after,~/.config/nvim,~/.config/nvim/after'
+let &runtimepath.=','.rtp.',~/.cache/vim/after,~/.config/vim,~/.config/vim/after'
 set viminfo+=n~/.cache/vim/info
-silent! set undodir=~/.cache/vim/undo                                      " Set undodir explicitly for vim
+silent! set undodir=~/.cache/vim/undo                                          " Set undodir explicitly for vim
 
-silent! set langnoremap                                                    " Helps avoid mappings breaking
-silent! set nrformats=bin,hex                                              " <c-a> and <c-x> support
-set ruler                                                                  " Display current line # in a corner
-set showcmd                                                                " Show last command in the status line
-set sidescroll=1                                                           " Smoother sideways scrolling
-set tabpagemax=50                                                          " Maximum number of tabs open by -p flag
-set noesckeys                                                              " Don't wait after pressing ESC in insert mode
-set ttyfast                                                                " Indicates that our connection is fast
+silent! set langnoremap                                                        " Helps avoid mappings breaking
+silent! set nrformats=bin,hex                                                  " <c-a> and <c-x> support
+set ruler                                                                      " Display current line # in a corner
+set showcmd                                                                    " Show last command in the status line
+set sidescroll=1                                                               " Smoother sideways scrolling
+set tabpagemax=50                                                              " Maximum number of tabs open by -p flag
+set noesckeys                                                                  " Don't wait after pressing ESC in insert mode
+set ttyfast                                                                    " Indicates that our connection is fast
 
-set autoread                                                               " Set to auto read when a file is changed from the outside
+set autoread                                                                   " Set to auto read when a file is changed from the outside
 
 " => General ------------------------------------------------------------------------------------------------------ {{{1
 
@@ -39,6 +39,11 @@ set pumheight=8                                                                "
 set undofile                                                                   " Enable persistent undo
 
 set secure
+
+" => Encoding ---------------------------------------------------------------------------------------------------- {{{1
+
+setglobal encoding=utf-8                                                       " Set utf-8 as default encoding
+setglobal fileencodings=ucs-bom,utf-8,default,cp1251                           " Order of encodings detection
 
 " => UI ----------------------------------------------------------------------------------------------------------- {{{1
 
@@ -61,6 +66,7 @@ set smartcase                                                                  "
 set infercase                                                                  " Adjust completions to match case
 set hlsearch                                                                   " Highlight search results
 set incsearch                                                                  " Move cursor as you type when searching
+set inccommand=split
 
 set lazyredraw                                                                 " Don't redraw while executing macros (good performance config)
 
@@ -81,11 +87,13 @@ syntax enable
 
 filetype plugin indent on
 
+set splitright
 set complete+=kspell                                                           " Complete from include files and from spell if enabled
 set shortmess+=c
 silent! set completeopt=menuone,noinsert,noselect,preview
 
-set foldcolumn=2 foldmethod=syntax
+set foldcolumn=2
+" set foldmethod=syntax
 
 set list listchars=tab:↹\ ,trail:␣,extends:>,precedes:<,nbsp:+                 " Visual form of special characters
 

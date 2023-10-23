@@ -20,6 +20,7 @@ set smartcase                                                                  "
 set infercase                                                                  " Adjust completions to match case
 set hlsearch                                                                   " Highlight search results
 set incsearch                                                                  " Move cursor as you type when searching
+set inccommand=split
 
 set lazyredraw                                                                 " Don't redraw while executing macros (good performance config)
 

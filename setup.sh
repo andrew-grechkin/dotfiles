@@ -49,6 +49,7 @@ ln -srf .config/systemd                                      ~/.config/
 ln -srf .config/tmux                                         ~/.config/
 ln -srf .config/user-dirs.dirs                               ~/.config/
 ln -srf .config/vifm                                         ~/.config/
+ln -srf .config/vim                                          ~/.config/
 ln -srf .config/wezterm                                      ~/.config/
 ln -srf .config/wgetrc                                       ~/.config/
 ln -srf .config/wireplumber                                  ~/.config/

@@ -116,6 +116,7 @@ return {
                 g = {
                     name = 'GoTo',
                     J = {'mzgJ`z', 'join keep cursor'},
+                    Q = {'<nop>', 'no ex mode'},
                     h = {':bprevious<CR>', 'buffer: previous'},
                     l = {':bnext<CR>', 'buffer: next'},
                 },
@@ -128,24 +129,14 @@ return {
                 ['<S-ScrollWheelDown>'] = {'<C-d>', 'scroll down'},
             }
 
-            local nice_paste = function()
-                vim.cmd.normal('"zd')
-                local col = vim.api.nvim_win_get_cursor(0)[2]
-                local size = string.len(vim.api.nvim_get_current_line())
-                if col == size - 1 then
-                    vim.cmd.normal('p')
-                else
-                    vim.cmd.normal('P')
-                end
-            end
             local visual_mappings = {
                 ['<leader>'] = {['<CR>'] = {':!bash<CR>', 'execute lines in shell'}},
                 ['<'] = {'<gv', 'don\'t loose selection when changing indentation'},
                 ['>'] = {'>gv', 'don\'t loose selection when changing indentation'},
                 -- P = {'"zdP', 'paste replace visual without without copying it'},
                 -- p = {'"zdp', 'paste replace visual selection without copying it'},
-                P = {nice_paste, 'paste replace visual selection without copying it'},
-                p = {nice_paste, 'paste replace visual selection without copying it'},
+                P = {'"pc<C-r>0<C-\\><C-n>', 'paste replace visual selection without copying it'},
+                p = {'"pc<C-r>0<C-\\><C-n>', 'paste replace visual selection without copying it'},
                 Y = {'myY`y', 'Yank without jank'}, -- http://ddrscott.github.io/blog/2016/yank-without-jank
                 y = {'myy`y', 'Yank without jank'},
             }
