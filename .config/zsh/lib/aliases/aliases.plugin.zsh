@@ -106,6 +106,7 @@ alias fm='vifm . .'
 alias dd='command dd oflag=sync conv=sparse,excl status=progress'
 alias :q='exit'
 alias :qa='exit'
+alias this-is-mine=' sudo chown "${USER}:$(id -ng)" -R -- *; sudo chmod -R u+rwX,g+rX -- *; fd -u -E "@eaDir" -t d -x chmod g+s'
 
 alias fix-agent='eval $(tmux showenv -s SSH_AUTH_SOCK)'
 
