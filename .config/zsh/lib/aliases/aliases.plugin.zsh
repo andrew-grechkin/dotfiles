@@ -135,3 +135,7 @@ alias build9-here='make -f ~/git/public/andrew-grechkin/centos-rpmbuild-docker/M
 # => flatpak ------------------------------------------------------------------------------------------------------ {{{1
 
 alias setup-flatpak='sudo flatpak --system remote-delete flathub; flatpak remote-add --if-not-exists --user flathub "https://dl.flathub.org/repo/flathub.flatpakrepo"'
+
+# => typescript --------------------------------------------------------------------------------------------------- {{{1
+
+alias setup-typescript='npm install --save-dev @types/node'
