@@ -7,5 +7,4 @@ PATH="$(dirname "$0"):$PATH"
 git-in-repo && {
 	git reflog expire --all --expire=now \
 	&& nice git gc --keep-largest-pack "$@"
-	# && nice git gc --prune=now --aggressive
 }
