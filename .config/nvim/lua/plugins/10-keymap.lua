@@ -135,8 +135,8 @@ return {
                 ['>'] = {'>gv', 'don\'t loose selection when changing indentation'},
                 -- P = {'"zdP', 'paste replace visual without without copying it'},
                 -- p = {'"zdp', 'paste replace visual selection without copying it'},
-                P = {'"pc<C-r>0<C-\\><C-n>', 'paste replace visual selection without copying it'},
-                p = {'"pc<C-r>0<C-\\><C-n>', 'paste replace visual selection without copying it'},
+                P = {'"pc<C-r>+<C-\\><C-n>', 'paste replace visual selection without copying it'},
+                p = {'"pc<C-r>+<C-\\><C-n>', 'paste replace visual selection without copying it'},
                 Y = {'myY`y', 'Yank without jank'}, -- http://ddrscott.github.io/blog/2016/yank-without-jank
                 y = {'myy`y', 'Yank without jank'},
             }
