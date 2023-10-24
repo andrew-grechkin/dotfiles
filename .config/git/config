@@ -22,7 +22,7 @@
 	f            = !"fzf-git-log-branch"
 	fa           = !"fzf-git-log-all"
 	fag          = !"fzf-git-log-all-graph"
-	fall         = fetch --all --prune
+	fall         = fetch --all
 	fg           = !"fzf-git-log-branch-graph"
 	fw           = !"fzf-git-log-branch $(git gmu)..HEAD"
 	ha           = !"git --no-pager log --abbrev-commit --all --color=always --graph --pretty=oneline --topo-order"
@@ -117,7 +117,9 @@
 	cmd = meld "$LOCAL" "$REMOTE"
 
 [fetch]
-	prune = true
+	parallel  = 0
+	prune     = true
+	pruneTags = true
 
 [format]
 	pretty = commit %H%d %(describe:tags) %nAuthor: [%ai] %aN <%aE>%nCommit: [%ci] %cN <%cE>%n%n%B

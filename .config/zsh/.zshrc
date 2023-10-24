@@ -5,6 +5,7 @@
 
 export HOSTNAME="${HOSTNAME:-$(hostname)}"
 export LANG=${LANG:-en_US.utf8}
+export VIMINIT='let $MYVIMRC = has("nvim") ? "$HOME/.config/nvim/init.lua" : "$HOME/.config/vim/vimrc" | so $MYVIMRC'
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1
 

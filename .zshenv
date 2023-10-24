@@ -6,8 +6,9 @@ fi
 
 [[ -d "$HOME/.config/environment.d" ]] && {
 	for FILE in "$HOME/.config/environment.d"/*; do
+		# read all variables from file and then export them
 		source "$FILE" && {
-			VARS=("${(f)$(< <(sed -nE '/^[[:space:]]*#/d; s/^[[:space:]]*([[:alpha:]_][[:alnum:]_]+)=.+/\1/p' "$FILE"))}")
+			VARS=("${(f)$(< <(sed -nE '/^[[:space:]]*#/d; s/^[[:space:]]*([[:alpha:]_][[:alnum:]_]+?)=.+/\1/p' "$FILE"))}")
 			export "${VARS[@]}"
 		}
 	done

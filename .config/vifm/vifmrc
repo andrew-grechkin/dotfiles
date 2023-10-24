@@ -738,6 +738,7 @@ set findprg='fd --hidden -- %A'
 
 " => bookmarks ---------------------------------------------------------------------------------------------------- {{{1
 
+mark a ~/.local/share/rest-console/
 mark b ~/.local/script/
 mark c ~/git/private/dotfiles/.config
 mark d ~/git/private/dotfiles/submodules/private ssh
