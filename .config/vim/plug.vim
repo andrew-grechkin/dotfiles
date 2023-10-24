@@ -1,4 +1,4 @@
-call plug#begin('~/.cache/vim/plugged')
+call plug#begin('~/.local/share/vim/plugged')
 	Plug 'Raimondi/delimitMate'
 	Plug 'christoomey/vim-tmux-navigator'                                          " Better tmux integration
 	Plug 'junegunn/fzf', {'dir': '~/.cache/fzf', 'do': './install --bin'}

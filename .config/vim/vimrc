@@ -6,8 +6,10 @@ scriptencoding=utf-8
 
 " => Variables ---------------------------------------------------------------------------------------------------- {{{1
 
-let VIM_CONFIG_HOME = '$HOME/.config/vim'
+let VIM_CACHE_HOME = '$HOME/.cache/vim'
 let VIM_CONFIG_FILE = resolve(expand($MYVIMRC))
+let VIM_CONFIG_HOME = '$HOME/.config/vim'
+let VIM_DATA_HOME = '$HOME/.local/share/vim'
 
 " => Sane defaults ------------------------------------------------------------------------------------------------ {{{1
 
@@ -328,9 +330,9 @@ let g:vimwiki_list           = [
 \]
 
 let VIM_PLUG_URL      = 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
-let VIM_PLUG_DOWNLOAD = ':silent !curl -sfLo ' . VIM_CONFIG_HOME . '/autoload/plug.vim --create-dirs ' . VIM_PLUG_URL
+let VIM_PLUG_DOWNLOAD = ':silent !curl -sfLo ' . VIM_CACHE_HOME . '/autoload/plug.vim --create-dirs ' . VIM_PLUG_URL
 
-if empty(glob(VIM_CONFIG_HOME . '/autoload/plug.vim'))                          " Download and install vim-plug
+if empty(glob(VIM_CACHE_HOME . '/autoload/plug.vim'))                          " Download and install vim-plug
 	" execute VIM_CREATE_DIR
 	execute VIM_PLUG_DOWNLOAD
 	augroup InstallPlugins
