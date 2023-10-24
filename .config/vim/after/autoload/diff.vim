@@ -1,0 +1,1 @@
+../../../nvim/after/autoload/diff.vim
