@@ -116,7 +116,7 @@ sub process_file_handle ($data_aref, $type_sref, $fh) {
 
     use Data::Printer;
     try {
-        my $decoded = eval $doc; ## no critic [BuiltinFunctions::ProhibitStringyEval]
+        my $decoded = eval Encode::decode('UTF-8', $doc, Encode::FB_CROAK); ## no critic [BuiltinFunctions::ProhibitStringyEval]
         $type ||= 'perl';
         push @data, $decoded;
         return;
