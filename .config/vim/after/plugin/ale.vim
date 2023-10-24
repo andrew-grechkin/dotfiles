@@ -1,4 +1,5 @@
 ﻿scriptencoding=utf-8
+
 if plugin#is_loaded('ale')
 	" register custom fixers
 
