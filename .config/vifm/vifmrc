@@ -740,15 +740,15 @@ set findprg='fd --hidden -- %A'
 
 mark a ~/.local/share/rest-console/
 mark b ~/.local/script/
-mark c ~/git/private/dotfiles/.config
+mark c ~/git/private/dotfiles                    .config
 mark d ~/git/private/dotfiles/submodules/private ssh
 mark h ~/
 mark m /media/nfs/home
+mark n ~/git/private/dotfiles/.config/nvim       init.lua
 mark r \/                                        home
 mark u ~/.local/usr/
 mark p ~/.local/share/perlbrew                   libs
 mark s ~/.local/state                            nvim
-mark u /run/media/$USER
 mark v ~/.local/share/vault
 
 " => file icons --------------------------------------------------------------------------------------------------- {{{1

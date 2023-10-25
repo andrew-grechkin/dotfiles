@@ -29,12 +29,14 @@ function nas-clear-cruft() {
 }
 
 function nas-fix-permissions() {
+	USER="${1:-$USER}"
+	GROUP="$(id -ng $USER)"
 	nice "$SHELL" -c '
 		set -e
 
-		sudo chown "${USER}:$(id -ng)" -R -- *
+		sudo chown "${USER}:${GROUP}" -R -- *
 		sudo chmod -R a+rX,ug+w,o-w -- *
-		fd -u -E "@eaDir" -t d -x chmod g+s
+		sudo fd -u -E "@eaDir" -t d -x chmod g+s
 
 		[[ -e ".gnupg" ]] && sudo chmod -R u=rwX,go-rwx,g-s "$(realpath .gnupg)"
 		[[ -e ".ssh"   ]] && sudo chmod -R u=rwX,go-rwx,g-s "$(realpath .ssh)"
