@@ -32,6 +32,14 @@ vim.g.maplocalleader = ' '
 
 -- => functions --------------------------------------------------------------------------------------------------- {{{1
 
+T = function(t) return setmetatable(t, {__index = table}) end
+
+function table:append(table)
+    for _, v in ipairs(table) do self:insert(v) end
+    return self
+end
+
+-- [[ detect workspace for path ]]
 GET_WORKSPACE_DIR = function(path)
     -- local file = vim.api.nvim_buf_get_name(bufnr)
     -- vim.fn.stdpath('data')
@@ -55,11 +63,16 @@ GET_WORKSPACE_DIR = function(path)
     return vim.loop.cwd()
 end
 
-T = function(t) return setmetatable(t, {__index = table}) end
-
-function table:append(table)
-    for _, v in ipairs(table) do self:insert(v) end
-    return self
+-- [[ close all other listed buffers ]]
+BUF_ONLY = function()
+    local curbuf = vim.api.nvim_get_current_buf()
+    local bufs = vim.api.nvim_list_bufs()
+    for _, bufnr in ipairs(bufs) do
+        if curbuf ~= bufnr then
+            local listed = vim.api.nvim_buf_get_option(bufnr, 'buflisted')
+            if listed then vim.api.nvim_buf_delete(bufnr, {}) end
+        end
+    end
 end
 
 -- => plugins ----------------------------------------------------------------------------------------------------- {{{1
@@ -69,20 +82,25 @@ pcall(require, 'setup-plugins')
 -- => automation -------------------------------------------------------------------------------------------------- {{{1
 
 -- [[ change CWD according to project root ]]
+local rooter_notify_rec = nil
 local group_auto_cd = vim.api.nvim_create_augroup('WindowAutoCD', {clear = true})
 vim.api.nvim_create_autocmd({'BufReadPost'}, {
     group = group_auto_cd,
     pattern = {'*'},
     callback = function(ev)
+        local notify_ok, notify = pcall(require, 'notify')
         local cwd = vim.loop.cwd()
         local dir = GET_WORKSPACE_DIR(ev.match)
         if cwd ~= dir then
             vim.cmd('lcd ' .. dir)
-            vim.notify(string.format('CWD changed: %s', dir), 'INFO', {title = 'rooter'})
+            if notify_ok then
+                rooter_notify_rec = notify.notify(string.format('CWD changed: %s', dir), 'INFO',
+                    {title = 'workspace', replace = rooter_notify_rec})
+            end
         end
+
         local ok, plugin = pcall(require, 'dap.ext.vscode')
         if ok then plugin.load_launchjs(nil) end -- load launch.json
-        -- vim.print(vim.inspect(ev))
     end,
 })
 
@@ -90,7 +108,7 @@ vim.api.nvim_create_autocmd({'BufReadPost'}, {
 -- See `:help vim.highlight.on_yank()`
 local highlight_group = vim.api.nvim_create_augroup('YankHighlight', {clear = true})
 vim.api.nvim_create_autocmd('TextYankPost',
-    {callback = function() vim.highlight.on_yank() end, group = highlight_group, pattern = '*'})
+    {group = highlight_group, pattern = '*', callback = function() vim.highlight.on_yank() end})
 
 -- => commands ---------------------------------------------------------------------------------------------------- {{{1
 

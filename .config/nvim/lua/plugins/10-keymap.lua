@@ -89,7 +89,7 @@ return {
                         ['u'] = {':Lazy install<CR>', 'sync plugins'},
                         ['v'] = {':tabedit <C-R>=VIM_CONFIG_FILE<CR><CR><CR>', 'init.vim'},
                     },
-                    b = {name = 'Buffer'},
+                    b = {name = 'Buffer', ['o'] = {BUF_ONLY, 'only'}},
                     -- p = {'`[ . strpart(getregtype(), 0, 1) . `]', 'Select latest pasted'},
                     x = {':!xdg-open %<CR><CR>', 'Open in the default program'},
                     S = {name = 'Search'},

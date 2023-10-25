@@ -140,6 +140,8 @@ execute ale#fix#registry#Add('sql-formatter', 'Sql_Formatter', ['mysql', 'sql'],
             -- ale_javascript
             vim.g.ale_javascript_eslint_options = '-c ~/.config/.eslintrc.js'
             vim.g.ale_javascript_prettier_options = '--config ~/.config/.prettierrc.yaml'
+            -- ale_json_fixjson
+            vim.g.ale_json_fixjson_options = ' -i 2'
             -- ale-lua-luacheck
             vim.g.ale_lua_luacheck_options = '--allow_defined_top'
             -- ale_markdown
