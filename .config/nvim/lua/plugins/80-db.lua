@@ -1,3 +1,44 @@
+local mysql = {
+    Columns = [[DESCRIBE `{table}`;
+SHOW CREATE TABLE `{table}` \G;
+SHOW TABLE STATUS LIKE '{table}';
+]],
+    Count = [[SELECT
+    COUNT(*)
+FROM
+    `{table}`
+]],
+    Indexes = [[SHOW INDEXES
+FROM
+    `{table}`
+]],
+    List = [[SELECT
+    *
+FROM
+    `{table}`
+LIMIT
+    200
+]],
+    ['Primary Keys'] = [[SELECT
+    *
+FROM
+    INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+WHERE
+    TABLE_SCHEMA = '{dbname}'
+    AND TABLE_NAME = '{table}'
+    AND CONSTRAINT_TYPE = 'PRIMARY KEY'
+]],
+    ['Foreign Keys'] = [[SELECT
+    *
+FROM
+    INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+WHERE
+    TABLE_SCHEMA = '{dbname}'
+    AND TABLE_NAME = '{table}'
+    AND CONSTRAINT_TYPE = 'FOREIGN KEY'
+]],
+}
+
 local postgresql = {
     Columns = [[SELECT
     *
@@ -24,7 +65,8 @@ WHERE
     *
 FROM
     {table}
-LIMIT 200
+LIMIT
+    200
 ]],
     ['Primary Keys'] = [[SELECT
     tc.constraint_name,
@@ -95,7 +137,7 @@ return {
             vim.g.db_ui_auto_execute_table_helpers = true
             vim.g.db_ui_hide_schemas = {'pg_toast'}
             vim.g.db_ui_show_database_icon = true
-            vim.g.db_ui_table_helpers = {postgresql = postgresql}
+            vim.g.db_ui_table_helpers = {postgresql = postgresql, mysql = mysql}
             vim.g.db_ui_use_nerd_fonts = true
             vim.g.db_ui_use_nvim_notify = true
             vim.g.db_ui_win_position = 'right'
