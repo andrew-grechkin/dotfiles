@@ -55,6 +55,13 @@ GET_WORKSPACE_DIR = function(path)
     return vim.loop.cwd()
 end
 
+T = function(t) return setmetatable(t, {__index = table}) end
+
+function table:append(table)
+    for _, v in ipairs(table) do self:insert(v) end
+    return self
+end
+
 -- => plugins ----------------------------------------------------------------------------------------------------- {{{1
 
 pcall(require, 'setup-plugins')

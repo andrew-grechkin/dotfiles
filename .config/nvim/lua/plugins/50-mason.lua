@@ -7,12 +7,11 @@ return {
         'williamboman/mason-lspconfig.nvim',
         dependencies = {'williamboman/mason.nvim'},
         config = function()
-            local ensure_installed = {'bashls', 'jsonls', 'perlnavigator', 'puppet', 'yamlls'}
+            local ensure_installed = T {'bashls', 'jsonls', 'perlnavigator', 'yamlls'}
             if not IS_KVM then
-                ensure_installed = {
+                ensure_installed:append{
                     'ansiblels',
                     'awk_ls',
-                    'bashls',
                     'clangd',
                     'cmake',
                     'docker_compose_language_service',
@@ -22,10 +21,8 @@ return {
                     'graphql',
                     'helm_ls',
                     'jqls',
-                    'jsonls',
                     'lua_ls',
                     'marksman',
-                    'perlnavigator',
                     'pkgbuild_language_server',
                     'puppet',
                     'pyright',
@@ -33,7 +30,6 @@ return {
                     'stylelint_lsp',
                     'tsserver',
                     'vimls',
-                    'yamlls',
                 }
             end
 
@@ -80,47 +76,35 @@ return {
             -- https://github.com/hrsh7th/nvim-cmp/issues/1017#issuecomment-1141440976
             -- table.unpack = table.unpack or unpack
 
-            local lsps = {'bash-language-server', 'bzl'}
-            local daps = {'perl-debug-adapter'}
-            local linters = {'jsonlint', 'shellcheck', 'yamllint'}
-            local formatters = {'beautysh', 'fixjson', 'shfmt', 'yamlfix'}
+            local lsps = T {'bash-language-server'}
+            local daps = T {}
+            local linters = T {'jsonlint', 'shellcheck', 'yamllint'}
+            local formatters = T {'beautysh', 'fixjson', 'shfmt', 'yamlfix'}
             if not IS_KVM then
-                lsps = {'bash-language-server', 'bzl', 'lua-language-server', 'vim-language-server'}
-                daps = {'perl-debug-adapter'}
-                linters = {
+                lsps:append{'bzl', 'lua-language-server', 'vim-language-server'}
+                daps:append{'perl-debug-adapter'}
+                linters:append{
                     'actionlint',
                     'ansible-lint',
                     'cmakelang',
                     'cmakelint',
-                    'jsonlint',
                     'luacheck',
                     'markdownlint',
                     'markuplint',
                     'proselint',
-                    'shellcheck',
                     'sqlfluff',
                     'stylelint',
                     'vint',
-                    'yamllint',
                 }
-                formatters = {
-                    'beautysh',
-                    'cmakelang',
-                    'doctoc',
-                    'fixjson',
-                    'gersemi',
-                    'luaformatter',
-                    'shellharden',
-                    'shfmt',
-                    'yamlfix',
-                }
+                formatters:append{'cmakelang', 'doctoc', 'gersemi', 'luaformatter', 'shellharden'}
             end
 
-            local ensure_installed2 = {}
-            for _, v in ipairs(lsps) do table.insert(ensure_installed2, v) end
-            for _, v in ipairs(daps) do table.insert(ensure_installed2, v) end
-            for _, v in ipairs(linters) do table.insert(ensure_installed2, v) end
-            for _, v in ipairs(formatters) do table.insert(ensure_installed2, v) end
+            local ensure_installed = T {}
+            ensure_installed:append(lsps)
+            ensure_installed:append(daps)
+            ensure_installed:append(linters)
+            ensure_installed:append(formatters)
+            ensure_installed:sort()
 
             -- NOTIFY_REC = {id = nil}
             -- -- setup pre-install and post-install hook
@@ -146,11 +130,11 @@ return {
             -- })
 
             plugin.setup {
-                auto_update = true,
-                debounce_hours = 1, -- at least 1 hours between attempts to install/update
-                ensure_installed = ensure_installed2,
-                run_on_start = true,
-                start_delay = 3000,
+                auto_update = false,
+                -- debounce_hours = 1, -- at least 1 hours between attempts to install/update
+                ensure_installed = ensure_installed,
+                run_on_start = false,
+                -- start_delay = 3000,
             }
         end,
     },
