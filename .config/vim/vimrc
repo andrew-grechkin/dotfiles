@@ -6,7 +6,6 @@ scriptencoding=utf-8
 
 " => Variables ---------------------------------------------------------------------------------------------------- {{{1
 
-let VIM_CACHE_HOME = '$HOME/.cache/vim'
 let VIM_CONFIG_FILE = resolve(expand($MYVIMRC))
 let VIM_CONFIG_HOME = '$HOME/.config/vim'
 let VIM_DATA_HOME = '$HOME/.local/share/vim'
@@ -14,8 +13,15 @@ let VIM_DATA_HOME = '$HOME/.local/share/vim'
 " => Sane defaults ------------------------------------------------------------------------------------------------ {{{1
 
 if has('nvim')
+	let VIM_CACHE_HOME = '$HOME/.cache/nvim'
 	set inccommand=split
+
+	" move all configs out of $HOME
+	let rtp=&runtimepath
+	set runtimepath=~/.cache/nvim
+	let &runtimepath.=',/etc/xdg/nvim,~/.local/share/nvim/site,/usr/local/share/nvim/site,/usr/share/nvim/site,/usr/share/nvim/runtime,/usr/share/nvim/site/after,/usr/local/share/nvim/site/after,~/.local/share/nvim/site/after,/etc/xdg/nvim/after,~/.config/nvim/after,~/.cache/nvim/after,~/.config/vim,~/.config/vim/after'
 else
+	let VIM_CACHE_HOME = '$HOME/.cache/vim'
 	" vint: next-line -ProhibitSetNoCompatible
 	set nocompatible                                                           " Disable Vi compatibility
 

@@ -15,7 +15,7 @@ call plug#begin('~/.local/share/vim/plugged')
 
 	if 1
 		Plug 'tpope/vim-fugitive'                                                  " Git support
-		Plug 'mhinz/vim-signify'                                                   " Git status/modifications of the file
+"		Plug 'mhinz/vim-signify'                                                   " Git status/modifications of the file
 	endif
 
 	if 1
@@ -24,7 +24,7 @@ call plug#begin('~/.local/share/vim/plugged')
 		Plug 'ryanoasis/vim-devicons'
 	endif
 
-	if has('nvim') || v:version >= 800                                             " These plugins demand modern vim or neovim
+	if has('nvim-0.5') || v:version >= 800                                         " These plugins demand modern vim or neovim
 		Plug 'dense-analysis/ale'                                                  " Async syntax checker
 		Plug 'SirVer/ultisnips'
 		Plug 'andrew-grechkin/vim-snippets'
