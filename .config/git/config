@@ -85,7 +85,7 @@
 
 [core]
 	autocrlf     = false
-	editor       = vim
+	editor       = vi
 	longpaths    = true
 	pager        = less
 	preloadindex = true
@@ -108,7 +108,7 @@
 	trustExitCode = true                                                       # be able to abort all diffs with ':cq' or ':cquit'
 
 [difftool "fugitive"]
-	cmd = vim -f -c "Gdiffsplit!" "$MERGED"
+	cmd = vi -f -c "Gdiffsplit!" "$MERGED"
 
 [difftool "vimdiff"]
 	cmd = vimdiff "$LOCAL" "$REMOTE"
@@ -161,7 +161,7 @@
 	trustExitCode = true
 
 [mergetool "fugitive"]
-	cmd = vim -f -c "Gdiffsplit!" "$MERGED"
+	cmd = vi -f -c "Gdiffsplit!" "$MERGED"
 
 [mergetool "meld"]
 	cmd = meld "$LOCAL" "$BASE" "$REMOTE" --output "$MERGED"
