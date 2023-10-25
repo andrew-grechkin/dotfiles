@@ -80,6 +80,4 @@ else
 	#fi
 fi
 
-[[ -n "$is_tty" ]] && {
-	source-file "$XDG_CONFIG_HOME/shell/profile.work"
-}
+source-file "$XDG_CONFIG_HOME/shell/profile.work"

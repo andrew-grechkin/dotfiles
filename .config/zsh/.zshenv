@@ -50,7 +50,8 @@ typeset -Hg ZSH_CACHE_DIR ZSH_COMPDUMP
 ZSH_CACHE_DIR=$XDG_CACHE_HOME
 ZSH_COMPDUMP=$XDG_CACHE_HOME/zcompdump-${ZSH_VERSION}
 
-tty &>/dev/null && typeset -Hg is_tty=1
+# tty &>/dev/null && typeset -Hg is_tty=1
+# [[ -o INTERACTIVE ]] && typeset -Hg is_tty=1
 
 # => set PATH ---------------------------------------------------------------------------------------------------- {{{1
 
