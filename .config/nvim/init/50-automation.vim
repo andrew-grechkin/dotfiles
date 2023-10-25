@@ -29,11 +29,6 @@ augroup SettingsByBufType
 		\ endif
 augroup END
 
-"augroup save_restore_position
-"	autocmd!
-"	autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | execute "normal! g'\"" | endif
-"augroup END
-
 augroup pre_post_process
 	autocmd!
 	autocmd BufWritePost $MYVIMRC source $MYVIMRC

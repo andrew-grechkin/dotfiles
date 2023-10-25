@@ -118,20 +118,25 @@ silent! nnoremap <C-a>                 gg<S-v>G
 
 ":noremap <F12> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<' . synIDattr(synID(line("."),col("."),0),"name") . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
 
-silent! tnoremap <leader><Esc>         <C-\><C-N>
-silent! tnoremap <A-h>                 <C-\><C-N><C-w><Left>
-silent! tnoremap <A-j>                 <C-\><C-N><C-w><Down>
-silent! tnoremap <A-k>                 <C-\><C-N><C-w><Up>
-silent! tnoremap <A-l>                 <C-\><C-N><C-w><Right>
-		nnoremap <silent> <A-h>        :TmuxNavigateLeft<CR>
-		nnoremap <silent> <A-j>        :TmuxNavigateDown<CR>
-		nnoremap <silent> <A-k>        :TmuxNavigateUp<CR>
-		nnoremap <silent> <A-l>        :TmuxNavigateRight<CR>
-		nnoremap <silent> <A-\>        :TmuxNavigatePrevious<CR>
-		inoremap <silent> <A-h>        :TmuxNavigateLeft<CR>
-		inoremap <silent> <A-j>        :TmuxNavigateDown<CR>
-		inoremap <silent> <A-k>        :TmuxNavigateUp<CR>
-		inoremap <silent> <A-l>        :TmuxNavigateRight<CR>
+silent! execute "set <M-h>=\<Esc>h"
+silent! execute "set <M-j>=\<Esc>j"
+silent! execute "set <M-k>=\<Esc>k"
+silent! execute "set <M-l>=\<Esc>l"
+
+silent! tnoremap <leader><Esc>         <C-\><C-n>
+silent! tnoremap <A-h>                 <C-\><C-n><C-w><Left>
+silent! tnoremap <A-j>                 <C-\><C-n><C-w><Down>
+silent! tnoremap <A-k>                 <C-\><C-n><C-w><Up>
+silent! tnoremap <A-l>                 <C-\><C-n><C-w><Right>
+		nnoremap <silent> <M-h>        <C-\><C-n>:TmuxNavigateLeft<CR>
+		nnoremap <silent> <M-j>        <C-\><C-n>:TmuxNavigateDown<CR>
+		nnoremap <silent> <M-k>        <C-\><C-n>:TmuxNavigateUp<CR>
+		nnoremap <silent> <M-l>        <C-\><C-n>:TmuxNavigateRight<CR>
+		nnoremap <silent> <M-\>        <C-\><C-n>:TmuxNavigatePrevious<CR>
+		inoremap <silent> <M-h>        <C-\><C-n>:TmuxNavigateLeft<CR>
+		inoremap <silent> <M-j>        <C-\><C-n>:TmuxNavigateDown<CR>
+		inoremap <silent> <M-k>        <C-\><C-n>:TmuxNavigateUp<CR>
+		inoremap <silent> <M-l>        <C-\><C-n>:TmuxNavigateRight<CR>
 
 " fast buffers
 		nnoremap gh                    :bprevious<CR>
@@ -167,7 +172,7 @@ silent! tnoremap <A-l>                 <C-\><C-N><C-w><Right>
 " => Old/new ------------------------------------------------------------------------------------------------------ {{{1
 
 " Open the current file in the default program
-        nmap     <leader>x             :!xdg-open %<cr><cr>
+		nmap     <leader>x             :!xdg-open %<cr><cr>
 
 " Fast split navigation
 silent! nnoremap <leader>'             :belowright vsplit<CR>
@@ -240,6 +245,11 @@ endif
 " => Automation --------------------------------------------------------------------------------------------------- {{{1
 
 cnoreabbrev waq wqa
+
+augroup save_restore_position
+	autocmd!
+	autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | execute "normal! g'\"" | endif
+augroup END
 
 augroup DetectFileUpdated
 	autocmd!

@@ -52,7 +52,7 @@ return {
 runtime plugin/grepper.vim                                         " initialize g:grepper with default values
 let g:grepper.highlight   = 1
 let g:grepper.jump        = 0
-let g:grepper.quickfix    = 0
+let g:grepper.quickfix    = 1
 "let g:grepper.dir         = 'repo,cwd,file' do not uncomment. operator stops working
 let g:grepper.repo        = ['.git', '.hg', '.svn', '.cache']
 let g:grepper.side        = 0
