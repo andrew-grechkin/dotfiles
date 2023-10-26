@@ -33,8 +33,8 @@ else
 	BF_SIZE=0
 fi
 
-if (( HF_SIZE < 10000 && HF_SIZE < BF_SIZE)); then
-	echo 'History file is lower than 10 kbytes, restoring backup...'
+if (( HF_SIZE < 20000 && HF_SIZE < BF_SIZE)); then
+	echo 'History file is lower than 20 kbytes, restoring backup...'
 	cp -f "${HISTFILE}.back" "$HISTFILE"
 elif (( HF_SIZE > 10000 && HF_SIZE > BF_SIZE)); then
 	cp -f "$HISTFILE" "${HISTFILE}.back"

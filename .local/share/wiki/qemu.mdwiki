@@ -23,5 +23,5 @@
 1. Expose host directory
     `-virtfs local,path=/path/to/file,mount_tag=host0,security_model=passthrough,id=host0`
 
-2. Mount in guiest
+2. Mount in guest
     `sudo mount -t 9p -o trans=virtio host0 /mnt`

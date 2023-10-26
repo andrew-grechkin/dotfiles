@@ -477,6 +477,8 @@ filetype *.qcow2
 	\ run-qcow-bios %c &,
 	\ {Run with qemu UEFI}
 	\ run-qcow-uefi %c &,
+	\ {Mount qcow2}
+	\ mount-qcow %c,
 
 " => File associations: archives ---------------------------------------------------------------------------------- {{{1
 
