@@ -144,7 +144,6 @@ return {
         config = function()
             local plugin = require('mason-nvim-dap')
             local ensure_installed = {'bash', 'python'}
-            -- if not IS_KVM then ensure_installed = {'bash', 'python'} end
 
             plugin.setup {
                 automatic_installation = true,

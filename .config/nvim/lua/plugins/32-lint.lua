@@ -114,7 +114,7 @@ execute ale#fix#registry#Add('sql-formatter', 'Sql_Formatter', ['mysql', 'sql'],
             vim.g.ale_sign_error = '✘'
             vim.g.ale_sign_warning = '✱'
             vim.g.ale_set_loclist = 1
-            vim.g.ale_set_quickfix = 1
+            vim.g.ale_set_quickfix = 0
             vim.g.ale_open_list = 1
             vim.g.ale_keep_list_window_open = 0
             vim.g.ale_list_window_size = 4

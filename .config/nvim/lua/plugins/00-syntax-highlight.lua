@@ -14,7 +14,7 @@ local result = {
             local ok, plugin = pcall(require, 'nvim-treesitter.configs')
             if not ok then return end
 
-            local ensure_installed = {
+            local ensure_installed = T {
                 'bash',
                 'dockerfile',
                 'gitignore',
@@ -29,39 +29,29 @@ local result = {
             }
 
             if not IS_KVM then
-                ensure_installed = {
-                    'bash',
+                ensure_installed:append({
                     'c',
                     'cmake',
                     'cpp',
                     'css',
-                    'dockerfile',
                     'elixir',
-                    'gitignore',
                     'go',
                     'html',
                     'http',
                     'javascript',
-                    'json',
-                    'lua',
-                    'make',
                     'markdown',
                     'markdown_inline',
                     'python',
                     'query',
-                    'regex',
                     'ruby',
                     'scss',
                     'sql',
-                    'toml',
                     'tsx',
                     'typescript',
-                    'vim',
-                    'vimdoc',
                     'vue',
-                    'yaml',
-                }
+                })
             end
+
             local config = {
                 ensure_installed = ensure_installed,
                 highlight = {enable = true, disable = {}},
@@ -160,13 +150,10 @@ local result = {
     },
 }
 
-
 if not (vim.version().major < 1 and vim.version().minor < 9) then
-    table.insert(result,
-        { -- https://github.com/nvim-treesitter/nvim-treesitter-context
-            'nvim-treesitter/nvim-treesitter-context',
-        }
-    )
+    table.insert(result, { -- https://github.com/nvim-treesitter/nvim-treesitter-context
+        'nvim-treesitter/nvim-treesitter-context',
+    })
 end
 
 return result
