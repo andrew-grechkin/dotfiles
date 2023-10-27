@@ -29,6 +29,55 @@ return {
         end,
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
+    { -- url: https://github.com/ThePrimeagen/harpoon
+        'ThePrimeagen/harpoon',
+        config = function()
+            local ok, plugin = pcall(require, 'harpoon')
+            local config = {
+                -- sets the marks upon calling `toggle` on the ui, instead of require `:w`.
+                save_on_toggle = false,
+
+                -- saves the harpoon file upon every change. disabling is unrecommended.
+                save_on_change = true,
+
+                -- sets harpoon to run the command immediately as it's passed to the terminal when calling `sendCommand`.
+                enter_on_sendcmd = false,
+
+                -- closes any tmux windows harpoon that harpoon creates when you close Neovim.
+                tmux_autoclose_windows = false,
+
+                -- filetypes that you want to prevent from adding to the harpoon list menu.
+                excluded_filetypes = {'harpoon'},
+
+                -- set marks specific to each git branch inside git repository
+                mark_branch = false,
+
+                -- enable tabline with harpoon marks
+                tabline = false,
+                tabline_prefix = '   ',
+                tabline_suffix = '   ',
+            }
+            plugin.setup(config)
+            require('telescope').load_extension('harpoon')
+
+            local wk_ok, which_key = pcall(require, 'which-key')
+            if wk_ok then
+                local normal_mappings = {
+                    ['z<Space>'] = {function () require("harpoon.mark").add_file() end, 'harpoon: add'},
+                    ['z,'] = {function () require("harpoon.ui").nav_prev() end, 'harpoon: prev'},
+                    ['z.'] = {function () require("harpoon.ui").nav_next() end, 'harpoon: next'},
+                    ['zd'] = {function () require("harpoon.ui").nav_file(3) end, 'harpoon: 3'},
+                    ['zf'] = {function () require("harpoon.ui").nav_file(4) end, 'harpoon: 4'},
+                    ['zh'] = {function () require("harpoon.ui").toggle_quick_menu() end, 'harpoon: menu'},
+                    ['zj'] = {function () require("harpoon.ui").nav_file(1) end, 'harpoon: 1'},
+                    ['zk'] = {function () require("harpoon.ui").nav_file(2) end, 'harpoon: 2'},
+                }
+
+                which_key.register(normal_mappings, {mode = 'n', nowait = true, noremap = true})
+            end
+        end,
+    },
+    -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- url: https://github.com/vifm/vifm.vim
         'vifm/vifm.vim',
         config = function()

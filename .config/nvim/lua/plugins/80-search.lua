@@ -43,8 +43,8 @@ return {
         'nelstrom/vim-visual-star-search',
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
-    { -- https://github.com/mhinz/vim-grepper
-        'mhinz/vim-grepper',
+    { -- https://github.com/andrew-grechkin/vim-grepper
+        'andrew-grechkin/vim-grepper',
         lazy = false,
         config = function()
             vim.api.nvim_exec([[

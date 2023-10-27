@@ -39,8 +39,8 @@ function table:append(table)
     return self
 end
 
--- [[ detect workspace for path ]]
-GET_WORKSPACE_DIR = function(path)
+-- [[ detect project directory for path ]]
+GET_PROJECT_DIR = function(path)
     -- local file = vim.api.nvim_buf_get_name(bufnr)
     -- vim.fn.stdpath('data')
     local dir = vim.fs.dirname(path)
@@ -81,21 +81,21 @@ pcall(require, 'setup-plugins')
 
 -- => automation -------------------------------------------------------------------------------------------------- {{{1
 
--- [[ change CWD according to project root ]]
+-- [[ change CWD according to the project root ]]
 local rooter_notify_rec = nil
 local group_auto_cd = vim.api.nvim_create_augroup('WindowAutoCD', {clear = true})
-vim.api.nvim_create_autocmd({'BufReadPost'}, {
+vim.api.nvim_create_autocmd({'BufReadPost', 'VimEnter'}, {
     group = group_auto_cd,
     pattern = {'*'},
     callback = function(ev)
         local notify_ok, notify = pcall(require, 'notify')
         local cwd = vim.loop.cwd()
-        local dir = GET_WORKSPACE_DIR(ev.match)
+        local dir = GET_PROJECT_DIR(ev.match)
         if cwd ~= dir then
             vim.cmd('lcd ' .. dir)
             if notify_ok then
-                rooter_notify_rec = notify.notify(string.format('CWD changed: %s', dir), 'INFO',
-                    {title = 'workspace', replace = rooter_notify_rec})
+                rooter_notify_rec = notify.notify(string.format('%s', dir), 'INFO',
+                    {title = 'Project root detected', replace = rooter_notify_rec})
             end
         end
 

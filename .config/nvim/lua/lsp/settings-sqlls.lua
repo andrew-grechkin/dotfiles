@@ -1,7 +1,7 @@
 return {
     cmd = {'sql-language-server', 'up', '--method', 'stdio'},
     filetypes = {'sql', 'mysql'},
-    root_dir = GET_WORKSPACE_DIR,
+    root_dir = GET_PROJECT_DIR,
     settings = {
         ['sqlLanguageServer'] = {
             lint = {

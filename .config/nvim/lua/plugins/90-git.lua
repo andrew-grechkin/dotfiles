@@ -1,5 +1,21 @@
-return {
-    { -- https://github.com/lewis6991/gitsigns.nvim
+local result = T {
+    -- => --------------------------------------------------------------------------------------------------------- {{{1
+    { -- https://github.com/tpope/vim-fugitive
+        'tpope/vim-fugitive',
+        dependencies = {
+            { -- https://github.com/tpope/vim-rhubarb
+                'tpope/vim-rhubarb',
+            },
+        },
+        config = function()
+            vim.api.nvim_del_user_command('Gbrowse')
+            vim.api.nvim_del_user_command('Gremove')
+        end,
+    },
+}
+
+if not IS_KVM then
+    result:insert({ -- https://github.com/lewis6991/gitsigns.nvim
         'lewis6991/gitsigns.nvim',
         event = {'BufReadPre', 'BufNewFile'},
         config = function()
@@ -84,18 +100,7 @@ return {
 
             plugin.setup(config)
         end,
-    },
-    -- => --------------------------------------------------------------------------------------------------------- {{{1
-    { -- https://github.com/tpope/vim-fugitive
-        'tpope/vim-fugitive',
-        dependencies = {
-            { -- https://github.com/tpope/vim-rhubarb
-                'tpope/vim-rhubarb',
-            },
-        },
-        config = function()
-            vim.api.nvim_del_user_command('Gbrowse')
-            vim.api.nvim_del_user_command('Gremove')
-        end,
-    },
-}
+    })
+end
+
+return result
