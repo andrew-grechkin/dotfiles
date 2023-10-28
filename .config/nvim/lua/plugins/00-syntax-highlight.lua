@@ -1,4 +1,4 @@
-local result = {
+return {
     { -- https://github.com/nvim-treesitter/nvim-treesitter
         'nvim-treesitter/nvim-treesitter',
         enabled = true,
@@ -17,15 +17,16 @@ local result = {
 
             local ensure_installed = T {
                 'bash',
+                'diff',
                 'dockerfile',
+                'git_rebase',
+                'gitcommit',
                 'gitignore',
                 'json',
                 'lua',
                 'make',
                 'regex',
                 'toml',
-                'vim',
-                'vimdoc',
                 'yaml',
             }
 
@@ -33,29 +34,58 @@ local result = {
                 ensure_installed:append({
                     'c',
                     'cmake',
+                    'comment',
                     'cpp',
                     'css',
+                    'csv',
+                    'doxygen',
                     'elixir',
+                    'git_config',
+                    'gitattributes',
                     'go',
+                    'gpg',
+                    'graphql',
                     'html',
                     'http',
+                    'ini',
                     'javascript',
-                    'markdown',
+                    'jq',
+                    'jsdoc',
+                    'json5',
+                    'luadoc',
                     'markdown_inline',
+                    'objdump',
+                    'passwd',
+                    'pem',
+                    'perl',
+                    'pod',
+                    'puppet',
                     'python',
                     'query',
                     'ruby',
                     'scss',
                     'sql',
+                    'ssh_config',
+                    'strace',
+                    'sxhkdrc',
+                    'terraform',
                     'tsx',
                     'typescript',
+                    'vim',
+                    'vimdoc',
                     'vue',
+                    'xml',
+                    -- 'markdown',
                 })
             end
 
             local config = {
                 ensure_installed = ensure_installed,
-                highlight = {additional_vim_regex_highlighting = false, enable = true, disable = {}},
+                highlight = {
+                    additional_vim_regex_highlighting = false,
+                    enable = true,
+                    disable = {'perl'},
+                },
                 indent = {enable = false, disable = {}},
                 incremental_selection = {
                     enable = true,
@@ -110,24 +140,6 @@ local result = {
             local plugin = require('illuminate')
             plugin.configure(opts)
 
-            -- local function map(key, dir, buffer)
-            --     vim.keymap.set('n', key, function()
-            --         plugin['goto_' .. dir .. '_reference'](false)
-            --     end, {desc = dir:sub(1, 1):upper() .. dir:sub(2) .. ' reference', buffer = buffer})
-            -- end
-
-            -- map(']r', 'next')
-            -- map('[r', 'prev')
-
-            -- -- also set it after loading ftplugins, since a lot overwrite [[ and ]]
-            -- vim.api.nvim_create_autocmd('FileType', {
-            --     callback = function()
-            --         local buffer = vim.api.nvim_get_current_buf()
-            --         map(']r', 'next', buffer)
-            --         map('[r', 'prev', buffer)
-            --     end,
-            -- })
-
             local wk_ok, which_key = pcall(require, 'which-key')
             if wk_ok then
                 local normal_mappings = {
@@ -149,12 +161,9 @@ local result = {
             end
         end,
     },
-}
-
-if not (vim.version().major < 1 and vim.version().minor < 9) then
-    table.insert(result, { -- https://github.com/nvim-treesitter/nvim-treesitter-context
+    -- => --------------------------------------------------------------------------------------------------------- {{{1
+    { -- https://github.com/nvim-treesitter/nvim-treesitter-context
         'nvim-treesitter/nvim-treesitter-context',
-    })
-end
-
-return result
+        enabled = vim.version().major > 0 or vim.version().minor > 8,
+    },
+}
