@@ -22,141 +22,47 @@ endif
 
 " :lua vim.notify(require'nvim-treesitter.ts_utils'.get_node_at_cursor():__tostring())
 " :lua vim.notify(vim.inspect(getmetatable(require'nvim-treesitter.ts_utils'.get_node_at_cursor(0))))
-" :h nvim-treesitter-highlights
-
-" TSAnnotation
-" TSAttribute
-" TSBoolean
-" TSCharacter
-" TSCharacterSpecial
-" TSComment
-" TSConditional
-" TSConstBuiltin
-" TSConstMacro
-" TSConstant
-" TSConstructor
-" TSDanger
-" TSDebug
-" TSDefine
-" TSEmphasis
-" TSEnvironment
-" TSEnvironmentName
-" TSException
-" TSField
-" TSFloat
-" TSFuncBuiltin
-" TSFuncMacro
-" TSFunction
-" TSFunctionCall
-" TSInclude
-" TSKeyword
-" TSKeywordFunction
-" TSKeywordOperator
-" TSKeywordReturn
-" TSLabel
-" TSLiteral
-" TSMath
-" TSMethod
-" TSMethodCall
-" TSNamespace
-" TSNote
-" TSNumber
-" TSOperator
-" TSParameter
-" TSParameterReference
-" TSPreProc
-" TSProperty
-" TSPunctBracket
-" TSPunctDelimiter
-" TSPunctSpecial
-" TSRepeat
-" TSStorageClass
-" TSStrike
-" TSString
-" TSStringEscape
-" TSStringRegex
-" TSStringSpecial
-" TSStrong
-" TSSymbol
-" TSTag
-" TSTagAttribute
-" TSTagDelimiter
-" TSText
-" TSTextReference
-" TSTitle
-" TSTodo
-" TSType
-" TSTypeBuiltin
-" TSTypeDefinition
-" TSTypeQualifier
-" TSURI
-" TSUnderline
-" TSVariable
-" TSVariableBuiltin
-" TSWarning
 
 if &termguicolors ==# 1
-	hi Boolean                  guifg=#AE81FF
-	hi TSBoolean                guifg=#AE81FF
+	hi Boolean                  guifg=#AE81F0
 	hi Character                guifg=#E6DB74
-	hi TSCharacter              guifg=#E6DB74
 	hi Comment                  guifg=#777777
-	hi TSComment                guifg=#777777
 	hi Conditional              guifg=#F92672                             gui=bold
-	hi TSConditional            guifg=#F92672                             gui=bold
 	hi Constant                 guifg=#AE81FF                             gui=bold
-	hi TSConstant               guifg=#AE81FF                             gui=bold
 	hi Debug                    guifg=#BCA3A3                             gui=bold
-	hi TSDebug                  guifg=#BCA3A3                             gui=bold
 	hi Define                   guifg=#66D9EF
-	hi TSDefine                 guifg=#66D9EF
 	hi Delimiter                guifg=#8F8F8F
 	hi Error                    guifg=#D6CB64 guibg=#1E0010
-	hi TSError                  guifg=#D6CB64 guibg=#1E0010
 	hi Exception                guifg=#A6E22E                             gui=bold
-	hi TSException              guifg=#A6E22E                             gui=bold
 	hi Float                    guifg=#AE81FF
-	hi TSFloat                  guifg=#AE81FF
 	hi Function                 guifg=#A6E22E
-	hi TSFunction               guifg=#A6E22E
 	hi Identifier               guifg=#FD971F
 	hi Ignore                   guifg=#808080 guibg=bg
 	hi Keyword                  guifg=#F92672                             gui=bold
-	hi TSKeyword                guifg=#F92672                             gui=bold
-	hi Label                    guifg=#E6DB74                             gui=none
-	hi TSLabel                  guifg=#E6DB74                             gui=none
+	hi Label                    guifg=#E6DB74                             gui=NONE
 	hi Macro                    guifg=#C4BE89                             gui=italic
 	hi Number                   guifg=#AE81FF
-	hi TSNumber                 guifg=#AE81FF
 	hi Operator                 guifg=#F92672
-	hi TSOperator               guifg=#F92672
 	hi PreCondit                guifg=#A6E22E                             gui=bold
 	hi PreProc                  guifg=#A6E22E
-	hi TSPreProc                guifg=#A6E22E
 	hi Repeat                   guifg=#F92672                             gui=bold
-	hi TSRepeat                 guifg=#F92672                             gui=bold
 	hi Special                  guifg=#66D9EF                             gui=bold
 	hi SpecialChar              guifg=#F92672                             gui=bold
 	hi SpecialComment           guifg=#999999
-	hi Statement                guifg=#F95050                             gui=none
+	hi Statement                guifg=#F95050                             gui=NONE
 	hi StorageClass             guifg=#FD971F                             gui=italic
-	hi TSStorageClass           guifg=#FD971F                             gui=italic
 	hi String                   guifg=#C6BB74
-	hi TSString                 guifg=#C6BB74
 	hi Structure                guifg=#66D9EF
 	hi Tag                      guifg=#F92672                             gui=italic
-	hi TSTag                    guifg=#F92672                             gui=italic
 	hi Todo                     guifg=#FFFFFF guibg=bg                    gui=bold
-	hi TSTodo                   guifg=#FFFFFF guibg=bg                    gui=bold
-	hi Type                     guifg=#66D9EF                             gui=none
-	hi TSType                   guifg=#66D9EF                             gui=none
+	hi Type                     guifg=#66D9EF                             gui=NONE
 	hi Typedef                  guifg=#66D9EF
 
 	hi ColorColumn                            guibg=#232526
 	hi Cursor                   guifg=#000000 guibg=#F8F8F0
 	hi CursorColumn                           guibg=#293739
 	hi CursorLine                             guibg=#293739
-	hi CursorLineNr             guifg=#FD971F                             gui=none
+	hi CursorLineNr             guifg=#FD971F                             gui=NONE
 	hi DiffAdd                                guibg=#203020
 	hi DiffChange                             guibg=#303020
 	hi DiffDelete               guifg=#960050 guibg=#302020
@@ -175,7 +81,7 @@ if &termguicolors ==# 1
 	hi manBold                                                            gui=bold
 	hi manItalic                                                          gui=italic
 	hi manUnderline                                                       gui=underline
-" 	hi Normal                   guifg=#D8D8D2 guibg=#151515
+ 	hi Normal                   guifg=#D8D8D2 guibg=NONE
 	hi Pmenu                    guifg=#66D9EF guibg=#000000
 	hi PmenuSbar                              guibg=#080808
 	hi PmenuSel                               guibg=#808080
@@ -190,7 +96,7 @@ if &termguicolors ==# 1
 	hi SpellRare                              guibg=#382020 guisp=#FFFFFF gui=underdashed
 	hi StatusLine               guifg=#455354 guibg=bg
 	hi StatusLineNC             guifg=#808080 guibg=#080808
-	hi TabLine                  guifg=#808080 guibg=#1B1D1E               gui=none
+	hi TabLine                  guifg=#808080 guibg=#1B1D1E               gui=NONE
 	hi TabLineFill              guifg=#1B1D1E guibg=#1B1D1E
 	hi Title                    guifg=#EF5939
 	hi VertSplit                guifg=#808080 guibg=#080808               gui=bold
@@ -215,10 +121,10 @@ else
 		hi Exception            ctermfg=118                             cterm=bold
 		hi Float                ctermfg=135
 		hi Function             ctermfg=118
-		hi Identifier           ctermfg=208                             cterm=none
+		hi Identifier           ctermfg=208                             cterm=NONE
 		hi Ignore               ctermfg=244         ctermbg=232
 		hi Keyword              ctermfg=161                             cterm=bold
-		hi Label                ctermfg=229                             cterm=none
+		hi Label                ctermfg=229                             cterm=NONE
 		hi Macro                ctermfg=193
 		hi Number               ctermfg=135
 		hi Operator             ctermfg=161
@@ -234,14 +140,14 @@ else
 		hi Structure            ctermfg=81
 		hi Tag                  ctermfg=161
 		hi Todo                 ctermfg=231         ctermbg=232         cterm=bold
-		hi Type                 ctermfg=81                              cterm=none
+		hi Type                 ctermfg=81                              cterm=NONE
 		hi Typedef              ctermfg=81
 
 		hi ColorColumn                              ctermbg=236
 		hi Cursor               ctermfg=16          ctermbg=253
 		hi CursorColumn                             ctermbg=236
-		hi CursorLine                               ctermbg=234         cterm=none
-		hi CursorLineNr         ctermfg=208                             cterm=none
+		hi CursorLine                               ctermbg=234         cterm=NONE
+		hi CursorLineNr         ctermfg=208                             cterm=NONE
 		hi DiffAdd                                  ctermbg=24
 		hi DiffChange           ctermfg=181         ctermbg=239
 		hi DiffDelete           ctermfg=162         ctermbg=53
@@ -268,7 +174,7 @@ else
 		hi SpellBad                                 ctermbg=52
 		hi SpellCap                                 ctermbg=17
 		hi SpellLocal                               ctermbg=17
-		hi SpellRare            ctermfg=none        ctermbg=none        cterm=reverse
+		hi SpellRare            ctermfg=NONE        ctermbg=NONE        cterm=reverse
 		hi StatusLine           ctermfg=238         ctermbg=253
 		hi StatusLineNC         ctermfg=244         ctermbg=232
 		hi Title                ctermfg=166
@@ -317,9 +223,9 @@ else
 "		hi Cursor               ctermfg=16          ctermbg=253
 		hi CursorColumn                             ctermbg=DarkRed     cterm=bold
 "		hi CursorIM             ctermfg=            ctermbg=
-		hi CursorLine                               ctermbg=none        cterm=bold
+		hi CursorLine                               ctermbg=NONE        cterm=bold
 "		hi CursorLineFold       ctermfg=            ctermbg=
-"		hi CursorLineNr         ctermfg=208                             cterm=none
+"		hi CursorLineNr         ctermfg=208                             cterm=NONE
 "		hi CursorLineSign       ctermfg=            ctermbg=
 "		hi DiffAdd                                  ctermbg=24
 "		hi DiffChange           ctermfg=181         ctermbg=239
@@ -355,7 +261,7 @@ else
 "		hi SpellBad                                 ctermbg=52
 "		hi SpellCap                                 ctermbg=17
 "		hi SpellLocal                               ctermbg=17
-"		hi SpellRare            ctermfg=none        ctermbg=none        cterm=reverse
+"		hi SpellRare            ctermfg=NONE        ctermbg=NONE        cterm=reverse
 "		hi StatusLine           ctermfg=238         ctermbg=253
 "		hi StatusLineNC         ctermfg=244         ctermbg=232
 "		hi Substitute           ctermfg=            ctermbg=

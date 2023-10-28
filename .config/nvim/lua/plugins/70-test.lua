@@ -14,7 +14,7 @@ return {
             },
         },
         config = function()
-            plugin = require('neotest')
+            local plugin = require('neotest')
 
             local config = {
                 adapters = {

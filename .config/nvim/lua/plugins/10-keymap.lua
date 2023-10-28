@@ -112,7 +112,7 @@ return {
                 ['<C-a>'] = {'gg<S-v>G', 'select all'},
                 ['<C-d>'] = {'<C-d>zz', 'scroll down and centralize'},
                 ['<C-u>'] = {'<C-u>zz', 'scroll up and centralize'},
-                ['<F12>'] = {':call hl#show()<CR>', 'show highlight info'},
+                ['<F12>'] = {':Inspect<CR>', 'show highlight info'},
                 g = {
                     name = 'GoTo',
                     J = {'mzgJ`z', 'join keep cursor'},

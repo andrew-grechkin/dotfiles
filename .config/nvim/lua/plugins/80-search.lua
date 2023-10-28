@@ -61,6 +61,7 @@ let g:grepper.tools       = ['rg', 'git', 'ag', 'ack', 'ack-grep', 'grep']
 let g:grepper.git.grepprg .= ' -i'
 
 let g:grepper.operator.git.grepprg .= ' -i'
+let g:grepper.operator.tools        = ['rg', 'git', 'ag', 'ack', 'ack-grep', 'grep']
 
 nnoremap <silent> <plug>(GrepperOperatorRepo) :let      g:grepper.operator.dir='repo,cwd,file' <BAR> set opfunc=GrepperOperator<CR>g@
 nnoremap <silent> <plug>(GrepperOperatorFile) :let      g:grepper.operator.dir='file,repo,cwd' <BAR> set opfunc=GrepperOperator<CR>g@

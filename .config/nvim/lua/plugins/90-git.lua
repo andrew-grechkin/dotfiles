@@ -1,4 +1,4 @@
-local result = T {
+return {
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/tpope/vim-fugitive
         'tpope/vim-fugitive',
@@ -12,11 +12,10 @@ local result = T {
             vim.api.nvim_del_user_command('Gremove')
         end,
     },
-}
-
-if not IS_KVM then
-    result:insert({ -- https://github.com/lewis6991/gitsigns.nvim
+    -- => --------------------------------------------------------------------------------------------------------- {{{1
+    { -- https://github.com/lewis6991/gitsigns.nvim
         'lewis6991/gitsigns.nvim',
+        enabled = not IS_KVM,
         event = {'BufReadPre', 'BufNewFile'},
         config = function()
             local ok, plugin = pcall(require, 'gitsigns')
@@ -100,7 +99,5 @@ if not IS_KVM then
 
             plugin.setup(config)
         end,
-    })
-end
-
-return result
+    },
+}

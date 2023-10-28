@@ -1,6 +1,7 @@
 local result = {
     { -- https://github.com/nvim-treesitter/nvim-treesitter
         'nvim-treesitter/nvim-treesitter',
+        enabled = true,
         dependencies = {
             { -- https://github.com/nvim-treesitter/nvim-treesitter-textobjects
                 'nvim-treesitter/nvim-treesitter-textobjects',
@@ -54,7 +55,7 @@ local result = {
 
             local config = {
                 ensure_installed = ensure_installed,
-                highlight = {enable = true, disable = {}},
+                highlight = {additional_vim_regex_highlighting = false, enable = true, disable = {}},
                 indent = {enable = false, disable = {}},
                 incremental_selection = {
                     enable = true,

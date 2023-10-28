@@ -32,7 +32,7 @@ return {
     { -- url: https://github.com/ThePrimeagen/harpoon
         'ThePrimeagen/harpoon',
         config = function()
-            local ok, plugin = pcall(require, 'harpoon')
+            local plugin = require('harpoon')
             local config = {
                 -- sets the marks upon calling `toggle` on the ui, instead of require `:w`.
                 save_on_toggle = false,
@@ -66,11 +66,11 @@ return {
                     ['z<Space>'] = {function () require("harpoon.mark").add_file() end, 'harpoon: add'},
                     ['z,'] = {function () require("harpoon.ui").nav_prev() end, 'harpoon: prev'},
                     ['z.'] = {function () require("harpoon.ui").nav_next() end, 'harpoon: next'},
-                    ['zd'] = {function () require("harpoon.ui").nav_file(3) end, 'harpoon: 3'},
-                    ['zf'] = {function () require("harpoon.ui").nav_file(4) end, 'harpoon: 4'},
                     ['zh'] = {function () require("harpoon.ui").toggle_quick_menu() end, 'harpoon: menu'},
                     ['zj'] = {function () require("harpoon.ui").nav_file(1) end, 'harpoon: 1'},
                     ['zk'] = {function () require("harpoon.ui").nav_file(2) end, 'harpoon: 2'},
+                    ['zl'] = {function () require("harpoon.ui").nav_file(3) end, 'harpoon: 3'},
+                    ['z;'] = {function () require("harpoon.ui").nav_file(4) end, 'harpoon: 4'},
                 }
 
                 which_key.register(normal_mappings, {mode = 'n', nowait = true, noremap = true})
