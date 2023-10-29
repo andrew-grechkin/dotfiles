@@ -1,6 +1,57 @@
 return {
+    { -- url: https://github.com/ibhagwan/fzf-lua
+        'ibhagwan/fzf-lua',
+        dependencies = {
+            { -- url: https://github.com/junegunn/fzf
+                'junegunn/fzf',
+                build = './install --bin',
+            },
+            'nvim-tree/nvim-web-devicons',
+        },
+        config = function()
+            local plugin = require('fzf-lua')
+            plugin.setup({
+                git = {
+                    bcommits = {preview_pager = 'delta'},
+                    commits = {preview_pager = 'delta'},
+                    status = {preview_pager = 'delta'},
+                },
+                winopts = {preview = {layout = 'flex'}},
+            })
+
+            local wk_ok, which_key = pcall(require, 'which-key')
+            if wk_ok then
+                local normal_mappings = {
+                    ['<C-b>'] = {plugin.buffers, 'fzf: buffers'},
+                    ['<C-h>'] = {plugin.oldfiles, 'fzf: history'},
+                    ['<C-p>'] = {plugin.files, 'fzf: files project'},
+                    ['<leader>'] = {
+                        ['<C-p>'] = {
+                            function()
+                                local dir = vim.fs.dirname(vim.fn.expand('%'))
+                                plugin.files({cwd = dir})
+                            end,
+                            'fzf: files curdir',
+                        },
+                        r = {
+                            name = 'Repo (git)',
+                            b = {'<cmd>FzfLua git_branches<CR>', 'fzf: branches'},
+                            c = {'<cmd>FzfLua git_bcommits<CR>', 'fzf: commits for buffer'},
+                            f = {'<cmd>FzfLua git_files<CR>', 'fzf: files'},
+                            r = {'<cmd>FzfLua git_commits<CR>', 'fzf: commits'},
+                            s = {'<cmd>FzfLua git_status<CR>', 'fzf: status'},
+                            t = {'<cmd>FzfLua git_stash<CR>', 'fzf: stashes'},
+                        },
+                    },
+                }
+
+                which_key.register(normal_mappings, {mode = 'n', nowait = true, noremap = true})
+            end
+        end,
+    },
     { -- url: https://github.com/junegunn/fzf.vim
         'junegunn/fzf.vim',
+        enabled = false,
         dependencies = {
             { -- url: https://github.com/junegunn/fzf
                 'junegunn/fzf',
@@ -63,14 +114,20 @@ return {
             local wk_ok, which_key = pcall(require, 'which-key')
             if wk_ok then
                 local normal_mappings = {
-                    ['z<Space>'] = {function () require("harpoon.mark").add_file() end, 'harpoon: add'},
-                    ['z,'] = {function () require("harpoon.ui").nav_prev() end, 'harpoon: prev'},
-                    ['z.'] = {function () require("harpoon.ui").nav_next() end, 'harpoon: next'},
-                    ['zh'] = {function () require("harpoon.ui").toggle_quick_menu() end, 'harpoon: menu'},
-                    ['zj'] = {function () require("harpoon.ui").nav_file(1) end, 'harpoon: 1'},
-                    ['zk'] = {function () require("harpoon.ui").nav_file(2) end, 'harpoon: 2'},
-                    ['zl'] = {function () require("harpoon.ui").nav_file(3) end, 'harpoon: 3'},
-                    ['z;'] = {function () require("harpoon.ui").nav_file(4) end, 'harpoon: 4'},
+                    ['z<Space>'] = {
+                        function() require('harpoon.mark').add_file() end,
+                        'harpoon: add',
+                    },
+                    ['z,'] = {function() require('harpoon.ui').nav_prev() end, 'harpoon: prev'},
+                    ['z.'] = {function() require('harpoon.ui').nav_next() end, 'harpoon: next'},
+                    ['zh'] = {
+                        function() require('harpoon.ui').toggle_quick_menu() end,
+                        'harpoon: menu',
+                    },
+                    ['zj'] = {function() require('harpoon.ui').nav_file(1) end, 'harpoon: 1'},
+                    ['zk'] = {function() require('harpoon.ui').nav_file(2) end, 'harpoon: 2'},
+                    ['zl'] = {function() require('harpoon.ui').nav_file(3) end, 'harpoon: 3'},
+                    ['z;'] = {function() require('harpoon.ui').nav_file(4) end, 'harpoon: 4'},
                 }
 
                 which_key.register(normal_mappings, {mode = 'n', nowait = true, noremap = true})

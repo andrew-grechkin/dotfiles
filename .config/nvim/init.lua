@@ -3,6 +3,7 @@
 --
 -- => links ------------------------------------------------------------------------------------------------------- {{{1
 --
+-- https://neovimcraft.com/
 -- https://github.com/rockerBOO/awesome-neovim
 -- https://neovim.io/doc/user/starting.html
 -- https://neovim.io/doc/user/lua.html

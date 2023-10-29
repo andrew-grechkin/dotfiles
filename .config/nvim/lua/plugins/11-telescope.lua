@@ -144,16 +144,16 @@ return {
             if wk_ok then
                 local normal_mappings = {
                     ['<leader>'] = {
-                        r = {
-                            name = 'Repo (git)',
-                            b = {'<cmd>Telescope git_branches<CR>', ': branches'},
-                            c = {'<cmd>Telescope git_bcommits<CR>', ': commits for buffer'},
-                            f = {'<cmd>Telescope git_files<CR>', ': files'},
-                            l = {'<cmd>Telescope git_bcommits_range<CR>', ': commits curline'},
-                            o = {'<cmd>Telescope git_status<CR>', ': status'},
-                            r = {'<cmd>Telescope git_commits<CR>', ': commits'},
-                            s = {'<cmd>Telescope git_stash<CR>', ': stashes'},
-                        },
+                        -- r = {
+                        --     name = 'Repo (git)',
+                        --     b = {'<cmd>Telescope git_branches<CR>', ': branches'},
+                        --     c = {'<cmd>Telescope git_bcommits<CR>', ': commits for buffer'},
+                        --     f = {'<cmd>Telescope git_files<CR>', ': files'},
+                        --     l = {'<cmd>Telescope git_bcommits_range<CR>', ': commits curline'},
+                        --     r = {'<cmd>Telescope git_commits<CR>', ': commits'},
+                        --     s = {'<cmd>Telescope git_status<CR>', ': status'},
+                        --     t = {'<cmd>Telescope git_stash<CR>', ': stashes'},
+                        -- },
                         s = {
                             name = 'Search ',
                             ['/'] = {'<cmd>Telescope current_buffer_fuzzy_find<CR>', ': search'},
