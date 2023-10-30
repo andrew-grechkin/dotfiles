@@ -12,4 +12,5 @@ hibernate			systemctl hibernate
 hybrid				systemctl hybrid-sleep
 reboot/restart		systemctl reboot
 poweroff/shutdown	systemctl poweroff
+UEFI/firmware		systemctl reboot --firmware
 EOF
