@@ -1,5 +1,9 @@
 # vim: filetype=zsh foldmethod=marker
 
+if [[ "$1" == "/usr/bin/startplasma-x11" ]]; then
+	exec "$@"
+fi
+
 if [[ "$IS_NAS" == "1" ]]; then
 	unsetopt GLOBAL_RCS
 fi

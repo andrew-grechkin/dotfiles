@@ -14,7 +14,7 @@ set vicmd=vi
 set iooptions=fastfilecloning
 set dirsize=nitems
 if $HAS_MOUSE == '1'
-	set mouse='a'
+"	set mouse='a'
 endif
 set slowfs+=/media/nfs
 
