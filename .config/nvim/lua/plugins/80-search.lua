@@ -135,8 +135,8 @@ aug END
 
                 local cache_len = {}
                 local cache_str = {}
-                local hard_limit = 38
-                local hard_fmt = '%.' .. hard_limit + 2 .. 's'
+                local hard_limit = 50
+                local hard_fmt = '%.' .. hard_limit .. 's'
 
                 items:each(function(it)
                     local fname = ''
@@ -155,9 +155,9 @@ aug END
 
                         if cache_str[it.bufnr] == nil then
                             local len = string.len(fname)
-                            if hard_limit + 1 < len then
-                                fname = hard_fmt:format(fname:sub(len - hard_limit + 1))
-                                cache_len[it.bufnr] = hard_limit
+                            if hard_limit < len then
+                                fname = '' .. hard_fmt:format(fname:sub(1 - hard_limit))
+                                len = hard_limit
                             end
                             cache_str[it.bufnr] = fname
                             cache_len[it.bufnr] = len
@@ -179,8 +179,7 @@ aug END
                 return items:map(function(it)
                     local str
                     if it.valid == 1 then
-                        -- if it.fname_len <= limit then it.fname = soft_fmt:format(it.fname) end
-                        it.fname = soft_fmt:format(it.fname)
+                        if it.fname_len ~= hard_limit then it.fname = soft_fmt:format(it.fname) end
                         str = validFmt:format(it.fname, it.lnum, it.col, it.qtype, it.text)
                     else
                         str = it.text
