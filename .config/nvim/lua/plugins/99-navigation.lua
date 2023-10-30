@@ -18,6 +18,7 @@ return {
                 },
                 winopts = {preview = {layout = 'flex'}},
             })
+            plugin.register_ui_select()
 
             local wk_ok, which_key = pcall(require, 'which-key')
             if wk_ok then
@@ -49,6 +50,7 @@ return {
             end
         end,
     },
+    -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- url: https://github.com/junegunn/fzf.vim
         'junegunn/fzf.vim',
         enabled = false,

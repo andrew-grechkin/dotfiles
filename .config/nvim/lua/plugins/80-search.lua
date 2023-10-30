@@ -47,7 +47,8 @@ return {
         'andrew-grechkin/vim-grepper',
         lazy = false,
         config = function()
-            vim.api.nvim_exec([[
+
+            vim.cmd([[
 
 runtime plugin/grepper.vim                                         " initialize g:grepper with default values
 let g:grepper.highlight   = 1
@@ -55,6 +56,7 @@ let g:grepper.jump        = 0
 let g:grepper.quickfix    = 1
 "let g:grepper.dir         = 'repo,cwd,file' do not uncomment. operator stops working
 let g:grepper.repo        = ['.git', '.hg', '.svn', '.cache']
+let g:grepper.searchreg   = 1
 let g:grepper.side        = 0
 let g:grepper.stop        = 2000
 let g:grepper.tools       = ['rg', 'git', 'ag', 'ack', 'ack-grep', 'grep']
@@ -68,7 +70,8 @@ nnoremap <silent> <plug>(GrepperOperatorFile) :let      g:grepper.operator.dir='
 vnoremap <silent> <plug>(GrepperOperatorRepo) :<C-u>let g:grepper.operator.dir='repo,cwd,file' <BAR> call GrepperOperator(visualmode())<CR>
 vnoremap <silent> <plug>(GrepperOperatorFile) :<C-u>let g:grepper.operator.dir='file,repo,cwd' <BAR> call GrepperOperator(visualmode())<CR>
 
-]], false)
+]])
+
             local wk_ok, which_key = pcall(require, 'which-key')
             if wk_ok then
                 local normal_mappings = {
@@ -100,6 +103,111 @@ vnoremap <silent> <plug>(GrepperOperatorFile) :<C-u>let g:grepper.operator.dir='
                 which_key.register(normal_mappings, {mode = 'n', nowait = true, noremap = true})
                 which_key.register(visual_mappings, {mode = 'v', nowait = true, noremap = true})
             end
+        end,
+    },
+    -- => --------------------------------------------------------------------------------------------------------- {{{1
+    { -- https://github.com/kevinhwang91/nvim-bqf
+        'kevinhwang91/nvim-bqf',
+        config = function()
+            vim.cmd(([[
+aug Grepper
+    au!
+    au User Grepper ++nested %s
+aug END
+]]):format([[call setqflist([], 'r', {'context': {'bqf': {'pattern_hl': '\%#' . getreg('/')}}})]]))
+
+            function _G.quickfixtextfunc(info)
+                -- The name of item in list is based on the directory of quickfix window.
+                -- Change the directory for quickfix window make the name of item shorter.
+                -- It's a good opportunity to change current directory in quickfixtextfunc :)
+                --
+                -- local alterBufnr = vim.fn.bufname('#') -- alternative buffer is the buffer before enter qf window
+                -- local root = getRootByAlterBufnr(alterBufnr)
+                -- vim.cmd(('noa lcd %s'):format(vim.fn.fnameescape(root)))
+                --
+                local items
+
+                if info.quickfix == 1 then
+                    items = T(vim.fn.getqflist({id = info.id, items = 0}).items)
+                else
+                    items = T(vim.fn.getloclist(info.winid, {id = info.id, items = 0}).items)
+                end
+
+                local cache_len = {}
+                local cache_str = {}
+                local hard_limit = 38
+                local hard_fmt = '%.' .. hard_limit + 2 .. 's'
+
+                items:each(function(it)
+                    local fname = ''
+                    if it.valid == 1 then
+                        if it.bufnr > 0 then
+                            fname = vim.fn.bufname(it.bufnr)
+                            if fname == '' then
+                                fname = '[No Name]'
+                            else
+                                fname = fname:gsub('^' .. vim.env.HOME, '~')
+                            end
+                        end
+                        it.lnum = it.lnum > 99999 and -1 or it.lnum
+                        it.col = it.col > 999 and -1 or it.col
+                        it.qtype = it.type == '' and '' or ' ' .. it.type:sub(1, 1):upper()
+
+                        if cache_str[it.bufnr] == nil then
+                            local len = string.len(fname)
+                            if hard_limit + 1 < len then
+                                fname = hard_fmt:format(fname:sub(len - hard_limit + 1))
+                                cache_len[it.bufnr] = hard_limit
+                            end
+                            cache_str[it.bufnr] = fname
+                            cache_len[it.bufnr] = len
+                        end
+
+                        it.fname = cache_str[it.bufnr]
+                        it.fname_len = cache_len[it.bufnr]
+                    end
+                end)
+
+                local limit = items:reduce(0, function(acc, it)
+                    if it.fname_len > acc then acc = it.fname_len end
+                    return acc
+                end)
+
+                local soft_fmt = '%-' .. limit .. 's'
+                local validFmt = '%s │%5d:%-3d│%s %s'
+
+                return items:map(function(it)
+                    local str
+                    if it.valid == 1 then
+                        -- if it.fname_len <= limit then it.fname = soft_fmt:format(it.fname) end
+                        it.fname = soft_fmt:format(it.fname)
+                        str = validFmt:format(it.fname, it.lnum, it.col, it.qtype, it.text)
+                    else
+                        str = it.text
+                    end
+                    return str
+                end)
+            end
+
+            vim.o.quickfixtextfunc = '{info -> v:lua._G.quickfixtextfunc(info)}'
+
+            require('bqf').setup({
+                auto_resize_height = true,
+                filter = {
+                    fzf = {
+                        action_for = {['ctrl-x'] = '', ['ctrl-s'] = 'split'},
+                        extra_opts = {
+                            '--bind=alt-a:toggle-all',
+                            '--bind=tab:toggle+down',
+                            '--bind=btab:toggle+up',
+                            '--delimiter',
+                            '│',
+                        },
+                    },
+                },
+                func_map = {pscrolldown = '<C-d>', pscrollup = '<C-u>', split = '<C-s>'},
+            })
+            -- :lua =require('bqf.config')
         end,
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1

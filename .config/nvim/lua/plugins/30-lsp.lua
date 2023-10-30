@@ -118,15 +118,15 @@ return {
                     },
                 },
                 ['g'] = {
-                    D = {vim.lsp.buf.declaration, 'goto: declaration'},
+                    D = {'<cmd>FzfLua lsp_declarations<CR>', 'goto: declaration'},
                     -- I = {vim.lsp.buf.implementation, 'goto: implementation'},
-                    I = {'<cmd>Telescope lsp_implementations<CR>', 'goto: implementation'},
+                    I = {'<cmd>FzfLua lsp_implementations<CR>', 'goto: implementation'},
                     -- d = {vim.lsp.buf.definition, 'goto: definition'},
-                    d = {'<cmd>Telescope lsp_definitions<CR>', 'goto: definition'},
+                    d = {'<cmd>FzfLua lsp_definitions<CR>', 'goto: definition'},
                     -- r = {vim.lsp.buf.references, 'goto: references'},
-                    r = {'<cmd>Telescope lsp_references<CR>', 'goto: references'},
+                    r = {'<cmd>FzfLua lsp_references<CR>', 'goto: references'},
                     -- y = {vim.lsp.buf.type_definition, 'goto: type definition'},
-                    y = {'<cmd>Telescope lsp_type_definitions<CR>', 'goto: type definition'},
+                    y = {'<cmd>FzfLua lsp_typedefs<CR>', 'goto: type definition'},
                 },
             }
 

@@ -40,6 +40,20 @@ function table:append(table)
     return self
 end
 
+function table:each(code) for _, v in ipairs(self) do code(v) end end
+
+function table:map(code)
+    local acc = T {}
+    for _, v in ipairs(self) do acc:insert(code(v)) end
+    return acc
+end
+
+function table:reduce(init, code)
+    local acc = init
+    for _, v in ipairs(self) do acc = code(acc, v) end
+    return acc
+end
+
 -- [[ detect project directory for path ]]
 GET_PROJECT_DIR = function(path)
     -- local file = vim.api.nvim_buf_get_name(bufnr)

@@ -99,7 +99,7 @@ return {
                     lualine_y = {'progress', 'filesize'},
                     lualine_z = {'searchcount', 'location'},
                 },
-                extensions = {},
+                extensions = {'quickfix'},
                 inactive_winbar = {},
                 tabline = {},
                 winbar = {},
