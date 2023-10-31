@@ -14,6 +14,7 @@ augroup SettingsByFileType
 	autocmd FileType fugitiveblame  setlocal nobuflisted | nnoremap <silent> <buffer> <nowait> q :bwipeout!<CR>
 	autocmd FileType neotest-output setlocal nobuflisted | nnoremap <silent> <buffer> <nowait> q :bwipeout!<CR>
 	autocmd FileType qf,help,man    setlocal nobuflisted | nnoremap <silent> <buffer> <nowait> q :bwipeout!<CR>
+	autocmd FileType git            setlocal nobuflisted | nnoremap <silent> <buffer> <nowait> q :bdelete!<CR>
 augroup END
 
 augroup SettingsByBufType

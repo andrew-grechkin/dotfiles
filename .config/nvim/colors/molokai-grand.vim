@@ -108,9 +108,9 @@ if &termguicolors ==# 1
 	hi GitSignsCurrentLineBlame guifg=#605E66
 	hi NotifyBackground                       guibg=#000000
 
-	hi IlluminatedWordText                                                gui=underline,bold
-	hi IlluminatedWordRead                    guibg=#003300               gui=underline,bold
-	hi IlluminatedWordWrite                   guibg=#3b2e20               gui=underline,bold
+	hi IlluminatedWordText                                                gui=underline
+	hi IlluminatedWordRead                    guibg=#003300               gui=underdotted
+	hi IlluminatedWordWrite                   guibg=#3b2e20               gui=underdotted,bold
 else
 	if $TERM =~# '256'
 		hi Boolean              ctermfg=135

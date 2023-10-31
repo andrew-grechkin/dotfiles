@@ -190,6 +190,12 @@ aug END
 
             vim.o.quickfixtextfunc = '{info -> v:lua._G.quickfixtextfunc(info)}'
 
+            vim.cmd([[
+    hi BqfPreviewFloat  guibg=#111111
+    hi BqfPreviewBorder guibg=#111111
+    hi BqfPreviewTitle  guibg=#111111 guifg=#EF5939
+]])
+
             require('bqf').setup({
                 auto_resize_height = true,
                 filter = {
@@ -205,6 +211,7 @@ aug END
                     },
                 },
                 func_map = {pscrolldown = '<C-d>', pscrollup = '<C-u>', split = '<C-s>'},
+                preview = {winblend = 0},
             })
             -- :lua =require('bqf.config')
         end,

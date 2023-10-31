@@ -28,7 +28,7 @@ if [[ -r "$PERLCRITIC_PATH" ]]; then
 	export PERLCRITIC="$PERLCRITIC_PATH"
 fi
 
-export PERLBREW_ROOT="${PERLBREW_ROOT:-$HOME/perl5/perlbrew}"
+export PERLBREW_ROOT="${PERLBREW_ROOT:-$HOME/.local/share/perlbrew}"
 export PERLBREW_HOME="${PERLBREW_HOME:-$PERLBREW_ROOT}"
 export PATH="$REPO_ROOT/bin:$REPO_ROOT/script:$PATH:$PERLBREW_ROOT/bin"
 export PERL5LIB="$REPO_ROOT/lib:$PERL5LIB"
