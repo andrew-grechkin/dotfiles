@@ -11,7 +11,7 @@ return {
             if not IS_KVM then
                 ensure_installed:append{
                     'ansiblels',
-                    'awk_ls',
+                    -- 'awk_ls',
                     'clangd',
                     'cmake',
                     'docker_compose_language_service',
