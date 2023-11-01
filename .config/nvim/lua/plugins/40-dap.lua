@@ -2,6 +2,7 @@ return {
     -- https://github.com/mfussenegger/nvim-dap/wiki/Debug-Adapter-installation
     { -- https://github.com/mfussenegger/nvim-dap
         'mfussenegger/nvim-dap',
+        lazy = true,
         dependencies = {
             { -- https://github.com/theHamsta/nvim-dap-virtual-text
                 'theHamsta/nvim-dap-virtual-text',
@@ -52,6 +53,8 @@ return {
     },
     { -- https://github.com/mfussenegger/nvim-dap-python
         'mfussenegger/nvim-dap-python',
+        lazy = true,
+        dependencies = {'mfussenegger/nvim-dap'},
         config = function()
             local plugin = require('dap-python')
 
@@ -68,6 +71,8 @@ return {
     },
     { -- https://github.com/jbyuki/one-small-step-for-vimkind
         'jbyuki/one-small-step-for-vimkind',
+        lazy = true,
+        dependencies = {'mfussenegger/nvim-dap'},
         config = function()
             local dap = require('dap')
 
@@ -85,6 +90,8 @@ return {
     },
     { -- https://github.com/rcarriga/nvim-dap-ui
         'rcarriga/nvim-dap-ui',
+        keys = {'<leader>db', '<leader>dc', '<leader>dd'},
+        dependencies = {'jay-babu/mason-nvim-dap.nvim', 'mfussenegger/nvim-dap'},
         config = function()
             local dap = require('dap')
             local ui = require('dapui')

@@ -134,6 +134,7 @@ return {
     -- This works with LSP, Treesitter, and regexp matching to find the other instances.
     { -- https://github.com/RRethy/vim-illuminate
         'RRethy/vim-illuminate',
+        dependencies = {'nvim-treesitter/nvim-treesitter'},
         event = {'BufReadPost', 'BufNewFile'},
         opts = {delay = 200, large_file_cutoff = 2000, large_file_overrides = {providers = {'lsp'}}},
         config = function(_, opts)
@@ -165,5 +166,6 @@ return {
     { -- https://github.com/nvim-treesitter/nvim-treesitter-context
         'nvim-treesitter/nvim-treesitter-context',
         enabled = vim.version().major > 0 or vim.version().minor > 8,
+        dependencies = {'nvim-treesitter/nvim-treesitter'},
     },
 }

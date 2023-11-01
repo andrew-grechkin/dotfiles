@@ -1,8 +1,21 @@
 return {
     { -- https://github.com/dense-analysis/ale
         'dense-analysis/ale',
+        init = function()
+            vim.cmd [[
+" => ale.vim ------------------------------------------------------------------------------------------------------ {{{1
+
+let g:ale_completion_enabled       = 0
+
+""" necessary for UltiSnips
+let g:ale_lint_on_enter            = 0
+let g:ale_lint_on_filetype_changed = 0
+let g:ale_lint_on_insert_leave     = 0
+let g:ale_lint_on_text_changed     = 0
+            ]]
+        end,
         config = function()
-            vim.api.nvim_exec([[
+            vim.cmd [[
 " register custom fixers
 
 function! YamlSanitize(buffer) abort
@@ -41,7 +54,7 @@ function! Sql_Formatter(buffer) abort
 	\}
 endfunction
 execute ale#fix#registry#Add('sql-formatter', 'Sql_Formatter', ['mysql', 'sql'], 'Format SQL')
-]], false)
+]]
 
             vim.api.nvim_create_user_command('ALEToggleBufferFixers',
                 'let b:ale_fix_on_save=!get(b:, \'ale_fix_on_save\', g:ale_fix_on_save)', {

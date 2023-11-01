@@ -6,6 +6,14 @@ return {
             { -- https://github.com/tpope/vim-rhubarb
                 'tpope/vim-rhubarb',
             },
+            { -- url: https://github.com/shumphrey/fugitive-gitlab.vim
+                'shumphrey/fugitive-gitlab.vim',
+                enabled = IS_WORK and not IS_KVM,
+                config = function()
+                    local PRIVATE_DOMAIN = vim.api.nvim_get_var('PRIVATE_DOMAIN')
+                    vim.g.fugitive_gitlab_domains = {'https://gitlab.' .. PRIVATE_DOMAIN .. '.com'}
+                end,
+            },
         },
         config = function()
             vim.api.nvim_del_user_command('Gbrowse')

@@ -1,6 +1,10 @@
 return {
     { -- url: https://github.com/ibhagwan/fzf-lua
         'ibhagwan/fzf-lua',
+        cmds = {'Ft', 'FzfLua'},
+        init = function()
+            vim.api.nvim_create_user_command('Ft', function() require('fzf-lua').filetypes() end, {})
+        end,
         dependencies = {
             { -- url: https://github.com/junegunn/fzf
                 'junegunn/fzf',
@@ -44,37 +48,6 @@ return {
                             t = {'<cmd>FzfLua git_stash<CR>', 'fzf: stashes'},
                         },
                     },
-                }
-
-                which_key.register(normal_mappings, {mode = 'n', nowait = true, noremap = true})
-            end
-        end,
-    },
-    -- => --------------------------------------------------------------------------------------------------------- {{{1
-    { -- url: https://github.com/junegunn/fzf.vim
-        'junegunn/fzf.vim',
-        enabled = false,
-        dependencies = {
-            { -- url: https://github.com/junegunn/fzf
-                'junegunn/fzf',
-                build = './install --bin',
-            },
-        },
-        config = function()
-            vim.api.nvim_create_user_command('FilesCurrentDir', 'execute \'Files\' dir#current()', {
-                bang = true,
-            })
-            vim.api.nvim_create_user_command('FilesProject', 'execute \'Files\' dir#git_root()', {
-                bang = true,
-            })
-
-            local wk_ok, which_key = pcall(require, 'which-key')
-            if wk_ok then
-                local normal_mappings = {
-                    ['<C-b>'] = {':Buffers<CR>', 'fzf: buffers'},
-                    ['<C-h>'] = {':History<CR>', 'fzf: history'},
-                    ['<C-p>'] = {':FilesProject<CR>', 'fzf: files repo'},
-                    ['<leader>'] = {['<C-p>'] = {':FilesCurrentDir<CR>', 'fzf: files curdir'}},
                 }
 
                 which_key.register(normal_mappings, {mode = 'n', nowait = true, noremap = true})
@@ -139,6 +112,7 @@ return {
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- url: https://github.com/vifm/vifm.vim
         'vifm/vifm.vim',
+        cmd = {'Vifm'},
         config = function()
             vim.g.vifm_embed_split = 1
 
@@ -175,5 +149,37 @@ return {
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- url: https://github.com/mbbill/undotree
         'mbbill/undotree',
+        cmd = {'UndotreeToggle'},
+    },
+    -- => --------------------------------------------------------------------------------------------------------- {{{1
+    { -- url: https://github.com/nacro90/numb.nvim
+        'nacro90/numb.nvim',
+    },
+    -- => --------------------------------------------------------------------------------------------------------- {{{1
+    { -- url: https://github.com/miteshP/nvim-navbuddy
+        'SmiteshP/nvim-navbuddy',
+        dependencies = {'SmiteshP/nvim-navic', 'MunifTanjim/nui.nvim'},
+        cmd = {'Navbuddy'},
+        opts = {
+            window = {
+                border = 'single', -- "rounded", "double", "solid", "none"
+                -- or an array with eight chars building up the border in a clockwise fashion
+                -- starting with the top-left corner. eg: { "╔", "═" ,"╗", "║", "╝", "═", "╚", "║" }.
+                size = '90%', -- Or table format example: { height = "40%", width = "100%"}
+                position = '50%', -- Or table format example: { row = "100%", col = "0%"}
+                scrolloff = 2, -- scrolloff value within navbuddy window
+                sections = {
+                    left = {
+                        size = '20%',
+                        border = nil, -- You can set border style for each section individually as well.
+                    },
+                    mid = {size = '40%', border = nil},
+                    right = {
+                        preview = 'always', -- Right section can show previews too. Options: "leaf", "always" or "never"
+                    },
+                },
+            },
+            lsp = {auto_attach = true},
+        },
     },
 }

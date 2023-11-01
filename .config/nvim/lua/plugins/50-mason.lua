@@ -72,8 +72,8 @@ return {
     { -- https://github.com/WhoIsSethDaniel/mason-tool-installer.nvim
         'WhoIsSethDaniel/mason-tool-installer.nvim',
         dependencies = {'williamboman/mason.nvim'},
+        cmd = {'MasonToolInstall', 'MasonToolUpdate', 'MasonToolClean'},
         config = function()
-            local table = require('table')
             local plugin = require('mason-tool-installer')
             -- https://github.com/hrsh7th/nvim-cmp/issues/1017#issuecomment-1141440976
             -- table.unpack = table.unpack or unpack
@@ -142,6 +142,7 @@ return {
     },
     { -- https://github.com/jay-babu/mason-nvim-dap.nvim
         'jay-babu/mason-nvim-dap.nvim',
+        lazy = true,
         dependencies = {'williamboman/mason.nvim'},
         config = function()
             local plugin = require('mason-nvim-dap')
