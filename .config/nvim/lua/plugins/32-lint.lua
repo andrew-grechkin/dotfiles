@@ -1,19 +1,27 @@
 return {
     { -- https://github.com/dense-analysis/ale
         'dense-analysis/ale',
+        cmd = {'ALEToggleBufferFixers', 'ALEInfo'},
+        event = {'BufWritePre'},
         init = function()
-            vim.cmd [[
-" => ale.vim ------------------------------------------------------------------------------------------------------ {{{1
+            vim.g.ale_completion_enabled = false
 
-let g:ale_completion_enabled       = 0
-
-""" necessary for UltiSnips
-let g:ale_lint_on_enter            = 0
-let g:ale_lint_on_filetype_changed = 0
-let g:ale_lint_on_insert_leave     = 0
-let g:ale_lint_on_text_changed     = 0
-            ]]
+            -- necessary for UltiSnips
+            vim.g.ale_lint_on_enter = false
+            vim.g.ale_lint_on_filetype_changed = false
+            vim.g.ale_lint_on_insert_leave = false
+            vim.g.ale_lint_on_text_changed = false
         end,
+        keys = {
+            {
+                'tt',
+                '<Plug>(ale_fix)',
+                mode = {'n'},
+                desc = 'ALE: fix',
+                nowait = true,
+                noremap = true,
+            },
+        },
         config = function()
             vim.cmd [[
 " register custom fixers
@@ -60,12 +68,6 @@ execute ale#fix#registry#Add('sql-formatter', 'Sql_Formatter', ['mysql', 'sql'],
                 'let b:ale_fix_on_save=!get(b:, \'ale_fix_on_save\', g:ale_fix_on_save)', {
                     bang = true,
                 })
-
-            local wk_ok, which_key = pcall(require, 'which-key')
-            if wk_ok then
-                local normal_mappings = {t = {t = {'<Plug>(ale_fix)', 'ALE: fix'}}}
-                which_key.register(normal_mappings, {mode = 'n', nowait = true, noremap = true})
-            end
 
             vim.g.ale_echo_msg_format = '(%linter%) %code: %%s'
             vim.g.ale_fix_on_save = 1 -- fix files when you save them

@@ -1,16 +1,39 @@
 return {
     { -- url: https://github.com/ibhagwan/fzf-lua
         'ibhagwan/fzf-lua',
-        cmds = {'Ft', 'FzfLua'},
-        init = function()
-            vim.api.nvim_create_user_command('Ft', function() require('fzf-lua').filetypes() end, {})
-        end,
         dependencies = {
             { -- url: https://github.com/junegunn/fzf
                 'junegunn/fzf',
                 build = './install --bin',
             },
             'nvim-tree/nvim-web-devicons',
+        },
+        cmd = {'Ft', 'FzfLua'},
+        init = function() require('which-key').register({['<leader>r'] = {name = 'Repo (git)'}}) end,
+        keys = {
+            {'<C-b>', '<cmd>FzfLua buffers<CR>', mode = {'n'}, desc = 'fzf: buffers'},
+            {'<C-h>', '<cmd>FzfLua oldfiles<CR>', mode = {'n'}, desc = 'fzf: history'},
+            {'<C-p>', '<cmd>FzfLua files<CR>', mode = {'n'}, desc = 'fzf: files project'},
+            {
+                '<leader><C-p>',
+                function()
+                    local dir = vim.fs.dirname(vim.fn.expand('%'))
+                    require('fzf-lua').files({cwd = dir})
+                end,
+                mode = {'n'},
+                desc = 'fzf: files curdir',
+            },
+            {'<leader>rb', '<cmd>FzfLua git_branches<CR>', mode = {'n'}, desc = 'fzf: branches'},
+            {
+                '<leader>rc',
+                '<cmd>FzfLua git_bcommits<CR>',
+                mode = {'n'},
+                desc = 'fzf: commits for buffer',
+            },
+            {'<leader>rf', '<cmd>FzfLua git_files<CR>', mode = {'n'}, desc = 'fzf: files'},
+            {'<leader>rr', '<cmd>FzfLua git_commits<CR>', mode = {'n'}, desc = 'fzf: commits'},
+            {'<leader>rs', '<cmd>FzfLua git_status<CR>', mode = {'n'}, desc = 'fzf: status'},
+            {'<leader>rt', '<cmd>FzfLua git_stash<CR>', mode = {'n'}, desc = 'fzf: stashes'},
         },
         config = function()
             local plugin = require('fzf-lua')
@@ -24,39 +47,62 @@ return {
             })
             plugin.register_ui_select()
 
-            local wk_ok, which_key = pcall(require, 'which-key')
-            if wk_ok then
-                local normal_mappings = {
-                    ['<C-b>'] = {plugin.buffers, 'fzf: buffers'},
-                    ['<C-h>'] = {plugin.oldfiles, 'fzf: history'},
-                    ['<C-p>'] = {plugin.files, 'fzf: files project'},
-                    ['<leader>'] = {
-                        ['<C-p>'] = {
-                            function()
-                                local dir = vim.fs.dirname(vim.fn.expand('%'))
-                                plugin.files({cwd = dir})
-                            end,
-                            'fzf: files curdir',
-                        },
-                        r = {
-                            name = 'Repo (git)',
-                            b = {'<cmd>FzfLua git_branches<CR>', 'fzf: branches'},
-                            c = {'<cmd>FzfLua git_bcommits<CR>', 'fzf: commits for buffer'},
-                            f = {'<cmd>FzfLua git_files<CR>', 'fzf: files'},
-                            r = {'<cmd>FzfLua git_commits<CR>', 'fzf: commits'},
-                            s = {'<cmd>FzfLua git_status<CR>', 'fzf: status'},
-                            t = {'<cmd>FzfLua git_stash<CR>', 'fzf: stashes'},
-                        },
-                    },
-                }
-
-                which_key.register(normal_mappings, {mode = 'n', nowait = true, noremap = true})
-            end
+            vim.api.nvim_create_user_command('Ft', function() require('fzf-lua').filetypes() end, {})
         end,
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- url: https://github.com/ThePrimeagen/harpoon
         'ThePrimeagen/harpoon',
+        keys = {
+            {
+                'z<Space>',
+                function() require('harpoon.mark').add_file() end,
+                mode = {'n'},
+                desc = 'harpoon: add',
+            },
+            {
+                'z,',
+                function() require('harpoon.ui').nav_prev() end,
+                mode = {'n'},
+                desc = 'harpoon: prev',
+            },
+            {
+                'z.',
+                function() require('harpoon.ui').nav_next() end,
+                mode = {'n'},
+                desc = 'harpoon: next',
+            },
+            {
+                'zh',
+                function() require('harpoon.ui').toggle_quick_menu() end,
+                mode = {'n'},
+                desc = 'harpoon: menu',
+            },
+            {
+                'zj',
+                function() require('harpoon.ui').nav_file(1) end,
+                mode = {'n'},
+                desc = 'harpoon: 1',
+            },
+            {
+                'zk',
+                function() require('harpoon.ui').nav_file(2) end,
+                mode = {'n'},
+                desc = 'harpoon: 2',
+            },
+            {
+                'zl',
+                function() require('harpoon.ui').nav_file(3) end,
+                mode = {'n'},
+                desc = 'harpoon: 3',
+            },
+            {
+                'z;',
+                function() require('harpoon.ui').nav_file(4) end,
+                mode = {'n'},
+                desc = 'harpoon: 4',
+            },
+        },
         config = function()
             local plugin = require('harpoon')
             local config = {
@@ -85,41 +131,18 @@ return {
             }
             plugin.setup(config)
             require('telescope').load_extension('harpoon')
-
-            local wk_ok, which_key = pcall(require, 'which-key')
-            if wk_ok then
-                local normal_mappings = {
-                    ['z<Space>'] = {
-                        function() require('harpoon.mark').add_file() end,
-                        'harpoon: add',
-                    },
-                    ['z,'] = {function() require('harpoon.ui').nav_prev() end, 'harpoon: prev'},
-                    ['z.'] = {function() require('harpoon.ui').nav_next() end, 'harpoon: next'},
-                    ['zh'] = {
-                        function() require('harpoon.ui').toggle_quick_menu() end,
-                        'harpoon: menu',
-                    },
-                    ['zj'] = {function() require('harpoon.ui').nav_file(1) end, 'harpoon: 1'},
-                    ['zk'] = {function() require('harpoon.ui').nav_file(2) end, 'harpoon: 2'},
-                    ['zl'] = {function() require('harpoon.ui').nav_file(3) end, 'harpoon: 3'},
-                    ['z;'] = {function() require('harpoon.ui').nav_file(4) end, 'harpoon: 4'},
-                }
-
-                which_key.register(normal_mappings, {mode = 'n', nowait = true, noremap = true})
-            end
         end,
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- url: https://github.com/vifm/vifm.vim
         'vifm/vifm.vim',
-        cmd = {'Vifm'},
         config = function()
             vim.g.vifm_embed_split = 1
 
             local wk_ok, which_key = pcall(require, 'which-key')
             if wk_ok then
                 local normal_mappings = {
-                    ['<leader>'] = {['<leader>'] = {n = {':EditVifm<CR>', 'vifm: split vertical'}}},
+                    ['<leader><leader>n'] = {':EditVifm<CR>', 'vifm: split vertical'},
                 }
 
                 which_key.register(normal_mappings, {mode = 'n', nowait = true, noremap = true})

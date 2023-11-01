@@ -15,8 +15,4 @@ return {
             library = {plugins = {'neotest'}, types = true},
         }) end,
     },
-    -- => --------------------------------------------------------------------------------------------------------- {{{1
-    { -- https://github.com/lambdalisue/suda.vim
-        'lambdalisue/suda.vim',
-    },
 }

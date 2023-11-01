@@ -1,4 +1,9 @@
 return {
+    -- => --------------------------------------------------------------------------------------------------------- {{{1
+    { -- https://github.com/lambdalisue/suda.vim
+        'lambdalisue/suda.vim',
+        cmd = {'SudaRead', 'SudaWrite'},
+    },
     { -- https://github.com/michaelb/sniprun
         'michaelb/sniprun',
         cmd = {'SnipRun', 'SnipInfo'},
@@ -97,6 +102,7 @@ return {
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- url: https://github.com/rest-nvim/rest.nvim
         'rest-nvim/rest.nvim',
+        ft = {'http'},
         config = function()
             local plugin = require('rest-nvim')
             plugin.setup {

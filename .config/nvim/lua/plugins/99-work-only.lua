@@ -5,7 +5,7 @@
 --     vim.fn.system({fzf_dir .. '/install', '--bin'})
 -- end
 return {
-    {'rodjek/vim-puppet', enabled = IS_WORK and not IS_KVM},
+    {'rodjek/vim-puppet', enabled = IS_WORK and not IS_KVM, ft = {'puppet'}},
     {'towolf/vim-helm', enabled = IS_WORK and not IS_KVM},
     -- 'elixir-editors/vim-elixir',
 }

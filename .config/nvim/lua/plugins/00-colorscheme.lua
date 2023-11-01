@@ -60,6 +60,7 @@ return {
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/dracula/vim
         'dracula/vim',
+        name = 'dracula.vim',
         enabled = false,
         config = function()
             vim.cmd.colorscheme 'dracula'
