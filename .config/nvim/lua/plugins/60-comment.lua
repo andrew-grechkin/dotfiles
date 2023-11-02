@@ -3,17 +3,15 @@ return {
         'tpope/vim-commentary',
         dependencies = {'suy/vim-context-commentstring'},
         config = function()
-            vim.api.nvim_exec([[
+            vim.cmd [[
+                nmap     <C-_>                         gcl
+                vmap     <C-_>                         gc
 
-nmap     <C-_>                         gcl
-vmap     <C-_>                         gc
-
-augroup SettingsVimCommentary
-	autocmd!
-	autocmd FileType perl,vim let b:commentary_startofline = 1
-augroup END
-
-]], false)
+                augroup SettingsVimCommentary
+                    autocmd!
+                    autocmd FileType perl,vim let b:commentary_startofline = 1
+                augroup END
+            ]]
         end,
     },
 }

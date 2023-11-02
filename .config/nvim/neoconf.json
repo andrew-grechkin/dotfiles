@@ -13,6 +13,7 @@
     }
   },
   "lspconfig": {
-    "sumneko_lua": {}
+    "sumneko_lua": {
+    }
   }
 }

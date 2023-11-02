@@ -1,8 +1,6 @@
 return {
     { -- https://github.com/dense-analysis/ale
         'dense-analysis/ale',
-        cmd = {'ALEToggleBufferFixers', 'ALEInfo'},
-        event = {'BufWritePre'},
         init = function()
             vim.g.ale_completion_enabled = false
 
@@ -12,62 +10,47 @@ return {
             vim.g.ale_lint_on_insert_leave = false
             vim.g.ale_lint_on_text_changed = false
         end,
-        keys = {
-            {
-                'tt',
-                '<Plug>(ale_fix)',
-                mode = {'n'},
-                desc = 'ALE: fix',
-                nowait = true,
-                noremap = true,
-            },
-        },
         config = function()
             vim.cmd [[
-" register custom fixers
+                " register custom fixers
 
-function! YamlSanitize(buffer) abort
-	return {
-	\   'command': 'yaml-sanitize'
-	\}
-endfunction
-execute ale#fix#registry#Add('yaml-sanitize', 'YamlSanitize', ['yaml'], 'Sanitize yaml')
+                function! YamlSanitize(buffer) abort
+                    return {
+                    \   'command': 'yaml-sanitize'
+                    \}
+                endfunction
+                execute ale#fix#registry#Add('yaml-sanitize', 'YamlSanitize', ['yaml'], 'Sanitize yaml')
 
-function! ShellHarden(buffer) abort
-	return {
-	\   'command': 'shellharden --transform ""'
-	\}
-endfunction
-execute ale#fix#registry#Add('shellharden', 'ShellHarden', ['sh'], 'Shell harden')
+                function! ShellHarden(buffer) abort
+                    return {
+                    \   'command': 'shellharden --transform ""'
+                    \}
+                endfunction
+                execute ale#fix#registry#Add('shellharden', 'ShellHarden', ['sh'], 'Shell harden')
 
-function! BeautySh(buffer) abort
-	return {
-	\   'command': 'beautysh -t -i 4 -s fnpar -c -'
-	\}
-endfunction
-execute ale#fix#registry#Add('beautysh', 'BeautySh', ['sh'], 'Beauty sh')
+                function! BeautySh(buffer) abort
+                    return {
+                    \   'command': 'beautysh -t -i 4 -s fnpar -c -'
+                    \}
+                endfunction
+                execute ale#fix#registry#Add('beautysh', 'BeautySh', ['sh'], 'Beauty sh')
 
-execute ale#fix#registry#Add('mysql_sqlfluff', 'ale_fixers#mysql#sqlfluff#Fix', ['mysql'], 'Fix MySQL files with sqlfluff.')
+                execute ale#fix#registry#Add('mysql_sqlfluff', 'ale_fixers#mysql#sqlfluff#Fix', ['mysql'], 'Fix MySQL files with sqlfluff.')
 
-call ale#linter#Define('mysql', {
-\   'name': 'sqlfluff',
-\   'executable': function('ale_linters#mysql#sqlfluff#Executable'),
-\   'command': function('ale_linters#mysql#sqlfluff#Command'),
-\   'callback': 'ale_linters#mysql#sqlfluff#Handle',
-\})
+                call ale#linter#Define('mysql', {
+                \   'name': 'sqlfluff',
+                \   'executable': function('ale_linters#mysql#sqlfluff#Executable'),
+                \   'command': function('ale_linters#mysql#sqlfluff#Command'),
+                \   'callback': 'ale_linters#mysql#sqlfluff#Handle',
+                \})
 
-function! Sql_Formatter(buffer) abort
-	return {
-	\   'command': 'sql-formatter -l mysql -c ~/.config/sql-formatter.json'
-	\}
-endfunction
-execute ale#fix#registry#Add('sql-formatter', 'Sql_Formatter', ['mysql', 'sql'], 'Format SQL')
-]]
-
-            vim.api.nvim_create_user_command('ALEToggleBufferFixers',
-                'let b:ale_fix_on_save=!get(b:, \'ale_fix_on_save\', g:ale_fix_on_save)', {
-                    bang = true,
-                })
+                function! Sql_Formatter(buffer) abort
+                    return {
+                    \   'command': 'sql-formatter -l mysql -c ~/.config/sql-formatter.json'
+                    \}
+                endfunction
+                execute ale#fix#registry#Add('sql-formatter', 'Sql_Formatter', ['mysql', 'sql'], 'Format SQL')
+            ]]
 
             vim.g.ale_echo_msg_format = '(%linter%) %code: %%s'
             vim.g.ale_fix_on_save = 1 -- fix files when you save them
@@ -133,6 +116,16 @@ execute ale#fix#registry#Add('sql-formatter', 'Sql_Formatter', ['mysql', 'sql'],
             vim.g.ale_open_list = 1
             vim.g.ale_keep_list_window_open = 0
             vim.g.ale_list_window_size = 4
+
+            vim.keymap.set({'n'}, 'tt', '<Plug>(ale_fix)', {
+                desc = 'ALE: fix',
+                nowait = true,
+                noremap = true,
+            })
+            vim.api.nvim_create_user_command('ALEToggleBufferFixers', function()
+                vim.b[0].ale_fix_on_save = not (vim.b[0].ale_fix_on_save == nil and vim.g.ale_fix_on_save or
+                                               vim.b[0].ale_fix_on_save)
+            end, {})
 
             -- ale_sql_sqlfluff
             -- vim.g.ale_sql_sqlfluff_options = ''

@@ -175,9 +175,9 @@ return {
             which_key.register(norm_term_mappings, {mode = 'n', nowait = true, noremap = true})
 
             vim.keymap.set('n', '<leader>Sr', ':%s/\\<<C-r><C-w>\\>/<C-r><C-w>/g<Left><Left>')
-            vim.api.nvim_exec([[
+            vim.cmd [[
                 :nnoremap <nowait> / /\v
-            ]], false)
+            ]]
         end,
     },
 }

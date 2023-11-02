@@ -12,6 +12,10 @@ return {
                 'folke/neoconf.nvim',
                 opts = {},
             },
+            { -- https://github.com/folke/neodev.nvim
+                'folke/neodev.nvim',
+                opts = {library = {plugins = {'neotest'}}},
+            },
         },
         config = function()
             vim.lsp.set_log_level('debug')
