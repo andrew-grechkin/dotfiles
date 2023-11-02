@@ -33,6 +33,21 @@ local indent = { -- https://github.com/lukas-reineke/indent-blankline.nvim
 
         local config = {
             indent = {char = '┊', highlight = highlight, tab_char = '│'},
+            exclude = {
+                filetypes = {
+                    'Trouble',
+                    'alpha',
+                    'dashboard',
+                    'help',
+                    'lazy',
+                    'lazyterm',
+                    'mason',
+                    'neo-tree',
+                    'notify',
+                    'toggleterm',
+                    'trouble',
+                },
+            },
             whitespace = {highlight = highlight, remove_blankline_trail = true},
             scope = {
                 char = '┃',

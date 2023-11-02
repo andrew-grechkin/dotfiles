@@ -23,7 +23,6 @@ if not IS_KVM then
     url_format = 'git@github.com:%s.git'
 end
 
--- plugin.setup('plugins')
 plugin.setup('plugins', {
     concurrency = concurrency,
     git = {

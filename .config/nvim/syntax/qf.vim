@@ -1,23 +1,25 @@
+scriptencoding=utf-8
+
 if exists('b:current_syntax')
     finish
+else
+	let b:current_syntax = 'qf'
 endif
 
-syn match qfFileName /^[^│]*/ nextgroup=qfSeparatorLeft
-syn match qfSeparatorLeft /│/ contained nextgroup=qfLineNr
-syn match qfLineNr /[^│]*/ contained nextgroup=qfSeparatorRight
-syn match qfSeparatorRight '│' contained nextgroup=qfError,qfWarning,qfInfo,qfNote
-syn match qfError / E .*$/ contained
-syn match qfWarning / W .*$/ contained
-syn match qfInfo / I .*$/ contained
-syn match qfNote / [NH] .*$/ contained
+syntax match qfFileName       /^[^│]*/              nextgroup=qfSeparatorLeft
+syntax match qfSeparatorLeft  /│/         contained nextgroup=qfLineNr
+syntax match qfLineNr         /[^│]*/     contained nextgroup=qfSeparatorRight
+syntax match qfSeparatorRight /│/         contained nextgroup=qfError,qfWarning,qfInfo,qfNote
+syntax match qfError          / E .*$/    contained
+syntax match qfWarning        / W .*$/    contained
+syntax match qfInfo           / I .*$/    contained
+syntax match qfNote           / [NH] .*$/ contained
 
-hi def link qfFileName Directory
-hi def link qfSeparatorLeft Delimiter
-hi def link qfSeparatorRight Delimiter
-hi def link qfLineNr LineNr
-hi def link qfError DiagnosticError
-hi def link qfWarning DiagnosticWarn
-hi def link qfInfo DiagnosticInfo
-hi def link qfNote DiagnosticHint
-
-let b:current_syntax = 'qf'
+highlight default link qfFileName       Directory
+highlight default link qfSeparatorLeft  Delimiter
+highlight default link qfSeparatorRight Delimiter
+highlight default link qfLineNr         LineNr
+highlight default link qfError          DiagnosticError
+highlight default link qfInfo           DiagnosticInfo
+highlight default link qfNote           DiagnosticHint
+highlight default link qfWarning        DiagnosticWarn

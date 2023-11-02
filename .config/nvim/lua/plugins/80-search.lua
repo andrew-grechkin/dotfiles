@@ -46,31 +46,34 @@ return {
     { -- https://github.com/andrew-grechkin/vim-grepper
         'andrew-grechkin/vim-grepper',
         lazy = false,
+        init = function()
+            vim.cmd [[
+                let g:grepper = {}
+            ]]
+        end,
         config = function()
 
-            vim.cmd([[
+            vim.cmd[[
+                runtime plugin/grepper.vim                                         " initialize g:grepper with default values
+                let g:grepper.highlight   = 1
+                let g:grepper.jump        = 0
+                let g:grepper.quickfix    = 1
+                "let g:grepper.dir         = 'repo,cwd,file' do not uncomment. operator stops working
+                let g:grepper.repo        = ['.git', '.hg', '.svn', '.cache']
+                let g:grepper.searchreg   = 1
+                let g:grepper.side        = 0
+                let g:grepper.stop        = 2000
+                let g:grepper.tools       = ['rg', 'git', 'ag', 'ack', 'ack-grep', 'grep']
+                let g:grepper.git.grepprg .= ' -i'
 
-runtime plugin/grepper.vim                                         " initialize g:grepper with default values
-let g:grepper.highlight   = 1
-let g:grepper.jump        = 0
-let g:grepper.quickfix    = 1
-"let g:grepper.dir         = 'repo,cwd,file' do not uncomment. operator stops working
-let g:grepper.repo        = ['.git', '.hg', '.svn', '.cache']
-let g:grepper.searchreg   = 1
-let g:grepper.side        = 0
-let g:grepper.stop        = 2000
-let g:grepper.tools       = ['rg', 'git', 'ag', 'ack', 'ack-grep', 'grep']
-let g:grepper.git.grepprg .= ' -i'
+                let g:grepper.operator.git.grepprg .= ' -i'
+                let g:grepper.operator.tools        = ['rg', 'git', 'ag', 'ack', 'ack-grep', 'grep']
 
-let g:grepper.operator.git.grepprg .= ' -i'
-let g:grepper.operator.tools        = ['rg', 'git', 'ag', 'ack', 'ack-grep', 'grep']
-
-nnoremap <silent> <plug>(GrepperOperatorRepo) :let      g:grepper.operator.dir='repo,cwd,file' <BAR> set opfunc=GrepperOperator<CR>g@
-nnoremap <silent> <plug>(GrepperOperatorFile) :let      g:grepper.operator.dir='file,repo,cwd' <BAR> set opfunc=GrepperOperator<CR>g@
-vnoremap <silent> <plug>(GrepperOperatorRepo) :<C-u>let g:grepper.operator.dir='repo,cwd,file' <BAR> call GrepperOperator(visualmode())<CR>
-vnoremap <silent> <plug>(GrepperOperatorFile) :<C-u>let g:grepper.operator.dir='file,repo,cwd' <BAR> call GrepperOperator(visualmode())<CR>
-
-]])
+                nnoremap <silent> <plug>(GrepperOperatorRepo) :let      g:grepper.operator.dir='repo,cwd,file' <BAR> set opfunc=GrepperOperator<CR>g@
+                nnoremap <silent> <plug>(GrepperOperatorFile) :let      g:grepper.operator.dir='file,repo,cwd' <BAR> set opfunc=GrepperOperator<CR>g@
+                vnoremap <silent> <plug>(GrepperOperatorRepo) :<C-u>let g:grepper.operator.dir='repo,cwd,file' <BAR> call GrepperOperator(visualmode())<CR>
+                vnoremap <silent> <plug>(GrepperOperatorFile) :<C-u>let g:grepper.operator.dir='file,repo,cwd' <BAR> call GrepperOperator(visualmode())<CR>
+            ]]
 
             local wk_ok, which_key = pcall(require, 'which-key')
             if wk_ok then

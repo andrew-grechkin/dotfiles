@@ -167,5 +167,6 @@ return {
         'nvim-treesitter/nvim-treesitter-context',
         enabled = vim.version().major > 0 or vim.version().minor > 8,
         dependencies = {'nvim-treesitter/nvim-treesitter'},
+        opts = {},
     },
 }

@@ -14,7 +14,7 @@ return {
             },
             { -- https://github.com/folke/neodev.nvim
                 'folke/neodev.nvim',
-                opts = {library = {plugins = {'neotest'}}},
+                opts = {},
             },
         },
         config = function()
@@ -24,8 +24,8 @@ return {
 
             local signs = {
                 {name = 'DiagnosticSignError', text = ''},
-                {name = 'DiagnosticSignHint', text = ''},
-                {name = 'DiagnosticSignInfo', text = ''},
+                {name = 'DiagnosticSignHint', text = ''},
+                {name = 'DiagnosticSignInfo', text = ''},
                 {name = 'DiagnosticSignWarn', text = ''},
             }
 

@@ -1,0 +1,7 @@
+pcall(require, 'config.globals')
+pcall(require, 'config.utils')
+pcall(require, 'config.commands')
+pcall(require, 'config.keymaps')
+pcall(require, 'config.options')
+pcall(require, 'config.vars')
+pcall(require, 'config.autocmds')

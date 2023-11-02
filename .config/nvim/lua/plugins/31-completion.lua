@@ -12,7 +12,15 @@ return {
             'lukas-reineke/cmp-rg',
             'quangnguyen30192/cmp-nvim-tags',
             'quangnguyen30192/cmp-nvim-ultisnips', -- 'uga-rosa/cmp-dictionary'
-            'SirVer/ultisnips',
+            {
+                'SirVer/ultisnips',
+                init = function()
+                    vim.g.UltiSnipsExpandTrigger = '<C-j>'
+                    vim.g.UltiSnipsJumpBackwardTrigger = '<C-k>'
+                    vim.g.UltiSnipsJumpForwardTrigger = '<C-j>'
+                    vim.g.UltiSnipsListSnippets = '<C-l>'
+                end,
+            },
             'andrew-grechkin/vim-snippets',
             { -- https://github.com/kristijanhusak/vim-dadbod-completion
                 'kristijanhusak/vim-dadbod-completion',
@@ -161,7 +169,7 @@ return {
 
             -- use only together or this will breake native command autocomplete after first usage
             -- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
-            plugin.setup.cmdline ({'/', '?'},
+            plugin.setup.cmdline({'/', '?'},
                 {mapping = plugin.mapping.preset.cmdline(), sources = {{name = 'buffer'}, rg_conf}})
             -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
             plugin.setup.cmdline(':', {
