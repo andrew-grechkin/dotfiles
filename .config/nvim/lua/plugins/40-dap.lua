@@ -90,7 +90,6 @@ return {
     },
     { -- https://github.com/rcarriga/nvim-dap-ui
         'rcarriga/nvim-dap-ui',
-        keys = {'<leader>db', '<leader>dc', '<leader>dd'},
         dependencies = {'jay-babu/mason-nvim-dap.nvim', 'mfussenegger/nvim-dap'},
         config = function()
             local dap = require('dap')

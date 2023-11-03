@@ -5,17 +5,18 @@ return {
             {
                 '<leader><leader>N',
                 function() require('notify').dismiss({silent = true, pending = true}) end,
-                desc = 'Dismiss all Notifications',
+                desc = 'Dismiss all notifications',
             },
         },
         init = function()
             local plugin = require('notify')
             vim.notify = plugin
+
             print = function(...)
-                local print_safe_args = {}
-                local _ = {...}
-                for i = 1, #_ do table.insert(print_safe_args, tostring(_[i])) end
-                plugin(table.concat(print_safe_args, ' '), 'info')
+                local args = table.pack_to_array(...)
+                local print_safe_args = T {}
+                for i = 1, args.n do print_safe_args:insert(vim.inspect(args[i])) end
+                plugin(print_safe_args:concat('\n'), 'INFO', {title = 'Print'})
             end
         end,
         opts = {

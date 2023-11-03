@@ -5,6 +5,8 @@ function table:append(table)
     return self
 end
 
+function table.pack_to_array(...) return {n = select('#', ...), ...} end
+
 function table:each(code) for _, v in ipairs(self) do code(v) end end
 
 function table:map(code)

@@ -20,31 +20,6 @@ return {
         config = function()
             vim.lsp.set_log_level('debug')
 
-            -- => h: vim.diagnostic.config ------------------------------------------------------------------------ {{{1
-
-            local signs = {
-                {name = 'DiagnosticSignError', text = ''},
-                {name = 'DiagnosticSignHint', text = ''},
-                {name = 'DiagnosticSignInfo', text = ''},
-                {name = 'DiagnosticSignWarn', text = ''},
-            }
-
-            for _, sign in ipairs(signs) do
-                local value = {texthl = sign.name, text = sign.text, numhl = ''}
-                vim.fn.sign_define(sign.name, value)
-            end
-
-            local config = {
-                float = {source = true},
-                severity_sort = true,
-                signs = true,
-                underline = true,
-                update_in_insert = false,
-                virtual_text = {source = true},
-            }
-
-            vim.diagnostic.config(config)
-
             -- => default commands -------------------------------------------------------------------------------- {{{1
 
             -- vim.cmd [[ command! LspFormat execute 'lua vim.lsp.buf.formatting()' ]]
@@ -54,38 +29,9 @@ return {
             local wk_ok, which_key = pcall(require, 'which-key')
             if not wk_ok then return end
 
-            local normal_mappings = {
-                ['['] = {['d'] = {vim.diagnostic.goto_prev, 'LSP: prev diagnostic'}},
-                [']'] = {['d'] = {vim.diagnostic.goto_next, 'LSP: next diagnostic'}},
-                ['\\'] = {
-                    name = 'LSP',
-                    ['\\'] = {vim.diagnostic.setloclist, 'show diagnostic'},
-                    ['f'] = {
-                        function() vim.diagnostic.open_float(nil, {border = 'rounded'}) end,
-                        'open diagnostic in floating window',
-                    },
-                },
-            }
-
-            which_key.register(normal_mappings, {noremap = true})
-
             -- h: lsp-buf
             local au_normal_mappings = {
                 ['<leader>'] = {
-                    ['K'] = {
-                        function() -- run this twice to enter the window
-                            vim.lsp.buf.hover()
-                            vim.lsp.buf.hover()
-                        end,
-                        'LSP: hover',
-                    },
-                    ['k'] = {
-                        function() -- run this twice to enter the window
-                            vim.lsp.buf.signature_help()
-                            vim.lsp.buf.signature_help()
-                        end,
-                        'LSP: signature help',
-                    },
                     ['l'] = {
                         name = 'LSP',
                         c = {
@@ -103,22 +49,6 @@ return {
                                 'dynamic workspace',
                             },
                         },
-                    },
-                },
-                ['\\'] = {
-                    name = 'LSP',
-                    a = {vim.lsp.buf.code_action, 'code action'},
-                    q = {function() vim.lsp.buf.format({async = false}) end, 'format'},
-                    r = {vim.lsp.buf.rename, 'rename'},
-                    w = {
-                        a = {vim.lsp.buf.add_workspace_folder, 'add workspace folder'},
-                        l = {
-                            function()
-                                print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-                            end,
-                            'list workspace folders',
-                        },
-                        r = {vim.lsp.buf.remove_workspace_folder, 'remove workspace folder'},
                     },
                 },
                 ['g'] = {
