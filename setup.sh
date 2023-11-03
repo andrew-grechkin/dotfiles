@@ -37,6 +37,7 @@ ln -srf .config/mutt                                         ~/.config/
 ln -srf .config/nvim                                         ~/.config/
 ln -srf .config/perlcriticrc                                 ~/.config/
 ln -srf .config/perlcriticrc                                 ~/.perlcriticrc
+ln -srf .config/perlimports                                  ~/.config/
 ln -srf .config/perltidyrc                                   ~/.perltidyrc
 ln -srf .config/picom.conf                                   ~/.config/
 ln -srf .config/pylintrc                                     ~/.config/

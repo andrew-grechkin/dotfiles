@@ -1,7 +1,7 @@
 local function augroup(name) return vim.api.nvim_create_augroup('lconfig_' .. name, {clear = true}) end
 
 -- [[ change CWD according to the project root ]]
-local rooter_notify_rec = nil
+-- local rooter_notify_rec = nil
 vim.api.nvim_create_autocmd({'BufReadPost', 'VimEnter'}, {
     group = augroup('WindowAutoCD'),
     callback = function(ev)
@@ -11,13 +11,13 @@ vim.api.nvim_create_autocmd({'BufReadPost', 'VimEnter'}, {
         if cwd ~= dir then
             vim.cmd('lcd ' .. dir)
             -- if notify_ok then
-            rooter_notify_rec = vim.notify(string.format('%s', dir), 'INFO',
-                {title = 'Project root detected', replace = rooter_notify_rec})
+            --     rooter_notify_rec = notify.notify(string.format('%s', dir), 'INFO',
+            --         {title = 'Project root detected', replace = rooter_notify_rec})
             -- end
         end
 
         local ok, plugin = pcall(require, 'dap.ext.vscode')
-        if ok then plugin.load_launchjs(nil) end -- load launch.json
+        if ok then pcall(plugin.load_launchjs, nil) end -- load launch.json
     end,
 })
 

@@ -9,13 +9,13 @@ local indent = { -- https://github.com/lukas-reineke/indent-blankline.nvim
         -- vim.opt.listchars:append 'space:⋅'
 
         local highlight = {
-            'RainbowRed',
-            'RainbowOrange',
-            'RainbowYellow',
-            'RainbowGreen',
-            'RainbowCyan',
-            'RainbowBlue',
             'RainbowViolet',
+            'RainbowBlue',
+            'RainbowCyan',
+            'RainbowGreen',
+            'RainbowYellow',
+            'RainbowOrange',
+            'RainbowRed',
         }
 
         local hooks = require('ibl.hooks')

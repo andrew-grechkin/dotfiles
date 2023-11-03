@@ -24,23 +24,33 @@ GET_PROJECT_DIR = function(path)
     -- local file = vim.api.nvim_buf_get_name(bufnr)
     -- vim.fn.stdpath('data')
     local dir = vim.fs.dirname(path)
-    local gitpath = vim.fn.systemlist('git -C ' .. dir ..
-                                          ' rev-parse --show-superproject-working-tree --show-toplevel 2>/dev/null | head -1')
-    if gitpath and gitpath[1] then return gitpath[1] end
+    local cwd = vim.loop.cwd()
 
-    local detected = vim.fs.dirname(vim.fs.find({
-        '.bzr',
-        '.hg',
-        '.svn',
+    local names = {
+        '.eslintrc.json',
         '.vscode',
         'Makefile',
         'package.json',
         'pyproject.toml',
         'setup.py',
-    }, {upward = true})[1])
-    if detected then return detected end
+    }
+    local opts = {upward = true, path = dir, limit = 1}
 
-    return vim.loop.cwd()
+    local gitpath = vim.fn.systemlist('git -C ' .. dir ..
+                                          ' rev-parse --show-superproject-working-tree --show-toplevel 2>/dev/null | head -1')[1]
+    if gitpath then
+        if gitpath == cwd then
+            return gitpath
+        else
+            opts.stop = gitpath
+        end
+    end
+
+    local detected = vim.fs.dirname(vim.fs.find(names, opts)[1])
+
+    if detected then return detected end
+    if opts.stop then return opts.stop end
+    return cwd
 end
 
 -- [[ close all other listed buffers ]]

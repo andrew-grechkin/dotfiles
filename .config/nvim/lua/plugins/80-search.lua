@@ -53,7 +53,7 @@ return {
         end,
         config = function()
 
-            vim.cmd[[
+            vim.cmd [[
                 runtime plugin/grepper.vim                                         " initialize g:grepper with default values
                 let g:grepper.highlight   = 1
                 let g:grepper.jump        = 0
@@ -194,10 +194,10 @@ aug END
             vim.o.quickfixtextfunc = '{info -> v:lua._G.quickfixtextfunc(info)}'
 
             vim.cmd([[
-    hi BqfPreviewFloat  guibg=#111111
-    hi BqfPreviewBorder guibg=#111111
-    hi BqfPreviewTitle  guibg=#111111 guifg=#EF5939
-]])
+                hi BqfPreviewFloat  guibg=#111111
+                hi BqfPreviewBorder guibg=#111111
+                hi BqfPreviewTitle  guibg=#111111 guifg=#EF5939
+            ]])
 
             require('bqf').setup({
                 auto_resize_height = true,
@@ -221,31 +221,31 @@ aug END
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     -- search/replace in multiple files
-    { -- https://github.com/nvim-pack/nvim-spectre
-        'nvim-pack/nvim-spectre',
-        dependencies = {'nvim-lua/plenary.nvim'},
-        cmd = 'Spectre',
-        opts = {open_cmd = 'noswapfile vnew'},
-        keys = {
-            {'<leader>SS', function() require('spectre').toggle() end, desc = 'spectre: toggle'},
-            {
-                '<leader>Sw',
-                function() require('spectre').open_visual({select_word = true}) end,
-                desc = 'spectre: cur word',
-            },
-            {
-                '<leader>Sw',
-                function() require('spectre').open_visual() end,
-                mode = 'v',
-                desc = 'spectre: cur word',
-            },
-            {
-                '<leader>Sf',
-                function() require('spectre').open_file_search({select_word = true}) end,
-                desc = 'spectre: cur word in file',
-            },
-        },
-    },
+    -- { -- https://github.com/nvim-pack/nvim-spectre
+    --     'nvim-pack/nvim-spectre',
+    --     dependencies = {'nvim-lua/plenary.nvim'},
+    --     cmd = 'Spectre',
+    --     opts = {open_cmd = 'noswapfile vnew'},
+    --     keys = {
+    --         {'<leader>SS', function() require('spectre').toggle() end, desc = 'spectre: toggle'},
+    --         {
+    --             '<leader>Sw',
+    --             function() require('spectre').open_visual({select_word = true}) end,
+    --             desc = 'spectre: cur word',
+    --         },
+    --         {
+    --             '<leader>Sw',
+    --             function() require('spectre').open_visual() end,
+    --             mode = 'v',
+    --             desc = 'spectre: cur word',
+    --         },
+    --         {
+    --             '<leader>Sf',
+    --             function() require('spectre').open_file_search({select_word = true}) end,
+    --             desc = 'spectre: cur word in file',
+    --         },
+    --     },
+    -- },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/dyng/ctrlsf.vim
         'dyng/ctrlsf.vim',
