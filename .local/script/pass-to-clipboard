@@ -12,15 +12,20 @@ gpg --card-status &>/dev/null
 
 MSG=''
 
+{
+    pass show --clip "$PASS_PATH" && MSG="${MSG}
+    Password copied to clipboard"
+    } || {
+    notify-send "Something went wrong" "Error: $?" -i dialog-password
+    exit 1
+}
+
 echo -n "$USERNAME" | secondarycopy \
-	&& MSG="Username copied to secondary buffer"
-{
-	pass otp code "$PASS_PATH" || echo -n ''
-} | primarycopy && MSG="${MSG}
-OTP code $(primarypaste) copied to primary buffer"
-{
-	pass show --clip "$PASS_PATH" && MSG="${MSG}
-Password copied to clipboard"
-} || notify-send "Something went wrong" "Error: $?" -i dialog-password
+    && MSG="Username copied to secondary buffer"
+
+PRIMARY="$(pass otp code "$PASS_PATH" || echo -n "$USERNAME")"
+echo -n "$PRIMARY" | primarycopy
+MSG="${MSG}
+OTP code $PRIMARY copied to primary buffer"
 
 notify-send "$MSG" "$USERNAME" -i dialog-password

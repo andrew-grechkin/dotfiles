@@ -3,16 +3,16 @@
 set -Eeuo pipefail
 
 FZF_CMD=(
-	fzf
-	--bind="ctrl-v:toggle-preview,ctrl-w:toggle-preview-wrap,ctrl-s:toggle-sort"
-	--bind="enter:execute(nohup '{2..}' </dev/null &>/tmp/blah & disown; sleep 0.01)+abort"
-	--bind="esc:cancel"
-	--delimiter="	"
-	--no-multi
-	--preview-window=right:60%:wrap:hidden
-	--preview="echo {2..}"
-	--reverse
-	--with-nth=1
+    fzf
+    --bind="ctrl-v:toggle-preview,ctrl-w:toggle-preview-wrap,ctrl-s:toggle-sort"
+    --bind="enter:execute(nohup '{2..}' </dev/null &>/tmp/fzf-execute.log & disown; sleep 0.01)+abort"
+    --bind="esc:cancel"
+    --delimiter="	"
+    --no-multi
+    --preview-window=right:60%:wrap:hidden
+    --preview="echo {2..}"
+    --reverse
+    --with-nth=1
 )
 
 "${FZF_CMD[@]}" "$@"
