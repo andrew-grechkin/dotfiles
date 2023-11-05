@@ -25,7 +25,7 @@ else
     exit 1
 fi
 
-mapfile -t FILES < <(rg "${ARGV[@]}" -l "$SEARCH")
+mapfile -t FILES < <(rg "${ARGV[@]}" -L -l "$SEARCH")
 
 if [[ "${FILES[*]}" == "" ]]; then
     exit

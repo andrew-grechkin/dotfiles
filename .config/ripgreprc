@@ -16,10 +16,9 @@
 # --debug
 --follow
 --engine=auto
---hidden
 --smart-case
---with-filename
 
+--hidden
 --no-ignore-dot
 --no-ignore-exclude
 --no-ignore-global
@@ -30,3 +29,5 @@
 --glob=!/media/
 --glob=!/slib/
 --glob=!fuse/
+
+# --with-filename
