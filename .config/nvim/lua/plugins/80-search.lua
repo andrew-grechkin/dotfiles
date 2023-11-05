@@ -247,33 +247,33 @@ aug END
     --     },
     -- },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
-    { -- https://github.com/dyng/ctrlsf.vim
-        'dyng/ctrlsf.vim',
+    -- { -- https://github.com/dyng/ctrlsf.vim
+    --     'dyng/ctrlsf.vim',
 
-        config = function()
-            vim.g.ctrlsf_auto_focus = {at = 'done', duration_less_than = 2000}
-            -- vim.g.ctrlsf_debug_mode = 1
-            vim.g.ctrlsf_default_root = 'project+wf'
-            -- vim.g.ctrlsf_default_view_mode  = 'compact'
-            vim.g.ctrlsf_extra_backend_args = {ag = '--hidden --nofollow', rg = '--hidden'}
-            vim.g.ctrlsf_extra_root_markers = {'.git', '.hg', '.svn', '.cache'}
-            vim.g.ctrlsf_follow_symlinks = 0
-            vim.g.ctrlsf_ignore_dir = {'.git', 'bower_components', 'node_modules'}
-            vim.g.ctrlsf_parse_speed = 100
-            vim.g.ctrlsf_position = 'bottom'
-            local wk_ok, which_key = pcall(require, 'which-key')
-            if wk_ok then
-                local normal_mappings = {
-                    ['<leader>'] = {s = {f = {'<Plug>CtrlSFPrompt', 'ctrl-f: prompt'}}},
-                }
-                local visual_mappings = {
-                    ['<leader>'] = {s = {f = {'<Plug>CtrlSFVwordExec', 'ctrl-f: word'}}},
-                }
-                which_key.register(normal_mappings, {mode = 'n', nowait = true, noremap = true})
-                which_key.register(visual_mappings, {mode = 'v', nowait = true, noremap = true})
-            end
-        end,
-    },
+    --     config = function()
+    --         vim.g.ctrlsf_auto_focus = {at = 'done', duration_less_than = 2000}
+    --         -- vim.g.ctrlsf_debug_mode = 1
+    --         vim.g.ctrlsf_default_root = 'project+wf'
+    --         -- vim.g.ctrlsf_default_view_mode  = 'compact'
+    --         vim.g.ctrlsf_extra_backend_args = {ag = '--hidden --nofollow', rg = '--hidden'}
+    --         vim.g.ctrlsf_extra_root_markers = {'.git', '.hg', '.svn', '.cache'}
+    --         vim.g.ctrlsf_follow_symlinks = 0
+    --         vim.g.ctrlsf_ignore_dir = {'.git', 'bower_components', 'node_modules'}
+    --         vim.g.ctrlsf_parse_speed = 100
+    --         vim.g.ctrlsf_position = 'bottom'
+    --         local wk_ok, which_key = pcall(require, 'which-key')
+    --         if wk_ok then
+    --             local normal_mappings = {
+    --                 ['<leader>'] = {s = {f = {'<Plug>CtrlSFPrompt', 'ctrl-f: prompt'}}},
+    --             }
+    --             local visual_mappings = {
+    --                 ['<leader>'] = {s = {f = {'<Plug>CtrlSFVwordExec', 'ctrl-f: word'}}},
+    --             }
+    --             which_key.register(normal_mappings, {mode = 'n', nowait = true, noremap = true})
+    --             which_key.register(visual_mappings, {mode = 'v', nowait = true, noremap = true})
+    --         end
+    --     end,
+    -- },
     -- -- => --------------------------------------------------------------------------------------------------------- {{{1
     -- { -- https://github.com/sourcegraph/sg.nvim
     --     'sourcegraph/sg.nvim',

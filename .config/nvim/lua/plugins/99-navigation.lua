@@ -1,6 +1,7 @@
 return {
     { -- url: https://github.com/ibhagwan/fzf-lua
         'ibhagwan/fzf-lua',
+        lazy = false,
         dependencies = {
             { -- url: https://github.com/junegunn/fzf
                 'junegunn/fzf',
@@ -8,7 +9,6 @@ return {
             },
             'nvim-tree/nvim-web-devicons',
         },
-        cmd = {'Ft', 'FzfLua'},
         init = function() require('which-key').register({['<leader>r'] = {name = 'Repo (git)'}}) end,
         keys = {
             {'<C-b>', '<cmd>FzfLua buffers<CR>', mode = {'n'}, desc = 'fzf: buffers'},

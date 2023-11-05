@@ -10,7 +10,7 @@
 -- SETTINGS
 --
 -- To override default setting put the `lua-settings/reload.conf` file in
--- mpv user folder, on linux it is `~/.config/mpv`.  NOTE: config file
+-- mpv user folder, on linux it is `~/.config/mpv`.
 -- name should match the name of the script.
 --
 -- Default `reload.conf` settings:
@@ -130,9 +130,7 @@ local function reload_resume()
     local playlist_count = mp.get_property_number('playlist/count')
     local playlist_pos = mp.get_property_number('playlist-pos')
     local playlist = {}
-    for i = 0, playlist_count - 1 do
-        playlist[i] = mp.get_property('playlist/' .. i .. '/filename')
-    end
+    for i = 0, playlist_count - 1 do playlist[i] = mp.get_property('playlist/' .. i .. '/filename') end
     -- Tries to determine live stream vs. pre-recordered VOD. VOD has non-zero
     -- duration property. When reloading VOD, to keep the current time position
     -- we should provide offset from the start. Stream doesn't have fixed start.
@@ -155,9 +153,7 @@ local function reload_resume()
     msg.info('file ', playlist_pos + 1, 'of', playlist_count, 'in playlist')
     for i = 0, playlist_pos - 1 do mp.commandv('loadfile', playlist[i], 'append') end
     mp.commandv('playlist-move', 0, playlist_pos + 1)
-    for i = playlist_pos + 1, playlist_count - 1 do
-        mp.commandv('loadfile', playlist[i], 'append')
-    end
+    for i = playlist_pos + 1, playlist_count - 1 do mp.commandv('loadfile', playlist[i], 'append') end
 end
 
 local function reload_eof(property, eof_reached)
@@ -197,17 +193,11 @@ end
 -- Has 'demuxer_cache_time' changed
 function demuxer_cache.has_progress_since(t) return demuxer_cache.state.demuxer_cache_time ~= t end
 
-function demuxer_cache.is_state_fetch()
-    return demuxer_cache.state.name == demuxer_cache.events.continue_fetch.to
-end
+function demuxer_cache.is_state_fetch() return demuxer_cache.state.name == demuxer_cache.events.continue_fetch.to end
 
-function demuxer_cache.is_state_stale()
-    return demuxer_cache.state.name == demuxer_cache.events.continue_stale.to
-end
+function demuxer_cache.is_state_stale() return demuxer_cache.state.name == demuxer_cache.events.continue_stale.to end
 
-function demuxer_cache.is_state_stuck()
-    return demuxer_cache.state.name == demuxer_cache.events.continue_stuck.to
-end
+function demuxer_cache.is_state_stuck() return demuxer_cache.state.name == demuxer_cache.events.continue_stuck.to end
 
 function demuxer_cache.transition(event)
     if demuxer_cache.state.name == event.from then
@@ -236,8 +226,7 @@ function demuxer_cache.transition(event)
 
         msg.debug('demuxer_cache.transition', event.name, utils.to_string(demuxer_cache.state))
     else
-        msg.error('demuxer_cache.transition', 'illegal transition', event.name, 'from state',
-            demuxer_cache.state.name)
+        msg.error('demuxer_cache.transition', 'illegal transition', event.name, 'from state', demuxer_cache.state.name)
     end
 end
 
@@ -320,8 +309,7 @@ function paused_for_cache.handler(_, is_paused)
             reload_resume()
         end
 
-        paused_for_cache.start_timer(settings.paused_for_cache_timer_interval,
-            settings.paused_for_cache_timer_timeout)
+        paused_for_cache.start_timer(settings.paused_for_cache_timer_interval, settings.paused_for_cache_timer_timeout)
     else
         paused_for_cache.reset_timer()
     end
@@ -362,17 +350,11 @@ end
 
 read_settings()
 
-if settings.reload_key_binding ~= '' then
-    mp.add_key_binding(settings.reload_key_binding, 'reload_resume', reload_resume)
-end
+if settings.reload_key_binding ~= '' then mp.add_key_binding(settings.reload_key_binding, 'reload_resume', reload_resume) end
 
-if settings.paused_for_cache_timer_enabled then
-    mp.observe_property('paused-for-cache', 'bool', paused_for_cache.handler)
-end
+if settings.paused_for_cache_timer_enabled then mp.observe_property('paused-for-cache', 'bool', paused_for_cache.handler) end
 
-if settings.demuxer_cache_timer_enabled then
-    demuxer_cache.initialize(settings.demuxer_cache_timer_interval)
-end
+if settings.demuxer_cache_timer_enabled then demuxer_cache.initialize(settings.demuxer_cache_timer_interval) end
 
 if settings.reload_eof_enabled then
     -- vo-configured == video output created && its configuration went ok
