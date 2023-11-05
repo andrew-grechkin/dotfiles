@@ -15,6 +15,7 @@
 
 # --debug
 --follow
+--engine=auto
 --hidden
 --smart-case
 --with-filename
