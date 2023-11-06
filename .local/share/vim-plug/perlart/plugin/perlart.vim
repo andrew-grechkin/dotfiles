@@ -73,7 +73,6 @@ function! PerlART_SetHighlights ()
 
     " How insufficiently descriptive variable names will be displayed...
     highlight default link  PerlART_Cacograms    Normal
-
 endfunction
 
 
@@ -731,4 +730,3 @@ endfunction
 
 " Restore previous external compatibility options
 let &cpo = s:save_cpo
-

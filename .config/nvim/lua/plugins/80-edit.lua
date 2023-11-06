@@ -3,6 +3,8 @@ return {
         'stevearc/conform.nvim',
         opts = {
             formatters_by_ft = {
+                -- ['_'] = {'trim_newlines', 'trim_whitespace'},
+                ['*'] = {'trim_newlines', 'trim_whitespace'},
                 cpp = {'clang-format'},
                 css = {'prettier'},
                 fb2 = {'xmllint'},
@@ -16,15 +18,14 @@ return {
                 python = {'isort', 'black'},
                 sh = {'shellharden', 'beautysh'},
                 sql = {'sql-formatter', 'sqlfluff'},
-                typescript = {'eslint'},
+                typescript = {'eslint_d'},
                 xml = {'xmllint'},
                 yaml = {'yamlfix'},
-                ['*'] = {'trim_newlines', 'trim_whitespace'},
-                -- ['_'] = {'trim_newlines', 'trim_whitespace'},
             },
             formatters_by_ft_manual = {
                 json = {'jq-sort'},
                 perl = {'perlimports'},
+                typescript = {'eslint', 'trim_newlines'},
                 yaml = {'yaml-sanitize'},
             },
             log_level = vim.log.levels.DEBUG,
@@ -33,6 +34,7 @@ return {
                 ['jq-sort'] = {command = 'jq', args = {'-S', '--indent', '2'}},
                 ['lua-format'] = {command = 'lua-format', args = {'-i'}},
                 ['yaml-sanitize'] = {command = 'yaml-sanitize'},
+                ['eslint'] = {command = 'eslint-fix-stdout', args = '$FILENAME'},
             },
         },
         config = function(_, opts)
@@ -44,7 +46,10 @@ return {
                     local filetype = vim.bo[event.buf].filetype
                     if opts.formatters_by_ft_manual[filetype] then
                         vim.keymap.set({'n'}, 'gqq', function()
-                            plugin.format({formatters = opts.formatters_by_ft_manual[filetype]})
+                            plugin.format({
+                                timeout_ms = 4000,
+                                formatters = opts.formatters_by_ft_manual[filetype],
+                            })
                         end, {desc = 'Format: manual whole file', nowait = true, noremap = true})
                     end
                     -- TODO: implement inject formatting
@@ -71,7 +76,7 @@ return {
                 local bufname = vim.api.nvim_buf_get_name(bufnr)
                 if bufname:match('/node_modules/') then return end
 
-                return {timeout_ms = 1000, lsp_fallback = true}
+                return {timeout_ms = 4000, lsp_fallback = true}
             end
 
             plugin.setup(opts)

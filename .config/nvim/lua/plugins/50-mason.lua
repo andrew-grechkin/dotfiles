@@ -3,6 +3,7 @@ return {
         'williamboman/mason.nvim',
         opts = {},
     },
+    -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/williamboman/mason-lspconfig.nvim
         'williamboman/mason-lspconfig.nvim',
         dependencies = {'williamboman/mason.nvim'},
@@ -69,10 +70,11 @@ return {
             }
         end,
     },
+    -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/WhoIsSethDaniel/mason-tool-installer.nvim
         'WhoIsSethDaniel/mason-tool-installer.nvim',
         dependencies = {'williamboman/mason.nvim'},
-        cmd = {'MasonToolInstall', 'MasonToolUpdate', 'MasonToolClean'},
+        cmd = {'MasonToolsInstall', 'MasonToolsUpdate', 'MasonToolsClean'},
         config = function()
             local plugin = require('mason-tool-installer')
             -- https://github.com/hrsh7th/nvim-cmp/issues/1017#issuecomment-1141440976
@@ -140,6 +142,7 @@ return {
             }
         end,
     },
+    -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/jay-babu/mason-nvim-dap.nvim
         'jay-babu/mason-nvim-dap.nvim',
         lazy = true,
