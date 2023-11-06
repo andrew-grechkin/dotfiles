@@ -79,6 +79,9 @@
 [apply]
 	whitespace = fix
 
+[blame]
+	ignoreRevsFile = ~/.config/git/global-blame-ignore-revs
+
 [color]
 	branch = auto
 	grep   = auto

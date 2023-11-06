@@ -9,6 +9,7 @@ return {
                 html = {'prettier', 'eslint'},
                 javascript = {{'prettierd', 'prettier'}},
                 json = {'fixjson', 'jq'},
+                jsonc = {'fixjson', 'jq'},
                 lua = {{'stylua', 'lua-format'}},
                 mysql = {'sql-formatter', 'mysql_sqlfluff'},
                 perl = {'perltidy'},
