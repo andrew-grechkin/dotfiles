@@ -16,7 +16,6 @@ requires "App::cpanminus";
 requires "App::perlimports";
 requires "CHI";
 requires "Carp::Always";
-requires "Code::TidyAll";
 requires "Data::Dump";
 requires "Data::Printer";
 requires "DateTime::TimeZone";
