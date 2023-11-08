@@ -19,11 +19,12 @@ local concurrency = nil
 local url_format = 'https://github.com/%s.git'
 
 if not IS_KVM then
-    concurrency = (vim.loop.available_parallelism() / 2) or nil ---@type number limit the maximum amount of concurrent tasks
+    concurrency = (vim.loop.available_parallelism() / 2) or nil
     url_format = 'git@github.com:%s.git'
 end
 
 plugin.setup('plugins', {
+    ---@type number|nil limit the maximum amount of concurrent tasks
     concurrency = concurrency,
     git = {
         -- defaults for the `Lazy log` command
@@ -36,4 +37,5 @@ plugin.setup('plugins', {
         -- increase downloads a lot.
         filter = true,
     },
+    install = {missing = false},
 })
