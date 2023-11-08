@@ -32,7 +32,7 @@ return {
 
             plugin.linters_by_ft = {
                 json = {'jsonlint'},
-                perl = {'perlimports'},
+                perl = {'perlimports', 'perlcritic'},
                 puppet = {'puppet-lint'},
                 sql = {'sqlfluff'},
                 yaml = {'yamllint'},

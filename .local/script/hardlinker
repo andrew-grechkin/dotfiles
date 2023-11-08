@@ -20,13 +20,13 @@ class Processor 3.00 {
     use File::Map               qw(map_file);
     use Log::Any                qw($log);
     use Log::Any::Adapter       qw(Syslog), ('options' => 'pid,ndelay');
-    use Log::Any::Adapter::Util qw(INFO TRACE WARNING);
+    use Log::Any::Adapter::Util qw(INFO TRACE);
     use Path::Tiny              qw(path);
 
     use constant {
-        'PARTIAL_CHECKSUM_SIZE' => 1 * 1_024 * 1_024,
+        'PARTIAL_CHECKSUM_SIZE' => 1 * 1024 * 1024,
         'FS_ENCODING'           => 'UTF-8',
-        'MIN_SIZE'              => 1_024,
+        'MIN_SIZE'              => 1024,
     };
 
     field $apply    = 0;
