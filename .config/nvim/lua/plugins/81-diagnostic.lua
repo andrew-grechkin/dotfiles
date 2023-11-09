@@ -6,12 +6,12 @@ return {
         opts = {},
         keys = {
             -- TODO: fix keymaps
-            {']a', function() require('todo-comments').jump_next() end, desc = 'Next todo comment'},
-            {
-                '[a',
-                function() require('todo-comments').jump_prev() end,
-                desc = 'Previous todo comment',
-            },
+            -- {']a', function() require('todo-comments').jump_next() end, desc = 'Next todo comment'},
+            -- {
+            --     '[a',
+            --     function() require('todo-comments').jump_prev() end,
+            --     desc = 'Previous todo comment',
+            -- },
             -- {
             --     '<leader>sT',
             --     '<cmd>TodoTelescope keywords=TODO,FIX,FIXME<cr>',
@@ -25,8 +25,8 @@ return {
         config = true,
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
-    { -- https://github.com/mfussenegger/nvim-lint
-        'mfussenegger/nvim-lint',
+    { -- https://github.com/andrew-grechkin/nvim-lint
+        'andrew-grechkin/nvim-lint',
         config = function()
             local plugin = require('lint')
 
