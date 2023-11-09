@@ -39,7 +39,7 @@ if &termguicolors ==# 1
 	hi Identifier               guifg=#FD971F
 	hi Ignore                   guifg=#808080 guibg=bg
 	hi Keyword                  guifg=#F92672                             gui=bold
-	hi Label                    guifg=#E6DB74                             gui=NONE
+	hi Label                    guifg=#45B2B4                             gui=NONE
 	hi Macro                    guifg=#C4BE89                             gui=italic
 	hi Number                   guifg=#AE81FF
 	hi Operator                 guifg=#F92672

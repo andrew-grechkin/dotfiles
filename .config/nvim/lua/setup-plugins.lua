@@ -26,6 +26,7 @@ end
 plugin.setup('plugins', {
     ---@type number|nil limit the maximum amount of concurrent tasks
     concurrency = concurrency,
+    dev = {path = '~/git/public/andrew-grechkin/'},
     git = {
         -- defaults for the `Lazy log` command
         -- log = { "-10" }, -- show the last 10 commits

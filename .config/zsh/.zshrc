@@ -43,14 +43,15 @@ done
 
 # => PATH prepare (head) ------------------------------------------------------------------------------------------ {{{1
 
-[[ -n "$HOMEBREW_PREFIX" ]] && [[ -d "$HOMEBREW_PREFIX" ]] && path=("$HOMEBREW_PREFIX/bin"        "${path[@]}")
-[[ -n "$HOMEBREW_PREFIX" ]] && [[ -d "$HOMEBREW_PREFIX" ]] && path=("$HOMEBREW_PREFIX/sbin"       "${path[@]}")
-[[ -n "$PERLBREW_PATH"                                  ]] && path=("${(ps/:/)PERLBREW_PATH[@]}"  "${path[@]}")
-[[ -d "$HOME/.local/bin"                                ]] && path=("$HOME/.local/bin"            "${path[@]}")
-[[ -d "$HOME/.local/script"                             ]] && path=("$HOME/.local/script"         "${path[@]}")
-[[ -d "$HOME/.local/script-private"                     ]] && path=("$HOME/.local/script-private" "${path[@]}")
-[[ -d "$HOME/.local/script-work"                        ]] && path=("$HOME/.local/script-work"    "${path[@]}")
-[[ -d "$HOME/.cache/bin"                                ]] && path=("$HOME/.cache/bin"            "${path[@]}")
+[[ -n "$HOMEBREW_PREFIX" ]] && [[ -d "$HOMEBREW_PREFIX" ]] && path=("$HOMEBREW_PREFIX/bin"             "${path[@]}")
+[[ -n "$HOMEBREW_PREFIX" ]] && [[ -d "$HOMEBREW_PREFIX" ]] && path=("$HOMEBREW_PREFIX/sbin"            "${path[@]}")
+[[ -n "$PERLBREW_PATH"                                  ]] && path=("${(ps/:/)PERLBREW_PATH[@]}"       "${path[@]}")
+[[ -d "$HOME/.local/bin"                                ]] && path=("$HOME/.local/bin"                 "${path[@]}")
+[[ -d "$HOME/.local/script"                             ]] && path=("$HOME/.local/script"              "${path[@]}")
+[[ -d "$HOME/.local/script-private"                     ]] && path=("$HOME/.local/script-private"      "${path[@]}")
+[[ -d "$HOME/.local/script-work"                        ]] && path=("$HOME/.local/script-work"         "${path[@]}")
+[[ -d "$HOME/.local/script-work-private"                ]] && path=("$HOME/.local/script-work-private" "${path[@]}")
+[[ -d "$HOME/.cache/bin"                                ]] && path=("$HOME/.cache/bin"                 "${path[@]}")
 
 export PATH
 

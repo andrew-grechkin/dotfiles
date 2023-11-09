@@ -100,8 +100,9 @@ return {
         end,
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
-    { -- url: https://github.com/rest-nvim/rest.nvim
-        'rest-nvim/rest.nvim',
+    { -- url: https://github.com/andrew-grechkin/rest.nvim
+        'andrew-grechkin/rest.nvim',
+        -- dev = true,
         ft = {'http'},
         config = function()
             local plugin = require('rest-nvim')
@@ -121,23 +122,56 @@ return {
                     show_url = true,
                     -- show the generated curl command in case you want to launch
                     -- the same request via the terminal (can be verbose)
-                    show_curl_command = true,
+                    show_curl_command = false,
                     show_http_info = true,
                     show_headers = true,
                     -- executables or functions for formatting response body [optional]
                     -- set them to false if you want to disable them
                     formatters = {
-                        json = 'jq',
                         html = function(body)
-                            return vim.fn.system({'tidy', '-i', '-q', '-'}, body)
+                            if vim.fn.executable('tidy') == 0 then return body end
+                            -- stylua: ignore
+                            return vim.fn.system({
+                                'tidy',
+                                '-i',
+                                '-q',
+                                '--tidy-mark',
+                                'no',
+                                '--show-body-only',
+                                'auto',
+                                '--show-errors',
+                                '0',
+                                '--show-warnings',
+                                '0',
+                                '-',
+                            }, body):gsub('\n$', '')
+                        end,
+                        json = function(body)
+                            if vim.fn.executable('jq') == 0 then return body end
+                            return vim.fn.system({'jq', '-S'}, body):gsub('\n$', '')
                         end,
                     },
                 },
                 -- Jump to request line on run
                 jump_to_request = true,
                 env_file = '.env',
-                custom_dynamic_variables = {},
                 yank_dry_run = true,
+                custom_dynamic_variables = {
+                    ['PERSONAL_DQS_TOKEN'] = function()
+                        if vim.env['PERSONAL_DQS_TOKEN'] then
+                            return vim.env['PERSONAL_DQS_TOKEN']
+                        end
+
+                        local handle = io.popen('authxagent-issue-access-token-dqs')
+                        if handle then
+                            vim.env['PERSONAL_DQS_TOKEN'] = handle:read('*a')
+                            handle:close()
+                            return vim.env['PERSONAL_DQS_TOKEN']
+                        end
+
+                        return os.getenv('PERSONAL_DQS_TOKEN')
+                    end,
+                },
             }
 
             local wk_ok, which_key = pcall(require, 'which-key')
