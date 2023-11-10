@@ -106,6 +106,20 @@ return {
         ft = {'http'},
         config = function()
             local plugin = require('rest-nvim')
+            local dynamic_variable_from_command = function(name, command)
+                if vim.env[name] then return vim.env[name] end
+
+                local handle = io.popen(command)
+                if handle then
+                    local output = handle:read('*a')
+                    handle:close()
+
+                    vim.env[name] = string.gsub(output, '^%s*(.-)%s*$', '%1')
+                    return vim.env[name]
+                end
+
+                return os.getenv(name)
+            end
             plugin.setup {
                 -- Open request results in a horizontal split
                 result_split_horizontal = false,
@@ -158,18 +172,13 @@ return {
                 yank_dry_run = true,
                 custom_dynamic_variables = {
                     ['PERSONAL_DQS_TOKEN'] = function()
-                        if vim.env['PERSONAL_DQS_TOKEN'] then
-                            return vim.env['PERSONAL_DQS_TOKEN']
-                        end
-
-                        local handle = io.popen('authxagent-issue-access-token-dqs')
-                        if handle then
-                            vim.env['PERSONAL_DQS_TOKEN'] = handle:read('*a')
-                            handle:close()
-                            return vim.env['PERSONAL_DQS_TOKEN']
-                        end
-
-                        return os.getenv('PERSONAL_DQS_TOKEN')
+                        return dynamic_variable_from_command('PERSONAL_DQS_TOKEN', 'authxagent-issue-access-token-dqs')
+                    end,
+                    ['PERSONAL_PROD_TOKEN'] = function()
+                        return dynamic_variable_from_command('PERSONAL_PROD_TOKEN', 'authxagent-issue-access-token')
+                    end,
+                    ['NOW'] = function()
+                        return dynamic_variable_from_command('NOW', 'date --iso-8601=seconds')
                     end,
                 },
             }
