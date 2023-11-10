@@ -167,19 +167,19 @@ return {
             --     })
             -- end
 
-            -- use only together or this will breake native command autocomplete after first usage
-            -- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
-            plugin.setup.cmdline({'/', '?'},
-                {mapping = plugin.mapping.preset.cmdline(), sources = {{name = 'buffer'}, rg_conf}})
-            -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
-            plugin.setup.cmdline(':', {
-                mapping = plugin.mapping.preset.cmdline(),
-                sources = plugin.config.sources({{name = 'path'}}, {
-                    {name = 'cmdline'},
-                    {name = 'buffer'},
-                    rg_conf,
-                }),
-            })
+            -- -- use only together or this will breake native command autocomplete after first usage
+            -- -- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
+            -- plugin.setup.cmdline({'/', '?'},
+            --     {mapping = plugin.mapping.preset.cmdline(), sources = {{name = 'buffer'}, rg_conf}})
+            -- -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
+            -- plugin.setup.cmdline(':', {
+            --     mapping = plugin.mapping.preset.cmdline(),
+            --     sources = plugin.config.sources({{name = 'path'}}, {
+            --         {name = 'cmdline'},
+            --         {name = 'buffer'},
+            --         rg_conf,
+            --     }),
+            -- })
         end,
     },
 }

@@ -81,7 +81,7 @@
 
 [blame]
 	ignoreRevsFile = ~/.config/git/global-blame-ignore-revs
-	ignoreRevsFile = .git-blame-ignore-revs
+	; ignoreRevsFile = .git-blame-ignore-revs
 
 [color]
 	branch = auto

@@ -13,13 +13,13 @@ vim.o.fileencodings = 'ucs-bom,utf-8,default,cp1251'
 vim.o.fileformats = 'unix,dos,mac'
 vim.o.foldcolumn = '2'
 vim.o.formatoptions = 'tcqjl'
-vim.o.grepformat = "%f:%l:%c:%m"
-vim.o.grepprg = "rg --vimgrep"
+vim.o.grepformat = '%f:%l:%c:%m'
+vim.o.grepprg = 'rg --vimgrep'
 vim.o.ignorecase = true
 -- vim.o.inccommand = 'split'
 vim.o.infercase = true
 vim.o.lazyredraw = true
-vim.o.list= true
+vim.o.list = true
 vim.o.listchars = 'tab:↹ ,trail:␣,extends:>,precedes:<,nbsp:+'
 vim.o.matchpairs = vim.o.matchpairs .. ',<:>,«:»'
 vim.o.mouse = 'a'
@@ -52,6 +52,7 @@ vim.o.visualbell = true
 vim.o.whichwrap = vim.o.whichwrap .. ',<,>,h,l'
 vim.o.wildignore = '*.a,*.o,*.obj,.git,*~,*.pyc,*.so,*.swp,*.zip,*.exe,tmp/**,node_modules/**'
 vim.o.wildignorecase = true
+vim.o.wildoptions = 'pum,tagfile,fuzzy'
 vim.o.writebackup = false
 
 vim.cmd.colorscheme 'molokai-grand'
