@@ -88,7 +88,7 @@ return {
                         ['m'] = {':belowright 10split term://zsh<CR>', 'open terminal'},
                         ['t'] = {':tab split<CR>', 'tab: split'},
                         ['u'] = {':Lazy install<CR>', 'sync plugins'},
-                        ['v'] = {':tabedit <C-R>=VIM_CONFIG_FILE<CR><CR><CR>', 'init.vim'},
+                        ['v'] = {':tabedit $MYVIMRC<CR>', 'init.vim'},
                     },
                     b = {name = 'Buffer', ['o'] = {BUF_ONLY, 'only'}},
                     -- p = {'`[ . strpart(getregtype(), 0, 1) . `]', 'Select latest pasted'},

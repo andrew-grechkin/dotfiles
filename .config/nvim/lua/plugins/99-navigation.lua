@@ -13,7 +13,15 @@ return {
         keys = {
             {'<C-b>', '<cmd>FzfLua buffers<CR>', mode = {'n'}, desc = 'fzf: buffers'},
             {'<C-h>', '<cmd>FzfLua oldfiles<CR>', mode = {'n'}, desc = 'fzf: history'},
-            {'<C-p>', '<cmd>FzfLua files<CR>', mode = {'n'}, desc = 'fzf: files project'},
+            {
+                '<C-p>',
+                function()
+                    local dir = PROJECT_GIT_ROOT_OR_CWD()
+                    require('fzf-lua').files({cwd = dir})
+                end,
+                mode = {'n'},
+                desc = 'fzf: files project',
+            },
             {
                 '<leader><C-p>',
                 function()

@@ -4,7 +4,7 @@ call plug#begin('~/.local/share/vim/plugged')
 	Plug 'junegunn/fzf', {'dir': '~/.cache/fzf', 'do': './install --bin'}
 	Plug 'junegunn/fzf.vim'                                                        " Fuzzy search
 	Plug 'junegunn/vim-plug'
-	Plug 'mhinz/vim-grepper'                                                       " Grep integration
+	Plug 'andrew-grechkin/vim-grepper'                                             " Grep integration
 	Plug 'nelstrom/vim-visual-star-search'
 	Plug 'sbdchd/vim-run'
 	Plug 'suy/vim-context-commentstring'
@@ -26,8 +26,6 @@ call plug#begin('~/.local/share/vim/plugged')
 
 	if has('nvim-0.5') || v:version >= 800                                         " These plugins demand modern vim or neovim
 		Plug 'dense-analysis/ale'                                                  " Async syntax checker
-		Plug 'SirVer/ultisnips'
-		Plug 'andrew-grechkin/vim-snippets'
 
 		if 1                                                                       " work related plugins
 			Plug 'rodjek/vim-puppet'                                               " For Puppet syntax highlighting

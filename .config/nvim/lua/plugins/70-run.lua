@@ -1,7 +1,6 @@
 return {
     { -- https://github.com/sbdchd/vim-run
         'sbdchd/vim-run',
-        cmd = {'Run'},
         config = function()
             vim.g.run_cmd_flux = {
                 'influx',

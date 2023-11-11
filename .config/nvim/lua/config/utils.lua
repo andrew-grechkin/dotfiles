@@ -21,6 +21,20 @@ function table:reduce(init, code)
     return acc
 end
 
+GIT_ROOT = function(dir)
+    return vim.fn.systemlist('git -C ' .. dir ..
+                                 ' rev-parse --show-superproject-working-tree --show-toplevel 2>/dev/null | head -1')[1]
+end
+
+PROJECT_GIT_ROOT_OR_CWD = function(path)
+    local dir = vim.fs.dirname(path or '.')
+
+    local gitpath = GIT_ROOT(dir)
+    if gitpath then return gitpath end
+
+    return vim.loop.cwd()
+end
+
 -- [[ detect project directory for path ]]
 GET_PROJECT_DIR = function(path)
     -- local file = vim.api.nvim_buf_get_name(bufnr)
@@ -38,8 +52,7 @@ GET_PROJECT_DIR = function(path)
     }
     local opts = {upward = true, path = dir, limit = 1}
 
-    local gitpath = vim.fn.systemlist('git -C ' .. dir ..
-                                          ' rev-parse --show-superproject-working-tree --show-toplevel 2>/dev/null | head -1')[1]
+    local gitpath = GIT_ROOT(dir)
     if gitpath then
         if gitpath == cwd then
             return gitpath
