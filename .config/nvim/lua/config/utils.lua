@@ -22,8 +22,8 @@ function table:reduce(init, code)
 end
 
 GIT_ROOT = function(dir)
-    return vim.fn.systemlist('git -C ' .. dir ..
-                                 ' rev-parse --show-superproject-working-tree --show-toplevel 2>/dev/null | head -1')[1]
+    return vim.fn.systemlist('git -C "' .. dir ..
+                                 '" rev-parse --show-superproject-working-tree --show-toplevel 2>/dev/null | head -1')[1]
 end
 
 PROJECT_GIT_ROOT_OR_CWD = function(path)

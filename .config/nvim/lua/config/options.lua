@@ -52,7 +52,7 @@ vim.o.visualbell = true
 vim.o.whichwrap = vim.o.whichwrap .. ',<,>,h,l'
 vim.o.wildignore = '*.a,*.o,*.obj,.git,*~,*.pyc,*.so,*.swp,*.zip,*.exe,tmp/**,node_modules/**'
 vim.o.wildignorecase = true
-vim.o.wildoptions = 'pum,tagfile,fuzzy'
+vim.o.wildoptions = 'pum,tagfile'
 vim.o.writebackup = false
 
 vim.cmd.colorscheme 'molokai-grand'

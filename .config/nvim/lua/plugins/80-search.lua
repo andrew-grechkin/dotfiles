@@ -113,11 +113,11 @@ return {
         'kevinhwang91/nvim-bqf',
         config = function()
             vim.cmd(([[
-aug Grepper
-    au!
-    au User Grepper ++nested %s
-aug END
-]]):format([[call setqflist([], 'r', {'context': {'bqf': {'pattern_hl': '\%#' . getreg('/')}}})]]))
+                aug Grepper
+                    au!
+                    au User Grepper ++nested %s
+                aug END
+            ]]):format([[call setqflist([], 'r', {'context': {'bqf': {'pattern_hl': '\%#' . getreg('/')}}})]]))
 
             function _G.quickfixtextfunc(info)
                 -- The name of item in list is based on the directory of quickfix window.
