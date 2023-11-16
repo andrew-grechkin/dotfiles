@@ -36,10 +36,7 @@ return {
                 ['lua-format'] = {command = 'lua-format', args = {'-i'}},
                 ['yaml-sanitize'] = {command = 'yaml-sanitize'},
                 ['eslint'] = {command = 'eslint-fix-stdout', args = '$FILENAME'},
-                ['beautysh'] = {
-                    command = 'beautysh',
-                    args = {'--indent-size', '4', '--force-function-style', 'fnpar', '--tab', '-'},
-                },
+                ['beautysh'] = {command = 'beautysh', args = {'--indent-size', '4', '--tab', '-'}},
             },
         },
         config = function(_, opts)

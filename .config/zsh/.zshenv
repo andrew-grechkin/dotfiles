@@ -53,7 +53,7 @@ ZSH_COMPDUMP=$XDG_CACHE_HOME/zcompdump-${ZSH_VERSION}
 # tty &>/dev/null && typeset -Hg is_tty=1
 # [[ -o INTERACTIVE ]] && typeset -Hg is_tty=1
 
-# => set PATH ---------------------------------------------------------------------------------------------------- {{{1
+# => set PATH ----------------------------------------------------------------------------------------------------- {{{1
 
 if [[ "$IS_NAS" == "1" ]]; then
 	_prependvar PATH "/volume1/@appstore/ffmpeg/bin"
@@ -62,7 +62,7 @@ if [[ "$IS_NAS" == "1" ]]; then
 	[[ -d "/volume1/local/arch/usr/bin" ]] && _prependvar PATH "/volume1/local/arch/usr/bin"
 fi
 
-# => PATH prepare (tail) ----------------------------------------------------------------------------------------- {{{1
+# => PATH prepare (tail) ------------------------------------------------------------------------------------------ {{{1
 
 typeset -U PATH path
 [[ -d "$HOME/.local/bin"                                ]] && path+=("$HOME/.local/bin")

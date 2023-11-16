@@ -9,20 +9,20 @@ alias -g ......='../../../../..'
 alias mkdir='mkdir -pv'
 alias d='dirs -v'
 
-# => Changing/making/removing directory configuration ------------------------------------------------------------ {{{1
+# => Changing/making/removing directory configuration ------------------------------------------------------------- {{{1
 
 setopt AUTO_CD
 setopt AUTO_PUSHD
 setopt PUSHDMINUS
 setopt PUSHD_IGNORE_DUPS
 
-# => take -------------------------------------------------------------------------------------------------------- {{{1
+# => take --------------------------------------------------------------------------------------------------------- {{{1
 
 function take() {
 	mkdir -p "$@" && cd "${@:$#}"
 }
 
-# => Save dirstack history to $DIRSTACK['file'] ------------------------------------------------------------------ {{{1
+# => Save dirstack history to $DIRSTACK['file'] ------------------------------------------------------------------- {{{1
 
 if [[ -n ${DIRSTACK['file']} ]]; then
 	DIRSTACK['size']=${DIRSTACK['size']:-20}

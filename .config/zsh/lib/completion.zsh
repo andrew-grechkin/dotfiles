@@ -38,7 +38,7 @@ zstyle ':completion:*:*:*:users'          ignored-patterns \
 # ... unless we really want to
 zstyle '*'                                single-ignored show
 
-# => Case insensitive (all), partial-word and substring completion ----------------------------------------------- {{{1
+# => Case insensitive (all), partial-word and substring completion ------------------------------------------------ {{{1
 
 if [[ -n $CASE_SENSITIVE ]]; then
 	zstyle ':completion:*'                matcher-list 'r:|=*' 'l:|=* r:|=*'
@@ -52,7 +52,7 @@ fi
 
 unset CASE_SENSITIVE HYPHEN_INSENSITIVE
 
-# => Draw dots on completion ------------------------------------------------------------------------------------- {{{1
+# => Draw dots on completion -------------------------------------------------------------------------------------- {{{1
 
 if [[ $COMPLETION_WAITING_DOTS = true ]]; then
 	expand-or-complete-with-dots() {
@@ -68,12 +68,12 @@ if [[ $COMPLETION_WAITING_DOTS = true ]]; then
 	bindkey "^I" expand-or-complete-with-dots
 fi
 
-# => enabling autocompletion of privileged environments in privileged commands ----------------------------------- {{{1
+# => enabling autocompletion of privileged environments in privileged commands ------------------------------------ {{{1
 
 # This will let zsh completion scripts run commands with sudo privileges. You should not enable this if you use untrusted autocompletion scripts.
 #zstyle ':completion::complete:*' gain-privileges 1
 
-# => init completion --------------------------------------------------------------------------------------------- {{{1
+# => init completion ---------------------------------------------------------------------------------------------- {{{1
 
 autoload -Uz compinit
 compinit -d "$ZSH_COMPDUMP"

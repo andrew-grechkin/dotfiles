@@ -10,14 +10,14 @@ use experimental qw(builtin declared_refs defer for_list refaliasing try);
 use IO::Socket::UNIX;
 use JSON::PP qw();
 
-# => configuration ----------------------------------------------------------------------------------------------- {{{1
+# => configuration ------------------------------------------------------------------------------------------------ {{{1
 
 use constant {
     'MONITORS' => [qr{\AHDMI-}, qr{\ADP-}, qr{\AeDP-}],
     'DESKTOPS' => [1 .. 9, 0],
 };
 
-# => implementation ---------------------------------------------------------------------------------------------- {{{1
+# => implementation ----------------------------------------------------------------------------------------------- {{{1
 
 use constant {
     'SOCK_PATH'        => '/tmp/bspwm_0_0-socket',

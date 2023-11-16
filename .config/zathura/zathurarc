@@ -13,7 +13,7 @@ map [normal]       `            toggle_statusbar
 map [fullscreen]   `            toggle_statusbar
 map [presentation] `            toggle_statusbar
 
-# => Recolor to dark mode (Ctrl-R toggle) ------------------------------------------------------------------------ {{{1
+# => Recolor to dark mode (Ctrl-R toggle) ------------------------------------------------------------------------- {{{1
 
 set font                    'inconsolata 12'
 set default-bg              '#222222'

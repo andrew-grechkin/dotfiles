@@ -36,7 +36,7 @@ function spectrum_bls() {
 	done
 }
 
-# => test terminal ----------------------------------------------------------------------------------------------- {{{1
+# => test terminal ------------------------------------------------------------------------------------------------ {{{1
 # url: https://misc.flogisoft.com/bash/tip_colors_and_formatting
 
 function term-test() {

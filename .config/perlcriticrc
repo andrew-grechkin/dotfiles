@@ -17,7 +17,7 @@ color-severity-low     = bold cyan
 [-BCritical::CronjobGuide::RequireEmail]
 [-BCritical::EngGuide::RequireStrictDeclarations]
 
-# => disabled 5 -------------------------------------------------------------------------------------------------- {{{1
+# => disabled 5 --------------------------------------------------------------------------------------------------- {{{1
 
 [-Subroutines::ProhibitExplicitReturnUndef]
 
@@ -27,7 +27,7 @@ color-severity-low     = bold cyan
 
 [-TryTiny::RequireUse]
 
-# => disabled 4 -------------------------------------------------------------------------------------------------- {{{1
+# => disabled 4 --------------------------------------------------------------------------------------------------- {{{1
 
 [-Bangs::ProhibitDebuggingModules]
 
@@ -65,7 +65,7 @@ color-severity-low     = bold cyan
 # something && something or something || something is useful
 [-ValuesAndExpressions::ProhibitMixedBooleanOperators]
 
-# => disabled 3 -------------------------------------------------------------------------------------------------- {{{1
+# => disabled 3 --------------------------------------------------------------------------------------------------- {{{1
 
 # This is not flexible enough. I want to call my vars like $something_sha1 and similar
 [-Bangs::ProhibitNumberedNames]
@@ -86,7 +86,7 @@ color-severity-low     = bold cyan
 
 [-ValuesAndExpressions::ProhibitVersionStrings]
 
-# => disabled 2 -------------------------------------------------------------------------------------------------- {{{1
+# => disabled 2 --------------------------------------------------------------------------------------------------- {{{1
 
 [-Bangs::ProhibitCommentedOutCode]
 
@@ -140,7 +140,7 @@ color-severity-low     = bold cyan
 # This exlucdes stuff like '/', which is silly.
 [-ValuesAndExpressions::ProhibitNoisyQuotes]
 
-# => disabled 1 -------------------------------------------------------------------------------------------------- {{{1
+# => disabled 1 --------------------------------------------------------------------------------------------------- {{{1
 
 [-CodeLayout::ProhibitParensWithBuiltins]
 
@@ -156,7 +156,7 @@ color-severity-low     = bold cyan
 
 [-NamingConventions::Capitalization]
 
-# => 5 ----------------------------------------------------------------------------------------------------------- {{{1
+# => 5 ------------------------------------------------------------------------------------------------------------ {{{1
 
 # 5 Bangs::ProhibitBitwiseOperators [bangs bugs]
 # 5 BuiltinFunctions::ProhibitSleepViaSelect [bugs core pbp]
@@ -209,7 +209,7 @@ equivalent_modules = Dancer Dancer2 Moo Moose Moo::Role Moose::Role strictures
 [ValuesAndExpressions::ProhibitLeadingZeros]
 strict = 0
 
-# => 4 ----------------------------------------------------------------------------------------------------------- {{{1
+# => 4 ------------------------------------------------------------------------------------------------------------ {{{1
 
 # 4 Bangs::ProhibitDebuggingModules [bangs maintenance]
 # 4 Bangs::ProhibitRefProtoOrProto [bangs complexity]
@@ -296,7 +296,7 @@ allow_last_statement_to_be_comma_separated_in_map_and_grep = 0
 
 [-Modules::RequireEndWithOne]
 
-# => 3 ----------------------------------------------------------------------------------------------------------- {{{1
+# => 3 ------------------------------------------------------------------------------------------------------------ {{{1
 
 # 3 Bangs::ProhibitNumberedNames [bangs maintenance]
 # 3 Bangs::ProhibitVagueNames [bangs readability]
@@ -412,7 +412,7 @@ forbid_use_version = 1
 # Add the following list to the above list
 add_packages = Carp Test::Builder
 
-# => 2 ----------------------------------------------------------------------------------------------------------- {{{1
+# => 2 ------------------------------------------------------------------------------------------------------------ {{{1
 
 # 2 Bangs::ProhibitCommentedOutCode [bangs maintenance]
 # 2 Bangs::ProhibitFlagComments [bangs maintenance]
@@ -510,7 +510,7 @@ constant_creator_subroutines = constant
 # These are just too common to exclude
 allow = $@ $! $/ $0 $|
 
-# => 1 ----------------------------------------------------------------------------------------------------------- {{{1
+# => 1 ------------------------------------------------------------------------------------------------------------ {{{1
 
 # 1 BuiltinFunctions::ProhibitReverseSortBlock [core cosmetic pbp]
 # 1 CodeLayout::ProhibitParensWithBuiltins [core cosmetic pbp]

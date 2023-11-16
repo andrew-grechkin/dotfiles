@@ -1,6 +1,6 @@
 # vim: filetype=zsh foldmethod=marker
 
-# => Load fzf (key bindings, completion) ------------------------------------------------------------------------- {{{1
+# => Load fzf (key bindings, completion) -------------------------------------------------------------------------- {{{1
 
 for F in '/usr/share/fzf/key-bindings.zsh' "$XDG_CONFIG_HOME/fzf/key-bindings.zsh" "$XDG_DATA_HOME/nvim/lazy/fzf/shell/key-bindings.zsh"; do
 	[[ -r "$F" ]] || continue
@@ -12,11 +12,11 @@ for F in '/usr/share/fzf/completion.zsh' "$XDG_CONFIG_HOME/fzf/completion.zsh" "
 	source-file "$F" && break
 done
 
-# => sequence trigger (Use \ as the trigger sequence instead of the default **) ---------------------------------- {{{1
+# => sequence trigger (Use \ as the trigger sequence instead of the default **) ----------------------------------- {{{1
 
 export FZF_COMPLETION_TRIGGER='\'
 
-# => Settings ---------------------------------------------------------------------------------------------------- {{{1
+# => Settings ----------------------------------------------------------------------------------------------------- {{{1
 
 #export FZF_COMPLETION_OPTS='+c -x'
 
@@ -40,13 +40,13 @@ function _fzf_comprun() {
 	esac
 }
 
-# => Setup commands ---------------------------------------------------------------------------------------------- {{{1
+# => Setup commands ----------------------------------------------------------------------------------------------- {{{1
 
 export FZF_DEFAULT_COMMAND='_fzf_command_helper'
 export FZF_CTRL_T_COMMAND="_fzf_command_helper"
 export FZF_ALT_C_COMMAND='_fzf_compgen_helper . d'
 
-# => Setup options ----------------------------------------------------------------------------------------------- {{{1
+# => Setup options ------------------------------------------------------------------------------------------------ {{{1
 
 export FZF_DEFAULT_BINDS=(
 	--bind="ctrl-d:page-down,ctrl-u:page-up"
@@ -90,13 +90,13 @@ export FZF_CTRL_T_OPTS="$FZF_DEFAULT_OPTS $FZF_MULTI_OPTS"
 
 export FZF_TMUX=1
 
-# => ssh (overrides the default one) ----------------------------------------------------------------------------- {{{1
+# => ssh (overrides the default one) ------------------------------------------------------------------------------ {{{1
 
 function _fzf_complete_ssh() {
 	_fzf_complete -- "$@" < <(~/.local/script/ssh-hosts)
 }
 
-# => docker ------------------------------------------------------------------------------------------------------ {{{1
+# => docker ------------------------------------------------------------------------------------------------------- {{{1
 
 function _fzf_complete_docker() {
 	case "$1" in
@@ -116,7 +116,7 @@ function _fzf_complete_docker_post() {
 	perl -aE '@F && print($F[0]) && (eof() or print " ")'
 }
 
-# => kubectl ----------------------------------------------------------------------------------------------------- {{{1
+# => kubectl ------------------------------------------------------------------------------------------------------ {{{1
 
 function _fzf_complete_kubectl() {
 	case "$1" in
@@ -136,7 +136,7 @@ function _fzf_complete_kubectl_post() {
 	_fzf_complete_docker_post
 }
 
-# => git completion ---------------------------------------------------------------------------------------------- {{{1
+# => git completion ----------------------------------------------------------------------------------------------- {{{1
 
 function fzf-git-branches-widget()       LBUFFER+=$(fzf-git-branches --all | stdin-join-lines)
 function fzf-git-files-widget()          LBUFFER+=$(fzf-git-files          | stdin-join-lines)
@@ -154,7 +154,7 @@ bindkey '^j^j' fzf-git-branches-widget
 bindkey '^j^y' fzf-git-files-widget
 bindkey '^j^u' fzf-git-tags-widget
 
-# => context completion ------------------------------------------------------------------------------------------ {{{1
+# => context completion ------------------------------------------------------------------------------------------- {{{1
 
 function fzf-detect-widget() {
 	setopt local_options ksh_glob
@@ -219,7 +219,7 @@ zle -N fzf-detect-widget
 # bind to alt-space
 bindkey '^[ ' fzf-detect-widget
 
-# => completion overrides ---------------------------------------------------------------------------------------- {{{1
+# => completion overrides ----------------------------------------------------------------------------------------- {{{1
 
 bindkey '^_' _complete_help
 

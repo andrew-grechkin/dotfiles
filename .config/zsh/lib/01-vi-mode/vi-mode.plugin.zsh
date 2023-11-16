@@ -18,23 +18,23 @@
 #    BackTab  "${terminfo[kcbt]}"
 #)
 
-# => Updates editor information when the keymap changes ---------------------------------------------------------- {{{1
+# => Updates editor information when the keymap changes ----------------------------------------------------------- {{{1
 
 function zle-keymap-select() {
 	zle reset-prompt
 	zle -R
 }
 
-# => Ensure that the prompt is redrawn when the terminal size changes -------------------------------------------- {{{1
+# => Ensure that the prompt is redrawn when the terminal size changes --------------------------------------------- {{{1
 
-TRAPWINCH() {
+function TRAPWINCH() {
 	zle && zle-keymap-select
 }
 
 zle -N zle-keymap-select
 zle -N edit-command-line
 
-# => vi mode ----------------------------------------------------------------------------------------------------- {{{1
+# => vi mode ------------------------------------------------------------------------------------------------------ {{{1
 
 bindkey -v
 
@@ -42,12 +42,12 @@ bindkey -v
 
 bindkey -r '^j'
 
-# => v to edit the command line ---------------------------------------------------------------------------------- {{{1
+# => v to edit the command line ----------------------------------------------------------------------------------- {{{1
 
 autoload -Uz edit-command-line
 bindkey -M vicmd 'v'    edit-command-line
 
-# => Arrow-Up, Arrow-Down ---------------------------------------------------------------------------------------- {{{1
+# => Arrow-Up, Arrow-Down ----------------------------------------------------------------------------------------- {{{1
 
 autoload -U up-line-or-beginning-search
 autoload -U down-line-or-beginning-search
@@ -63,14 +63,14 @@ bindkey          '^N'   down-line-or-beginning-search
 [[ -n "${terminfo[kcuu1]}" ]] && bindkey "${terminfo[kcuu1]}" up-line-or-beginning-search
 [[ -n "${terminfo[kcud1]}" ]] && bindkey "${terminfo[kcud1]}" down-line-or-beginning-search
 
-# => ctrl-r, ctrl-s to perform search in history ----------------------------------------------------------------- {{{1
+# => ctrl-r, ctrl-s to perform search in history ------------------------------------------------------------------ {{{1
 
 bindkey          '^R'   history-incremental-search-backward
 bindkey -M vicmd '^R'   history-incremental-search-backward
 bindkey          '^S'   history-incremental-search-forward
 bindkey          '^O'   accept-line-and-down-history
 
-# => ctrl-d, ctrl-h, ctrl-?, ctrl-w for char and word deletion --------------------------------------------------- {{{1
+# => ctrl-d, ctrl-h, ctrl-?, ctrl-w for char and word deletion ---------------------------------------------------- {{{1
 
 bindkey          '^D'   delete-char-or-list
 bindkey -M vicmd '^D'   delete-char-or-list
@@ -81,14 +81,14 @@ bindkey -M vicmd '^?'   vi-backward-delete-char
 bindkey          '^W'      backward-kill-word
 bindkey -M vicmd '^W'   vi-backward-kill-word
 
-# => ctrl-b and ctrl-f to move cursor left and right ------------------------------------------------------------- {{{1
+# => ctrl-b and ctrl-f to move cursor left and right -------------------------------------------------------------- {{{1
 
 bindkey          '^B'   backward-char
 bindkey -M vicmd '^B'   backward-char
 bindkey          '^F'   forward-char
 bindkey -M vicmd '^F'   forward-char
 
-# => Home, End, ctrl-a and ctrl-e to move to beginning/end of line ----------------------------------------------- {{{1
+# => Home, End, ctrl-a and ctrl-e to move to beginning/end of line ------------------------------------------------ {{{1
 
 if [[ "${terminfo[khome]}" != "" ]]; then
 	bindkey "${terminfo[khome]}"             beginning-of-line
@@ -103,7 +103,7 @@ bindkey -M vicmd '^A'   vi-beginning-of-line
 bindkey          '^E'      end-of-line
 bindkey -M vicmd '^E'   vi-end-of-line
 
-# => PageUp, PageDown as home and end ---------------------------------------------------------------------------- {{{1
+# => PageUp, PageDown as home and end ----------------------------------------------------------------------------- {{{1
 
 if [[ "${terminfo[kpp]}" != "" ]]; then
 	bindkey          "${terminfo[kpp]}"    beginning-of-line
@@ -114,7 +114,7 @@ if [[ "${terminfo[knp]}" != "" ]]; then
 	bindkey -M vicmd "${terminfo[knp]}" vi-end-of-line
 fi
 
-# => Insert, Delete ---------------------------------------------------------------------------------------------- {{{1
+# => Insert, Delete ----------------------------------------------------------------------------------------------- {{{1
 
 if [[ "${terminfo[kich1]}" != "" ]]; then
 	bindkey          "${terminfo[kich1]}" overwrite-mode
@@ -125,7 +125,7 @@ if [[ "${terminfo[kdch1]}" != "" ]]; then
 	bindkey -M vicmd "${terminfo[kdch1]}" delete-char-or-list
 fi
 
-# => some backports from emacs key bindings ---------------------------------------------------------------------- {{{1
+# => some backports from emacs key bindings ----------------------------------------------------------------------- {{{1
 
 bindkey          '^K'   kill-line
 bindkey -M vicmd '^K'   kill-line
@@ -147,7 +147,7 @@ bindkey          '^Xu'  undo
 bindkey          '^Xv'  edit-command-line
 bindkey          '^X^E' edit-command-line
 
-# => Mode indicator ---------------------------------------------------------------------------------------------- {{{1
+# => Mode indicator ----------------------------------------------------------------------------------------------- {{{1
 
 # if mode indicator wasn't setup by theme, define default
 if [[ "$MODE_INDICATOR" == "" ]]; then

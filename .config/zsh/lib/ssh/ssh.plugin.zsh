@@ -1,6 +1,6 @@
 # vim: filetype=zsh foldmethod=marker
 
-# => functions --------------------------------------------------------------------------------------------------- {{{1
+# => functions ---------------------------------------------------------------------------------------------------- {{{1
 
 function ssh-use-openssh-agent() {
 	systemctl --user start ssh-agent.service
