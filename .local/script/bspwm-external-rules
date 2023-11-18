@@ -1,14 +1,12 @@
 #!/usr/bin/env perl
 
-use v5.36;
+use v5.34;
 use autodie;
 use warnings     qw(FATAL utf8);
-use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
 use List::Util qw(none);
 open(my $log, '>', '/tmp/bspwm-external-rule.log') or die "open failed: $!";
 say {$log} "args: @ARGV";
-defer {close $log}
 
 my ($window_id, $class_name, $instance_name, $params) = @ARGV;
 
