@@ -3,7 +3,7 @@
 
 # => Automatically start tmux on ssh connection. Logout on detach ------------------------------------------------- {{{1
 
-if [[ -z "$TMUX" ]] && ! [[ "${SSH_CLIENT}" =~ /::1/ ]] && ! [[ "${SSH_CLIENT}" =~ /127.0.0/ ]]; then
+if [[ "$XDG_CURRENT_DESKTOP" != "ubuntu:GNOME" ]] && [[ -z "$TMUX" ]] && ! [[ "${SSH_CLIENT}" =~ /::1/ ]] && ! [[ "${SSH_CLIENT}" =~ /127.0.0/ ]]; then
 	exec tmux new-session -s ssh-auto -A
 fi
 

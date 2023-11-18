@@ -60,13 +60,11 @@ function check_prerequisites() {
 # => install default perl and library ----------------------------------------------------------------------------- {{{1
 
 function install_perl() {
-	PERL_NAME_MATCH="\s${PERL_NAME}\b"
-	[[ $(perlbrew list) =~ $PERL_NAME_MATCH ]] || {
+	grep -E "\s${PERL_NAME}\s*$" < <(perlbrew list) &>/dev/null || {
 		# https://raw.githubusercontent.com/Perl/perl5/blead/INSTALL
 		echo "Installing required perl: $PERL_NAME (nproc: $NPROC)"
 		nice perlbrew install -nf -j "$NPROC" "$REQUIRED_PERL_VERSION" --as "$PERL_NAME" \
 			-Dinc_version_list=none                                                      \
-			-Doptimize="-g1 -O3"                                                         \
 			-Duserelocatableinc                                                          \
 			|| return 1
 		echo
@@ -75,8 +73,7 @@ function install_perl() {
 }
 
 function install_modules() {
-	LIBRARY_NAME_MATCH="\s${LIBRARY_NAME}\b"
-	[[ $(perlbrew lib-list) =~ $LIBRARY_NAME_MATCH ]] || {
+	grep -E "\s${LIBRARY_NAME}\s*$" < <(perlbrew lib-list) &>/dev/null || {
 		echo "Creating Perl local dev library: $LIBRARY_NAME"
 		perlbrew lib create "$LIBRARY_NAME" || return 1
 		echo
