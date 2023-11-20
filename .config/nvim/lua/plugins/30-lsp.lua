@@ -18,7 +18,7 @@ return {
             },
         },
         config = function()
-            vim.lsp.set_log_level('debug')
+            -- vim.lsp.set_log_level('debug')
 
             -- => default commands -------------------------------------------------------------------------------- {{{1
 
