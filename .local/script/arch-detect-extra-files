@@ -52,6 +52,14 @@ use constant {
             'level' => 2,
             'match' => qr{\A /var/cache/fontconfig/|/etc/fonts/conf[.]d/}x,
         },
+        'Flatpack' => {
+            'level' => 2,
+            'match' => qr{\A /var/lib/flatpak/}x,
+        },
+        'Local' => {
+            'level' => 2,
+            'match' => qr{\A /usr/local/}x,
+        },
         'Fwupd' => {
             'level' => 2,
             'match' => qr{\A /var/lib/fwupd/}x,
