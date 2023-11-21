@@ -11,17 +11,17 @@ return {
             'hrsh7th/cmp-path',
             'lukas-reineke/cmp-rg',
             'quangnguyen30192/cmp-nvim-tags',
-            'quangnguyen30192/cmp-nvim-ultisnips', -- 'uga-rosa/cmp-dictionary'
-            {
-                'SirVer/ultisnips',
-                init = function()
-                    vim.g.UltiSnipsExpandTrigger = '<C-j>'
-                    vim.g.UltiSnipsJumpBackwardTrigger = '<C-k>'
-                    vim.g.UltiSnipsJumpForwardTrigger = '<C-j>'
-                    vim.g.UltiSnipsListSnippets = '<C-l>'
-                end,
-            },
-            'andrew-grechkin/vim-snippets',
+            -- 'quangnguyen30192/cmp-nvim-ultisnips', -- 'uga-rosa/cmp-dictionary'
+            -- {
+            --     'SirVer/ultisnips',
+            --     init = function()
+            --         vim.g.UltiSnipsExpandTrigger = '<C-j>'
+            --         vim.g.UltiSnipsJumpBackwardTrigger = '<C-k>'
+            --         vim.g.UltiSnipsJumpForwardTrigger = '<C-j>'
+            --         vim.g.UltiSnipsListSnippets = '<C-l>'
+            --     end,
+            -- },
+            -- 'andrew-grechkin/vim-snippets',
             { -- https://github.com/kristijanhusak/vim-dadbod-completion
                 'kristijanhusak/vim-dadbod-completion',
                 ft = {'sql', 'mysql', 'plsql'},
@@ -127,7 +127,7 @@ return {
                         -- vim.fn['vsnip#anonymous'](args.body) -- For `vsnip` users.
                         -- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
                         -- require('snippy').expand_snippet(args.body) -- For `snippy` users.
-                        vim.fn['UltiSnips#Anon'](args.body) -- For `ultisnips` users.
+                        -- vim.fn['UltiSnips#Anon'](args.body) -- For `ultisnips` users.
                     end,
                 },
                 sources = {
