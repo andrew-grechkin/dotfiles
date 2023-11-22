@@ -211,3 +211,9 @@ function omz_urldecode {
 
 	echo -E "$decoded"
 }
+
+# => environment -------------------------------------------------------------------------------------------------- {{{1
+
+function remove-all-environment() {
+	unset $(env | cut -d= -f1 | grep -v '^PATH$' | grep -v '^HOME$' | grep -v '^PWD$' | grep -v '^USER$' | grep -v '^TERM$')
+}

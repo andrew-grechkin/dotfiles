@@ -14,7 +14,7 @@ done
 
 # => sequence trigger (Use \ as the trigger sequence instead of the default **) ----------------------------------- {{{1
 
-export FZF_COMPLETION_TRIGGER='\'
+#export FZF_COMPLETION_TRIGGER='\'
 
 # => Settings ----------------------------------------------------------------------------------------------------- {{{1
 

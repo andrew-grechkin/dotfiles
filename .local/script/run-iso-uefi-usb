@@ -1,0 +1,26 @@
+#!/bin/bash
+
+set -Eeuo pipefail
+
+BUS="2"
+PORT="2"
+
+CMD=(
+	-audiodev "pa,id=snd0"
+	-bios /usr/share/ovmf/x64/OVMF.fd
+	-cpu host
+	-device ich9-intel-hda
+	-drive "file=$1,if=virtio,index=0,media=cdrom"
+	-device "hda-output,audiodev=snd0"
+	-device "qemu-xhci,id=xhci"
+	-device "usb-host,hostbus=$BUS,hostport=$PORT"
+	-enable-kvm
+	-k en-us
+	-m 4G
+	-nic "user,model=virtio-net-pci"
+	-no-reboot
+	-smp 2
+	-vga virtio
+)
+
+qemu-system-x86_64 "${CMD[@]}"

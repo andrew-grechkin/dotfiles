@@ -471,6 +471,8 @@ filetype *.iso
 	\ run-iso-bios %c &,
 	\ {Run with qemu UEFI}
 	\ run-iso-uefi %c &,
+	\ {Run with qemu UEFI + USB}
+	\ run-iso-uefi-usb %c &,
 
 filetype *.qcow2
 	\ {Run with qemu BIOS}
