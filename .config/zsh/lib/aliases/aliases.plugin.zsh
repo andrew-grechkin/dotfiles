@@ -112,6 +112,8 @@ alias fix-agent='eval $(tmux showenv -s SSH_AUTH_SOCK)'
 
 alias file-hardlinks='find . -xdev -samefile'
 
+alias dib='distrobox'
+
 # => flibusta library --------------------------------------------------------------------------------------------- {{{1
 
 alias library-generate='fb2index_1.0.0_linux_amd64 -http "0.0.0.0:55555" -db "$HOME/.cache/fb2.Flibusta.Net.db" -r "/volume1/doc/lib/fb2.Flibusta.Net"'
