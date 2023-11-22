@@ -2,9 +2,11 @@
 
 # => exports ------------------------------------------------------------------------------------------------------ {{{1
 
-# export        PERLTIDY="$XDG_CONFIG_HOME/perltidyrc"
-# export      PERLCRITIC="$XDG_CONFIG_HOME/perlcriticrc"
-export   PERLBREW_ROOT="${PERLBREW_ROOT:-$XDG_DATA_HOME/perlbrew}"
+unset    PERLBREW_PATH
+unset    PERLBREW_MANPATH
+
+# export   PERLBREW_ROOT="${PERLBREW_ROOT:-$XDG_DATA_HOME/perlbrew@$HOSTNAME}"
+export   PERLBREW_ROOT="$XDG_DATA_HOME/perlbrew@$HOSTNAME"
 export   PERLBREW_HOME="$PERLBREW_ROOT"
 export PERL_CPANM_HOME="$XDG_RUNTIME_DIR/cpanm"
 
@@ -63,10 +65,10 @@ function export-perl5lib() {
 
 PATH="$PATH:$PERLBREW_ROOT/bin"
 
-if (( $+commands[perlbrew] )); then           # perlbrew is the preferred way of managing perl and libraries
+if (( $+commands[perlbrew] )); then                                              # perlbrew is the preferred way of managing perl and libraries
 	enable-perlbrew
-else                                                                           # fallback onto local::lib if perlbrew is not available but cpanm is
-	(( $+commands[cpanm] )) && activate-local-perl
+# else                                                                           # fallback onto local::lib if perlbrew is not available but cpanm is
+# 	(( $+commands[cpanm] )) && activate-local-perl
 fi
 
 export-perl5lib
