@@ -51,7 +51,6 @@ done
 [[ -d "$HOME/.local/script-private"                     ]] && path=("$HOME/.local/script-private"      "${path[@]}")
 [[ -d "$HOME/.local/script-work"                        ]] && path=("$HOME/.local/script-work"         "${path[@]}")
 [[ -d "$HOME/.local/script-work-private"                ]] && path=("$HOME/.local/script-work-private" "${path[@]}")
-[[ -d "$HOME/.cache/bin"                                ]] && path=("$HOME/.cache/bin"                 "${path[@]}")
 
 export PATH
 

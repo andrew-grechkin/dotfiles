@@ -145,7 +145,7 @@ super + o
 super + s
 	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-pass"
 super + r
-	wezterm start distrobox enter -n arch -- tmux -L arch
+	wezterm start --class 'Main-Tmux' distrobox enter -n arch -- tmux -L arch
 super + t
 	wezterm start --class 'Main-Tmux' tmux
 super + u
