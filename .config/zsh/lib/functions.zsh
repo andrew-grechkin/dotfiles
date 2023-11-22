@@ -1,5 +1,16 @@
 # Based on https://github.com/robbyrussell/oh-my-zsh
 
+function install-zsh-3rdparty() {
+	(
+		cd "$XDG_CONFIG_HOME/zsh/3rdparty" || exit
+		git submodule update --init .
+	)
+}
+
+function install-distrobox() {
+	curl -s https://raw.githubusercontent.com/89luca89/distrobox/main/install | sh -s -- --prefix ~/.local
+}
+
 function zsh_stats() {
 	fc -l 1 | awk '{CMD[$2]++;count++;}END { for (a in CMD)print CMD[a] " " CMD[a]/count*100 "% " a;}' | grep -v "./" | column -c3 -s " " -t | sort -nr | nl |  head -n20
 }
