@@ -1,12 +1,6 @@
 #!/bin/bash
 
-# qemu-system-x86_64 -device usb-host,help
-
 set -Eeuo pipefail
-
-
-# BUS="2"
-# PORT="1"
 
 VENDOR="0x090c"
 PRODUCT="0x1000"
@@ -19,8 +13,6 @@ CMD=(
 	-device "hda-output,audiodev=snd0"
 	-device "qemu-xhci,id=xhci"
 	-device "usb-host,vendorid=$VENDOR,productid=$PRODUCT"
-	# -device "usb-host,hostbus=$BUS,hostport=$PORT"
-	-drive "file=$1,if=virtio,index=1,media=cdrom"
 	-enable-kvm
 	-k en-us
 	-m 4G
@@ -30,4 +22,4 @@ CMD=(
 	-vga virtio
 )
 
-qemu-system-x86_64 "${CMD[@]}"
+nohup qemu-system-x86_64 "${CMD[@]}" </dev/null &>/dev/null & disown

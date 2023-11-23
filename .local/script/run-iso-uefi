@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# qemu-system-x86_64 -device usb-host,help
+
 set -Eeuo pipefail
 
 ISO_NAME=$(basename "$1")
@@ -43,12 +45,12 @@ CMD=(
 qemu-system-x86_64 "${CMD[@]}"
 
 # -drive file=$(QCOW2_IMAGE),if=ide,index=0,media=disk,format=qcow2 \
-# qemu-system-x86_64                                                   \
-#     -device virtio-scsi-pci,id=scsi0                                 \
-#     -device "scsi-${mediatype%rom},bus=scsi0.0,drive=${mediatype}0"  \
-#     -drive "id=${mediatype}0,if=none,format=raw,media=${mediatype/hd/disk},read-only=on,file=${image}" \
-#     -device virtio-net-pci,romfile=,netdev=net0 -netdev user,id=net0,hostfwd=tcp::60022-:22 \
-#     -machine type=q35,smm=on,accel=kvm,usb=on,pcspk-audiodev=snd0    \
-#     -global ICH9-LPC.disable_s3=1                                    \
-#     "${qemu_options[@]}"                                             \
-# -display "sdl"                                                   \
+	# qemu-system-x86_64                                                   \
+	#     -device virtio-scsi-pci,id=scsi0                                 \
+	#     -device "scsi-${mediatype%rom},bus=scsi0.0,drive=${mediatype}0"  \
+	#     -drive "id=${mediatype}0,if=none,format=raw,media=${mediatype/hd/disk},read-only=on,file=${image}" \
+	#     -device virtio-net-pci,romfile=,netdev=net0 -netdev user,id=net0,hostfwd=tcp::60022-:22 \
+	#     -machine type=q35,smm=on,accel=kvm,usb=on,pcspk-audiodev=snd0    \
+	#     -global ICH9-LPC.disable_s3=1                                    \
+	#     "${qemu_options[@]}"                                             \
+	# -display "sdl"                                                   \
