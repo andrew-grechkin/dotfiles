@@ -2,8 +2,12 @@
 
 # => exports ------------------------------------------------------------------------------------------------------ {{{1
 
-export NVM_DIR="$XDG_DATA_HOME/nvm"
+if [[ -d "$XDG_DATA_HOME/nvm" ]]; then
+	export NVM_DIR="$XDG_DATA_HOME/nvm"
+fi
 
 # => main --------------------------------------------------------------------------------------------------------- {{{1
 
-[ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
+if [[ -r "$NVM_DIR/nvm.sh" ]]; then
+	source "$NVM_DIR/nvm.sh"
+fi
