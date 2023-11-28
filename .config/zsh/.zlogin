@@ -43,6 +43,9 @@ function nas-fix-permissions() {
 		if [[ -e ".ssh" ]]; then
 			sudo chmod -R u=rwX,go-rwx,g-s "$(realpath .ssh)"
 		fi
+		if [[ -e ".local/share/containers" ]]; then
+			sudo chmod -R ug=rwX,o-rwx,g-s "$(realpath .local/share/containers)"
+		fi
 	'
 }
 

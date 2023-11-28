@@ -105,7 +105,7 @@ sub _process_image ($path, $descriptor) {
     $descriptor->{'copyright'} =~ s{'}{"}g;
     my @cmd = (
         qw(convert -fill white -pointsize 28 -gravity NorthWest -draw),
-        "text 0,0 '$descriptor->{'copyright'}'",
+        "text 150,0 '$descriptor->{'copyright'}'",
         '-family', $family, $path, $path,
     );
     system(@cmd) == 0
