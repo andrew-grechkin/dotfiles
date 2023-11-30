@@ -133,56 +133,56 @@ super + alt + {Left,Down,Up,Right}
 # => applications ------------------------------------------------------------------------------------------------- {{{1
 
 super + BackSpace
-	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-system-exit"
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-system-exit"
 super + Return
-	wezterm start /usr/bin/zsh
+	wezterm start --always-new-process /usr/bin/zsh
 # super + b
 #	exo-open --launch WebBrowser
 super + d
-	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-app"
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-app"
 super + o
 	opera
 super + s
-	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-pass"
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pass"
 super + r
-	wezterm start --class 'Main-Tmux' distrobox enter -n arch -- tmux -L arch
+	wezterm start --always-new-process --class 'Main-Tmux' distrobox enter -n arch -- tmux -L arch
 super + t
-	wezterm start --class 'Main-Tmux' tmux
+	wezterm start --always-new-process --class 'Main-Tmux' tmux
 super + u
-	wezterm start --class 'TermFloating' "$HOME/.local/script/fzf-select" unicode
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/fzf-select" unicode
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1
 
 super + shift + Return
-	wezterm --config="enable_csi_u_key_encoding=false" start /usr/bin/zsh
+	wezterm --config="enable_csi_u_key_encoding=false" start --always-new-process /usr/bin/zsh
 super + shift + b
-	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-book" "/media/nfs/home/doc/@technical"
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "/media/nfs/home/doc/@technical"
 super + shift + c
 	qalculate-gtk
 super + shift + f
-	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-font"
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-font"
 super + shift + i
-	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-book" "/media/nfs/home/doc/@fiction"
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "/media/nfs/home/doc/@fiction"
 super + shift + m
-	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-mpv-history"
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-mpv-history"
 super + shift + n
-	wezterm start --class 'TermFloating' "$HOME/.local/script/create-note"
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/create-note"
 # super + shift + r
 #	exo-open --launch FileManager
 super + shift + p
-	wezterm --config="enable_csi_u_key_encoding=false" start --class 'TermFloating' "$HOME/.local/script/menu-pacman"
+	wezterm --config="enable_csi_u_key_encoding=false" start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pacman"
 super + shift + o
-	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-man"
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-man"
 super + shift + s
-	wezterm start --class 'TermFloating' "$HOME/.local/script/menu-book" "${XDG_DATA_HOME}/cheatsheet"
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "${XDG_DATA_HOME}/cheatsheet"
 super + shift + u
-	wezterm start --class 'TermFloating' "$HOME/.local/script/fzf-select" emoji
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/fzf-select" emoji
 super + shift + v
 	$HOME/.local/script/play-clipboard-url
 super + shift + w
-	wezterm start --class 'TermFloating' "$HOME/.local/script/open-vim-wiki"
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/open-vim-wiki"
 super + shift + y
-	wezterm start --class 'TermFloating' "$HOME/.local/script/fzf-select" nerd
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/fzf-select" nerd
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1
 
