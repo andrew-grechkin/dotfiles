@@ -38,5 +38,5 @@ plugin.setup('plugins', {
         -- increase downloads a lot.
         filter = true,
     },
-    install = {missing = false},
+    install = {missing = true},
 })
