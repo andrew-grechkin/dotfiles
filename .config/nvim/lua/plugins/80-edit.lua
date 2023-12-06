@@ -12,7 +12,7 @@ return {
                 javascript = {{'prettierd', 'prettier'}},
                 json = {'fixjson', 'jq'},
                 jsonc = {'fixjson', 'jq'},
-                lua = {{'stylua', 'lua-format'}},
+                lua = {{'lua-format', 'stylua'}},
                 markdown = {'prettierd'},
                 mysql = {'sql-formatter', 'mysql_sqlfluff'},
                 perl = {'perltidy'},

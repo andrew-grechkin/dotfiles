@@ -11,17 +11,27 @@ return {
             'hrsh7th/cmp-path',
             'lukas-reineke/cmp-rg',
             'quangnguyen30192/cmp-nvim-tags',
-            -- 'quangnguyen30192/cmp-nvim-ultisnips', -- 'uga-rosa/cmp-dictionary'
-            -- {
-            --     'SirVer/ultisnips',
-            --     init = function()
-            --         vim.g.UltiSnipsExpandTrigger = '<C-j>'
-            --         vim.g.UltiSnipsJumpBackwardTrigger = '<C-k>'
-            --         vim.g.UltiSnipsJumpForwardTrigger = '<C-j>'
-            --         vim.g.UltiSnipsListSnippets = '<C-l>'
-            --     end,
-            -- },
-            -- 'andrew-grechkin/vim-snippets',
+            {
+                'L3MON4D3/LuaSnip',
+                dependencies = {'rafamadriz/friendly-snippets', 'andrew-grechkin/vim-snippets'},
+                config = function()
+                    local plugin = require('luasnip')
+                    require('luasnip.loaders.from_vscode').lazy_load()
+                    require('luasnip.loaders.from_snipmate').lazy_load()
+
+                    vim.keymap.set({'i', 's'}, '<C-j>', function() plugin.expand_or_jump(1) end, {
+                        silent = true,
+                    })
+                    vim.keymap.set({'i', 's'}, '<C-k>', function() plugin.expand_or_jump(-1) end, {
+                        silent = true,
+                    })
+                end,
+                -- follow latest release.
+                -- version = 'v2.*', -- Replace <CurrentMajor> by the latest released major (first number of latest release)
+                -- -- install jsregexp (optional!).
+                -- build = 'make install_jsregexp',
+            },
+            'saadparwaiz1/cmp_luasnip',
             { -- https://github.com/kristijanhusak/vim-dadbod-completion
                 'kristijanhusak/vim-dadbod-completion',
                 ft = {'sql', 'mysql', 'plsql'},
@@ -125,13 +135,13 @@ return {
                 snippet = {
                     expand = function(args)
                         -- vim.fn['vsnip#anonymous'](args.body) -- For `vsnip` users.
-                        -- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
+                        require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
                         -- require('snippy').expand_snippet(args.body) -- For `snippy` users.
                         -- vim.fn['UltiSnips#Anon'](args.body) -- For `ultisnips` users.
                     end,
                 },
                 sources = {
-                    {name = 'ultisnips'},
+                    {name = 'luasnip'},
                     {name = 'vim-dadbod-completion'},
                     {name = 'nvim_lsp'},
                     {name = 'nvim_lua'},
