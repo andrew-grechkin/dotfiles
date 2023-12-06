@@ -130,13 +130,13 @@ return {
                 -- Encode URL before making request
                 encode_url = true,
                 -- Highlight request on run
-                highlight = {enabled = true, timeout = 150},
+                highlight = {enabled = true, timeout = 250},
                 result = {
                     -- toggle showing URL, HTTP info, headers at top the of result window
                     show_url = true,
                     -- show the generated curl command in case you want to launch
                     -- the same request via the terminal (can be verbose)
-                    show_curl_command = false,
+                    show_curl_command = true,
                     show_http_info = true,
                     show_headers = true,
                     -- executables or functions for formatting response body [optional]
