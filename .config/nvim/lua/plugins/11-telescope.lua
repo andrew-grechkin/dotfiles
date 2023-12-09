@@ -34,7 +34,7 @@ return {
                     },
                     prompt_prefix = ': ',
                     selection_caret = ' ',
-                    path_display = {'truncate'},
+                    -- path_display = {'truncate'},
                     mappings = {
                         i = {
                             ['<C-n>'] = actions.cycle_history_next,
@@ -160,6 +160,7 @@ return {
                             B = {'<cmd>Telescope builtin<CR>', ': builtin'},
                             C = {'<cmd>Telescope colorscheme<CR>', ': colorschemes'},
                             H = {'<cmd>Telescope highlights<CR>', ': highlights'},
+                            M = {'<cmd>Telescope marks<CR>', ': marks'},
                             R = {'<cmd>Telescope registers<CR>', ': registers'},
                             a = {'<cmd>Telescope autocommands<CR>', ': autocommands'},
                             b = {'<cmd>Telescope buffers<CR>', ': buffers'},

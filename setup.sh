@@ -57,6 +57,7 @@ ln -srf .config/wireplumber                                  ~/.config/
 ln -srf .config/yamllint                                     ~/.config/
 ln -srf .config/yt-dlp                                       ~/.config/
 ln -srf .config/zathura                                      ~/.config/
+ln -srf .config/zellij                                       ~/.config/
 ln -srf .config/zsh                                          ~/.config/
 
 ln -srf .local/lib/perl5                                     ~/.local/lib/

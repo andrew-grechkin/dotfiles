@@ -22,7 +22,7 @@ return {
                     vim.keymap.set({'i', 's'}, '<C-j>', function() plugin.expand_or_jump(1) end, {
                         silent = true,
                     })
-                    vim.keymap.set({'i', 's'}, '<C-k>', function() plugin.expand_or_jump(-1) end, {
+                    vim.keymap.set({'i', 's'}, '<C-k>', function() plugin.jump(-1) end, {
                         silent = true,
                     })
                 end,

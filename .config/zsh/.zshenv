@@ -1,6 +1,12 @@
 # vim: filetype=zsh foldmethod=marker
 # shellcheck shell=bash
 
+# workaround for stupid zellij start shell as non-login 🤷
+if [[ "$ZELLIJ" == "0" ]] && [[ ! -o LOGIN ]] && [[ -o INTERACTIVE ]] && [[ -z "$LOGIN_SESSION_ENFORCED" ]]; then
+	export LOGIN_SESSION_ENFORCED=1
+	exec "$SHELL" -l
+fi
+
 if [[ "$IS_NAS" == "1" ]]; then
 	unsetopt GLOBAL_RCS
 fi

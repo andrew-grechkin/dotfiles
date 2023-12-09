@@ -1,4 +1,37 @@
 return {
+    { -- https://github.com/polarmutex/git-worktree.nvim
+        'nooproblem/git-worktree.nvim',
+        config = function()
+            require('git-worktree').setup()
+            require('telescope').load_extension('git_worktree')
+
+            local wk_ok, which_key = pcall(require, 'which-key')
+            if wk_ok then
+                local normal_mappings = {
+                    ['<leader>'] = {
+                        s = {
+                            W = {
+                                name = ': workspaces',
+                                c = {
+                                    function()
+                                        require('telescope').extensions.git_worktree.create_git_worktree()
+                                    end,
+                                    ': workspace delete',
+                                },
+                                W = {
+                                    function()
+                                        require('telescope').extensions.git_worktree.git_worktrees()
+                                    end,
+                                    ': workspaces list',
+                                },
+                            },
+                        },
+                    },
+                }
+                which_key.register(normal_mappings, {mode = 'n', nowait = true, noremap = true})
+            end
+        end,
+    },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/tpope/vim-fugitive
         'tpope/vim-fugitive',
