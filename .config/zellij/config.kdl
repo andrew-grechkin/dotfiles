@@ -41,13 +41,13 @@ keybinds clear-defaults=true {
 
 // => TMUX -------------------------------------------------------------------------------------------------------- {{{1
 
-    shared_except "tmux" {
+    shared_except "tmux" "locked" {
         bind "`" { SwitchToMode "Tmux"; }
     }
     tmux {
         bind "Q" { Quit; }
         bind "[" { SwitchToMode "Scroll"; }
-//        bind "Esc" { Write 2; SwitchToMode "Normal"; }
+//        bind "`" { Write 2; SwitchToMode "Normal"; }
         bind "\"" { NewPane "Down"; SwitchToMode "Normal"; }
         bind "%" { NewPane "Right"; SwitchToMode "Normal"; }
         bind "z" { ToggleFocusFullscreen; SwitchToMode "Normal"; }

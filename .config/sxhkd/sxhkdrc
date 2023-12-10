@@ -146,9 +146,9 @@ super + s
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pass"
 super + r
 	wezterm start --always-new-process --class 'Main-Tmux' distrobox enter -n arch -- tmux -L arch
-super + y
-	wezterm start --always-new-process --class 'Main-Tmux' tmux
 super + t
+	wezterm start --always-new-process --class 'Main-Tmux' tmux
+super + y
 	wezterm start --always-new-process --class 'Main-Tmux' zellij
 super + u
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/fzf-select" unicode
