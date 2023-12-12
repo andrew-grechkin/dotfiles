@@ -607,7 +607,7 @@ filetype */,.*/
 	\ {Compress tar.gz}
 	\ archive-create --type="tar.gz" %f,
 	\ {Play dir recursively}
-	\ mpv --no-osc --term-osd=force --no-audio-display %c %s,
+	\ mpv --no-osc --term-osd=force --no-audio-display %c:p %s,
 
 " => Preview ------------------------------------------------------------------------------------------------------ {{{1
 
