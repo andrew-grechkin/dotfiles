@@ -5,4 +5,26 @@ set -Eeuo pipefail
 PATH="$(dirname "$0"):$PATH"
 FILE="$XDG_CACHE_HOME/mpv/history.log"
 
-perl -nlE 'my ($time, $title, $path) = m/^(\[.+?\])\s*(.+?)\t(.+)$/; $d{$path} = [sprintf("%s\t%s", $title, $path), $time]; END {say ($_->[0]) foreach reverse sort {$a->[1] cmp $b->[1]} values %d }' "$FILE" | fzf-execute
+perl - "$FILE" <<'END_SCRIPT' | fzf-execute
+	use v5.38;
+
+	my $fn = $ARGV[0];
+
+	chomp(my @lines = <<>>);
+
+	my %d;
+
+	foreach my $line (@lines) {
+		my ($time, $title, $path) = $line =~ m/^(\[.+?\])\t(.+?)\t(.+)$/;
+
+		$d{$path} = [sprintf("%s	%s", $title, $path), $time, $line];
+	}
+
+	END {
+		my @result = sort {$a->[1] cmp $b->[1]} values %d;
+		say {*STDOUT} ($_->[0]) foreach reverse @result;
+		open(my $fh, '>', $fn)
+			or die "Unable to open file: $fn\n";
+		say {$fh} ($_->[2]) foreach @result;
+	}
+END_SCRIPT

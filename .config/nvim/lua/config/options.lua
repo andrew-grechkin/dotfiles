@@ -46,6 +46,7 @@ vim.o.swapfile = false
 vim.o.tabstop = 4
 vim.o.tags = vim.o.tags .. 'tags;'
 vim.o.termguicolors = true
+vim.o.textwidth = 120
 vim.o.undofile = true
 vim.o.virtualedit = 'block'
 vim.o.visualbell = true
