@@ -6,7 +6,7 @@ PATH="$(dirname "$0"):$PATH"
 FILE="$XDG_CACHE_HOME/mpv/history.log"
 
 perl - "$FILE" <<'END_SCRIPT' | fzf-execute
-	use v5.38;
+	use v5.34;
 
 	my $fn = $ARGV[0];
 
