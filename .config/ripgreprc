@@ -28,6 +28,8 @@
 --glob=!/.git/
 --glob=!/media/
 --glob=!/slib/
+--glob=!bazel-main/
+--glob=!bazel-out/
 --glob=!fuse/
 
 # --with-filename
