@@ -8,7 +8,7 @@ if [[ "$XDG_CURRENT_DESKTOP" != "ubuntu:GNOME" ]] \
 		&& [[ -z "$ZELLIJ" ]]                     \
 		&& ! [[ "${SSH_CLIENT}" =~ /::1/ ]]       \
 		&& ! [[ "${SSH_CLIENT}" =~ /127.0.0/ ]]   \
-		&& [[ -x "$(command which -- tmux 2>/dev/null)" ]]; then
+		&& [[ -x "$(command -v tmux)" ]]; then
 	exec tmux new-session -s ssh-auto -A
 fi
 

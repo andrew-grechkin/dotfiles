@@ -20,18 +20,16 @@ alias lt='la --sort=time'
 
 alias lsblk='lsblk -o NAME,TYPE,FSTYPE,LABEL,UUID,SIZE,FSAVAIL,FSUSE%,RO,MOUNTPOINTS'
 
-# => head, less --------------------------------------------------------------------------------------------------- {{{1
+# => cat, head, less ---------------------------------------------------------------------------------------------- {{{1
 
 alias -g S='| sort'
 alias -g H='| head'
 alias -g L='| less'
 alias -g LL='2>&1 | less'
 
-alias -g NE='2>/dev/null'
-alias -g NUL='&>/dev/null'
-
-alias dud='du -hd 1'
-alias duf='du -hs *'
+if [[ -x "$(command -v bat)" ]]; then
+	alias cat='bat'
+fi
 
 # => file operations ---------------------------------------------------------------------------------------------- {{{1
 

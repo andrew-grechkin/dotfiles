@@ -19,7 +19,7 @@ else
 fi
 
 NPROC=4
-[[ -x "$(command which -- nproc 2>/dev/null)" ]] && {
+[[ -x "$(command -v nproc)" ]] && {
 	NPROC="$(nproc)"
 }
 
@@ -39,7 +39,7 @@ LIBRARY_NAME="${PERL_NAME}@dev-$REPO_NAME"
 # => check prerequisites ------------------------------------------------------------------------------------------ {{{1
 
 function check_prerequisites() {
-	[[ -x "$(command which -- perlbrew 2>/dev/null)" ]] || {
+	[[ -x "$(command -v perlbrew)" ]] || {
 		echo "perlbrew not found, installing it from (https://perlbrew.pl/)"
 		curl -sL https://install.perlbrew.pl | bash
 	}
@@ -51,7 +51,7 @@ function check_prerequisites() {
 	# shellcheck disable=SC1091
 	[[ -n "$PERLBREW_VERSION" ]] || source "$PERLBREW_ROOT/etc/bashrc"
 
-	[[ -x "$(command which -- cpanm 2>/dev/null)" ]] || {
+	[[ -x "$(command -v cpanm)" ]] || {
 		perlbrew install-cpanm || return 1
 	}
 	return 0

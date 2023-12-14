@@ -3,14 +3,14 @@
 set -Eeuo pipefail
 
 # shellcheck disable=SC2016
-PREVIEW='echo "\"${}\""'
+PREVIEW='echo -n "\"${}\""'
 
 FZF_CMD=(
 	fzf
 	--ansi
 	--bind="ctrl-v:toggle-preview,ctrl-w:toggle-preview-wrap,ctrl-s:toggle-sort"
-	--bind="ctrl-y:execute(bash -c 'echo -n \"{}=\"; $PREVIEW')+abort"
-	--bind="enter:execute(bash -c '$PREVIEW')+abort"
+	--bind="ctrl-y:execute(bash -c '{ echo -n \"{}=\"; $PREVIEW; } | clipcopy')+abort"
+	--bind="enter:execute(bash -c '$PREVIEW | clipcopy')+abort"
 	--bind="esc:cancel"
 	--header='Press C-v to preview, C-Up/S-Down to scroll, C-y to print, Enter to echo'
 	--preview-window=right:60%:wrap:nohidden
