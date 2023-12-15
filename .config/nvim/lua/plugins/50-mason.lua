@@ -9,30 +9,6 @@ return {
         dependencies = {'williamboman/mason.nvim'},
         config = function()
             local ensure_installed = T {'bashls', 'jsonls', 'perlnavigator', 'yamlls'}
-            -- if not IS_KVM then
-            --     ensure_installed:append{
-            --         'ansiblels',
-            --         -- 'awk_ls',
-            --         'clangd',
-            --         'cmake',
-            --         'docker_compose_language_service',
-            --         'dockerls',
-            --         'eslint',
-            --         'flux_lsp',
-            --         'graphql',
-            --         'helm_ls',
-            --         'jqls',
-            --         'lua_ls',
-            --         'marksman',
-            --         'pkgbuild_language_server',
-            --         'puppet',
-            --         'pyright',
-            --         'sqlls',
-            --         'stylelint_lsp',
-            --         'tsserver',
-            --         'vimls',
-            --     }
-            -- end
 
             local function on_attach(data, bufnr)
                 -- data.config.capabilities = nil
@@ -80,12 +56,33 @@ return {
             -- https://github.com/hrsh7th/nvim-cmp/issues/1017#issuecomment-1141440976
             -- table.unpack = table.unpack or unpack
 
-            local lsps = T {'bash-language-server'}
+            local lsps = T {}
             local daps = T {}
             local linters = T {'jsonlint', 'shellcheck', 'yamllint'}
             local formatters = T {'beautysh', 'fixjson', 'shfmt', 'yamlfix'}
             if not IS_KVM then
-                lsps:append{'bzl', 'lua-language-server', 'vim-language-server'}
+                lsps:append{
+                    'ansible-language-server',
+                    'bzl',
+                    'clangd',
+                    'cmake-language-server',
+                    'docker-compose-language-service',
+                    'dockerfile-language-server',
+                    'eslint-lsp',
+                    -- 'flux-lsp',
+                    'graphql-language-service-cli',
+                    'helm-ls',
+                    'jq-lsp',
+                    'lua-language-server',
+                    'marksman',
+                    -- 'pkgbuild-language-server',
+                    'puppet-editor-services',
+                    'pyright',
+                    'sqlls',
+                    'stylelint-lsp',
+                    'typescript-language-server',
+                    'vim-language-server',
+                }
                 daps:append{'perl-debug-adapter'}
                 linters:append{
                     'actionlint',
