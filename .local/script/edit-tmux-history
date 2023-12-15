@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+TMP_FILE="$(mktemp)"
+
+tmux capture-pane -pS - > "$TMP_FILE"
+tmux new-window -n:history "nvim $TMP_FILE; rm -f $TMP_FILE"
