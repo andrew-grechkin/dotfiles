@@ -5,7 +5,18 @@
 
 export HOSTNAME="${HOSTNAME:-$(hostname)}"
 export LANG=${LANG:-en_US.utf8}
+export LESSHISTFILE=-
 export VIMINIT='let $MYVIMRC = has("nvim-0.8") ? "$HOME/.config/nvim/init.lua" : "$HOME/.config/vim/vimrc" | so $MYVIMRC'
+
+if [[ "$IS_NAS" == "1" ]]; then
+	export PAGER="less"
+elif [[ -n "$HOSTNAME" && "$HOSTNAME" =~ king\.com$ ]]; then
+	# on kvm use defaults
+	true
+else
+	export HAS_MOUSE='1'
+	export LESS='-x4 -iRSw --mouse'
+fi
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1
 
@@ -28,16 +39,15 @@ DIRSTACK['size']=20
 # https://thevaluable.dev/zsh-completion-guide-examples/
 fpath=("$ZDOTDIR/completion" "${fpath[@]}")
 
-files=()
-files+=("$ZDOTDIR/lib"/*.zsh)
-files+=("$ZDOTDIR/lib"/**/*.plugin.zsh)
-files+=("$ZDOTDIR/lib"/**/*.theme.zsh)
+FILES+=("$ZDOTDIR/lib"/*.zsh)
+FILES+=("$ZDOTDIR/lib"/**/*.plugin.zsh)
+FILES+=("$ZDOTDIR/lib"/**/*.theme.zsh)
 
-[[ -d "$ZDOTDIR/3rdparty" ]] && [[ -n "$(find $ZDOTDIR/3rdparty -maxdepth 2 -name '*.plugin.zsh' -print -quit)" ]] && {
-	files+=("$ZDOTDIR/3rdparty"/**/*.plugin.zsh)
+[[ -d "$XDG_DATA_HOME/3rdparty" ]] && [[ -n "$(find -H $XDG_DATA_HOME/3rdparty -maxdepth 3 -name '*.plugin.zsh' -print -quit)" ]] && {
+	FILES+=("$XDG_DATA_HOME/3rdparty"/**/*.plugin.zsh)
 }
 
-for FILE in "${files[@]}"; do
+for FILE in "${FILES[@]}"; do
 	builtin source "$FILE"
 done
 
@@ -60,6 +70,26 @@ WORDCHARS=${WORDCHARS/\/}
 
 (( $+aliases[run-help] )) && unalias run-help
 autoload -Uz run-help
+
+# => generate CDPATH ---------------------------------------------------------------------------------------------- {{{1
+
+function gen-cdpath() {
+	setopt NULL_GLOB
+	declare -a DIRS
+	for FILE in "$HOME"/git "$HOME"/git/* "/usr/local/git_tree"; do
+		[[ -d "${FILE%/}" ]] && DIRS+=("${FILE%/}")
+	done
+
+	local IFS=:
+	export CDPATH="${DIRS[*]}"
+	unset -f gen-cdpath
+} &>/dev/null
+
+gen-cdpath
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+source-file "$XDG_CONFIG_HOME/shell/interactive.work"
 
 # => show profiler ------------------------------------------------------------------------------------------------ {{{1
 

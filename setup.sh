@@ -62,6 +62,7 @@ ln -srf .config/zsh                                          ~/.config/
 
 ln -srf .local/lib/perl5                                     ~/.local/lib/
 ln -srf .local/script                                        ~/.local/
+ln -srf .local/share/3rdparty                                ~/.local/share/
 ln -srf .local/share/vim-dict                                ~/.local/share/
 ln -srf .local/share/vim-plug                                ~/.local/share/
 ln -srf .local/share/wiki                                    ~/.local/share/

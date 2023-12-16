@@ -2,7 +2,7 @@
 
 function install-zsh-3rdparty() {
 	(
-		cd "$XDG_CONFIG_HOME/zsh/3rdparty" || exit
+		cd "$XDG_DATA_HOME/3rdparty" || exit
 		git submodule update --init .
 	)
 }
@@ -10,6 +10,81 @@ function install-zsh-3rdparty() {
 function install-distrobox() {
 	curl -s https://raw.githubusercontent.com/89luca89/distrobox/main/install | sh -s -- --prefix ~/.local
 }
+
+# => NAS related -------------------------------------------------------------------------------------------------- {{{1
+
+function nas-clear-cruft() {
+	sudo fd -Lus --prune -t d -g '@eaDir' -x rm -rf
+}
+
+function nas-fix-permissions() {
+	local USR="${1:-$USER}"
+	USER="$USR" GROUP="$(id -ng $USR)" nice "$SHELL" -c '
+		set -e
+
+		sudo chown "${USER}:${GROUP}" -R -- *
+		sudo chmod -R a+rX,ug+w,o-w -- *
+		sudo fd -u -E "@eaDir" -t d -x chmod g+s
+
+		if [[ -e ".gnupg" ]]; then
+			sudo chmod -R u=rwX,go-rwx,g-s "$(realpath .gnupg)"
+		fi
+		if [[ -e ".ssh" ]]; then
+			sudo chmod -R u=rwX,go-rwx,g-s "$(realpath .ssh)"
+		fi
+		if [[ -e ".local/share/containers" ]]; then
+			sudo chmod -R ug=rwX,o-rwx,g-s "$(realpath .local/share/containers)"
+		fi
+	'
+}
+
+function nas-unset-executable() {
+	fd -u -E '@eaDir' -t x -x chmod a-x
+}
+
+# => proxy related ------------------------------------------------------------------------------------------------ {{{1
+
+function disable-proxy() {
+	unset all_proxy
+	unset http_proxy
+	unset https_proxy
+	export no_proxy="*"
+}
+
+# => local development activation --------------------------------------------------------------------------------- {{{1
+
+# shellcheck source=/dev/null
+function activate() {
+	FILES=("dev.rc" ".venv/bin/activate")
+
+	if command git rev-parse HEAD &>/dev/null; then
+		REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+		FILES+=("${FILES[@]/#/$REPO_ROOT/}")
+		FILES+=("$REPO_ROOT/projects/deployments/dev.rc")
+	fi
+
+	for FILE in "${FILES[@]}"; do
+		if [[ -r "$FILE" ]]; then
+			source "$FILE"
+			return
+		fi
+	done
+
+	if [[ -r "poetry.lock" ]]; then
+		if command -v poetry &>/dev/null; then
+			PYTHON_LOCAL="$(poetry env info -p)"
+			source "$PYTHON_LOCAL/bin/activate"
+			return
+		fi
+	fi
+
+	tput bold && tput setaf 1
+	echo "Unable to find any activation scripts"
+	tput sgr0
+}
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
 
 function zsh_stats() {
 	fc -l 1 | awk '{CMD[$2]++;count++;}END { for (a in CMD)print CMD[a] " " CMD[a]/count*100 "% " a;}' | grep -v "./" | column -c3 -s " " -t | sort -nr | nl |  head -n20
