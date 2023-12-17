@@ -63,9 +63,10 @@ ZSH_COMPDUMP=$XDG_CACHE_HOME/zcompdump-${ZSH_VERSION}
 
 if [[ "$IS_NAS" == "1" ]]; then
 	_prependvar PATH "/volume1/@appstore/ffmpeg/bin"
-	[[ -d "/var/packages/arch/bin"      ]] && _prependvar PATH "/var/packages/arch/bin"
-	[[ -d "/volume1/local/arch/bin"     ]] && _prependvar PATH "/volume1/local/arch/bin"
-	[[ -d "/volume1/local/arch/usr/bin" ]] && _prependvar PATH "/volume1/local/arch/usr/bin"
+	[[ -d "/var/packages/arch/bin"                  ]] && _prependvar PATH "/var/packages/arch/bin"
+	[[ -d "/volume1/local/arch/usr/bin/vendor_perl" ]] && _prependvar PATH "/volume1/local/arch/usr/bin/vendor_perl"
+	[[ -d "/volume1/local/arch/usr/bin"             ]] && _prependvar PATH "/volume1/local/arch/usr/bin"
+	[[ -d "/volume1/local/arch/bin"                 ]] && _prependvar PATH "/volume1/local/arch/bin"
 fi
 
 # => PATH prepare (tail) ------------------------------------------------------------------------------------------ {{{1
