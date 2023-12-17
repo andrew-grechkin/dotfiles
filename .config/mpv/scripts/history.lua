@@ -5,6 +5,20 @@ local utils = require 'mp.utils'
 local HISTFILE = os.getenv('XDG_CACHE_HOME') .. '/mpv/history.log';
 
 local add_to_history = function(title, path)
+    title = title:match('^%s*(.-)%s*$')
+    title = title:match('^%(*(.-)%)*$')
+
+    if (path:match('youtube')) then
+        title = 'youtube: ' .. title
+    elseif (path:match('^/')) then
+        local stat = utils.file_info(path)
+        if stat.is_dir then
+            title = 'directory: ' .. title
+        else
+            title = 'file: ' .. title
+        end
+    end
+
     local opt = {}
     if mp.get_property_native('osc') == false then table.insert(opt, '--no-osc') end
     if mp.get_property_native('term-osd') == 'force' then table.insert(opt, '--term-osd=force') end
