@@ -76,6 +76,7 @@ ln -srf .local/share/wiki                                    ~/.local/share/
 }
 
 command                                 cp -rf ".config/crow-translate" ~/.config/
+command                                 cp -rf ".config/htop"           ~/.config/
 command                                 cp -rf ".config/kdedefaults"    ~/.config/
 [[ -f "$HOME/.config/npm" ]] || command cp -rf ".config/npm"            ~/.config/
 

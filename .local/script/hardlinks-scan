@@ -40,29 +40,23 @@ sub main() {
                     or return;
 
                 my $stat = $path->stat;
+
                 push(
-                    $files{sprintf('d(%d)i(%d)', $stat->dev, $stat->ino)}->@*,
+                    $files{sprintf('d(%d)i(%d)n(%d)', $stat->dev, $stat->ino, $stat->nlink)}->@*,
                     decode('UTF-8', $path->stringify, Encode::FB_CROAK),
-                );
+                ) if $stat->nlink > 1;
             },
             {
                 'recurse'         => 1,
-                'follow_symlinks' => 0,
+                'follow_symlinks' => 1,
             },
         );
     }
 
-    my %links = %files{grep {$files{$_}->@* > 1} keys %files};
-
-    foreach my $group (values %links) {
-        my \@group = $group;
-        @group = sort @group;
-    }
-
     if (!$options{'JSON'} && is_loaded('YAML::XS')) {
-        say decode('UTF-8', YAML::XS::Dump(\%links));
+        say decode('UTF-8', YAML::XS::Dump(\%files));
     } else {
-        say JSON::PP->new->pretty->encode(\%links);
+        say JSON::PP->new->pretty->encode(\%files);
     }
 
     return 0;
