@@ -7,7 +7,8 @@ if [[ "$ZELLIJ" == "0" ]] && [[ ! -o LOGIN ]] && [[ -o INTERACTIVE ]] && [[ -z "
 	exec "$SHELL" -l
 fi
 
-if [[ "$IS_NAS" == "1" ]]; then
+# opensuse has quite a lot of shit in /etc/zshrc so the only option is to disable global configs if this file exists
+if [[ "$IS_NAS" == "1" ]] || [[ -r /etc/zshrc ]]; then
 	unsetopt GLOBAL_RCS
 fi
 
