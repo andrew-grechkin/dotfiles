@@ -2,7 +2,7 @@
 
 set -eEuo pipefail
 
-renice -n 10 "$$"
+renice -n 5 "$$" > /dev/null
 
 USR="${1:-$USER}"
 GRP="$(id -ng "$USR")"
