@@ -7,6 +7,8 @@ renice -n 5 "$$" > /dev/null
 USR="${1:-$USER}"
 GRP="$(id -ng "$USR")"
 
+shopt -s dotglob
+
 sudo chown "${USR}:${GRP}" -R -- *
 sudo chmod -R a+rX,ug+w,o-w -- *
 sudo fd -u -E "@eaDir" -t d -x chmod g+s --
