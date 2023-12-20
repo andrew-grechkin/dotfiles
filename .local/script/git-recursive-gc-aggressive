@@ -16,7 +16,7 @@ if [[ "$#" -eq "1" ]] && [[ "$1" =~ \.git/?$ ]]; then
 	echo "Gc aggressive  $REPO"
 	echo -n "$(tput sgr0)"
 
-	git -C "$REPO" fetch \
+	git -C "$REPO" fetch --force \
 		&& nice git -C "$REPO" bleach
 	nice git -C "$REPO" reflog expire --all --expire=now \
 		&& nice git -C "$REPO" gc --prune=now --aggressive
