@@ -11,37 +11,6 @@ function install-distrobox() {
 	curl -s https://raw.githubusercontent.com/89luca89/distrobox/main/install | sh -s -- --prefix ~/.local
 }
 
-# => NAS related -------------------------------------------------------------------------------------------------- {{{1
-
-function nas-clear-cruft() {
-	sudo fd -Lus --prune -t d -g '@eaDir' -x rm -rf
-}
-
-function nas-fix-permissions() {
-	local USR="${1:-$USER}"
-	USER="$USR" GROUP="$(id -ng $USR)" nice "$SHELL" -c '
-		set -e
-
-		sudo chown "${USER}:${GROUP}" -R -- *
-		sudo chmod -R a+rX,ug+w,o-w -- *
-		sudo fd -u -E "@eaDir" -t d -x chmod g+s
-
-		if [[ -e ".gnupg" ]]; then
-			sudo chmod -R u=rwX,go-rwx,g-s "$(realpath .gnupg)"
-		fi
-		if [[ -e ".ssh" ]]; then
-			sudo chmod -R u=rwX,go-rwx,g-s "$(realpath .ssh)"
-		fi
-		if [[ -e ".local/share/containers" ]]; then
-			sudo chmod -R ug=rwX,o-rwx,g-s "$(realpath .local/share/containers)"
-		fi
-	'
-}
-
-function nas-unset-executable() {
-	fd -u -E '@eaDir' -t x -x chmod a-x
-}
-
 # => proxy related ------------------------------------------------------------------------------------------------ {{{1
 
 function disable-proxy() {

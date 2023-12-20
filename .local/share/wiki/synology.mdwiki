@@ -17,3 +17,6 @@ sudo synouser --modify admin admin 0 my@email.net
 ## Wireguard
 
 [Article](https://www.blackvoid.club/wireguard-spk-for-your-synology-nas)
+
+https://tavda.net/wireguard
+https://github.com/fsa/wireguard-config-generator
