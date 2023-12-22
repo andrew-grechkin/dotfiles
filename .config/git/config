@@ -83,11 +83,6 @@
 	ignoreRevsFile = ~/.config/git/global-blame-ignore-revs
 	; ignoreRevsFile = .git-blame-ignore-revs
 
-[color]
-	branch = auto
-	grep   = auto
-	ui     = always
-
 [core]
 	autocrlf     = false
 	editor       = vi
