@@ -19,7 +19,7 @@ if [[ "${1:-}" =~ startplasma ]] || [[ "${1:-}" =~ xdm/sys.xsession ]]; then
 	[[ -r "$HOME/.xprofile" ]] && source "$HOME/.xprofile"
 	exec "$@"
 elif [[ -o LOGIN ]]; then
-	exec "$SHELL" -l
+	exec "$SHELL" -l "$@"
 else
 	# do nothing
 fi
