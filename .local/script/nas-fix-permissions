@@ -5,7 +5,8 @@ set -eEuo pipefail
 function recursively_remove_write_permission() {
 	REAL_PATH="$1"
 	while [[ "$REAL_PATH" != "/home/$USR" ]] && [[ "$REAL_PATH" != "/" ]]; do
-		REAL_PATH="$(dirname $REAL_PATH)"
+		REAL_PATH="$(dirname "$REAL_PATH")"
+		[[ "$(basename "$REAL_PATH")" == "$USR" ]] && break
 		sudo chmod go-w "$REAL_PATH"
 	done
 }
