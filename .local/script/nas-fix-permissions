@@ -2,19 +2,21 @@
 
 set -eEuo pipefail
 
+renice -n 5 "$$" > /dev/null
+
+USR="${1:-$USER}"
+GRP="$(id -ng "$USR")"
+USR_HOME="$(eval echo ~"$USR")"
+echo "$USR_HOME"
+
 function recursively_remove_write_permission() {
 	REAL_PATH="$1"
-	while [[ "$REAL_PATH" != "/home/$USR" ]] && [[ "$REAL_PATH" != "/" ]]; do
+	while [[ "$REAL_PATH" != "$USR_HOME" ]] && [[ "$REAL_PATH" != "/home/$USR" ]] && [[ "$REAL_PATH" != "/" ]]; do
 		REAL_PATH="$(dirname "$REAL_PATH")"
 		[[ "$(basename "$REAL_PATH")" == "$USR" ]] && break
 		sudo chmod go-w "$REAL_PATH"
 	done
 }
-
-renice -n 5 "$$" > /dev/null
-
-USR="${1:-$USER}"
-GRP="$(id -ng "$USR")"
 
 shopt -s dotglob
 
