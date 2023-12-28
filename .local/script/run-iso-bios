@@ -19,7 +19,7 @@ USB_PATH="$ISO_DIR/$USB_NAME"
 
 CMD=(
 	-audiodev "pa,id=snd0"
-	# -cdrom "$1"
+	-cdrom "$1"
 	-cpu host
 	-device ich9-intel-hda
 	-device "hda-output,audiodev=snd0"
@@ -35,7 +35,7 @@ CMD=(
 	-no-reboot
 	# -serial stdio
 	-smp 2
-	-vga virtio
+	-vga std
 	# -virtfs "local,path=$HOME/.cache,mount_tag=host0,security_model=passthrough,id=host0"
 )
 

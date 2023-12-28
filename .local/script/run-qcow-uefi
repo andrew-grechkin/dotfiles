@@ -27,7 +27,7 @@ CMD=(
 	-nic "user,model=virtio-net-pci"
 	# -serial stdio
 	-smp 2
-	-vga virtio
+	-vga std
 	# -virtfs "local,path=$HOME/.cache,mount_tag=host0,security_model=passthrough,id=host0"
 )
 

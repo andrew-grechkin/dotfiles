@@ -76,11 +76,11 @@ ln -srf .local/share/wiki                                    ~/.local/share/
 }
 
 command                                 cp -rf ".config/crow-translate" ~/.config/
-command                                 cp -rf ".config/htop"           ~/.config/
+command                                 cp -rf ".config/htop"           ~/.config/ 2>/dev/null
 command                                 cp -rf ".config/kdedefaults"    ~/.config/
 [[ -f "$HOME/.config/npm" ]] || command cp -rf ".config/npm"            ~/.config/
 
-chmod -R u=rwX,go-rwx .ssh
+chmod -R u=rwX,go-rwxs .ssh
 
 [[ -x submodules/private/setup.sh ]] && echo 'Executing private/setup' && (exec submodules/private/setup.sh)
 [[ -x submodules/secret/setup.sh ]]  && echo 'Executing secret/setup'  && (exec submodules/secret/setup.sh)

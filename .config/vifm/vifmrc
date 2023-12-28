@@ -244,6 +244,8 @@ filextype *.ps,*.eps,*.ps.gz
 
 filetype *.cue,
 	\*.aac,*.ac3,*.ape,*.flac,*.m4a,*.m4b,*.mp3,*.og[agx],*.opus,*.spx,*.wav,*.wma,*.wv
+	\ {Play using mpv in background}
+	\ execute-detached mpv --no-osc --term-osd=force --no-audio-display %c:p,
 	\ {Play using mpv}
 	\ mpv --no-osc --term-osd=force --no-audio-display %c:p %s,
 	\ {Play using ffplay}
