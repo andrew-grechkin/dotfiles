@@ -47,17 +47,16 @@ super + g
 super + v
 	bspc node -t "~floating"
 
-# set the window state
-super + ctrl + {t,shift + t}
-	bspc node -t {tiled,pseudo_tiled}
-
 # set the node flags
 super + b
 	bspc node -g sticky
+
 super + ctrl + {x,z}
 	bspc node -g {locked,private}
 
-# focus/swap
+# set the window state
+super + ctrl + {t,shift + t}
+	bspc node -t {tiled,pseudo_tiled}
 
 # focus or send to the given desktop
 super + {_,shift + }{1-9,0}
