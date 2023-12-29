@@ -48,7 +48,7 @@ ln -srf .config/sqlfluff                                     ~/.config/
 ln -srf .config/sxhkd                                        ~/.config/
 ln -srf .config/systemd                                      ~/.config/
 ln -srf .config/tmux                                         ~/.config/
-ln -srf .config/user-dirs.dirs                               ~/.config/
+ln -sr  .config/user-dirs.dirs                               ~/.config/
 ln -srf .config/vifm                                         ~/.config/
 ln -srf .config/vim                                          ~/.config/
 ln -srf .config/wezterm                                      ~/.config/
@@ -77,8 +77,8 @@ ln -srf .local/share/wiki                                    ~/.local/share/
 
 command                                 cp -rf ".config/crow-translate" ~/.config/
 command                                 cp -rf ".config/htop"           ~/.config/ 2>/dev/null
-command                                 cp -rf ".config/kdedefaults"    ~/.config/
-[[ -f "$HOME/.config/npm" ]] || command cp -rf ".config/npm"            ~/.config/
+[[ -d "$HOME/.config/kdedefaults" ]] || command cp -rf ".config/kdedefaults"    ~/.config/
+[[ -f "$HOME/.config/npm" ]]         || command cp -rf ".config/npm"            ~/.config/
 
 chmod -R u=rwX,go-rwxs .ssh
 
