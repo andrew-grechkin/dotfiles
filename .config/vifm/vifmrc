@@ -477,10 +477,8 @@ filetype *.iso
 	\ run-iso-uefi-usb %c &,
 
 filetype *.qcow2
-	\ {Run with qemu BIOS}
-	\ run-qcow-bios %c &,
-	\ {Run with qemu UEFI}
-	\ run-qcow-uefi %c &,
+	\ {Run with qemu}
+	\ run-qcow %c &,
 	\ {Mount qcow2}
 	\ mount-qcow %c,
 

@@ -140,3 +140,7 @@ alias setup-flatpak='sudo flatpak --system remote-delete flathub; flatpak remote
 # => typescript --------------------------------------------------------------------------------------------------- {{{1
 
 alias setup-typescript='npm install --save-dev @types/node'
+
+# => network ------------------------------------------------------------------------------------------------------ {{{1
+
+alias wg-import='sudo nmcli connection import type wireguard file'

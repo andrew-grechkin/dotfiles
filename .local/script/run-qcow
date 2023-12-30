@@ -2,21 +2,28 @@
 
 set -Eeuo pipefail
 
+OPTIONS=()
+
+if [[ "$1" =~ uefi ]]; then
+	OPTIONS+=(
+		-bios /usr/share/ovmf/x64/OVMF.fd
+	)
+fi
+
 if [[ "$1" =~ usb.qcow2 ]]; then
-	OPTIONS=(
+	OPTIONS+=(
 		-device "qemu-xhci,id=xhci"
 		-device "usb-storage,bus=xhci.0,drive=stick"
 		-drive "file=$1,if=none,id=stick,format=qcow2"
 	)
 else
-	OPTIONS=(
+	OPTIONS+=(
 		-drive "file=$1,if=virtio,index=0,media=disk,format=qcow2"
 	)
 fi
 
 CMD=(
 	-audiodev "pa,id=snd0"
-	-bios /usr/share/ovmf/x64/OVMF.fd
 	-cpu host
 	-device ich9-intel-hda
 	-device "hda-output,audiodev=snd0"
