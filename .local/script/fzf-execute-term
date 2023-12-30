@@ -4,13 +4,16 @@ set -Eeuo pipefail
 
 FZF_CMD=(
 	fzf
-	--bind="ctrl-v:toggle-preview,ctrl-w:toggle-preview-wrap,ctrl-s:toggle-sort"
-	--bind="enter:execute('{2..}')+abort"
-	--bind="esc:cancel"
-	--delimiter="	"
+	--bind='ctrl-d:page-down,ctrl-u:page-up'
+	--bind='ctrl-h:preview-up,ctrl-l:preview-down'
+	--bind='ctrl-v:toggle-preview,ctrl-w:toggle-preview-wrap,ctrl-s:toggle-sort'
+	--bind='ctrl-y:execute-silent(echo -n {2} | clipcopy)'
+	--bind="enter:execute(echo {2..} | bash)+abort"
+	--bind='esc:cancel'
+	--delimiter='	'
 	--no-multi
 	--preview-window=right:60%:wrap:hidden
-	--preview="echo {2..}"
+	--preview='echo {2..}'
 	--reverse
 	--with-nth=1
 )

@@ -5,7 +5,7 @@ set -Eeuo pipefail
 PATH="$(dirname "$0"):$PATH"
 FILE="$XDG_CACHE_HOME/mpv/history.log"
 
-perl - "$FILE" <<'END_SCRIPT' | fzf-execute
+perl - "$FILE" <<'END_SCRIPT' | fzf-execute --bind='ctrl-y:execute-silent(echo -n {2} | perl -nE "print m/\"(.+)\"$/" | clipcopy)'
 	use v5.34;
 
 	my $fn = $ARGV[0];
