@@ -4,7 +4,6 @@
 # => environment -------------------------------------------------------------------------------------------------- {{{1
 
 export HOSTNAME="${HOSTNAME:-$(hostname)}"
-export LANG=${LANG:-en_US.utf8}
 export LESSHISTFILE=-
 
 if [[ -r "$HOME/.config/nvim/init.lua" ]]; then
