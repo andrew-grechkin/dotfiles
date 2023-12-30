@@ -33,6 +33,7 @@ ln -srf .config/chromium-flags.conf                          ~/.config/chrome-fl
 ln -srf .config/environment.d/*                              ~/.config/environment.d/
 ln -srf .config/fontconfig/conf.d                            ~/.config/fontconfig/
 ln -srf .config/git                                          ~/.config/
+ln -sr  .config/locale.conf                                  ~/.config/ 2>/dev/null
 ln -srf .config/mpv                                          ~/.config/
 ln -srf .config/picom.conf                                   ~/.config/
 ln -srf .config/ripgreprc                                    ~/.config/
