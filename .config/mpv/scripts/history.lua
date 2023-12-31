@@ -4,6 +4,8 @@ local utils = require 'mp.utils'
 
 local HISTFILE = os.getenv('XDG_CACHE_HOME') .. '/mpv/history.log';
 
+ALLOW_FILE = 1
+
 local add_to_history = function(title, path)
     log.info(('add_to_history: "%s" %s'):format(title, path))
 
@@ -26,6 +28,8 @@ local add_to_history = function(title, path)
         -- title = title:match('^%(*(.-)%)*$')
         title = 'youtube: ' .. title
     elseif (path:match('^/')) then
+        if ALLOW_FILE < 1 then return end
+        ALLOW_FILE = ALLOW_FILE - 1
         local stat = utils.file_info(path)
         if stat.is_dir then
             title = 'directory: ' .. title
