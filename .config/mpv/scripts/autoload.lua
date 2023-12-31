@@ -27,6 +27,7 @@ EXTENSIONS = Set {
     'flac',
     'flv',
     'm4a',
+    'm4b',
     'm4v',
     'mkv',
     'mp3',

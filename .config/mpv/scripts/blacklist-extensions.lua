@@ -1,11 +1,11 @@
 local mp = require 'mp'
 local options = require 'mp.options'
-local msg = require 'mp.msg'
+local log = require 'mp.msg'
 
 OPTS = {
-    blacklist = 'gif,jpg,png',
-    whitelist = '',
-    remove_files_without_extension = false,
+    blacklist_str = 'gif,jpg,png,log,cue',
+    whitelist_str = '',
+    remove_files_without_extension = true,
     oneshot = true,
 }
 
@@ -17,8 +17,8 @@ local split = function(input)
     return ret
 end
 
-OPTS.blacklist = split(OPTS.blacklist)
-OPTS.whitelist = split(OPTS.whitelist)
+OPTS.blacklist = split(OPTS.blacklist_str)
+OPTS.whitelist = split(OPTS.whitelist_str)
 
 local exclude
 if #OPTS.whitelist > 0 then
@@ -54,7 +54,7 @@ local process = function(playlist_count)
             removed = removed + 1
         end
     end
-    if removed == #playlist then msg.warn('Removed eveything from the playlist') end
+    if removed == #playlist then log.warn('Removed eveything from the playlist') end
 end
 
 OBSERVE = function(_, v) process(v) end
