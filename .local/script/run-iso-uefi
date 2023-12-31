@@ -7,7 +7,7 @@ set -Eeuo pipefail
 ISO_NAME=$(basename "$1")
 ISO_DIR=$(dirname "$1")
 
-QCOW_NAME="${ISO_NAME/.iso/}uefi.qcow2"
+QCOW_NAME="${ISO_NAME/.iso/}.uefi.qcow2"
 QCOW_PATH="$ISO_DIR/$QCOW_NAME"
 [[ -f "$QCOW_PATH" ]] || {
 	qemu-img create -f qcow2 "$QCOW_PATH" 128G

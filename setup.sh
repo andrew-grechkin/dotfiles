@@ -102,3 +102,5 @@ else
 		command cp -rf ".config/kdedefaults"                 ~/.config/
 	}
 fi
+
+exit 0
