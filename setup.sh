@@ -20,7 +20,8 @@ chmod -R u=rwX,go-rwxs .ssh
 
 [[ -r "$HOME/.config/user-dirs.dirs" ]] || {
 	mkdir -p ~/{desktop,documents,downloads,music,pictures,public,templates,videos}
-	ln -sr  .config/user-dirs.dirs                           ~/.config/
+	command cp -rf ".config/user-dirs.dirs"                  ~/.config/
+	command cp -rf ".config/user-dirs.locale"                ~/.config/
 }
 
 ln -sr  .gnupg                                               ~/ 2>/dev/null
@@ -33,7 +34,6 @@ ln -srf .config/chromium-flags.conf                          ~/.config/chrome-fl
 ln -srf .config/environment.d/*                              ~/.config/environment.d/
 ln -srf .config/fontconfig/conf.d                            ~/.config/fontconfig/
 ln -srf .config/git                                          ~/.config/
-ln -sr  .config/locale.conf                                  ~/.config/ 2>/dev/null
 ln -srf .config/mpv                                          ~/.config/
 ln -srf .config/picom.conf                                   ~/.config/
 ln -srf .config/ripgreprc                                    ~/.config/
@@ -54,6 +54,7 @@ ln -srf .local/share/3rdparty                                ~/.local/share/
 
 command cp -rf ".config/crow-translate"                      ~/.config/
 command cp -rf ".config/htop"                                ~/.config/ 2>/dev/null
+command cp -rf ".config/locale.conf"                         ~/.config/ 2>/dev/null
 
 if [[ "$USER" == "agrechkin" ]]; then
 	ln -srf .config/black                                    ~/.config/
