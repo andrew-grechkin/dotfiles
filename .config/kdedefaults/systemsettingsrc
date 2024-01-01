@@ -1,3 +1,6 @@
+[Main]
+ActiveView=systemsettings_sidebar_mode
+
 [systemsettings_sidebar_mode]
 HighlightNonDefaultSettings=true
 
