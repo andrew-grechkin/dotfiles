@@ -4,39 +4,43 @@ local utils = require 'mp.utils'
 
 local HISTFILE = os.getenv('XDG_CACHE_HOME') .. '/mpv/history.log';
 
-ALLOW_FILE = 1
+RUN_QUOTE = 1
 
-local add_to_history = function(title, path)
-    log.info(('add_to_history: "%s" %s'):format(title, path))
+local add_to_history = function(path)
+    local title = mp.get_property('media-title');
+    log.info(('add_to_history: "%s"'):format(utils.to_string(title), path))
 
-    local cwd = mp.get_property_native('working-directory')
-    path = utils.join_path(cwd, path)
+    local stat = utils.file_info(path)
 
-    if not title then
-        title = mp.get_property('media-title');
-        log.info(('title: "%s"'):format(title))
+    if stat and (stat.is_dir or stat.is_file) then
+        if RUN_QUOTE < 1 then return end
+        RUN_QUOTE = RUN_QUOTE - 1
+
+        local cwd = mp.get_property_native('working-directory')
+        path = utils.join_path(cwd, path)
+
+        if title == nil or title == '' then
+            local _, basename = utils.split_path(path)
+            title = basename
+        end
+
         -- title = (title == mp.get_property('filename') and '' or (' (%s)'):format(title));
         -- log.info(('title: "%s"'):format(title))
-        if title == '' then title = path end
-        log.info(('title: "%s"'):format(title))
-    end
 
-    log.info(('add_to_history: "%s" %s'):format(title, path))
-
-    if (path:match('youtube')) then
-        -- title = title:match('^%s*(.-)%s*$')
-        -- title = title:match('^%(*(.-)%)*$')
-        title = 'youtube: ' .. title
-    elseif (path:match('^/')) then
-        if ALLOW_FILE < 1 then return end
-        ALLOW_FILE = ALLOW_FILE - 1
-        local stat = utils.file_info(path)
         if stat.is_dir then
             title = 'directory: ' .. title
         else
             title = 'file: ' .. title
         end
+    else
+        -- title = title:match('^%s*(.-)%s*$')
+        -- title = title:match('^%(*(.-)%)*$')
+        if title == nil or title == '' then title = path end
+
+        title = 'youtube: ' .. title
     end
+
+    log.info(('add_to_history: "%s" %s'):format(title, path))
 
     local opt = {}
     if mp.get_property_native('osc') == false then table.insert(opt, '--no-osc') end
@@ -62,8 +66,7 @@ mp.add_hook('on_load', 50, function(hook)
 
     if not stat.is_dir then return end
 
-    local _, basename = utils.split_path(path)
-    add_to_history(basename, path)
+    add_to_history(path)
 end)
 
 mp.register_event('file-loaded', function(event)
@@ -78,5 +81,5 @@ mp.register_event('file-loaded', function(event)
     -- if not video_format or ignore[video_format] ~= nil then return end
     if not audio_codec then return end
 
-    add_to_history(nil, path)
+    add_to_history(path)
 end)
