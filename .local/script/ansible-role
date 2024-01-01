@@ -23,10 +23,13 @@ export ANSIBLE_RETRY_FILES_ENABLED='False'
 ANSIBLE_ROLES_PATH="$PWD/roles:${ANSIBLE_ROLES_PATH:-}"
 export ANSIBLE_ROLES_PATH
 
-echo "executing: ansible-playbook $*"
-ansible-playbook "$@" /dev/stdin <<END
+TMPFILE=$(mktemp)
+cat > "$TMPFILE" <<END
 ---
 - hosts: [all]
   roles:
     - $ROLE
 END
+
+echo "executing: ansible-playbook $ROLE $*"
+ansible-playbook "$TMPFILE" "$@"
