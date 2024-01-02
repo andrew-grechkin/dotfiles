@@ -6,9 +6,20 @@ local HISTFILE = os.getenv('XDG_CACHE_HOME') .. '/mpv/history.log';
 
 RUN_QUOTE = 1
 
+local function exec(args)
+    log.debug('Running: ' .. table.concat(args, ' '))
+
+    return mp.command_native({
+        name = 'subprocess',
+        args = args,
+        capture_stdout = true,
+        capture_stderr = true,
+    })
+end
+
 local add_to_history = function(path)
     local title = mp.get_property('media-title');
-    log.info(('add_to_history: "%s"'):format(utils.to_string(title), path))
+    log.info(('add_to_history: %s %s'):format(utils.to_string(title), path))
 
     local stat = utils.file_info(path)
 
@@ -35,6 +46,25 @@ local add_to_history = function(path)
     else
         -- title = title:match('^%s*(.-)%s*$')
         -- title = title:match('^%(*(.-)%)*$')
+
+        local command = {'yt-dlp', '--print=%(.{title,uploader})#j', '--', path}
+        local result = exec(command)
+        if not result.killed_by_us then
+            local json = result.stdout
+            local parse_err = nil
+            if result.status ~= 0 or json == '' then
+                json = nil
+            elseif json then
+                json, parse_err = utils.parse_json(json)
+            end
+
+            if json ~= nil and not parse_err then
+                log.info(('fetch data: %s'):format(utils.to_string(json)))
+                if json.title then title = json.title end
+                if json.uploader then title = ('{=%s} %s'):format(json.uploader, title) end
+            end
+        end
+
         if title == nil or title == '' then title = path end
 
         title = 'youtube: ' .. title
@@ -42,14 +72,14 @@ local add_to_history = function(path)
 
     log.info(('add_to_history: "%s" %s'):format(title, path))
 
-    local opt = {}
+    local opt = {'--quiet'}
     if mp.get_property_native('osc') == false then table.insert(opt, '--no-osc') end
     if mp.get_property_native('term-osd') == 'force' then table.insert(opt, '--term-osd=force') end
     if mp.get_property_native('audio-display') == false then table.insert(opt, '--no-audio-display') end
 
     local fp = io.open(HISTFILE, 'a+');
     if fp then
-        fp:write(('[%s]\t%s\tmpv %s "%s"\n'):format(os.date('%Y-%m-%dT%X'), title, table.concat(opt, ' '), path));
+        fp:write(('[%s]\t%s\tmpv %s --\t"%s"\n'):format(os.date('%Y-%m-%dT%X'), title, table.concat(opt, ' '), path));
         fp:close();
     end
 end

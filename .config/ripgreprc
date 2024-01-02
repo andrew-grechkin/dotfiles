@@ -28,8 +28,11 @@
 --glob=!/.git/
 --glob=!/media/
 --glob=!/slib/
+--glob=!3rdparty/
 --glob=!bazel-main/
 --glob=!bazel-out/
 --glob=!fuse/
+--glob=!google-chrome/
+--glob=!opera/
 
 # --with-filename

@@ -15,9 +15,9 @@ perl - "$FILE" <<'END_SCRIPT' | fzf-execute --bind='ctrl-y:execute-silent(echo -
 	my %d;
 
 	foreach my $line (@lines) {
-		my ($time, $title, $path) = $line =~ m/^(\[.+?\])\t(.+?)\t(.+)$/;
+		my ($time, $title, $cmd, $path) = $line =~ m/^(\[.+?\])\t(.+?)\t(.+)\t(.+)$/;
 
-		$d{$path} = [sprintf("%s	%s", $title, $path), $time, $line];
+		$d{$path} = [sprintf("%s	%s	%s", $title, $cmd, $path), $time, $line];
 	}
 
 	END {
