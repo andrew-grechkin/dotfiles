@@ -2,8 +2,6 @@
 
 set -Eeuo pipefail
 
-PATH="$(dirname "$0"):$PATH"
-
 URL="$1"
 HEIGHT="${2:-1440}"
 
@@ -18,6 +16,7 @@ OPTIONS=(
 	--no-simulate
 	--write-info-json
 	--write-thumbnail
+	--limit-rate=100M
 )
 
 yt-dlp "${OPTIONS[@]}" "$URL"

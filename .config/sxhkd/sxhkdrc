@@ -161,7 +161,7 @@ super + shift + b
 super + shift + c
 	qalculate-gtk
 super + shift + f
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-font"
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-film"
 super + shift + i
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "/media/nfs/home/doc/@fiction"
 super + shift + m
