@@ -1,6 +1,5 @@
 # vim: filetype=conf
 
---limit-rate=4M
 --embed-chapters
 --embed-subs
 --format="bv*[ext=webm][height<=1080]+ba/bv*[ext=mp4][height<=1080]+ba/b"

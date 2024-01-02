@@ -16,7 +16,6 @@ OPTIONS=(
 	--no-simulate
 	--write-info-json
 	--write-thumbnail
-	--limit-rate=100M
 )
 
 yt-dlp "${OPTIONS[@]}" "$URL"
