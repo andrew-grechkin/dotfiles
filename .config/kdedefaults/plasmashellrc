@@ -5,7 +5,7 @@ Number of commands=3
 Regexp=([^"\\s]+youtube.*watch\\?[^"\\s]+)
 
 [Action_0/Command_0]
-Commandline[$e]=mpv --quiet '%0'
+Commandline[$e]=mpv --quiet -- '%0'
 Description=Play youtube video with mpv
 Enabled=true
 Icon=mpv

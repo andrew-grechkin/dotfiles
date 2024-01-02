@@ -8,7 +8,7 @@ FZF_CMD=(
 	--bind='ctrl-h:preview-up,ctrl-l:preview-down'
 	--bind='ctrl-v:toggle-preview,ctrl-w:toggle-preview-wrap,ctrl-s:toggle-sort'
 	--bind='ctrl-y:execute-silent(echo -n {2} | clipcopy)'
-	--bind="enter:execute(echo 'nohup '{2..}' </dev/null & disown' | bash -x &>>/tmp/fzf-execute.log)+abort"
+	--bind="enter:execute(echo 'nohup '{2..}' </dev/null & disown; sleep 0.2' | tee -a /tmp/fzf-execute-cmd.log | bash -x &>>/tmp/fzf-execute.log)+abort"
 	--bind='esc:cancel'
 	--delimiter='	'
 	--no-multi
