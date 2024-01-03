@@ -27,14 +27,22 @@ CMD=(
 	-cpu host
 	-device ich9-intel-hda
 	-device "hda-output,audiodev=snd0"
+	-nic "user,model=virtio-net-pci"
+	# -netdev "bridge,id=hn0"
+	# -device "virtio-net-pci,netdev=hn0,id=nic1"
+	# -nic "tap,ifname=tap0,romfile=,script=no,downscript=no"
+	# -device "virtio-net,netdev=network0"
+	# -netdev "tap,id=network0,ifname=tap0,script=no,downscript=no"
+	# -device "e1000,netdev=network0,mac=52:55:00:d1:55:01"
 	"${OPTIONS[@]}"
+	-display "gtk,zoom-to-fit=on"
 	-enable-kvm
 	-k en-us
 	-m 4G
-	-nic "user,model=virtio-net-pci"
 	# -serial stdio
 	-smp 2
 	-vga std
+	# -vga virtio
 	# -virtfs "local,path=$HOME/.cache,mount_tag=host0,security_model=passthrough,id=host0"
 )
 

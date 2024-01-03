@@ -28,6 +28,7 @@ CMD=(
 	-drive "file=$QCOW_PATH,if=virtio,index=0,media=disk,format=qcow2"
 	-drive "file=$1,if=virtio,index=1,media=cdrom"
 	-drive "file=$USB_PATH,if=none,id=stick,format=qcow2"
+	-display "gtk,zoom-to-fit=on"
 	-enable-kvm
 	-k en-us
 	-m 4G

@@ -4,6 +4,10 @@
 
 set -Eeuo pipefail
 
+OPTIONS=(
+	-drive "file=$1,if=virtio,index=1,media=cdrom"
+)
+
 ISO_NAME=$(basename "$1")
 ISO_DIR=$(dirname "$1")
 
@@ -12,12 +16,20 @@ QCOW_PATH="$ISO_DIR/$QCOW_NAME"
 [[ -f "$QCOW_PATH" ]] || {
 	qemu-img create -f qcow2 "$QCOW_PATH" 128G
 }
+OPTIONS+=(
+	-drive "file=$QCOW_PATH,if=virtio,index=0,media=disk,format=qcow2"
+)
 
 USB_NAME="${ISO_NAME/.iso/}.uefi.usb.qcow2"
 USB_PATH="$ISO_DIR/$USB_NAME"
 [[ -f "$USB_PATH" ]] || {
 	qemu-img create -f qcow2 "$USB_PATH" 8G
 }
+OPTIONS+=(
+	-device "qemu-xhci,id=xhci"
+	-device "usb-storage,bus=xhci.0,drive=stick"
+	-drive "file=$USB_PATH,if=none,id=stick,format=qcow2"
+)
 
 CMD=(
 	-audiodev "pa,id=snd0"
@@ -26,11 +38,8 @@ CMD=(
 	-cpu host
 	-device ich9-intel-hda
 	-device "hda-output,audiodev=snd0"
-	-device "qemu-xhci,id=xhci"
-	-device "usb-storage,bus=xhci.0,drive=stick"
-	-drive "file=$QCOW_PATH,if=virtio,index=0,media=disk,format=qcow2"
-	-drive "file=$1,if=virtio,index=1,media=cdrom"
-	-drive "file=$USB_PATH,if=none,id=stick,format=qcow2"
+	"${OPTIONS[@]}"
+	-display "gtk,zoom-to-fit=on"
 	-enable-kvm
 	-k en-us
 	-m 4G
