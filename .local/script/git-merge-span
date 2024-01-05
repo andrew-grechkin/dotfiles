@@ -2,8 +2,6 @@
 
 set -Eeuo pipefail
 
-PATH="$(dirname "$0"):$PATH"
-
 git-in-repo && {
 	SPAN_TYPE=${1:-..}
 	REF=${2:-"$(git bname)"}

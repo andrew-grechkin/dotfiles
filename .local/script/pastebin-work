@@ -2,8 +2,6 @@
 
 set -Eeuo pipefail
 
-PATH="$(dirname "$0"):$PATH"
-
 DOMAIN_PARTS=(paste . boo king . com)
 DOMAIN=$(printf "%s" "${DOMAIN_PARTS[@]}")
 CMD=(

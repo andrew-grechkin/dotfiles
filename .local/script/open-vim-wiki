@@ -3,6 +3,4 @@
 
 set -Eeuo pipefail
 
-PATH="$(dirname "$0"):$PATH"
-
 command vi -c ':VimwikiIndex'

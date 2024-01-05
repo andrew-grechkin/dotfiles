@@ -2,8 +2,6 @@
 
 set -Eeuo pipefail
 
-PATH="$(dirname "$0"):$PATH"
-
 git-in-repo && {
 	git branch --list --no-column --format='%(refname:lstrip=2)' "$@" | perl -nlE 'say $_ =~ s{\Aorigin/}{}r' | sort | uniq
 }

@@ -1,7 +1,5 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 
 set -Eeuo pipefail
-
-PATH="$(dirname "$0"):$PATH"
 
 compgen -c | sort -u | perl -nlE 'next if m/^\W/; say "$_\t$_"' | fzf-execute

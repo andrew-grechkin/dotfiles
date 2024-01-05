@@ -3,7 +3,6 @@
 
 set -Eeuo pipefail
 
-PATH="$(dirname "$0"):$PATH"
 MAX=9999
 
 git-in-repo && {

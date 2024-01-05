@@ -1,8 +1,7 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 
 set -Eeuo pipefail
 
-PATH="$(dirname "$0"):$PATH"
 FILE="$XDG_CACHE_HOME/mpv/history.log"
 
 perl - "$FILE" <<'END_SCRIPT' | fzf-execute --bind='ctrl-y:execute-silent(echo -n {2} | perl -nE "print m/\"(.+)\"$/" | clipcopy)'

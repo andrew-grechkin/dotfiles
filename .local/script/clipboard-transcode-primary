@@ -2,11 +2,9 @@
 
 set -Eeuo pipefail
 
-PATH="$(dirname "$0"):$PATH"
-
 xclip -o -sel p 2>/dev/null \
-| kbd-transcode \
-| clipcopy
+	| kbd-transcode \
+	| clipcopy
 
 xdotool key Shift+Insert
 

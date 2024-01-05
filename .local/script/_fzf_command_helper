@@ -2,8 +2,6 @@
 
 set -Euo pipefail
 
-PATH="$(dirname "$0"):$PATH"
-
 {
 	if command git rev-parse HEAD &>/dev/null; then
 		cat <(git ls-files -c --exclude-standard --recurse-submodules) <(git ls-files -o --exclude-standard)

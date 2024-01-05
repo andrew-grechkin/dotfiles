@@ -2,8 +2,6 @@
 
 set -Eeuo pipefail
 
-PATH="$(dirname "$0"):$PATH"
-
 git-in-repo || {
 	git init .
 	git commit --allow-empty -m 'init: empty commit'

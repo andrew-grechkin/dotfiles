@@ -2,7 +2,5 @@
 
 set -Eeuo pipefail
 
-PATH="$(dirname "$0"):$PATH"
-
 git-remotes \
-| fzf --multi --bind 'tab:toggle-out,shift-tab:toggle-in' --preview ''
+	| fzf --multi --bind 'tab:toggle-out,shift-tab:toggle-in' --preview ''

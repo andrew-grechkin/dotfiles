@@ -2,7 +2,6 @@
 
 set -Euo pipefail
 
-PATH="$(dirname "$0"):$PATH"
 DATETIME=$(date --rfc-3339=ns)
 
 CODEPAGE=$1
@@ -10,7 +9,7 @@ shift
 
 for FILE in "$@"; do
 	if text-decode --codepage="$CODEPAGE" "$FILE" >"${FILE}.${DATETIME}.encoded"; then
-		mv -f "${FILE}.${DATETIME}.encoded" "${FILE}"
+		mv -f "${FILE}.${DATETIME}.encoded" "$FILE"
 		echo "Successfully reencoded from $CODEPAGE: $FILE"
 	else
 		echo "Failed to reencode: '$FILE'"

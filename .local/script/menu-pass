@@ -1,8 +1,7 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 
 set -Eeuo pipefail
 
-PATH="$(dirname "$0"):$PATH"
 FOLDER=${PASSWORD_STORE_DIR:-${XDG_DATA_HOME}/password-store}
 
 function list_files() {

@@ -2,7 +2,5 @@
 
 set -Eeuo pipefail
 
-PATH="$(dirname "$0"):$PATH"
-
 git-log-all \
-| fzf-git-log "$@"
+	| fzf-git-log "$@"

@@ -2,8 +2,6 @@
 
 set -Eeuo pipefail
 
-PATH="$(dirname "$0"):$PATH"
-
 ROLE=$1
 shift
 

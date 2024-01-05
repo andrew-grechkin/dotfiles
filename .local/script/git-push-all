@@ -2,9 +2,7 @@
 
 set -Eeuo pipefail
 
-PATH="$(dirname "$0"):$PATH"
-
 git-in-repo && {
 	git remote \
-	| xargs -L1 git push
+		| xargs -L1 git push
 }

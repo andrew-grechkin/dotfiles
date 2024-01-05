@@ -1,8 +1,6 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 
 set -Euo pipefail
-
-PATH="$(dirname "$0"):$PATH"
 
 tr -dc '[:alnum:]!@#$%^&*' </dev/urandom \
 	| dd count=24 bs=1 2>/dev/null \

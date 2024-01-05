@@ -2,8 +2,6 @@
 
 set -Eeuo pipefail
 
-PATH="$(dirname "$0"):$PATH"
-
 git-in-repo && {
 	MAIN_BRANCH="$(git gmb)"
 	git checkout --orphan new-root

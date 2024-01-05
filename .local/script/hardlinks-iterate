@@ -4,8 +4,6 @@
 
 set -Euo pipefail
 
-PATH="$(dirname "$0"):$PATH"
-
 # shellcheck disable=SC2016
 # hardlinks | xargs -d "\n" -ri bash -c 'eval "array=({})"; printf "%s\n" "${array[@]}" | fzf'
 

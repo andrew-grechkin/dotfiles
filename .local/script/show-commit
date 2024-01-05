@@ -2,8 +2,6 @@
 
 set -Eeo pipefail
 
-PATH="$(dirname "$0"):$PATH"
-
 if [[ -x "$(command -v delta)" ]]; then
 	GIT_PAGER="delta"
 else
@@ -29,7 +27,7 @@ git-in-repo && {
 		if [ -t 1 ]; then
 			git show "${SHOW_OPTIONS[@]}" "$COMMIT" "$@" --pretty=fuller
 		else
-			git --no-pager show "${SHOW_OPTIONS[@]}" "$COMMIT" "$@" --pretty=fuller | $GIT_PAGER
+			git --no-pager show "${SHOW_OPTIONS[@]}" "$COMMIT" "$@" --pretty=fuller | "$GIT_PAGER"
 		fi
 		echo
 		SHOW_OPTIONS+=(--first-parent)
@@ -57,6 +55,6 @@ git-in-repo && {
 	if [ -t 1 ]; then
 		git show "${SHOW_OPTIONS[@]}" "$SPAN" "$@"
 	else
-		git --no-pager show "${SHOW_OPTIONS[@]}" "$SPAN" "$@" | $GIT_PAGER
+		git --no-pager show "${SHOW_OPTIONS[@]}" "$SPAN" "$@" | "$GIT_PAGER"
 	fi
 } 2>/dev/null

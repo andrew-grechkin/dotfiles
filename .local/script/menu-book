@@ -1,8 +1,7 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 
 set -Eeuo pipefail
 
-PATH="$(dirname "$0"):$PATH"
 FOLDER="${1:-/media/nfs/home/doc/@technical}"
 
 function list_files() {
