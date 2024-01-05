@@ -18,7 +18,7 @@ cd "$WORKDIR" || exit 1
 
 chmod -R u=rwX,go-rwxs .ssh
 
-[[ -r "$HOME/.config/user-dirs.dirs" ]] || {
+[[ -r "$HOME/videos" ]] || {
 	mkdir -p ~/{desktop,documents,downloads,music,pictures,public,templates,videos}
 	command cp -rf ".config/user-dirs.dirs"                  ~/.config/
 	command cp -rf ".config/user-dirs.locale"                ~/.config/

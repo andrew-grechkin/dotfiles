@@ -2,4 +2,4 @@
 
 set -Eeuo pipefail
 
-git-log --all --reflog --graph "$@"
+git-log-wrapper --all --reflog --graph "$@"

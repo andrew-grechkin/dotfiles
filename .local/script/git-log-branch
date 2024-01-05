@@ -2,5 +2,5 @@
 
 set -Eeuo pipefail
 
-git-log --single-worktree "$@"
+git-log-wrapper --single-worktree "$@"
 #	--since="12 weeks ago"
