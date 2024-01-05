@@ -21,5 +21,5 @@ if [[ "${1:-}" =~ startplasma ]] || [[ "${1:-}" =~ xdm/sys.xsession ]]; then
 elif [[ -o LOGIN ]]; then
 	exec "$SHELL" -l "$@"
 else
-	# do nothing
+	# do nothing, just continue
 fi

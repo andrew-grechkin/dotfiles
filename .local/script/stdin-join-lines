@@ -21,7 +21,7 @@ length && do {
 __END__
 
 # perl is much more efficient here
-##!/bin/bash
+##!/usr/bin/env bash
 #
 #set -Eeuo pipefail
 #

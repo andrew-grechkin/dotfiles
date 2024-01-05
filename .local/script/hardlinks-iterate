@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # iterate through all hardlinks found in current folder and show them in fzf
 
