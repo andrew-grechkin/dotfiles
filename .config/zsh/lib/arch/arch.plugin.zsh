@@ -6,10 +6,6 @@ function arch-list-altered-files() {
 	sudo pacman -Qkkq
 }
 
-function arch-remove-orphans() {
-	sudo pacman -Rns $(pacman -Qtdq)
-}
-
 function arch-update() {
 	#export all_proxy='http://vdsm.ams:8888'
 	#export http_proxy='http://vdsm.ams:8888'

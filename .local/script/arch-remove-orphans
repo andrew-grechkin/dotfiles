@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -Euo pipefail
+
+if ORPHAN_PACKAGES="$(pacman -Qqtd)"; then
+	set -x
+	sudo pacman -Rns "${ORPHAN_PACKAGES[@]}"
+fi
+
+exit 0
