@@ -1,41 +1,12 @@
-[Compositing]
-OpenGLIsUnsafe=false
-
-[Desktops]
-Id_1=3cc77ca9-ad47-4cc5-a8ea-f4592dcb3a55
-Id_10=d5b5c9a2-48c9-4c5e-ad0c-500da06ff7aa
-Id_2=c3304249-f616-46e6-822e-f579b12690da
-Id_3=0b9464c0-d9df-4ef4-9f45-69896014a307
-Id_4=907e16fd-dbf9-4e94-991a-540dc7651f56
-Id_5=4d6d2c4f-2e33-4ac2-b07c-bf4c5b50e046
-Id_6=41c724f2-2edb-4df8-b05c-735f26f9c852
-Id_7=87ba0d09-0b34-4e14-99f1-f3b7b8a68f0d
-Id_8=aa787c1c-ed7b-4449-8f63-336c813fa1f4
-Id_9=05f37b24-eb64-4e5f-8c6b-9b5aa2566e19
-Name_1=1
-Name_10=0
-Name_2=2
-Name_3=3
-Name_4=4
-Name_5=5
-Name_6=6
-Name_7=7
-Name_8=8
-Name_9=9
-Number=10
-Rows=1
-
-[Plugins]
-desktopchangeosdEnabled=true
-
-[Script-desktopchangeosd]
-PopupHideDelay=500
+[NightColor]
+Active=true
 
 [TabBox]
+ActivitiesMode=0
 DesktopLayout=org.kde.breeze.desktop
 DesktopListLayout=org.kde.breeze.desktop
-DesktopMode=2
-LayoutName=org.kde.breezedark.desktop
+DesktopMode=0
+LayoutName=org.kde.breeze.desktop
 
 [Windows]
 ActiveMouseScreen=true
@@ -43,5 +14,6 @@ FocusPolicy=FocusFollowsMouse
 
 [org.kde.kdecoration2]
 ButtonsOnLeft=MFS
+NoPlugin=false
 library=org.kde.breeze
 theme=Breeze

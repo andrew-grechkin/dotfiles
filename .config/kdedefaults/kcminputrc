@@ -1,8 +1,2 @@
-[Keyboard]
-KeyRepeat=repeat
-NumLock=2
-RepeatDelay=300
-RepeatRate=25
-
 [Mouse]
-cursorTheme=Oxygen_Yellow
+cursorTheme=breeze_cursors

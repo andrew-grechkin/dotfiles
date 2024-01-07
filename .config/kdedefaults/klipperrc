@@ -1,8 +1,0 @@
-[Actions]
-EnableMagicMimeActions=false
-
-[General]
-MaxClipItems=15
-NoActionsForWM_CLASS=Navigator,navigator:browser,konqueror,keditbookmarks,mozilla-bin,Mozilla,gnumeric,Gnumeric,Galeon,kcontrol,ksirc,MozillaFirebird-bin,firefox-bin,Firefox-bin,klipper,Gecko,gecko
-URLGrabberEnabled=true
-Version=5.24.4

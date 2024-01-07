@@ -4,4 +4,4 @@ LockGrace=10
 Timeout=15
 
 [Greeter]
-Theme=org.kde.breezedark.desktop
+Theme=org.kde.breeze.desktop
