@@ -36,6 +36,15 @@ zstyle ':completion:*:*:*:users'          ignored-patterns \
 	rpc rpcuser rpm rtkit scard shutdown squid sshd statd svn sync tftp \
 	usbmux uucp vcsa wwwrun xfs '_*'
 # ... unless we really want to
+
+# format completion
+zstyle ':completion:*:descriptions'       format $'%{\e[0;31m%}completing %B%d%b%{\e[0m%}'
+
+# split into groups
+zstyle ':completion:*:matches'            group 'yes'
+zstyle ':completion:*'                    group-name ''
+
+
 zstyle '*'                                single-ignored show
 
 # => Case insensitive (all), partial-word and substring completion ------------------------------------------------ {{{1
