@@ -1,5 +1,6 @@
 # vim: filetype=zsh foldmethod=marker
 # Based on https://github.com/robbyrussell/oh-my-zsh
+# https://thevaluable.dev/zsh-completion-guide-examples/
 
 zmodload -i zsh/complist
 

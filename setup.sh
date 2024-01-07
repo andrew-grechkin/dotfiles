@@ -18,7 +18,7 @@ cd "$WORKDIR" || exit 1
 
 chmod -R u=rwX,go-rwxs .ssh
 
-[[ -r "$HOME/videos" ]] || {
+[[ -r "$HOME/.config/user-dirs.dirs" ]] || {
 	mkdir -p ~/{desktop,documents,downloads,music,pictures,public,templates,videos}
 	command cp -rf ".config/user-dirs.dirs"                  ~/.config/
 	command cp -rf ".config/user-dirs.locale"                ~/.config/
@@ -99,9 +99,10 @@ if [[ "$USER" == "agrechkin" ]]; then
 	}
 else
 	ln -srfn .config/vim                                     ~/.config/nvim
-	[[ -d "$HOME/.config/kdedefaults" ]] || {
-		command cp -rf ".config/kdedefaults"                 ~/.config/
-	}
 fi
+
+[[ -d "$HOME/.config/kdedefaults" ]] || {
+	command cp -rf ".config/kdedefaults"                     ~/.config/
+}
 
 exit 0
