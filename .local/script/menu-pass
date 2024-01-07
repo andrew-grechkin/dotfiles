@@ -5,7 +5,8 @@ set -Eeuo pipefail
 FOLDER=${PASSWORD_STORE_DIR:-${XDG_DATA_HOME}/password-store}
 
 function list_files() {
-	shopt -s nullglob globstar
+	# shopt -s nullglob globstar
+	setopt NULLGLOB
 
 	password_files=("$FOLDER"/**/*.gpg)
 	password_files=("${password_files[@]#*"$FOLDER/"}")

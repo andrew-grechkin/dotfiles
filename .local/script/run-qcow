@@ -2,10 +2,11 @@
 
 set -Eeuo pipefail
 
+BIOS=()
 OPTIONS=()
 
 if [[ "$1" =~ uefi ]]; then
-	OPTIONS+=(
+	BIOS+=(
 		-bios /usr/share/ovmf/x64/OVMF.fd
 	)
 fi
@@ -24,10 +25,10 @@ fi
 
 CMD=(
 	-audiodev "pa,id=snd0"
+	"${BIOS[@]}"
 	-cpu host
 	-device ich9-intel-hda
 	-device "hda-output,audiodev=snd0"
-	-nic "user,model=virtio-net-pci"
 	# -netdev "bridge,id=hn0"
 	# -device "virtio-net-pci,netdev=hn0,id=nic1"
 	# -nic "tap,ifname=tap0,romfile=,script=no,downscript=no"
@@ -39,6 +40,7 @@ CMD=(
 	-enable-kvm
 	-k en-us
 	-m 4G
+	-nic "user,model=virtio-net-pci,hostfwd=tcp::2222-:22"
 	# -serial stdio
 	-smp 2
 	-vga std
