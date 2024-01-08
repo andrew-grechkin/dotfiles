@@ -8,9 +8,9 @@ function list_files() {
 	(
 		cd "$FOLDER"
 		while read -r LINE; do
-			if [[ "$LINE" =~ \.pdf|\.djvu ]]; then
+			if [[ "$LINE" =~ \.pdf\|\.djvu ]]; then
 				echo "$LINE	zathura - <\"${FOLDER}/$LINE\""
-			elif [[ "$LINE" =~ \.fb2|\.epub|\.ePub ]]; then
+			elif [[ "$LINE" =~ \.fb2\|\.epub\|\.ePub ]]; then
 				echo "$LINE	xdg-open \"${FOLDER}/$LINE\""
 			fi
 		done < <(fd --no-ignore -t file -e pdf -e djvu -e fb2 -e epub --relative-path)

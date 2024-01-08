@@ -1,6 +1,7 @@
 local mp = require 'mp'
 local options = require 'mp.options'
 local log = require 'mp.msg'
+local utils = require 'mp.utils'
 
 OPTS = {
     blacklist_str = 'gif,jpg,png,log,cue',
@@ -37,9 +38,14 @@ end
 
 local should_remove = function(filename)
     if string.find(filename, '://') then return false end
-    local extension = string.match(filename, '%.([^./]+)$')
-    if not extension and OPTS.remove_files_without_extension then return true end
-    if extension and exclude(string.lower(extension)) then return true end
+
+    local stat = utils.file_info(filename)
+    if stat and stat.is_file then
+        local extension = string.match(filename, '%.([^./]+)$')
+        if not extension and OPTS.remove_files_without_extension then return true end
+        if extension and exclude(string.lower(extension)) then return true end
+    end
+
     return false
 end
 
@@ -50,11 +56,12 @@ local process = function(playlist_count)
     local removed = 0
     for i = #playlist, 1, -1 do
         if should_remove(playlist[i].filename) then
+            log.info(('removed file: %s'):format(playlist[i].filename))
             mp.commandv('playlist-remove', i - 1)
             removed = removed + 1
         end
     end
-    if removed == #playlist then log.warn('Removed eveything from the playlist') end
+    if removed == #playlist then log.warn('removed eveything from the playlist') end
 end
 
 OBSERVE = function(_, v) process(v) end

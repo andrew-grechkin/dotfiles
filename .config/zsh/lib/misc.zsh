@@ -3,6 +3,7 @@
 setopt LONG_LIST_JOBS
 setopt INTERACTIVECOMMENTS                                                     # recognize comments
 setopt GLOB_DOTS
+setopt RE_MATCH_PCRE
 
 autoload -Uz zmv zcp zln
 autoload -Uz add-zsh-hook
