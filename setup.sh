@@ -27,6 +27,7 @@ chmod -R u=rwX,go-rwxs .ssh
 ln -sr  .gnupg                                               ~/ 2>/dev/null
 ln -sr  .ssh                                                 ~/ 2>/dev/null
 ln -sr  .xprofile                                            ~/ 2>/dev/null
+ln -srf .profile                                             ~/
 ln -srf .zshenv                                              ~/
 
 ln -srf .config/chromium-flags.conf                          ~/.config/

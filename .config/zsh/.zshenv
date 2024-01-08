@@ -45,6 +45,12 @@ function _appendvar() {
 	esac
 }
 
+function append_path() {
+	for DIR in "$@"; do
+		[[ -n "$DIR" ]] && [[ -d "$DIR" ]] && path+=("$DIR")
+	done
+}
+
 # => environment -------------------------------------------------------------------------------------------------- {{{1
 
 if [[ -z "$LANG" ]]; then
@@ -93,20 +99,10 @@ if [[ "$IS_NAS" == "1" ]]; then
 	[[ -d "/volume1/local/arch/bin"                 ]] && _prependvar PATH "/volume1/local/arch/bin"
 fi
 
-# => PATH prepare (tail) ------------------------------------------------------------------------------------------ {{{1
+# => common with bash (PATH setup) -------------------------------------------------------------------------------- {{{1
 
 typeset -U PATH path
-[[ -d "$HOME/.local/bin"                                            ]] && path+=("$HOME/.local/bin")
-[[ -d "$HOME/.local/script"                                         ]] && path+=("$HOME/.local/script")
-[[ -d "$HOME/.local/script-private"                                 ]] && path+=("$HOME/.local/script-private")
-[[ -d "$HOME/.local/script-work"                                    ]] && path+=("$HOME/.local/script-work")
-[[ -d "$HOME/.local/script-work-private"                            ]] && path+=("$HOME/.local/script-work-private")
-[[ -d "$HOME/.local/usr/bin"                                        ]] && path+=("$HOME/.local/usr/bin")
-[[ -d "$HOME/.cache/bin"                                            ]] && path+=("$HOME/.cache/bin")
-[[ -d "$HOME/.cache/fzf/bin"                                        ]] && path+=("$HOME/.cache/fzf/bin")
-[[ -d "$XDG_DATA_HOME/nvim/mason/bin"                               ]] && path+=("$XDG_DATA_HOME/nvim/mason/bin")
-[[ -n "$XDG_DATA_HOME/npm/bin" ]] && [[ -d "$XDG_DATA_HOME/npm/bin" ]] && path+=("$XDG_DATA_HOME/npm/bin")
-[[ -n "$GOPATH"                ]] && [[ -d "$GOPATH"                ]] && path+=("$GOPATH/bin")
-# [[ -n "$GEM_HOME"              ]] && [[ -d "$GEM_HOME"              ]] && path+=("$GEM_HOME/bin")
 
-export PATH
+if [[ -n "$BASH_ENV" ]]; then
+	source-file "$BASH_ENV"
+fi
