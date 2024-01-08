@@ -46,20 +46,21 @@ bspc rule -a 'matplotlib'             state=floating center=on rectangle=1280x72
 bspc rule -a 'mpv'                    state=floating sticky=on rectangle=564x317-600-360
 bspc rule -a 'pinentry'               state=floating sticky=on
 
-bspc rule -a '*:*:Zoom - Licensed Account' desktop='6'
-bspc rule -a '*:*:Zoom Meeting'            desktop='6'
-bspc rule -a 'Chromium'                    desktop='1'
-bspc rule -a 'Gimp'                        desktop='8' state=floating follow=on
-bspc rule -a 'Google-chrome'               desktop='1'
-bspc rule -a 'Main-Tmux'                   desktop='0' follow=on
-bspc rule -a 'Meld'                        desktop='7' follow=on
-bspc rule -a 'Opera'                       desktop='2'
-bspc rule -a 'Qemu-system-x86_64'          desktop='5'
-bspc rule -a 'Screenkey'                   manage=off
-bspc rule -a 'Steam'                       desktop='6'
-bspc rule -a 'Sxiv'                        state=floating center=on rectangle=1280x720+0+0
-bspc rule -a 'VirtualBox Manager'          desktop='4'
-bspc rule -a 'VirtualBoxVM'                desktop='5'
-bspc rule -a 'Zathura'                     state=floating center=on rectangle=1280x720+0+0
-bspc rule -a 'crow-translate'              state=floating rectangle=1280x720-600-360
-bspc rule -a 'dolphin'                     desktop='4'
+bspc rule -a '*:*:Zoom - Licensed Account'       desktop='7'
+bspc rule -a '*:*:Zoom Meeting'                  desktop='7'
+bspc rule -a '*:*:zoom_linux_float_video_window' desktop='7' state=floating rectangle=300x200
+bspc rule -a 'Chromium'                          desktop='1'
+bspc rule -a 'Gimp'                              desktop='8' state=floating follow=on
+bspc rule -a 'Google-chrome'                     desktop='1'
+bspc rule -a 'Main-Tmux'                         desktop='0' follow=on
+bspc rule -a 'Meld'                              desktop='7' follow=on
+bspc rule -a 'Opera'                             desktop='2'
+bspc rule -a 'Qemu-system-x86_64'                desktop='5'
+bspc rule -a 'Screenkey'                         manage=off
+bspc rule -a 'Steam'                             desktop='6'
+bspc rule -a 'Sxiv'                              state=floating center=on rectangle=1280x720+0+0
+bspc rule -a 'VirtualBox Manager'                desktop='4'
+bspc rule -a 'VirtualBoxVM'                      desktop='5'
+bspc rule -a 'Zathura'                           state=floating center=on rectangle=1280x720+0+0
+bspc rule -a 'crow-translate'                    state=floating rectangle=1280x720-600-360
+bspc rule -a 'dolphin'                           desktop='4'

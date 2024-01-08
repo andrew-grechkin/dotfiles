@@ -144,7 +144,7 @@ super + o
 super + s
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pass"
 super + r
-	wezterm start --always-new-process --class 'Main-Tmux' distrobox enter -n arch -- tmux -L arch
+	wezterm start --always-new-process --class 'Main-Tmux' distrobox enter -n arch2 -- tmux -L arch
 super + t
 	wezterm start --always-new-process --class 'Main-Tmux' tmux
 super + y
