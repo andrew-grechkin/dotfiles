@@ -48,7 +48,7 @@ local config = {
         {family = 'Fira Code', weight = 'Regular', stretch = 'Normal'},
         {family = 'DejaVu Sans Mono', weight = 'Book', stretch = 'Normal'},
     },
-    font_size = 16,
+    font_size = 18,
     warn_about_missing_glyphs = false,
     window_background_opacity = 0.95,
     window_padding = {left = 0, right = 0, top = 0, bottom = 0},
