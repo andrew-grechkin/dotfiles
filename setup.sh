@@ -52,6 +52,7 @@ ln -srf .config/zsh                                          ~/.config/
 ln -srf .local/lib/perl5                                     ~/.local/lib/
 ln -srf .local/script                                        ~/.local/
 ln -srf .local/share/3rdparty                                ~/.local/share/
+ln -srf .local/share/distrobox                               ~/.local/share/
 
 command cp -rf ".config/crow-translate"                      ~/.config/
 command cp -rf ".config/htop"                                ~/.config/ 2>/dev/null
