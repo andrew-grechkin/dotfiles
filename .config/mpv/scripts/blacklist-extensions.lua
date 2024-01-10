@@ -4,7 +4,7 @@ local log = require 'mp.msg'
 local utils = require 'mp.utils'
 
 OPTS = {
-    blacklist_str = 'gif,jpg,png,log,cue',
+    blacklist_str = 'gif,jpg,png,log,cue,txt',
     whitelist_str = '',
     remove_files_without_extension = true,
     oneshot = true,
@@ -37,6 +37,7 @@ else
 end
 
 local should_remove = function(filename)
+    -- log.info(('got: %s'):format(filename))
     if string.find(filename, '://') then return false end
 
     local stat = utils.file_info(filename)
@@ -44,15 +45,36 @@ local should_remove = function(filename)
         local extension = string.match(filename, '%.([^./]+)$')
         if not extension and OPTS.remove_files_without_extension then return true end
         if extension and exclude(string.lower(extension)) then return true end
+    else
+        if stat and stat.is_dir then
+            local _, basename = utils.split_path(filename)
+            if basename == '@eaDir' then return true end
+        end
     end
 
     return false
 end
 
-local process = function(playlist_count)
-    if playlist_count < 2 then return end
-    if OPTS.oneshot then mp.unobserve_property(OBSERVE) end
-    local playlist = mp.get_property_native('playlist')
+-- local process = function(playlist_count)
+--     log.info(('playlist size: %s'):format(playlist_count))
+--     if playlist_count < 2 then return end
+--     if OPTS.oneshot then mp.unobserve_property(OBSERVE) end
+--     local playlist = mp.get_property_native('playlist')
+--     local removed = 0
+--     for i = #playlist, 1, -1 do
+--         if should_remove(playlist[i].filename) then
+--             log.info(('removed file: %s'):format(playlist[i].filename))
+--             mp.commandv('playlist-remove', i - 1)
+--             removed = removed + 1
+--         end
+--     end
+--     if removed == #playlist then log.warn('removed eveything from the playlist') end
+-- end
+
+-- OBSERVE = function(_, v) process(v) end
+
+local observe_playlist = function(playlist)
+    -- log.info(('playlist: %s'):format(utils.to_string(playlist)))
     local removed = 0
     for i = #playlist, 1, -1 do
         if should_remove(playlist[i].filename) then
@@ -64,6 +86,5 @@ local process = function(playlist_count)
     if removed == #playlist then log.warn('removed eveything from the playlist') end
 end
 
-OBSERVE = function(_, v) process(v) end
-
-mp.observe_property('playlist-count', 'number', OBSERVE)
+-- mp.observe_property('playlist-count', 'number', OBSERVE)
+mp.observe_property('playlist', 'native', function(_, v) observe_playlist(v) end)

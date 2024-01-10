@@ -7,17 +7,23 @@ COMMAND_EXTRACT_COMMIT="echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | tr -d
 CMD=(
 	fzf
 	--ansi
+	--no-multi
+	--no-sort
 	--reverse
+	--scheme=history
+	--scroll-off=8
+	--tabstop=4
 	--tiebreak=index
-	--preview-window=right:60%:wrap:hidden
-	--bind="ctrl-d:page-down,ctrl-u:page-up"
-	--bind="ctrl-h:preview-up,ctrl-l:preview-down"
-	--bind="ctrl-v:toggle-preview,ctrl-w:toggle-preview-wrap,ctrl-s:toggle-sort"
+	--track
+	--preview-window=right:60%:border-left:wrap:hidden
+	--bind='ctrl-d:page-down,ctrl-u:page-up'
+	--bind='ctrl-h:preview-up,ctrl-l:preview-down'
+	--bind='ctrl-v:toggle-preview,ctrl-w:toggle-preview-wrap,ctrl-s:toggle-sort'
 	--bind="ctrl-y:execute-silent(${COMMAND_EXTRACT_COMMIT} | clipcopy)"
-	--bind="esc:cancel"
-	--bind="home:top"
-	--bind="tab:accept,shift-tab:accept"
-	--header='Press c-v to preview, c-o to checkout, c-m/enter to show fullscreen'
+	--bind='esc:cancel'
+	--bind='home:top'
+	--bind='tab:accept,shift-tab:accept'
+	--header='Press C-v to preview, C-o to checkout, C-m/enter to show fullscreen'
 )
 
 OPTIONS=("$@")
@@ -25,7 +31,7 @@ for i in ${!OPTIONS[*]}; do
 	OPTION="${OPTIONS[$i]}"
 	if [[ "$OPTION" =~ --reload-command= ]]; then
 		CMD+=(
-			--header='Keys: move(c-j/k), preview(c-v), p-move(c-h/l), yank(c-y), (c-m/enter), fetch(c-f), pull(c-g), checkout(c-o), reload(c-r)'
+			--header='Keys: move(C-j/k), preview(C-v), p-move(C-h/l), yank(C-y), (C-m/enter), fetch(C-f), pull(C-g), checkout(C-o), reload(C-r)'
 			--bind="ctrl-f:execute-silent(git fall)+reload(${OPTION#--reload-command=})"
 			--bind="ctrl-g:execute-silent(git up)+reload(${OPTION#--reload-command=})"
 			--bind="ctrl-o:execute-silent(C=\$(${COMMAND_EXTRACT_COMMIT}); A=\$(git describe --all --always \$C); git checkout \${A/heads\/})+reload(${OPTION#--reload-command=})"

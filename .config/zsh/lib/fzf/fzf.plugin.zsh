@@ -49,13 +49,13 @@ export FZF_ALT_C_COMMAND='_fzf_compgen_helper . d'
 # => Setup options ------------------------------------------------------------------------------------------------ {{{1
 
 export FZF_DEFAULT_BINDS=(
-	--bind="ctrl-d:page-down,ctrl-u:page-up"
-	--bind="ctrl-h:preview-up,ctrl-l:preview-down"
-	--bind="ctrl-v:toggle-preview,ctrl-w:toggle-preview-wrap,ctrl-s:toggle-sort"
-	--bind="ctrl-y:execute-silent(echo -n {} | clipcopy)"
-	--bind="esc:cancel"
-	--bind="home:top"
-	--bind="tab:accept,shift-tab:accept"
+	--bind='ctrl-d:page-down,ctrl-u:page-up'
+	--bind='ctrl-h:preview-up,ctrl-l:preview-down'
+	--bind='ctrl-v:toggle-preview,ctrl-w:toggle-preview-wrap,ctrl-s:toggle-sort'
+	--bind='ctrl-y:execute-silent(echo -n {} | clipcopy)'
+	--bind='esc:cancel'
+	--bind='home:top'
+	--bind='tab:accept,shift-tab:accept'
 )
 export FZF_FILE_BINDS=(
 	--bind='ctrl-alt-d:execute(rm -i {+} < /dev/tty > /dev/tty)+abort'
@@ -68,7 +68,7 @@ export FZF_FILE_BINDS=(
 )
 export FZF_FILE_PREVIEW=(
 	--preview-window=right:40%:wrap:hidden
-	--preview="{ show-dir {} || show-file {} } 2>&1 | head -n 100"
+	--preview='{ show-dir {} || show-file {} } 2>&1 | head -n 100'
 )
 
 export FZF_NO_MULTI_OPTIONS=(
