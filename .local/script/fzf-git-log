@@ -47,4 +47,4 @@ CMD+=(
 	--preview="show-commit \"\$(${COMMAND_EXTRACT_COMMIT})\" --color=always ${OPTIONS[@]}"
 )
 
-"${CMD[@]}"
+exec "${CMD[@]}"
