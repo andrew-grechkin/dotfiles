@@ -79,7 +79,7 @@ augroup END
 
 " => Copy & paste ------------------------------------------------------------------------------------------------- {{{1
 
-set clipboard=unnamedplus                                                      " Copy into system clipboard (*, +) registers
+" set clipboard=unnamedplus                                                      " Copy into system clipboard (*, +) registers
 
 " disable indent while inserting from buffer
 if !has('nvim')
@@ -171,9 +171,16 @@ silent! tnoremap <A-l>                 <C-\><C-n><C-w><Right>
 		nnoremap <C-PageDown>          :tabnext<CR>
 		nnoremap <C-PageUp>            :tabprevious<CR>
 
-" Yank without jank: http://ddrscott.github.io/blog/2016/yank-without-jank
-		vnoremap  y                    myy`y
+" yank without jank: http://ddrscott.github.io/blog/2016/yank-without-jank
 		vnoremap  Y                    myY`y
+		vnoremap  y                    myy`y
+
+		vnoremap  <leader>Y            my"+Y`y
+		vnoremap  <leader>y            my"+y`y
+
+" paste replace visual selection without copying it
+		vnoremap  P                    P:let @"=@0<CR>
+		vnoremap  p                    p:let @"=@0<CR>
 
 " => Old/new ------------------------------------------------------------------------------------------------------ {{{1
 

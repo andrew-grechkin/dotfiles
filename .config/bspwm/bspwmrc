@@ -47,7 +47,9 @@ bspc rule -a 'mpv'                    state=floating sticky=on rectangle=564x317
 bspc rule -a 'pinentry'               state=floating sticky=on
 
 bspc rule -a '*:*:Zoom - Licensed Account'       desktop='7'
+bspc rule -a '*:*:Zoom Cloud Meetings'           desktop='7'
 bspc rule -a '*:*:Zoom Meeting'                  desktop='7'
+bspc rule -a '*:*:Zoom'                          desktop='7'
 bspc rule -a '*:*:zoom_linux_float_video_window' desktop='7' sticky=on state=floating rectangle=200x112
 bspc rule -a 'Chromium'                          desktop='1'
 bspc rule -a 'Gimp'                              desktop='8' state=floating follow=on

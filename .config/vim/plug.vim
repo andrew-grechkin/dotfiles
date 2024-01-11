@@ -3,6 +3,7 @@ call plug#begin('~/.local/share/vim/plugged')
 	Plug 'christoomey/vim-tmux-navigator'                                          " Better tmux integration
 	Plug 'junegunn/fzf', {'dir': '~/.cache/fzf', 'do': './install --bin'}
 	Plug 'junegunn/fzf.vim'                                                        " Fuzzy search
+	Plug 'junegunn/vim-peekaboo'
 	Plug 'junegunn/vim-plug'
 	Plug 'andrew-grechkin/vim-grepper'                                             " Grep integration
 	Plug 'nelstrom/vim-visual-star-search'

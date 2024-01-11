@@ -131,13 +131,22 @@ return {
             }
 
             local visual_mappings = {
-                ['<leader>'] = {['<CR>'] = {':!bash<CR>', 'execute lines in shell'}},
+                ['<leader>'] = {
+                    ['<CR>'] = {':!bash<CR>', 'execute lines in shell'},
+                    Y = {'my"+Y`y', 'Yank without jank to clipboard'},
+                    y = {'my"+y`y', 'Yank without jank to clipboard'},
+                },
                 ['<'] = {'<gv', 'don\'t loose selection when changing indentation'},
                 ['>'] = {'>gv', 'don\'t loose selection when changing indentation'},
                 -- P = {'"zdP', 'paste replace visual without without copying it'},
                 -- p = {'"zdp', 'paste replace visual selection without copying it'},
-                P = {'"pc<C-r>+<C-\\><C-n>', 'paste replace visual selection without copying it'},
-                p = {'"pc<C-r>+<C-\\><C-n>', 'paste replace visual selection without copying it'},
+                -- P = {'"pc<C-r>0<C-\\><C-n>', 'paste replace visual selection without copying it'},
+                -- p = {
+                --     '<C-\\><C-n>:set paste<CR>gv"pc<C-r>0<C-\\><C-n>:set nopaste<CR>',
+                --     'paste replace visual selection without copying it',
+                -- },
+                P = {'P:let @"=@0<CR>', 'paste replace visual selection without copying it'},
+                p = {'p:let @"=@0<CR>', 'paste replace visual selection without copying it'},
                 Y = {'myY`y', 'Yank without jank'}, -- http://ddrscott.github.io/blog/2016/yank-without-jank
                 y = {'myy`y', 'Yank without jank'},
             }

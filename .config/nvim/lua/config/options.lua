@@ -1,6 +1,6 @@
 vim.o.autowrite = true
 vim.o.breakindent = true
-vim.o.clipboard = 'unnamedplus'
+-- vim.o.clipboard = 'unnamedplus'
 vim.o.colorcolumn = '121'
 vim.o.complete = vim.o.complete .. ',kspell'
 vim.o.completeopt = 'menu,preview,menuone,noinsert,noselect'
