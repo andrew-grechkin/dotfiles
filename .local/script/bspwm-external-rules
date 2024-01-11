@@ -5,7 +5,7 @@ use autodie;
 use warnings     qw(FATAL utf8);
 
 use List::Util qw(none);
-open(my $log, '>', '/tmp/bspwm-external-rule.log') or die "open failed: $!";
+open(my $log, '>>', '/tmp/bspwm-external-rule.log') or die "open failed: $!";
 say {$log} "args: @ARGV";
 
 my ($window_id, $class_name, $instance_name, $params) = @ARGV;
