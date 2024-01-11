@@ -94,6 +94,8 @@ return {
                     -- p = {'`[ . strpart(getregtype(), 0, 1) . `]', 'Select latest pasted'},
                     x = {':!xdg-open %<CR><CR>', 'Open in the default program'},
                     S = {name = 'Search'},
+                    P = {'"+P', 'paste from clipboard'},
+                    p = {'"+p', 'paste from clipboard'},
                 },
                 ['['] = {
                     name = 'Prev',
@@ -133,8 +135,16 @@ return {
             local visual_mappings = {
                 ['<leader>'] = {
                     ['<CR>'] = {':!bash<CR>', 'execute lines in shell'},
-                    Y = {'my"+Y`y', 'Yank without jank to clipboard'},
-                    y = {'my"+y`y', 'Yank without jank to clipboard'},
+                    Y = {'my"+Y`y', 'yank without jank to clipboard'},
+                    y = {'my"+y`y', 'yank without jank to clipboard'},
+                    P = {
+                        '"+P:let @"=@0<CR>',
+                        'paste from clipboard, replace visual selection without copying it',
+                    },
+                    p = {
+                        '"+p:let @"=@0<CR>',
+                        'paste from clipboard, replace visual selection without copying it',
+                    },
                 },
                 ['<'] = {'<gv', 'don\'t loose selection when changing indentation'},
                 ['>'] = {'>gv', 'don\'t loose selection when changing indentation'},
@@ -145,10 +155,10 @@ return {
                 --     '<C-\\><C-n>:set paste<CR>gv"pc<C-r>0<C-\\><C-n>:set nopaste<CR>',
                 --     'paste replace visual selection without copying it',
                 -- },
-                P = {'P:let @"=@0<CR>', 'paste replace visual selection without copying it'},
-                p = {'p:let @"=@0<CR>', 'paste replace visual selection without copying it'},
-                Y = {'myY`y', 'Yank without jank'}, -- http://ddrscott.github.io/blog/2016/yank-without-jank
-                y = {'myy`y', 'Yank without jank'},
+                P = {'P:let @"=@0<CR>', 'paste, replace visual selection without copying it'},
+                p = {'p:let @"=@0<CR>', 'paste, replace visual selection without copying it'},
+                Y = {'myY`y', 'yank without jank'}, -- http://ddrscott.github.io/blog/2016/yank-without-jank
+                y = {'myy`y', 'yank without jank'},
             }
 
             local insert_mappings = {
