@@ -1,63 +1,74 @@
-# => Mojolicious -------------------------------------------------------------------------------------------------- {{{1
-
-requires "Cpanel::JSON::XS";
-requires "EV";
 requires "Future::AsyncAwait";
 requires "IO::Socket::SSL";
-requires "IO::Socket::Socks";
-requires "Mojo::Run3";
 requires "Mojolicious";
-requires "Net::DNS::Native";
 requires "Role::Tiny";
 
-# => Misc --------------------------------------------------------------------------------------------------------- {{{1
-
-requires "App::cpanminus";
-requires "App::perlimports";
-requires "CHI";
-requires "Carp::Always";
-requires "Data::Dump";
-requires "Data::Printer";
-requires "DateTime::TimeZone";
-requires "EV";
 requires "File::Map";
-requires "Image::ExifTool";
-requires "Image::Hash";
-requires "List::UtilsBy";
 requires "Log::Any";
-requires "Neovim::Ext";
 requires "Path::Tiny";
-requires "Perl::Critic";
-requires "Perl::Critic::Pulp";
-requires "Sereal";
-requires "Sort::Naturally";
-requires "Sub::StrictDecl";
 requires "Syntax::Keyword::Match";
 requires "Syntax::Operator::Equ";
 requires "Time::Moment";
 requires "YAML::XS";
-requires "assign";
 
-# => Web ---------------------------------------------------------------------------------------------------------- {{{1
+on 'develop' => sub {
+    requires "App::perlimports";
+    requires "Carp::Always";
+    requires "Data::Dump";
+    requires "Data::Printer";
+    requires "Perl::Critic";
+    requires "Perl::Critic::Pulp";
+};
 
-requires "Crypt::JWT";
-requires "CryptX";
-requires "Mojo::Pg";
-requires "Mojolicious::Plugin::OpenAPI";
-requires "Mojolicious::Plugin::Status";
-requires "Mojolicious::Plugin::SwaggerUI";
+feature 'mojo' => sub {
+    requires "Cpanel::JSON::XS";
+    requires "EV";
+    requires "IO::Socket::Socks";
+    requires "Net::DNS::Native";
 
-# => Test --------------------------------------------------------------------------------------------------------- {{{1
+    requires "Mojo::Run3";
+};
 
-requires "Code::TidyAll";
-requires "Parallel::ForkManager";
-requires "Test2::Harness";
-requires "Test2::Suite";
+feature 'misc' => sub {
+    requires "CHI";
+    requires "DateTime::TimeZone";
+    requires "Neovim::Ext";
+    requires "Sereal";
+    requires "Sort::Naturally";
+};
 
-# => repl --------------------------------------------------------------------------------------------------------- {{{1
+feature 'experiment' => sub {
+    requires "App::cpanminus";
+    requires "List::UtilsBy";
+    requires "assign";
+};
 
-requires "Devel::IPerl";
-requires "Regexp::Debugger";
-requires "Reply";
-requires "Term::ReadKey";
-requires "Term::ReadLine::Gnu";
+feature 'image' => sub {
+    requires "Image::ExifTool";
+    requires "Image::Hash";
+};
+
+feature 'openapi' => sub {
+    requires "Crypt::JWT";
+    requires "CryptX";
+    requires "Mojo::Pg";
+    requires "Mojolicious::Plugin::OpenAPI";
+    requires "Mojolicious::Plugin::Status";
+    requires "Mojolicious::Plugin::SwaggerUI";
+};
+
+feature 'repl' => sub {
+    requires "Code::TidyAll";
+    requires "Parallel::ForkManager";
+    requires "Sub::StrictDecl";
+    requires "Test2::Harness";
+    requires "Test2::Suite";
+};
+
+feature 'repl' => sub {
+    requires "Devel::IPerl";
+    requires "Regexp::Debugger";
+    requires "Reply";
+    requires "Term::ReadKey";
+    requires "Term::ReadLine::Gnu";
+};
