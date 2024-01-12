@@ -15,13 +15,7 @@ CMD=(
 	--tabstop=4
 	--tiebreak=index
 	--track
-	--preview-window=right:60%:border-left:wrap:hidden
-	--bind='ctrl-d:page-down,ctrl-u:page-up'
-	--bind='ctrl-h:preview-up,ctrl-l:preview-down'
-	--bind='ctrl-v:toggle-preview,ctrl-w:toggle-preview-wrap,ctrl-s:toggle-sort'
 	--bind="ctrl-y:execute-silent(${COMMAND_EXTRACT_COMMIT} | clipcopy)"
-	--bind='esc:cancel'
-	--bind='home:top'
 	--bind='tab:accept,shift-tab:accept'
 	--header='Press C-v to preview, C-o to checkout, C-m/enter to show fullscreen'
 )

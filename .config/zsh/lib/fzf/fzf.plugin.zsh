@@ -49,7 +49,7 @@ export FZF_ALT_C_COMMAND='_fzf_compgen_helper . d'
 # => Setup options ------------------------------------------------------------------------------------------------ {{{1
 
 export FZF_DEFAULT_BINDS=(
-	--bind='ctrl-d:page-down,ctrl-u:page-up'
+	--bind='ctrl-d:half-page-down,ctrl-u:half-page-up'
 	--bind='ctrl-h:preview-up,ctrl-l:preview-down'
 	--bind='ctrl-v:toggle-preview,ctrl-w:toggle-preview-wrap,ctrl-s:toggle-sort'
 	--bind='ctrl-y:execute-silent(echo -n {} | clipcopy)'
@@ -67,7 +67,6 @@ export FZF_FILE_BINDS=(
 	--bind='f4:execute($EDITOR {} < /dev/tty > /dev/tty 2>&1)'
 )
 export FZF_FILE_PREVIEW=(
-	--preview-window=right:40%:wrap:hidden
 	--preview='{ show-dir {} || show-file {} } 2>&1 | head -n 100'
 )
 
@@ -81,8 +80,8 @@ export FZF_MULTI_OPTIONS=(
 	--bind='tab:toggle-out,shift-tab:toggle-in'
 )
 
-export FZF_DEFAULT_OPTS=$(printf " '%s'" ${FZF_NO_MULTI_OPTIONS[@]} ${FZF_DEFAULT_BINDS[@]} ${FZF_FILE_BINDS[@]} ${FZF_FILE_PREVIEW[@]})
-export   FZF_MULTI_OPTS=$(printf " '%s'" ${FZF_MULTI_OPTIONS[@]})
+# export FZF_DEFAULT_OPTS=$(printf " '%s'" ${FZF_NO_MULTI_OPTIONS[@]} ${FZF_DEFAULT_BINDS[@]} ${FZF_FILE_BINDS[@]} ${FZF_FILE_PREVIEW[@]})
+# export   FZF_MULTI_OPTS=$(printf " '%s'" ${FZF_MULTI_OPTIONS[@]})
 
 export FZF_CTRL_T_OPTS="$FZF_DEFAULT_OPTS $FZF_MULTI_OPTS"
 # export FZF_CTRL_R_OPTS=""

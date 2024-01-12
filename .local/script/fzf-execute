@@ -4,15 +4,10 @@ set -Eeuo pipefail
 
 FZF_CMD=(
 	fzf
-	--bind='ctrl-d:page-down,ctrl-u:page-up'
-	--bind='ctrl-h:preview-up,ctrl-l:preview-down'
-	--bind='ctrl-v:toggle-preview,ctrl-w:toggle-preview-wrap,ctrl-s:toggle-sort'
 	--bind='ctrl-y:execute-silent(echo -n {2} | clipcopy)'
 	--bind="enter:execute(echo 'nohup '{2..}' & disown; sleep 0.2' | tee -a /tmp/fzf-execute-cmd.log | bash -x </dev/null &>>/tmp/fzf-execute.log)+abort"
-	--bind='esc:cancel'
 	--delimiter='	'
 	--no-multi
-	--preview-window=right:60%:wrap:hidden
 	--preview='echo {2..}'
 	--reverse
 	--with-nth=1

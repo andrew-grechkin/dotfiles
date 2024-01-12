@@ -67,10 +67,6 @@ sub _start_fzf() {
 
     my @cmd = (
         'fzf',
-        '--bind',     'ctrl-d:page-down',
-        '--bind',     'ctrl-u:page-up',
-        '--bind',     'f1:toggle-preview',
-        '--bind',     'f2:toggle-preview-wrap',
         '--bind',     'tab:accept',
         '--bind',     'home:top',
         '--with-nth', '2..', '--preview-window', 'right:86:wrap', '--preview',
