@@ -48,46 +48,46 @@ export FZF_ALT_C_COMMAND='_fzf_compgen_helper . d'
 
 # => Setup options ------------------------------------------------------------------------------------------------ {{{1
 
-export FZF_DEFAULT_BINDS=(
-	--bind='ctrl-d:half-page-down,ctrl-u:half-page-up'
-	--bind='ctrl-h:preview-up,ctrl-l:preview-down'
-	--bind='ctrl-v:toggle-preview,ctrl-w:toggle-preview-wrap,ctrl-s:toggle-sort'
-	--bind='ctrl-y:execute-silent(echo -n {} | clipcopy)'
-	--bind='esc:cancel'
-	--bind='home:top'
-	--bind='tab:accept,shift-tab:accept'
-)
-export FZF_FILE_BINDS=(
-	--bind='ctrl-alt-d:execute(rm -i {+} < /dev/tty > /dev/tty)+abort'
-	--bind='ctrl-b:execute((show-dir {} || binwalk {}) | $PAGER > /dev/tty 2>&1)'
-	--bind='ctrl-g:execute((show-dir {} || md5sum {}) | $PAGER > /dev/tty 2>&1)'
-	--bind='ctrl-t:execute((show-dir {} || sha1sum {}) | $PAGER > /dev/tty 2>&1)'
-	--bind='ctrl-x:execute((show-dir {} || hexdump -C {}) | $PAGER > /dev/tty 2>&1)'
-	--bind='f3:execute((show-dir {} || show-file {} ) | $PAGER > /dev/tty 2>&1)'
-	--bind='f4:execute($EDITOR {} < /dev/tty > /dev/tty 2>&1)'
-)
-export FZF_FILE_PREVIEW=(
-	--preview='{ show-dir {} || show-file {} } 2>&1 | head -n 100'
-)
+# export FZF_DEFAULT_BINDS=(
+# 	--bind='ctrl-d:half-page-down,ctrl-u:half-page-up'
+# 	--bind='ctrl-h:preview-up,ctrl-l:preview-down'
+# 	--bind='ctrl-v:toggle-preview,ctrl-w:toggle-preview-wrap,ctrl-s:toggle-sort'
+# 	--bind='ctrl-y:execute-silent(echo -n {} | clipcopy)'
+# 	--bind='esc:cancel'
+# 	--bind='home:top'
+# 	--bind='tab:accept,shift-tab:accept'
+# )
+# export FZF_FILE_BINDS=(
+# 	--bind='ctrl-alt-d:execute(rm -i {+} < /dev/tty > /dev/tty)+abort'
+# 	--bind='ctrl-b:execute((show-dir {} || binwalk {}) | $PAGER > /dev/tty 2>&1)'
+# 	--bind='ctrl-g:execute((show-dir {} || md5sum {}) | $PAGER > /dev/tty 2>&1)'
+# 	--bind='ctrl-t:execute((show-dir {} || sha1sum {}) | $PAGER > /dev/tty 2>&1)'
+# 	--bind='ctrl-x:execute((show-dir {} || hexdump -C {}) | $PAGER > /dev/tty 2>&1)'
+# 	--bind='f3:execute((show-dir {} || show-file {} ) | $PAGER > /dev/tty 2>&1)'
+# 	--bind='f4:execute($EDITOR {} < /dev/tty > /dev/tty 2>&1)'
+# )
+# export FZF_FILE_PREVIEW=(
+# 	--preview='{ show-dir {} || show-file {} } 2>&1 | head -n 100'
+# )
 
-export FZF_NO_MULTI_OPTIONS=(
-	--no-multi
-	--bind='tab:accept,shift-tab:accept'
-)
+# export FZF_NO_MULTI_OPTIONS=(
+# 	--no-multi
+# 	--bind='tab:accept,shift-tab:accept'
+# )
 
-export FZF_MULTI_OPTIONS=(
-	--multi
-	--bind='tab:toggle-out,shift-tab:toggle-in'
-)
+# export FZF_MULTI_OPTIONS=(
+# 	--multi
+# 	--bind='tab:toggle-out,shift-tab:toggle-in'
+# )
 
 # export FZF_DEFAULT_OPTS=$(printf " '%s'" ${FZF_NO_MULTI_OPTIONS[@]} ${FZF_DEFAULT_BINDS[@]} ${FZF_FILE_BINDS[@]} ${FZF_FILE_PREVIEW[@]})
 # export   FZF_MULTI_OPTS=$(printf " '%s'" ${FZF_MULTI_OPTIONS[@]})
 
-export FZF_CTRL_T_OPTS="$FZF_DEFAULT_OPTS $FZF_MULTI_OPTS"
-# export FZF_CTRL_R_OPTS=""
+# export FZF_CTRL_T_OPTS="$FZF_DEFAULT_OPTS $FZF_MULTI_OPTS"
+export FZF_CTRL_R_OPTS="--bind=esc:abort"
 # export FZF_ALT_C_OPTS=""
 
-export FZF_TMUX=1
+# export FZF_TMUX=1
 
 # => ssh (overrides the default one) ------------------------------------------------------------------------------ {{{1
 

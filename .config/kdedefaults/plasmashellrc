@@ -2,7 +2,7 @@
 Automatic=true
 Description=Youtube links handeling
 Number of commands=3
-Regexp=([^"\\s]+youtube.*watch\\?[^"\\s]+)
+Regexp=([^"\\s]+youtube.*watch\\?[^"\\s]+)|([^"\\s]+youtu.be[^"\\s]+)
 
 [Action_0/Command_0]
 Commandline[$e]=mpv --quiet -- '%0'

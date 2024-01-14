@@ -75,6 +75,7 @@ end
 
 local observe_playlist = function(playlist)
     -- log.info(('playlist: %s'):format(utils.to_string(playlist)))
+    if #playlist == 1 then return end
     local removed = 0
     for i = #playlist, 1, -1 do
         if should_remove(playlist[i].filename) then
