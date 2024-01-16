@@ -13,6 +13,15 @@ function install-distrobox() {
 
 # => proxy related ------------------------------------------------------------------------------------------------ {{{1
 
+function enable-proxy() {
+	PROXY_FDQN=${PROXY_FDQN:-"webproxy"}
+	PROXY_PORT=${PROXY_PORT:-"3128"}
+	export all_proxy="http://$PROXY_FDQN:$PROXY_PORT"
+	export http_proxy="http://$PROXY_FDQN:$PROXY_PORT"
+	export https_proxy="http://$PROXY_FDQN:$PROXY_PORT"
+	export no_proxy="localhost,localaddress,127.0.0.1,.boo""king.com"
+}
+
 function disable-proxy() {
 	unset all_proxy
 	unset http_proxy
