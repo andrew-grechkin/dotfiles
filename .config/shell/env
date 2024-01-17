@@ -32,7 +32,11 @@ function join_by { local IFS="$1"; shift; echo "$*"; }
 FZF_DEFAULT_OPTS_ARRAY=(
 	'ctrl-d:half-page-down,ctrl-u:half-page-up'
 	'ctrl-n:preview-down,ctrl-p:preview-up'
-	'ctrl-v:toggle-preview,ctrl-w:toggle-preview-wrap,ctrl-s:toggle-sort'
+	'ctrl-v:toggle-preview,ctrl-alt-w:toggle-preview-wrap,ctrl-s:toggle-sort'
+	'shift-left:change-preview-window(80%|60%)'
+	'shift-right:change-preview-window(40%|60%)'
+	'ctrl-d:delete-char'
+	'ctrl-w:backward-kill-word'
 	'ctrl-y:execute-silent(echo -n {} | clipcopy)'
 	'esc:cancel'
 	'home:top'

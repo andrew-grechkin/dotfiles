@@ -1,8 +1,8 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 
 set -Eeuo pipefail
 
-cat <<- "EOF" | fzf-execute
+cat << "EOF" | fzf-execute
 lock				loginctl lock-session
 logout				qdbus org.kde.ksmserver /KSMServer logout 0 0 3 || loginctl terminate-session self
 suspend/sleep		systemctl suspend
