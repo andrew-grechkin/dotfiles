@@ -13,7 +13,6 @@ CMD=(
 	--scheme=history
 	--scroll-off=8
 	--tabstop=4
-	--tiebreak=index
 	--track
 	--bind="ctrl-y:execute-silent(${COMMAND_EXTRACT_COMMIT} | clipcopy)"
 	--bind='tab:accept,shift-tab:accept'

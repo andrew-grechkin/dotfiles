@@ -131,6 +131,9 @@
 	extendedRegexp = true
 	lineNumber     = true
 
+[gpg "ssh"]
+	allowedSignersFile = ~/.config/git/allowed_signers
+
 [gui]
 	encoding = utf-8
 

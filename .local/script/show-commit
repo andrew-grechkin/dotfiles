@@ -3,9 +3,9 @@
 set -Eeo pipefail
 
 if [[ -x "$(command -v delta)" ]]; then
-	GIT_PAGER="delta"
+	GIT_PAGER=("delta" "--paging=never")
 else
-	GIT_PAGER="cat"
+	GIT_PAGER=("cat")
 fi
 
 git-in-repo && {
@@ -24,11 +24,9 @@ git-in-repo && {
 	if [[ -n "$(git rev-parse --verify "$COMMIT^2" 2>/dev/null)" ]]; then
 		# is a merge commit
 
-		if [ -t 1 ]; then
-			git show "${SHOW_OPTIONS[@]}" "$COMMIT" "$@" --pretty=fuller
-		else
-			git --no-pager show "${SHOW_OPTIONS[@]}" "$COMMIT" "$@" --pretty=fuller | "$GIT_PAGER"
-		fi
+		git --no-pager show --color=always "${SHOW_OPTIONS[@]}" "$COMMIT" "$@" --pretty=fuller
+		git --no-pager log  --color=always --oneline "$COMMIT"^1.."$COMMIT"^2
+
 		echo
 		SHOW_OPTIONS+=(--first-parent)
 
@@ -52,9 +50,5 @@ git-in-repo && {
 		fi
 	fi
 
-	if [ -t 1 ]; then
-		git show "${SHOW_OPTIONS[@]}" "$SPAN" "$@"
-	else
-		git --no-pager show "${SHOW_OPTIONS[@]}" "$SPAN" "$@" | "$GIT_PAGER"
-	fi
+	git --no-pager show "${SHOW_OPTIONS[@]}" "$SPAN" "$@" | "${GIT_PAGER[@]}"
 } 2>/dev/null
