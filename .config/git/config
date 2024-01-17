@@ -177,7 +177,7 @@
 
 [push]
 	autoSetupRemote = true
-	followTags      = true
+	followTags      = false
 
 [rebase]
 	abbreviateCommands  = true
