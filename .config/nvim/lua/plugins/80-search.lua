@@ -1,4 +1,11 @@
 return {
+    { -- https://github.com/sourcegraph/sg.nvim
+        'sourcegraph/sg.nvim',
+        enabled = vim.version().major > 1 or vim.version().minor > 8,
+        dependencies = {'nvim-lua/plenary.nvim'},
+        opts = {},
+    },
+    -- => --------------------------------------------------------------------------------------------------------- {{{1
     -- -- Flash enhances the built-in search functionality by showing labels
     -- -- at the end of each match, letting you quickly jump to a specific location.
     -- { -- https://github.com/folke/flash.nvim
@@ -273,10 +280,5 @@ return {
     --             which_key.register(visual_mappings, {mode = 'v', nowait = true, noremap = true})
     --         end
     --     end,
-    -- },
-    -- => --------------------------------------------------------------------------------------------------------- {{{1
-    -- { -- https://github.com/sourcegraph/sg.nvim
-    --     'sourcegraph/sg.nvim',
-    --     dependencies = {'nvim-lua/plenary.nvim'},
     -- },
 }

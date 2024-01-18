@@ -23,6 +23,7 @@ return {
                 'gitcommit',
                 'gitignore',
                 'json',
+                'jsonc',
                 'lua',
                 'make',
                 'regex',

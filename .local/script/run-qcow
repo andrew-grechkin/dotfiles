@@ -43,8 +43,8 @@ CMD=(
 	-nic "user,model=virtio-net-pci,hostfwd=tcp::2222-:22"
 	# -serial stdio
 	-smp 2
-	-vga std
-	# -vga virtio
+	# -vga std
+	-vga virtio
 	# -virtfs "local,path=$HOME/.cache,mount_tag=host0,security_model=passthrough,id=host0"
 )
 
