@@ -135,8 +135,8 @@ return {
             local visual_mappings = {
                 ['<leader>'] = {
                     ['<CR>'] = {':!bash<CR>', 'execute lines in shell'},
-                    Y = {'my"+Y`y', 'yank without jank to clipboard'},
-                    y = {'my"+y`y', 'yank without jank to clipboard'},
+                    Y = {'my"+Ygv"*Y`y', 'yank without jank to clipboard'},
+                    y = {'my"+ygv"*y`y', 'yank without jank to clipboard'},
                     P = {
                         '"+P:let @"=@0<CR>',
                         'paste from clipboard, replace visual selection without copying it',

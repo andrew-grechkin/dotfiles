@@ -135,14 +135,19 @@ super + BackSpace
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-system-exit"
 super + Return
 	wezterm start --always-new-process /usr/bin/zsh
+
 # super + b
 #	exo-open --launch WebBrowser
+super + c
+	qalculate-gtk
 super + d
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-app"
 super + o
 	opera
 super + s
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pass"
+# super + r
+#	exo-open --launch FileManager
 super + r
 	wezterm start --always-new-process --class 'Main-Tmux' distrobox enter -n arch -- tmux -L arch
 super + t
@@ -156,10 +161,13 @@ super + u
 
 super + shift + Return
 	wezterm --config="enable_csi_u_key_encoding=false" start --always-new-process /usr/bin/zsh
+
+super + shift + a
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-audio"
 super + shift + b
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "/media/nfs/home/doc/@technical"
-super + shift + c
-	qalculate-gtk
+super + shift + d
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-man"
 super + shift + f
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-film"
 super + shift + i
@@ -170,18 +178,14 @@ super + shift + n
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "/media/nfs/home/doc/@study"
 # super + shift + n
 # 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/create-note"
-# super + shift + r
-#	exo-open --launch FileManager
 super + shift + p
-	wezterm --config="enable_csi_u_key_encoding=false" start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pacman"
-super + shift + o
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-man"
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pacman"
 super + shift + s
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "${XDG_DATA_HOME}/cheatsheet"
 super + shift + u
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/fzf-select" emoji
-super + shift + v
-	$HOME/.local/script/play-clipboard-url
+# super + shift + v
+# 	$HOME/.local/script/play-clipboard-url
 super + shift + w
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/open-vim-wiki"
 super + shift + y
