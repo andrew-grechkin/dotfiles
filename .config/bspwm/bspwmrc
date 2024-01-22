@@ -52,6 +52,7 @@ bspc rule -a '*:*:Zoom Meeting'                  desktop='7'
 bspc rule -a '*:*:Zoom'                          desktop='7'
 bspc rule -a '*:*:zoom'                          state=floating
 bspc rule -a '*:*:zoom_linux_float_video_window' state=floating sticky=on rectangle=200x112
+bspc rule -a '*:zoom:*'                          state=floating
 bspc rule -a 'Chromium'                          desktop='1'
 bspc rule -a 'Gimp'                              desktop='8' state=floating follow=on
 bspc rule -a 'Google-chrome'                     desktop='1'
