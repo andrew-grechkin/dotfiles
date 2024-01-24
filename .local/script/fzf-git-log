@@ -24,7 +24,7 @@ for i in ${!OPTIONS[*]}; do
 	OPTION="${OPTIONS[$i]}"
 	if [[ "$OPTION" =~ --reload-command= ]]; then
 		CMD+=(
-			--header='Keys: move(C-j/k), preview(C-v), p-move(C-h/l), yank(C-y), (C-m/enter), fetch(C-f), pull(C-g), checkout(C-o), reload(C-r)'
+			--header='move(C-j/k), view(C-m/enter), preview(C-v), p-move(C-n/p), yank(C-y), fetch(C-f), pull(C-g), co(C-o), co-main(C-t), reload(C-r)'
 			--bind="ctrl-f:execute-silent(git fall)+reload(${OPTION#--reload-command=})"
 			--bind="ctrl-g:execute-silent(git up)+reload(${OPTION#--reload-command=})"
 			--bind="ctrl-o:execute-silent(C=\$(${COMMAND_EXTRACT_COMMIT}); A=\$(git describe --all --always \$C); git checkout \${A/heads\/})+reload(${OPTION#--reload-command=})"
