@@ -119,7 +119,7 @@
 [fetch]
 	parallel  = 0
 	prune     = true
-	pruneTags = true
+	pruneTags = false
 
 [format]
 	pretty = commit %H%d %(describe:tags) %nAuthor: [%ai] %aN <%aE>%nCommit: [%ci] %cN <%cE>%n%n%B

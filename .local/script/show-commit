@@ -19,12 +19,12 @@ git-in-repo && {
 	COMMIT="$(git rev-parse "$REF" 2>/dev/null)"
 	[[ -z "$COMMIT" ]] && return
 
-	SHOW_OPTIONS=(--color=always --ignore-space-change)
+	SHOW_OPTIONS=(--color=always --ignore-space-change --stat)
 
 	if [[ -n "$(git rev-parse --verify "$COMMIT^2" 2>/dev/null)" ]]; then
 		# is a merge commit
 
-		git --no-pager show --color=always "${SHOW_OPTIONS[@]}" "$COMMIT" "$@" --pretty=fuller
+		git --no-pager show "${SHOW_OPTIONS[@]}" "$COMMIT" "$@" --pretty=fuller
 		git --no-pager log  --color=always --oneline "$COMMIT"^1.."$COMMIT"^2
 
 		echo
@@ -50,5 +50,5 @@ git-in-repo && {
 		fi
 	fi
 
-	git --no-pager show "${SHOW_OPTIONS[@]}" "$SPAN" "$@" | "${GIT_PAGER[@]}"
+	git --no-pager show --patch "${SHOW_OPTIONS[@]}" "$SPAN" "$@" | "${GIT_PAGER[@]}"
 } 2>/dev/null
