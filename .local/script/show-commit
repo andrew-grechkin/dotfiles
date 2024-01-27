@@ -3,7 +3,8 @@
 set -Eeo pipefail
 
 if [[ -x "$(command -v delta)" ]]; then
-	GIT_PAGER=("delta" "--paging=never")
+	# FZF_PREVIEW_COLUMNS
+	GIT_PAGER=("delta")
 else
 	GIT_PAGER=("cat")
 fi
@@ -21,11 +22,22 @@ git-in-repo && {
 
 	SHOW_OPTIONS=(--color=always --ignore-space-change --stat)
 
+	TMPFIFO=$(mktemp -u)
+	mkfifo "$TMPFIFO"
+	function finish {
+		rm -f "$TMPFIFO"
+	}
+	trap finish EXIT
+
 	if [[ -n "$(git rev-parse --verify "$COMMIT^2" 2>/dev/null)" ]]; then
 		# is a merge commit
 
-		git --no-pager show "${SHOW_OPTIONS[@]}" "$COMMIT" "$@" --pretty=fuller
-		git --no-pager log  --color=always --oneline "$COMMIT"^1.."$COMMIT"^2
+		cat \
+			<(git --no-pager show "${SHOW_OPTIONS[@]}" "$COMMIT" "$@" --pretty=fuller) \
+			<(echo)                                                                    \
+			<(echo 'Commits:')                                                         \
+			<(git --no-pager log  --color=always --oneline "$COMMIT"^1.."$COMMIT"^2)   \
+			>> "$TMPFIFO" &
 
 		echo
 		SHOW_OPTIONS+=(--first-parent)
@@ -50,5 +62,8 @@ git-in-repo && {
 		fi
 	fi
 
-	git --no-pager show --patch "${SHOW_OPTIONS[@]}" "$SPAN" "$@" | "${GIT_PAGER[@]}"
+	git --no-pager show --patch "${SHOW_OPTIONS[@]}" "$SPAN" "$@" >> "$TMPFIFO" &
+
+	# shellcheck disable=SC2002
+	cat "$TMPFIFO" | "${GIT_PAGER[@]}"
 } 2>/dev/null

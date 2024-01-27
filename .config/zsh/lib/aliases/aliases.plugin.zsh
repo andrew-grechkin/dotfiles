@@ -31,10 +31,6 @@ alias -g H='| head'
 alias -g L='| less'
 alias -g LL='2>&1 | less'
 
-if [[ -x "$(command -v bat)" ]]; then
-	alias cat='bat'
-fi
-
 # => file operations ---------------------------------------------------------------------------------------------- {{{1
 
 alias cp='cp -i --reflink=auto --sparse=always'
