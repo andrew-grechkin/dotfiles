@@ -6,6 +6,7 @@ local result = {}
 if wezterm.config_builder then result = wezterm.config_builder() end
 
 local config = {
+    check_for_updates = false,
     adjust_window_size_when_changing_font_size = false,
     bold_brightens_ansi_colors = true,
     colors = {
