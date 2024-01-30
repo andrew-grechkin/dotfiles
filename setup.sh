@@ -59,7 +59,9 @@ command cp -rf ".config/htop"                                ~/.config/ 2>/dev/n
 command cp -rf ".config/locale.conf"                         ~/.config/ 2>/dev/null
 
 if [[ "$USER" == "agrechkin" ]]; then
-	ln -srf .config/black                                    ~/.config/
+	if [[ ! "$(hostname)" =~ ^LL ]]; then
+		ln -srf .config/black                                ~/.config/
+	fi
 	ln -srf .config/bspwm                                    ~/.config/
 	ln -srf .config/containers                               ~/.config/
 	ln -srf .config/luaformatter                             ~/.config/
