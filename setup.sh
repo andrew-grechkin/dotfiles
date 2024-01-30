@@ -66,7 +66,6 @@ if [[ "$USER" == "agrechkin" ]]; then
 	ln -srf .config/containers                               ~/.config/
 	ln -srf .config/luaformatter                             ~/.config/
 	ln -srf .config/markdownlint.yaml                        ~/.config/
-	ln -srf .config/mutt                                     ~/.config/
 	ln -srf .config/nvim                                     ~/.config/
 	ln -srf .config/perlcriticrc                             ~/.config/
 	ln -srf .config/perlcriticrc                             ~/.perlcriticrc
