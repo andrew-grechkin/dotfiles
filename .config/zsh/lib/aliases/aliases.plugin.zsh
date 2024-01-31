@@ -14,6 +14,9 @@ alias e='menu-environment'
 if [[ -n "$(command -v exa)"  ]]; then
 	alias l='exa -lFh --group --group-directories-first'
 	alias la='l -a --sort=name'
+elif [[ -n "$(command -v eza)"  ]]; then
+	alias l='eza -lFh --group --group-directories-first'
+	alias la='l -a --sort=name'
 else
 	alias l='ls -lFhv --group-directories-first' # long list, show type, human readable, group dirs
 	alias la='l -A'
