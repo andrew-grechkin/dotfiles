@@ -10,6 +10,10 @@ DIR="${1:-$(pwd)}"
 	echo "  Type: $(file -b "$DIR")"
 	echo
 
-	tree -Chp -L 3 "$DIR" \
-	|| ls -la --color=always
+	if [[ -x "$(command -v eza)" ]]; then
+		eza -laTF -L 3 --color=always --time-style=long-iso --group-directories-first "$DIR"
+	else
+		tree -Chp -L 3 "$DIR" \
+			|| ls -la --color=always
+	fi
 } 2> /dev/null

@@ -19,9 +19,11 @@ use HTML::Tagset             qw();
 use Mojo::Content::MultiPart qw();
 use Mojo::Content::Single    qw();
 use Mojo::DOM                qw();
-use Mojo::File               qw(path);
-use Mojo::Util               qw(b64_decode trim);
+use Mojo::File               qw();
 use Mojo::URL                qw();
+use Mojo::Util               qw(b64_decode md5_sum trim);
+
+use Data::Printer;
 
 our $VERSION = 1.01;
 
@@ -55,12 +57,16 @@ sub main() {
              [?] ([^?]+)    # "?" + data maybe with spcs +
              [?]=           # "?="
         }xi;
+        $meta{'subject'} //= $decoded_sbj;
         say 'Subject: ', $meta{'subject'};
     }
 
     $meta{'start'} = _split_header($mp->headers->content_type)->{'start'};
+    if (!$meta{'start'} && $mp->headers->header('Snapshot-Content-Location')) {
+        $meta{'start'} = $mp->headers->header('Snapshot-Content-Location');
+    }
 
-    my $dir = Mojo::File::tempdir('DIR' => '.');
+    my $dir = Mojo::File::tempdir(DIR => '.');
     while (my ($index, $part) = each $mp->parts->@*) {
         _process_part($index, $part, \%meta, $dir);
     }
@@ -93,8 +99,12 @@ sub _process_part ($index, $part, $meta_ref, $dir) {
         _process_headers($headers),
     };
 
-    if ($meta{'start'} && $headers->header('content-id') && $headers->header('content-id') eq $meta{'start'}) {
-        $info{'main'} = 1;
+    if ($meta{'start'}) {
+        if (($headers->header('content-id') && $headers->header('content-id') eq $meta{'start'})
+            || $url eq $meta{'start'})
+        {
+            $info{'main'} = 1;
+        }
     }
 
     say sprintf('document [%.3d]: %s, %s', $index, $info{'name'}, $url);
@@ -120,9 +130,10 @@ sub _process_part ($index, $part, $meta_ref, $dir) {
         $content //= $part->asset->slurp;
         if ($info{'type'} eq 'text/html') {
             $info{'html'} = $content;
+            $info{'name'} =~ s{(.html?)?$}{.html};
         } else {
             $options{'LIST'}
-                or $dir->child($info{'name'})->spurt($content);
+                or $dir->child($info{'name'})->spew($content);
         }
     }
 
@@ -136,8 +147,16 @@ sub _process_headers ($headers) {
         $info{'name'} = _split_header($headers->content_disposition)->{'filename'};
     }
     if (!$info{'name'} && $headers->content_location) {
-        $info{'name'} = $headers->content_location;
+        my $url = Mojo::URL->new($headers->content_location);
+        if ($url->scheme) {
+            $info{'name'} = $url->path;
+        } else {
+            $info{'name'} = $headers->content_location;
+        }
         $info{'name'} =~ s{^.*/}{};
+    }
+    if (!$info{'name'} && $headers->header('content-id')) {
+        $info{'name'} = md5_sum($headers->header('content-id'));
     }
     $info{'name'}
         or die "Unable to determine part name: <headers>\n";
@@ -172,7 +191,7 @@ sub _process_html_parts ($meta_ref, $dir) {
             }
         }
 
-        $dir->sibling($info{'name'})->spurt(encode('UTF-8', "$dom"));
+        $dir->sibling($info{'name'})->spew(encode('UTF-8', "$dom"));
     }
 
     return;
