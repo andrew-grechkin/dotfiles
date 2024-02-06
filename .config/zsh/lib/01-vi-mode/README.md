@@ -1,34 +1,26 @@
-vi-mode
-=======
+# vi-mode
+
 This plugin increase `vi-like` zsh functionality.
 
 Use `ESC` or `CTRL-[` to enter `Normal mode`.
 
-
-History
--------
+## History
 
 - `ctrl-p` : Previous command in history
 - `ctrl-n` : Next command in history
 - `/`      : Search backward in history
 - `n`      : Repeat the last `/`
 
-
-Mode indicators
----------------
+## Mode indicators
 
 *Normal mode* is indicated with red `<<<` mark at the right prompt, when it
 wasn't defined by theme.
 
-
-Vim edition
------------
+## Vim edition
 
 - `v`   : Edit current command line in Vim
 
-
-Movement
---------
+## Movement
 
 - `$`   : To the end of the line
 - `^`   : To the first non-blank character of the line
@@ -46,9 +38,7 @@ Movement
 - `;`   : Repeat latest f, t, F or T [count] times
 - `,`   : Repeat latest f, t, F or T in opposite direction
 
-
-Insertion
----------
+## Insertion
 
 - `i`   : Insert text before the cursor
 - `I`   : Insert text before the first character in the line
@@ -57,9 +47,7 @@ Insertion
 - `o`   : Insert new command line below the current one
 - `O`   : Insert new command line above the current one
 
-
-Delete and Insert
------------------
+## Delete and Insert
 
 - `ctrl-h`      : While in *Insert mode*: delete character before the cursor
 - `ctrl-w`      : While in *Insert mode*: delete word before the cursor

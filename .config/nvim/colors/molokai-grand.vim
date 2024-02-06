@@ -81,7 +81,7 @@ if &termguicolors ==# 1
 	hi manBold                                                            gui=bold
 	hi manItalic                                                          gui=italic
 	hi manUnderline                                                       gui=underline
- 	hi Normal                   guifg=#D8D8D2 guibg=NONE
+	hi Normal                   guifg=#D8D8D2 guibg=NONE
 	hi Pmenu                    guifg=#66D9EF guibg=#000000
 	hi PmenuSbar                              guibg=#080808
 	hi PmenuSel                               guibg=#808080

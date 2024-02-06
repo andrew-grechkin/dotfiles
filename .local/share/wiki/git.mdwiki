@@ -77,7 +77,10 @@ git show :/some-text-to-search-in-commit-message
     ```bash
     git rebase main
     # same as
-    git rebase --onto main main..HEAD
+    # mnemonic git rebase --onto main main..HEAD
+
+    # rebase feature to an arbitrary commit in main branch
+    git rebase --onto ref main feature
 
     git rebase main topic
     # same as

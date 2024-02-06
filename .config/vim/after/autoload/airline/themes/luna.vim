@@ -89,4 +89,3 @@ let g:airline#themes#luna#palette.ctrlp = airline#extensions#ctrlp#generate_colo
       \ [ '#ffffff' , '#002b2b' , 231 , 23 , ''     ] ,
       \ [ '#ffffff' , '#005252' , 231 , 36 , ''     ] ,
       \ [ '#ffffff' , '#973d45' , 231 , 95 , ''     ] )
-

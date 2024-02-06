@@ -35,7 +35,7 @@ FZF_DEFAULT_OPTS_ARRAY=(
 	'ctrl-v:toggle-preview,ctrl-alt-w:toggle-preview-wrap,ctrl-s:toggle-sort'
 	'shift-left:change-preview-window(80%|60%)'
 	'shift-right:change-preview-window(40%|60%)'
-	'ctrl-d:delete-char'
+	#	'ctrl-d:delete-char'
 	'ctrl-w:backward-kill-word'
 	'ctrl-y:execute-silent(echo -n {} | clipcopy)'
 	'esc:cancel'
