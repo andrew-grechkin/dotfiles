@@ -14,7 +14,6 @@ if [[ "${1:-}" =~ startplasma ]] || [[ "${1:-}" =~ xdm/sys.xsession ]]; then
 	[[ -r "$HOME/.xprofile" ]] && source "$HOME/.xprofile"
 	exec "$@"
 elif [[ -o LOGIN ]]; then
-	[[ -r "$HOME/.config/zsh/.zprofile" ]] && source "$HOME/.config/zsh/.zprofile"
 	exec "$SHELL" -l "$@"
 else
 	# opensuse has quite a lot of shit in /etc/zshrc so the only option is to disable global configs if this file exists
