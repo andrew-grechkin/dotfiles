@@ -2,7 +2,7 @@
 
 # => environment -------------------------------------------------------------------------------------------------- {{{1
 
-export HISTORY_IGNORE='(exit( *)#|history( *)#|[bf]g *|cd *|l[alsh] *|less *|kill *)'
+export HISTORY_IGNORE='(exit( *)#|history( *)#|[bf]g *|cd *|l[alsh] *|less *|kill *|vi *|vim *)'
 
 # => History file configuration ----------------------------------------------------------------------------------- {{{1
 
