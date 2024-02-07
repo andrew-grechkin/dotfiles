@@ -12,6 +12,7 @@ git-in-repo && {
 		--date='format-local:%Y-%m-%d %H:%M'
 		--format='%C(yellow)%h %C(bold blue)%<(20,trunc)%an%C(reset) %G?(%C(green)%cd, %cr%C(reset)) %s%C(auto)%d'
 		--max-count="$MAX"
+		--topo-order
 		"$@"
 	)
 	exec "${CMD[@]}"

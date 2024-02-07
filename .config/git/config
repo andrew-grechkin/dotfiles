@@ -22,6 +22,7 @@
 	f            = !"fzf-git-log-branch"
 	fa           = !"fzf-git-log-all"
 	fag          = !"fzf-git-log-all-graph"
+	fam          = !"fzf-git-log-all-merges"
 	fall         = fetch --all --force
 	fg           = !"fzf-git-log-branch-graph"
 	fw           = !"fzf-git-log-branch $(git gmu)..HEAD"
@@ -29,6 +30,7 @@
 	l            = !"git-log-branch"
 	la           = !"git-log-all"
 	lag          = !"git-log-all-graph"
+	lam          = !"git-log-all-merges"
 	lg           = !"git-log-branch-graph"
 	lrg          = !"git-log-reflog-graph"
 	lw           = !"git-log-branch $(git gmrh)..HEAD"
