@@ -6,6 +6,7 @@
 	bname        = branch --show-current
 	brname       = !"f(){ git name-rev --name-only --no-undefined --refs=\"refs/remotes/*\" --exclude=HEAD \"${@:-HEAD}\" 2>/dev/null | grep -Po \"(?<=\\bremotes/).+$\"; }; f"
 	branches     = !"git branch --list --no-column --format='%(refname:lstrip=2)' \"$@\""
+	browse       = !"git-browse \"$@\""
 	bush         = !"f(){ while true; do git push && break; git pull --no-tags --rebase || break; done }; f"
 	cl           = clone --filter=blob:none
 	co           = checkout

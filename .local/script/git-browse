@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+git-in-repo && {
+	URL=$(git-browse-url "$@")
+	# echo "opening: $URL"
+	python3 -mwebbrowser "$URL"
+}
