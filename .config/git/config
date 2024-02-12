@@ -88,14 +88,16 @@
 	; ignoreRevsFile = .git-blame-ignore-revs
 
 [core]
-	autocrlf     = false
-	editor       = vi
-	longpaths    = true
-	pager        = less
-	preloadindex = true
-	quotepath    = false
-	tabwidth     = 4
-	whitespace   = trailing-space,space-before-tab,blank-at-eol,blank-at-eof,cr-at-eol
+	autocrlf       = false
+	editor         = vi
+	fsmonitor      = true
+	longpaths      = true
+	pager          = less
+	preloadindex   = true
+	quotepath      = false
+	tabwidth       = 4
+	untrackedcache = true
+	whitespace     = trailing-space,space-before-tab,blank-at-eol,blank-at-eof,cr-at-eol
 
 [diff]
 	tool            = fugitive
@@ -121,9 +123,10 @@
 	cmd = meld "$LOCAL" "$REMOTE"
 
 [fetch]
-	parallel  = 0
-	prune     = true
-	pruneTags = false
+	parallel         = 0
+	prune            = true
+	pruneTags        = false
+	writeCommitGraph = true
 
 [format]
 	pretty = commit %H%d %(describe:tags) %nAuthor: [%ai] %aN <%aE>%nCommit: [%ci] %cN <%cE>%n%n%B
