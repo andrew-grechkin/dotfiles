@@ -52,7 +52,8 @@ alias h-disable='HF="$HISTFILE"; fc -p "${XDG_RUNTIME_DIR}/temp-hist" "${HISTSIZ
 function zshaddhistory() {
 	EXECUTABLE="${${(z)1}[1]}"
 	whence "$EXECUTABLE" >| /dev/null || return 2
-	print -sr -- $(perl -XE 'print (<> =~ s/(\s | (\\n))+$ | ^(\s | (\\n))+//rgnx)' <<< "$1")
+	[[ "$1" =~ "^ " ]] && return 2
+	print -sr -- $(perl -XE 'print (<> =~ s/(\s | (\\n))+$ | ^(\\n)+//rgnx)' <<< "$1")
 }
 
 function h-trimmed() {
