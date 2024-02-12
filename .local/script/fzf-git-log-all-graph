@@ -2,5 +2,5 @@
 
 set -Eeuo pipefail
 
-git-log-all-graph \
-	| fzf-git-log "$@" --reload-command='git-log-all-graph'
+git-log-all-graph "$@" \
+	| fzf-git-log --reload-command='git-log-all-graph'

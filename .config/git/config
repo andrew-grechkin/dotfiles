@@ -25,6 +25,7 @@
 	fam          = !"fzf-git-log-all-merges"
 	fall         = fetch --all --force
 	fg           = !"fzf-git-log-branch-graph"
+	fr           = !"fzf-git-log-reflog"
 	fw           = !"fzf-git-log-branch $(git gmu)..HEAD"
 	ha           = !"git --no-pager log --abbrev-commit --all --color=always --graph --pretty=oneline --topo-order"
 	l            = !"git-log-branch"
@@ -32,7 +33,7 @@
 	lag          = !"git-log-all-graph"
 	lam          = !"git-log-all-merges"
 	lg           = !"git-log-branch-graph"
-	lrg          = !"git-log-reflog-graph"
+	lr           = !"git-log-reflog"
 	lw           = !"git-log-branch $(git gmrh)..HEAD"
 	m            = !"git checkout $(git gmb)"
 	m-base       = !"f(){ git merge-base ${1:-$(git gmb)} HEAD; }; f"

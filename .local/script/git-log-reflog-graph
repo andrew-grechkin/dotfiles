@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-set -Eeuo pipefail
-
-git-log-wrapper --all --reflog --graph "$@"

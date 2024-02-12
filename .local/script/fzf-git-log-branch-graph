@@ -3,4 +3,4 @@
 set -Eeuo pipefail
 
 git-log-branch-graph "$@" \
-	| fzf-git-log
+	| fzf-git-log --reload-command='git-log-branch-graph'

@@ -2,5 +2,5 @@
 
 set -Eeuo pipefail
 
-git-log-all-merges \
-	| fzf-git-log "$@"
+git-log-all-merges "$@" \
+	| fzf-git-log --reload-command='git-log-all-merges'
