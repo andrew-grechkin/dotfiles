@@ -161,9 +161,9 @@
 	follow   = true
 
 [merge]
-	tool          = fugitive
-	guitool       = meld
 	conflictstyle = diff3
+	guitool       = meld
+	tool          = fugitive
 
 [mergetool]
 	keepBackup    = false
@@ -199,6 +199,9 @@
 
 [rerere]
 	enabled = true
+
+[status]
+	showStash = true
 
 [tag]
 	sort = version:refname
