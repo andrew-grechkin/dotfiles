@@ -80,7 +80,7 @@ autoload -Uz run-help
 function gen-cdpath() {
 	setopt NULL_GLOB
 	declare -a DIRS
-	for FILE in "$HOME"/git "$HOME"/git/* "/usr/local/git_tree"; do
+	for FILE in "$HOME"/git/private "$HOME"/git "$HOME"/git/* "/usr/local/git_tree"; do
 		[[ -d "${FILE%/}" ]] && DIRS+=("${FILE%/}")
 	done
 
