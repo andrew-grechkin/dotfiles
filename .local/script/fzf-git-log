@@ -24,11 +24,11 @@ for i in ${!OPTIONS[*]}; do
 	OPTION="${OPTIONS[$i]}"
 	if [[ "$OPTION" =~ --reload-command= ]]; then
 		CMD+=(
-			--header='move(C-j/k), view(C-m/enter), preview(C-v), p-move(C-n/p), yank(C-y), fetch(A-f), pull(A-g), browse(A-b), co(C-o), co-main(C-t), reload(C-r)'
+			--header='C-j/k:move C-m/enter:view C-v:preview C-n/p:p-move C-y:yank A-f:fetch A-g:pull A-b:browse C-o:co A-m:co-main C-r:reload'
 			--bind="alt-f:execute-silent(git fall)+reload(${OPTION#--reload-command=})"
 			--bind="alt-g:execute-silent(git up)+reload(${OPTION#--reload-command=})"
+			--bind="alt-m:execute-silent(ABB=\$(git gmb); git checkout \$ABB)+reload(${OPTION#--reload-command=})"
 			--bind="ctrl-o:execute-silent(C=\$(${COMMAND_EXTRACT_COMMIT}); A=\$(git describe --all --always \$C); git checkout \${A/heads\/})+reload(${OPTION#--reload-command=})"
-			--bind="ctrl-t:execute-silent(ABB=\$(git gmb); git checkout \$ABB)+reload(${OPTION#--reload-command=})"
 			--bind="ctrl-r:reload(${OPTION#--reload-command=})"
 		)
 		unset "OPTIONS[$i]"
