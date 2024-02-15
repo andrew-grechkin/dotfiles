@@ -1,5 +1,9 @@
 # vim: filetype=zsh foldmethod=marker
 
+# => aliases ------------------------------------------------------------------------------------------------------ {{{1
+
+alias tmux-pane='tmux capture-pane -pS -'
+
 # => correct ssh auth for tmux sessions --------------------------------------------------------------------------- {{{1
 
 function fix_ssh_agent() {
