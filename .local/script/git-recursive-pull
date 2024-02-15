@@ -13,9 +13,9 @@ if [[ "$#" -eq "1" ]] && [[ "$1" =~ \.git/?$ ]]; then
 		echo "Updating $REPO"
 		echo -n "$(tput sgr0)"
 
-		git -C "$REPO" fetch --force      \
-			&& nice git -C "$REPO" bleach \
-			&& nice git -C "$REPO" pull
+		git -C "$REPO" -c color.ui=always fetch --force      \
+			&& nice git -C "$REPO" -c color.ui=always bleach \
+			&& nice git -C "$REPO" -c color.ui=always pull
 	fi
 else
 	fd -HuL -E 'bazel-*' -td -tf -0 '\A.git\z' "${1:-$PWD}" | {
