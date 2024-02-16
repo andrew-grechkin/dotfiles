@@ -2,11 +2,17 @@
 
 set -Eeo pipefail
 
+HOSTNAME="${HOSTNAME-:$(hostname)}"
+
+if [[ "$HOSTNAME" =~ king.com$ ]]; then
+	exit
+fi
+
 ### skip cygwin
 [[ -n "$OS" ]] && [[ "$OS" == "Windows_NT" ]] && exit 1
 
 ### check vpn connected
 {
 	ip route | grep -P 'default(?:.*?)\sdev\s(?:tun|gpd)' \
-	|| ip route | grep -P '10\.[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+\s+dev\s+(tun|enp0|wlp0)'
+		|| ip route | grep -P '10\.[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+\s+dev\s+(tun|enp0|wlp0)'
 } &>/dev/null
