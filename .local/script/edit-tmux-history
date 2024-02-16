@@ -4,5 +4,5 @@ set -Eeuo pipefail
 
 TMP_FILE="$(mktemp)"
 
-tmux capture-pane -pJS - > "$TMP_FILE"
+tmux capture-pane -pJS - | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//' > "$TMP_FILE"
 tmux new-window -n:history "nvim $TMP_FILE; rm -f $TMP_FILE"
