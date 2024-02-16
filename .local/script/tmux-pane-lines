@@ -5,4 +5,4 @@ set -Eeuo pipefail
 TERM_LINES=$(tput lines)
 GRAB_LINES=$1
 
-tmux capture-pane -p -S $((TERM_LINES - GRAB_LINES))
+tmux capture-pane -pJS $((TERM_LINES - GRAB_LINES))

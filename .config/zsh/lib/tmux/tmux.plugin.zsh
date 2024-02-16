@@ -2,7 +2,7 @@
 
 # => aliases ------------------------------------------------------------------------------------------------------ {{{1
 
-alias tmux-pane='tmux capture-pane -pS -'
+alias tmux-pane='tmux capture-pane -pJS -'
 
 # => correct ssh auth for tmux sessions --------------------------------------------------------------------------- {{{1
 
