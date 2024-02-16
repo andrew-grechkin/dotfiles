@@ -8,7 +8,7 @@ CMD=(
 	curl --noproxy "$DOMAIN" -s
 	-d "author=$USER"
 	-d "syntax=0"
-	-d "lifespan=5"
+	-d "lifespan=4"
 	--data-urlencode pasteEnter@-
 	"https://$DOMAIN/api"
 )

@@ -2,6 +2,10 @@
 
 set -Eeuo pipefail
 
+if [[ -z "$*" ]]; then
+	exit 1
+fi
+
 git-in-repo && {
 	URL=$(git-browse-url "$@")
 	# echo "opening: $URL"
