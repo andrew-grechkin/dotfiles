@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+tmux capture-pane -pJS - | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//'
