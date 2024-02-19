@@ -9,7 +9,8 @@ function arch-list-altered-files() {
 function arch-update() {
 	#export all_proxy='http://vdsm.ams:8888'
 	#export http_proxy='http://vdsm.ams:8888'
-	trizen -Syu --noconfirm --noedit --needed
+	trizen -Syu --noconfirm --noedit --needed \
+		&& sudo pacman -Fy
 }
 
 function arch-mirrors-update() {
