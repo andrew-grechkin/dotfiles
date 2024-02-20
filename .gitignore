@@ -12,6 +12,8 @@
 .config/systemd/user/plasma-workspace.target.wants
 .config/systemd/user/sockets.target.wants
 .config/systemd/user/timers.target.wants
+.config/systemd/user/tracker-extract-3.service
+.config/systemd/user/tracker-miner-fs-3.service
 .config/vifm/scripts/README
 .config/vifm/vifm-help.txt
 .config/vifm/vifminfo*

@@ -40,6 +40,7 @@ trap finish EXIT
 cat > "$IGNORE_FILE" <<END
 **/.cache/google-chrome/
 **/.config/google-chrome/
+**/.git/objects/
 **/.gnupg-work/
 **/.gnupg/
 **/.local/share/containers/
