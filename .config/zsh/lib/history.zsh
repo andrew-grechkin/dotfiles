@@ -53,7 +53,9 @@ function zshaddhistory() {
 	EXECUTABLE="${${(z)1}[1]}"
 	whence "$EXECUTABLE" >| /dev/null || return 2
 	[[ "$1" =~ "^ " ]] && return 2
-	print -sr -- $(perl -XE 'print (<> =~ s/(\s | (\\n))+$ | ^(\\n)+//rgnx)' <<< "$1")
+	TRIMMED=$(perl -XE 'print (<> =~ s/(\s | \R | (\\n))+$ | ^(\\n)+//rgnxms)' <<< "$1")
+	print -sr -- "$TRIMMED"
+	return 1
 }
 
 function h-trimmed() {
