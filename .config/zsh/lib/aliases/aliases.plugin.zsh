@@ -52,16 +52,6 @@ alias cd-root=' cd $(git root)'
 
 alias gcc-all-defines=' gcc -dM -E - < /dev/null | sort'
 
-# => gpg ---------------------------------------------------------------------------------------------------------- {{{1
-
-alias       gpg-edit-card='gpg --edit-card'
-alias            gpg-edit='gpg --expert --edit-key andrew.grechkin'
-alias   gpg-export-public='gpg --export --armor andrew.grechkin'
-alias     gpg-list-public='gpg --list-keys'
-alias     gpg-list-secret='gpg --list-secret-keys'
-alias gpg-list-signatures='gpg --list-signatures'
-alias         gpg-refresh='gpg --refresh-keys --verbose'
-
 # => journal ------------------------------------------------------------------------------------------------------ {{{1
 
 alias j-rotate='sudo journalctl --rotate; sudo journalctl --vacuum-size=1'

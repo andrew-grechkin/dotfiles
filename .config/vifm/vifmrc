@@ -394,6 +394,9 @@ filetype *.asc,*.sig
 	\ {Check signature}
 	\ !!gpg --verify,
 
+fileviewer *.pub
+	\ gpg-show %c
+
 fileviewer *.pem,*.crt
 	\ openssl x509 -inform PEM -text -in %f
 
