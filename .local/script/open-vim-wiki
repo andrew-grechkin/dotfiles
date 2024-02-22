@@ -3,4 +3,4 @@
 
 set -Eeuo pipefail
 
-command vi -c ':VimwikiIndex'
+command nvim -c ':VimwikiIndex'
