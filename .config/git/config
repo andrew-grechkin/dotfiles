@@ -204,7 +204,8 @@
 	showStash = true
 
 [tag]
-	sort = version:refname
+	forceSignAnnotated = true
+	sort               = version:refname
 
 [include]
 	path = ~/.config/gitconfig.overrides

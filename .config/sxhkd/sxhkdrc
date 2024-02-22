@@ -41,11 +41,9 @@ super + m
 
 # toggle state
 super + f
-	bspc node -t "~fullscreen"
-super + g
-	bspc node -t "tiled"
-super + v
 	bspc node -t "~floating"
+super + z
+	bspc node -t "~fullscreen"
 
 # set the node flags
 super + b

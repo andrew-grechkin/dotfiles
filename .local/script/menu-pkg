@@ -12,7 +12,7 @@ use IPC::Open2 qw(open2);
 our $VERSION = 2;
 
 sub detect_os() {
-    chomp( my $NAME = `grep '^NAME=' /etc/os-release` );
+    chomp(my $NAME = `grep '^NAME=' /etc/os-release`);
 
     my ($name) = $NAME =~ m/^NAME="? (.*?) "?$/x;
 
@@ -21,7 +21,7 @@ sub detect_os() {
 
 sub fetch_packages ($os_name) {
     state %commands = (
-        'Arch Linux'    => [ 'pacman -Qqd', 'pacman -Qqe', 'pacman -Slq' ],
+        'Arch Linux'    => ['pacman -Qqd', 'pacman -Qqe', 'pacman -Slq'],
         'CentOS Stream' => [
             'dnf repoquery -C --installed --qf=%{name} 2>/dev/null',
             'dnf repoquery -C --userinstalled --qf=%{name} 2>/dev/null',
@@ -29,11 +29,12 @@ sub fetch_packages ($os_name) {
         ],
     );
 
-    my @result = map { chomp( my @lines = qx{$_} ); \@lines } $commands{$os_name}->@*;
+    my @result = map {chomp(my @lines = qx{$_}); \@lines} $commands{$os_name}->@*;
 
     return @result;
 }
 
+## no critic [ValuesAndExpressions::ProhibitImplicitNewlines]
 sub preview_command ($os_name) {
     state %commands = (
         'Arch Linux' => q{
@@ -45,11 +46,11 @@ sub preview_command ($os_name) {
         },
         'CentOS Stream' => q{
             if [[ {2} == "available" ]]; then
-				cat <(dnf -C info {1} 2>/dev/null | grep -vF 'Last metadata') <(dnf repoquery -l {1} 2>/dev/null)
+                cat <(dnf -C info {1} 2>/dev/null | grep -vF 'Last metadata') <(dnf repoquery -l {1} 2>/dev/null)
             else
-				cat <(dnf -C info {1} 2>/dev/null | grep -vF 'Last metadata') <(rpm -ql {1} 2>/dev/null)
+                cat <(dnf -C info {1} 2>/dev/null | grep -vF 'Last metadata') <(rpm -ql {1} 2>/dev/null)
             fi
-		},
+        },
     );
 
     return $commands{$os_name};
@@ -58,39 +59,39 @@ sub preview_command ($os_name) {
 sub fzf_options ($os_name) {
     state %commands = (
         'Arch Linux' => [
-            '--bind', 'alt-r:execute(sudo pacman -Rcs {+1} </dev/tty >/dev/tty)+abort',
             '--bind', 'alt-a:execute(sudo pacman -S {+1} </dev/tty >/dev/tty)+abort',
+            '--bind', 'alt-r:execute(sudo pacman -Rcs {+1} </dev/tty >/dev/tty)+abort',
         ],
         'CentOS Stream' => [
-            '--bind', 'alt-r:execute(sudo dnf remove --disableplugin=puppet {+1} </dev/tty >/dev/tty)+abort',
             '--bind', 'alt-a:execute(sudo dnf install --disableplugin=puppet {+1} </dev/tty >/dev/tty)+abort',
+            '--bind', 'alt-r:execute(sudo dnf remove --disableplugin=puppet {+1} </dev/tty >/dev/tty)+abort',
         ],
     );
 
-    return ( $commands{$os_name}->@*, '--header', 'add:A-a remove:A-r', );
+    return ($commands{$os_name}->@*, '--header', 'A-a:add A-r:remove',);
 }
 
 sub main() {
     my $os_name = detect_os();
-    my ( \@installed, \@installed_explicit, \@available ) = fetch_packages($os_name);
+    my (\@installed, \@installed_explicit, \@available) = fetch_packages($os_name);
 
-    my %available = map { $_ => undef } @available;
-    my %installed = map { $_ => undef } @installed;
-    delete @available{ @installed, @installed_explicit };
+    my %available = map {$_ => undef} @available;
+    my %installed = map {$_ => undef} @installed;
+    delete @available{@installed, @installed_explicit};
     delete @installed{@installed_explicit};
 
     my @list;
-    push @list, map { [ $_, 'installed         ', $_ ] } keys %installed;
-    push @list, map { [ $_, 'installed explicit', $_ ] } @installed_explicit;
-    push @list, map { [ $_, 'available         ', $_ ] } keys %available;
+    push @list, map {[$_, 'installed         ', $_]} keys %installed;
+    push @list, map {[$_, 'installed explicit', $_]} @installed_explicit;
+    push @list, map {[$_, 'available         ', $_]} keys %available;
 
-    @list = sort { $a->[0] cmp $b->[0] } @list;
+    @list = sort {$a->[0] cmp $b->[0]} @list;
 
-    my ( $fzf_pid, $fzf_out, $fzf_in ) = _start_fzf($os_name);
+    my ($fzf_pid, $fzf_out, $fzf_in) = _start_fzf($os_name);
 
-    _spew_to_fzf( $fzf_in, \@list );
+    _spew_to_fzf($fzf_in, \@list);
 
-    my \@output = _wait_fzf( $fzf_pid, $fzf_out );
+    my \@output = _wait_fzf($fzf_pid, $fzf_out);
     foreach my $line (@output) {
         my ($package) = split m/\s/, $line;
         say _trim($package);
@@ -101,6 +102,7 @@ sub main() {
 
 ## no critic [ValuesAndExpressions::RequireInterpolationOfMetachars, ValuesAndExpressions::ProhibitImplicitNewlines]
 sub _start_fzf ($os_name) {
+
     #     local %ENV = %ENV;
     #     delete $ENV{FZF_DEFAULT_OPTS};
 
@@ -118,24 +120,24 @@ sub _start_fzf ($os_name) {
         '--preview-window', 'right:50%:wrap:nohidden',
     );
 
-    my $pid = open2( my $chld_out, my $chld_in, @cmd );
-    binmode( $_, ':encoding(UTF-8)' ) foreach $chld_in, $chld_out;
+    my $pid = open2(my $chld_out, my $chld_in, @cmd);
+    binmode($_, ':encoding(UTF-8)') foreach $chld_in, $chld_out;
     return $pid, $chld_out, $chld_in;
 }
 
-sub _spew_to_fzf ( $in, $list ) {
-    foreach my $package ( $list->@* ) {
-        say {$in} sprintf( '%s %s %s', $package->@* );
+sub _spew_to_fzf ($in, $list) {
+    foreach my $package ($list->@*) {
+        say {$in} sprintf('%s %s %s', $package->@*);
     }
     close $in;
 
     return;
 }
 
-sub _wait_fzf ( $pid, $out ) {
+sub _wait_fzf ($pid, $out) {
     my @output = <$out>;
 
-    waitpid( $pid, 0 )
+    waitpid($pid, 0)
         or die "Unable to wait for fzf to finish: $!\n";
 
     @output = map _trim($_), @output;
