@@ -1,0 +1,7 @@
+**/.cache/.bun/
+**/.cache/bazel/
+**/.cache/google-chrome/
+**/.cache/opera/
+**/.local/share/containers/
+**/.local/share/lilipod/containers/
+**/@eaDir/

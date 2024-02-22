@@ -33,6 +33,7 @@ ln -srf .zshenv                                              ~/
 ln -srf .config/chromium-flags.conf                          ~/.config/
 ln -srf .config/chromium-flags.conf                          ~/.config/chrome-flags.conf
 ln -srf .config/environment.d/*                              ~/.config/environment.d/
+ln -srf .config/fd                                           ~/.config/
 ln -srf .config/fontconfig/conf.d                            ~/.config/fontconfig/
 ln -srf .config/git                                          ~/.config/
 ln -srf .config/mpv                                          ~/.config/
