@@ -50,8 +50,9 @@ alias h-disable='HF="$HISTFILE"; fc -p "${XDG_RUNTIME_DIR}/temp-hist" "${HISTSIZ
 
 # do not save command in history if executable cannot be run
 function zshaddhistory() {
-	EXECUTABLE="${${(z)1}[1]}"
-	whence "$EXECUTABLE" >| /dev/null || return 2
+	# not working if environment is passed as the first word in command
+	# EXECUTABLE="${${(z)1}[1]}"
+	# whence "$EXECUTABLE" >| /dev/null || return 2
 	[[ "$1" =~ "^ " ]] && return 2
 	TRIMMED=$(perl -XE 'print (<> =~ s/(\s | \R | (\\n))+$ | ^(\\n)+//rgnxms)' <<< "$1")
 	print -sr -- "$TRIMMED"
