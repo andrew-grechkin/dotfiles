@@ -7,3 +7,4 @@ setlocal iskeyword+=$
 " => -------------------------------------------------------------------------------------------------------------- {{{1
 
 setlocal keywordprg=:vertical\ Man
+" setlocal keywordprg=:ManSpecific\ bash
