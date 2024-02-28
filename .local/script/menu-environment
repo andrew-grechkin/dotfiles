@@ -10,7 +10,7 @@ FZF_CMD=(
 	--ansi
 	--bind="ctrl-y:execute(bash -c '{ echo -n \"{}=\"; $PREVIEW; } | clipcopy')+abort"
 	--bind="enter:execute(bash -c '$PREVIEW | clipcopy')+abort"
-	--header='Press C-v to preview, C-Up/S-Down to scroll, C-y to print, Enter to echo'
+	--bind="ctrl-m:execute(bash -c '{ echo -n \"{}=\"; $PREVIEW; }'| $PAGER)"
 	--preview-window=right:60%:border-left:wrap:nohidden
 	--preview="bash -c '$PREVIEW'"
 )
