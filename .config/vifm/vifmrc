@@ -749,18 +749,18 @@ set findprg='fd --hidden -- %A'
 
 " => bookmarks ---------------------------------------------------------------------------------------------------- {{{1
 
-mark a ~/.local/share/rest-console/
-mark b ~/.local/script/
+mark a ~/.local/share/rest-console
+mark b ~/.local/script
 mark c ~/git/private/dotfiles                    .config
 mark d ~/git/private/dotfiles/submodules/private ssh
-mark h ~/
+mark h ~
 mark m /media/nfs/home
 mark n ~/git/private/dotfiles/.config/nvim       init.lua
 mark r \/                                        home
-mark u ~/.local/usr/
-mark p ~/.local/share/perlbrew                   libs
-mark s ~/.local/state                            nvim
-mark v ~/.local/share/vault
+mark s ~/.local/share
+mark t ~/.local/state                            nvim
+mark u /run/user
+mark u ~/.local/usr
 
 " => file icons --------------------------------------------------------------------------------------------------- {{{1
 
