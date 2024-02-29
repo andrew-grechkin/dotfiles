@@ -2,13 +2,6 @@
 
 set -Eeo pipefail
 
-if [[ -x "$(command -v delta)" ]]; then
-	# FZF_PREVIEW_COLUMNS
-	GIT_PAGER=("delta")
-else
-	GIT_PAGER=("cat")
-fi
-
 git-in-repo && {
 	if [[ -n "$*" ]]; then
 		REF="$1"
@@ -65,5 +58,16 @@ git-in-repo && {
 	git --no-pager show --patch "${SHOW_OPTIONS[@]}" "$SPAN" "$@" >> "$TMPFIFO" &
 
 	# shellcheck disable=SC2002
-	cat "$TMPFIFO" | "${GIT_PAGER[@]}"
+	if [[ -t 1 ]]; then
+		if [[ -x "$(command -v delta)" ]]; then
+			# FZF_PREVIEW_COLUMNS
+			GIT_PAGER=("delta")
+		else
+			GIT_PAGER=("cat")
+		fi
+
+		cat "$TMPFIFO" | "${GIT_PAGER[@]}"
+	else
+		cat "$TMPFIFO"
+	fi
 } 2>/dev/null
