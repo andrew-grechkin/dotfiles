@@ -76,4 +76,5 @@ function term-test() {
 	echo -e "\e[9mstrikethrough\e[0m"
 	echo -e "\e[31mHello World\e[0m"
 	echo -e "\x1B[31mHello World\e[0m"
+	echo -e '\e]8;;http://example.com\e\\This is a link\e]8;;\e\\\n'
 }

@@ -12,10 +12,11 @@
 	show   = delta
 
 [delta]
-	features     = line-numbers decorations
-	side-by-side = false
-	syntax-theme = "zenburn"
-    tabs         = 4
+	features                      = line-numbers decorations navigate
+	hyperlinks                    = true
+	side-by-side                  = false
+	syntax-theme                  = "zenburn"
+    tabs                          = 4
 
 [delta "decorations"]
 	commit-decoration-style      = brightblue ul ol
