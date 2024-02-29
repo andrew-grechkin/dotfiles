@@ -109,6 +109,7 @@ vim.api.nvim_create_autocmd({'BufEnter'}, {
     callback = function(event)
         local buftype = vim.api.nvim_buf_get_option(event.buf, 'buftype')
         if buftype == 'nofile' or buftype == 'loclist' then
+            vim.bo[event.buf].buflisted = false
             vim.keymap.set('n', 'q', '<cmd>bd<cr>', {buffer = event.buf, silent = true})
         end
     end,

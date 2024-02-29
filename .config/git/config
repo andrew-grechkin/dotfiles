@@ -101,14 +101,13 @@
 	whitespace     = trailing-space,space-before-tab,blank-at-eol,blank-at-eof,cr-at-eol
 
 [diff]
-	tool            = fugitive
+	algorithm       = minimal
+	colorMoved      = true
+	colorMovedWS    = ignore-all-space
 	guitool         = meld
-	algorithm       = patience
-	colorMoved      = plain
-	colorMovedWS    = ignore-space-change
 	indentHeuristic = true
-;	diff-algorithm  = patience
-;	submodule       = diff
+	submodule       = diff
+	tool            = fugitive
 
 [difftool]
 	prompt        = false
