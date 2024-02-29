@@ -43,7 +43,6 @@ fi
 # => alias -------------------------------------------------------------------------------------------------------- {{{1
 
 alias h='history'
-alias h-disable='HF="$HISTFILE"; fc -p "${XDG_RUNTIME_DIR}/temp-hist" "${HISTSIZE}" "${SAVEHIST}"; fc -R "$HF"'
 # alias crap='history -d $((HISTCMD-1))'
 
 # => helper ------------------------------------------------------------------------------------------------------- {{{1
@@ -57,6 +56,15 @@ function zshaddhistory() {
 	TRIMMED=$(perl -XE 'print (<> =~ s/(\s | \R | (\\n))+$ | ^(\\n)+//rgnxms)' <<< "$1")
 	print -sr -- "$TRIMMED"
 	return 1
+}
+
+function h-disable() {
+	HF="$HISTFILE"
+	fc -p "${XDG_RUNTIME_DIR}/temp-hist" "${HISTSIZE}" "${SAVEHIST}"
+	fc -R "$HF"
+
+	add-zsh-hook -d precmd _atuin_precmd
+	add-zsh-hook -d preexec _atuin_preexec
 }
 
 function h-trimmed() {

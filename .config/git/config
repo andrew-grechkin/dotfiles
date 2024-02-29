@@ -2,7 +2,7 @@
 	aa           = add --all
 	b            = branch -vv
 	behind       = !"MUB=\"$(git gmu)\"; echo \"Behind $MUB:\" &>/dev/stderr; git log --oneline HEAD..$MUB | wc -l"
-	bleach       = !"f(){ git fall; git b | perl -alE 'm/: gone]/ && $F[0] ne q(*) && system(qq(git branch -d $F[0]))'; }; f"
+	bleach       = !"f(){ git fall; git b | perl -alE 'm/: gone]/ && $F[0] ne q(*) && system(qq(git branch -D $F[0]))'; }; f"
 	bname        = branch --show-current
 	brname       = !"f(){ git name-rev --name-only --no-undefined --refs=\"refs/remotes/*\" --exclude=HEAD \"${@:-HEAD}\" 2>/dev/null | grep -Po \"(?<=\\bremotes/).+$\"; }; f"
 	branches     = !"git branch --list --no-column --format='%(refname:lstrip=2)' \"$@\""
@@ -84,7 +84,8 @@
 	whitespace = fix
 
 [blame]
-	ignoreRevsFile = ~/.config/git/global-blame-ignore-revs
+	ignoreRevsFile      = ~/.config/git/global-blame-ignore-revs
+	markUnblamableLines = true
 	; ignoreRevsFile = .git-blame-ignore-revs
 
 [core]
