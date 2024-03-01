@@ -2,10 +2,54 @@
 
 set -Euo pipefail
 
+WD="${1/#\~/$HOME}"
+
+IGNORE_FILE=$(mktemp)
+
+function finish {
+	rm -f "$IGNORE_FILE"
+}
+trap finish EXIT
+
+cat > "$IGNORE_FILE" <<END
+**/.build/
+**/.cache/
+**/.cargo/
+**/.config/google-chrome/
+**/.git/
+**/.kube/
+**/.local/share/containers/
+**/.local/share/lilipod/containers/
+**/.m2/
+**/.snapshots/
+**/.ssh/
+**/.steam/
+**/.testing_binaries/
+**/.tidyall.d/
+**/.venv/
+**/.vim/
+**/.zoom/
+**/@eaDir/
+**/Steam/
+**/dosdevices/
+**/games/
+**/node_modules/
+**/share/@bookingcom/
+**/share/nvim/
+**/share/nvm/
+**/share/perlbrew*
+**/share/vim/
+**/share/virtualenv/
+**/slib/
+**/venv/
+/media/nfs/
+/proc/
+/sys/
+END
+
 {
-	EXCLUDE_FOLDERS_FD=('.build' '.cache' '.cargo' '.git' '.m2' '.snapshots' '.steam' '.tidyall.d' '.vim' 'Steam' 'dosdevices' 'games' 'node_modules' 'slib/' 'venv' '/media/nfs/' '/proc/' '/sys/' 'tmp')
-	CMD1=(fd -HL --type "$2" "$1" "${EXCLUDE_FOLDERS_FD[@]/#/-E=}")
-	CMD2=(find "$1" -type "$2" -printf '%P\n')
+	CMD1=(fd -Lapu --type "$2" --ignore-file="$IGNORE_FILE" --search-path="$WD")
+	CMD2=(find "$WD" -type "$2" -printf '%P\n')
 	FILT=(grep -v -F '.git/')
 
 	"${CMD1[@]}" \
