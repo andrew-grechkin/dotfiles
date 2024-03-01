@@ -1,0 +1,5 @@
+#!/usr/bin/env zsh
+
+set -xEuo pipefail
+
+cat ~/blah | peco --initial-filter=Regexp --print-query | head -1 | grep -v -f - ~/blah | sponge

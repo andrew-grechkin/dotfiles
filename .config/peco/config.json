@@ -1,0 +1,30 @@
+{
+  "InitialFilter": "Regexp",
+  "StickySelection": true,
+  "OnCancel": "error",
+  "Use256Color": true,
+  "Style": {
+    "Basic": [
+      "on_default",
+      "default"
+    ],
+    "SavedSelection": [
+      "bold",
+      "on_yellow",
+      "white"
+    ],
+    "Selected": [
+      "underline",
+      "on_cyan",
+      "black"
+    ],
+    "Query": [
+      "yellow",
+      "bold"
+    ],
+    "Matched": [
+      "bold",
+      "on_18"
+    ]
+  }
+}

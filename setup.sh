@@ -37,6 +37,7 @@ ln -srf .config/fd                                           ~/.config/
 ln -srf .config/fontconfig/conf.d                            ~/.config/fontconfig/
 ln -srf .config/git                                          ~/.config/
 ln -srf .config/mpv                                          ~/.config/
+ln -srf .config/peco                                         ~/.config/
 ln -srf .config/picom.conf                                   ~/.config/
 ln -srf .config/ripgreprc                                    ~/.config/
 ln -srf .config/shell                                        ~/.config/
