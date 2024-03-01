@@ -1,0 +1,5 @@
+#!/usr/bin/env zsh
+
+set -Eeuo pipefail
+
+fc -l -n 0 | perl -lpXE 's/(\s | (\\n))+$ | ^(\s | (\\n))+//gnx'

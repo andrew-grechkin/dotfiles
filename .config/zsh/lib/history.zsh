@@ -66,7 +66,3 @@ function h-disable() {
 	add-zsh-hook -d precmd _atuin_precmd
 	add-zsh-hook -d preexec _atuin_preexec
 }
-
-function h-trimmed() {
-	fc -l -n 0 | perl -lpXE 's/(\s | (\\n))+$ | ^(\s | (\\n))+//gnx'
-}
