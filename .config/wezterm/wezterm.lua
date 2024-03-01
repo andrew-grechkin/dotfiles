@@ -5,6 +5,16 @@ local act = wezterm.action
 local result = {}
 if wezterm.config_builder then result = wezterm.config_builder() end
 
+FONT_SIZE = 18
+
+local handle = io.popen('hostname')
+if handle then
+    HOSTNAME = handle:read('*a')
+    handle:close()
+
+    if string.find(HOSTNAME, 'LL') ~= nil then FONT_SIZE = 16 end
+end
+
 local config = {
     check_for_updates = false,
     adjust_window_size_when_changing_font_size = false,
@@ -49,7 +59,7 @@ local config = {
         {family = 'DejaVu Sans Mono', weight = 'Book', stretch = 'Normal'},
         {family = 'Symbols Nerd Font Mono', weight = 'Regular', scale = 0.6},
     },
-    font_size = 18,
+    font_size = FONT_SIZE,
     warn_about_missing_glyphs = false,
     window_background_opacity = 0.95,
     window_padding = {left = 0, right = 0, top = 0, bottom = 0},

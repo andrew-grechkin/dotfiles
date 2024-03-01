@@ -66,3 +66,14 @@ function h-disable() {
 	add-zsh-hook -d precmd _atuin_precmd
 	add-zsh-hook -d preexec _atuin_preexec
 }
+
+function h-reduce() {
+	HF="$HISTFILE"
+	fc -pa "${XDG_RUNTIME_DIR}/temp-hist" "${HISTSIZE}" "${SAVEHIST}"
+	fc -R "$HF"
+	fc -l -n 0 | perl -lpXE 's/(\s | (\\n))+$ | ^(\s | (\\n))+//gnx' | h-filter-and-delete
+}
+
+function h-trimmed() {
+	fc -l -n 0 | perl -lpXE 's/(\s | (\\n))+$ | ^(\s | (\\n))+//gnx'
+}

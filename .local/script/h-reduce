@@ -1,8 +1,0 @@
-#!/usr/bin/env zsh
-
-set -Eeuo pipefail
-
-FILE="$HOME/.config/zsh-history-test"
-
-QUERY=$(h-trimmed | sk --regex --print-query | head -1)
-h-trimmed | grep -v -f - "$FILE" | sponge "$FILE"
