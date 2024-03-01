@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# https://github.com/ThePrimeagen/.dotfiles/blob/master/bin/.local/scripts/tmux-sessionizer
+
+DIRS=(
+	"$HOME/git/boo""king"
+	"$HOME/git/private"
+)
+
+EXISTING_DIRS=()
+for DIR in "${DIRS[@]}"; do
+	[[ -d "$DIR" ]] && EXISTING_DIRS+=("$DIR")
+done
+
+if [[ $# -eq 1 ]]; then
+	SELECTED=$1
+else
+	SELECTED=$(find "${EXISTING_DIRS[@]}" -mindepth 1 -maxdepth 1 -type d | fzf)
+fi
+
+if [[ -z $SELECTED ]]; then
+	exit 0
+fi
+
+SELECTED_NAME=$(basename "$SELECTED" | tr . _)
+IS_TMUX_RUNNING=$(pgrep tmux)
+
+if [[ -z $TMUX ]] && [[ -z $IS_TMUX_RUNNING ]]; then
+	tmux new-session -s "$SELECTED_NAME" -c "$SELECTED"
+	exit 0
+fi
+
+if ! tmux has-session -t="$SELECTED_NAME" 2> /dev/null; then
+	tmux new-session -ds "$SELECTED_NAME" -c "$SELECTED"
+fi
+
+tmux switch-client -t "$SELECTED_NAME"
