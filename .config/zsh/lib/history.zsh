@@ -54,7 +54,7 @@ function zshaddhistory() {
 	# whence "$EXECUTABLE" >| /dev/null || return 2
 	[[ "$1" =~ "^ " ]] && return 2
 	TRIMMED=$(perl -XE 'print (<> =~ s/(\s | \R | (\\n))+$ | ^(\\n)+//rgnxms)' <<< "$1")
-	print -sr -- "$TRIMMED"
+	print -Sr -- "$TRIMMED"
 	return 1
 }
 
@@ -71,7 +71,7 @@ function h-reduce() {
 	HF="$HISTFILE"
 	fc -pa "${XDG_RUNTIME_DIR}/temp-hist" "${HISTSIZE}" "${SAVEHIST}"
 	fc -R "$HF"
-	fc -l -n 0 | perl -lpXE 's/(\s | (\\n))+$ | ^(\s | (\\n))+//gnx' | h-filter-and-delete
+	h-filter-and-delete
 }
 
 function h-trimmed() {

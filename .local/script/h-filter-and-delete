@@ -12,14 +12,14 @@ function finish {
 trap finish EXIT
 
 
-REGEX="$(tee "$TEMP_FILE" | sk --reverse --regex --print-query | head -1)"
+REGEX="$(sk --reverse --regex --print-query < "$FILE" | head -1)"
 
 if [[ -n "$REGEX" ]]; then
 	echo "Pruning history for regex: '$REGEX'"
 	cp -f "$FILE" "$FILE.prune.bak"
 
 	echo "Lines before: $(wc -l < "$FILE")"
-	grep -v -P "$REGEX" "$TEMP_FILE" > "$TEMP_FILE.2"
-	echo "Lines after: $(wc -l < "$TEMP_FILE.2")"
-	mv -f "$TEMP_FILE.2" "$FILE"
+	grep -av -P "$REGEX" "$FILE" > "$TEMP_FILE"
+	echo "Lines after: $(wc -l < "$TEMP_FILE")"
+	mv -f "$TEMP_FILE" "$FILE"
 fi
