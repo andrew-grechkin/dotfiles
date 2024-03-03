@@ -11,8 +11,13 @@ function finish {
 }
 trap finish EXIT
 
-
-REGEX="$(sk --reverse --regex --print-query < "$FILE" | head -1)"
+SKIM_OPTS=(
+	--reverse
+	--regex
+	--print-query
+	# --bind='esc:cancel'
+)
+REGEX="$(sk "${SKIM_OPTS[@]}" < "$FILE" | head -1)"
 
 if [[ -n "$REGEX" ]]; then
 	echo "Pruning history for regex: '$REGEX'"

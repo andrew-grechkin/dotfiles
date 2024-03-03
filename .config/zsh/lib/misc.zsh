@@ -1,5 +1,6 @@
 # Based on https://github.com/robbyrussell/oh-my-zsh
 
+setopt IGNORE_EOF
 setopt LONG_LIST_JOBS
 setopt INTERACTIVECOMMENTS                                                     # recognize comments
 setopt GLOB_DOTS
