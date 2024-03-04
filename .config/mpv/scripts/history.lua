@@ -4,7 +4,7 @@ local utils = require 'mp.utils'
 
 RUN_QUOTE = 1
 
-local HISTFILE = os.getenv('XDG_CACHE_HOME') .. '/mpv/history.log';
+local MPV_HIST_LOG = os.getenv('XDG_CACHE_HOME') .. '/mpv/history.log';
 
 local add_to_history = function(path)
     if RUN_QUOTE < 1 then return end
@@ -59,7 +59,7 @@ local add_to_history = function(path)
     if mp.get_property_native('term-osd') == 'force' then table.insert(opt, '--term-osd=force') end
     if mp.get_property_native('audio-display') == false then table.insert(opt, '--no-audio-display') end
 
-    local fp = io.open(HISTFILE, 'a+');
+    local fp = io.open(MPV_HIST_LOG, 'a+');
     if fp then
         fp:write(('[%s]\t%s\tmpv %s --\t"%s"\n'):format(os.date('%Y-%m-%dT%X'), title, table.concat(opt, ' '), path));
         fp:close();

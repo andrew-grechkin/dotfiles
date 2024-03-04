@@ -21,23 +21,32 @@ setopt HIST_SAVE_BY_COPY
 setopt HIST_VERIFY                                                             # show command with history expansion to user before running it
 setopt INC_APPEND_HISTORY
 
-if [[ -r "$HISTFILE" ]]; then
-	HF_SIZE=$(stat -c%s "$HISTFILE")
-else
-	HF_SIZE=0
-fi
+if [[ -n "$HOSTNAME" ]]; then
+	HISTFILE="${XDG_CONFIG_HOME}/zsh-${HOSTNAME}.history"
+	HISTFILE_BAK="${HISTFILE}.bak"
 
-if [[ -r "${HISTFILE}.back" ]]; then
-	BF_SIZE=$(stat -c%s "${HISTFILE}.back")
-else
-	BF_SIZE=0
-fi
+	if [[ -r "$HISTFILE" ]]; then
+		HF_SIZE=$(stat -c%s "$HISTFILE")
+	else
+		HF_SIZE=0
+	fi
 
-if (( HF_SIZE < 20000 && 30000 < BF_SIZE)); then
-	echo 'History file is lower than 20 kbytes, restoring backup...'
-	cp -f "${HISTFILE}.back" "$HISTFILE"
-elif (( HF_SIZE > 10000 && HF_SIZE > BF_SIZE)); then
-	cp -f "$HISTFILE" "${HISTFILE}.back"
+	if [[ -r "$HISTFILE_BAK" ]]; then
+		BF_SIZE=$(stat -c%s "$HISTFILE_BAK")
+	else
+		BF_SIZE=0
+	fi
+
+	if (( HF_SIZE < 20000 && 30000 < BF_SIZE)); then
+		echo 'History file is lower than 20 kbytes, restoring backup...'
+		cp -f "$HISTFILE_BAK" "$HISTFILE"
+	elif (( HF_SIZE > 10000 && HF_SIZE > BF_SIZE)); then
+		cp -f "$HISTFILE" "$HISTFILE_BAK"
+	fi
+
+	export HISTFILE
+else
+	echo 'HOSTNAME is undefined, HISTFILE is a default value' &>/dev/stderr
 fi
 
 # => alias -------------------------------------------------------------------------------------------------------- {{{1

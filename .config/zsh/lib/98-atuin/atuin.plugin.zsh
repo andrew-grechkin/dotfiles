@@ -11,9 +11,7 @@ if [[ ! -x "$(command -v atuin)" ]]; then
 	return
 fi
 
-autoload -U add-zsh-hook
-
-zmodload zsh/datetime 2>/dev/null
+# => -------------------------------------------------------------------------------------------------------------- {{{1
 
 # If zsh-autosuggestions is installed, configure it to use Atuin's search. If
 # you'd like to override this, then add your config after the $(atuin init zsh)
@@ -28,12 +26,17 @@ else
 	ZSH_AUTOSUGGEST_STRATEGY=("atuin")
 fi
 
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+zmodload zsh/datetime 2>/dev/null
+
 export ATUIN_SESSION=$(atuin uuid)
 ATUIN_HISTORY_ID=""
 
 _atuin_preexec() {
+	# echo "preexec: '$@'"
 	local id
-	id=$(atuin history start -- "$1")
+	id=$(atuin history start -- "${1:-$2}")
 	export ATUIN_HISTORY_ID="$id"
 	__atuin_preexec_time=${EPOCHREALTIME-}
 }
@@ -51,6 +54,8 @@ _atuin_precmd() {
 	(ATUIN_LOG=error atuin history end --exit "$EXIT" "${duration:+--duration=$duration}" -- "$ATUIN_HISTORY_ID" &) >/dev/null 2>&1
 	export ATUIN_HISTORY_ID=""
 }
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
 
 _atuin_search() {
 	emulate -L zsh
