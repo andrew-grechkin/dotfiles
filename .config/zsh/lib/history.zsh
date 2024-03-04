@@ -21,8 +21,11 @@ setopt HIST_SAVE_BY_COPY
 setopt HIST_VERIFY                                                             # show command with history expansion to user before running it
 setopt INC_APPEND_HISTORY
 
-if [[ -n "$HOSTNAME" ]]; then
-	HISTFILE="${XDG_CONFIG_HOME}/zsh-${HOSTNAME}.history"
+if [[ -n "$HOSTNAME" ]] && [[ -n "$XDG_STATE_HOME" ]]; then
+	HISTFILE_DIR="$XDG_STATE_HOME/zsh"
+	mkdir -p "$HISTFILE_DIR" &>/dev/null
+
+	HISTFILE="$HISTFILE_DIR/${HOSTNAME}.history"
 	HISTFILE_BAK="${HISTFILE}.bak"
 
 	if [[ -r "$HISTFILE" ]]; then

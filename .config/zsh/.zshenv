@@ -76,9 +76,10 @@ fi
 
 # => make necessary dirs ------------------------------------------------------------------------------------------ {{{1
 
-[[ -e "$XDG_CONFIG_HOME" ]] || mkdir -p "$XDG_CONFIG_HOME"
 [[ -e "$XDG_CACHE_HOME"  ]] || mkdir -p "$XDG_CACHE_HOME"
+[[ -e "$XDG_CONFIG_HOME" ]] || mkdir -p "$XDG_CONFIG_HOME"
 [[ -e "$XDG_DATA_HOME"   ]] || mkdir -p "$XDG_DATA_HOME"
+[[ -e "$XDG_STATE_HOME"  ]] || mkdir -p "$XDG_STATE_HOME"
 
 # => hide all ZSH configuration related environment variables ----------------------------------------------------- {{{1
 
