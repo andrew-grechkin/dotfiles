@@ -30,6 +30,7 @@ ln -sr  .xprofile                                            ~/ 2>/dev/null
 ln -srf .bashrc                                              ~/
 ln -srf .zshenv                                              ~/
 
+ln -srf .config/atuin                                        ~/.config/
 ln -srf .config/chromium-flags.conf                          ~/.config/
 ln -srf .config/chromium-flags.conf                          ~/.config/chrome-flags.conf
 ln -srf .config/environment.d/*                              ~/.config/environment.d/
