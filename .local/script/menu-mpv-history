@@ -2,7 +2,7 @@
 
 set -Eeuo pipefail
 
-FILE="$XDG_CACHE_HOME/mpv/history.log"
+FILE="$XDG_STATE_HOME/mpv/play.history"
 
 perl - "$FILE" <<'END_SCRIPT' | fzf-execute --bind='ctrl-y:execute-silent(echo -n {2} | perl -nE "print m/\"(.+)\"$/" | clipcopy)'
 	use v5.34;

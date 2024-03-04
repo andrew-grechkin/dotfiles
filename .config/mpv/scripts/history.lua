@@ -4,7 +4,9 @@ local utils = require 'mp.utils'
 
 RUN_QUOTE = 1
 
-local MPV_HIST_LOG = os.getenv('XDG_CACHE_HOME') .. '/mpv/history.log';
+local MPV_HIST_DIR = os.getenv('XDG_STATE_HOME') .. '/mpv';
+local MPV_HIST_LOG = MPV_HIST_DIR .. '/play.history';
+os.execute('mkdir -p ' .. MPV_HIST_DIR)
 
 local add_to_history = function(path)
     if RUN_QUOTE < 1 then return end

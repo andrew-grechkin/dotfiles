@@ -2,7 +2,7 @@
 
 set -Eeuo pipefail
 
-FILE="$HOME/.config/zsh-history"
+FILE="$XDG_STATE_HOME/zsh/$HOSTNAME.history"
 
 TEMP_FILE=$(mktemp)
 
