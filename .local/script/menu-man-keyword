@@ -8,8 +8,8 @@ SCRIPT=$(cat <<- 'EOSCRIPT'
 	say {*STDERR} "path:    $p";
 	say {*STDERR} "name:    $n";
 	say {*STDERR} "section: $s";
-	$m = '\":nnoremap <buffer> q :quitall<CR>\"';
-	say sprintf(qq{export MANPAGER="nvim +Man! -c $m"; man -s $s $n}) if $n && $s;
+	$m1 = '\":nnoremap <buffer> q :quitall<CR>\"';
+	say sprintf(qq{export MANPAGER="nvim +Man! -c $m1"; man -s $s $n}) if $n && $s;
 EOSCRIPT
 )
 
