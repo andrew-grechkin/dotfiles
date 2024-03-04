@@ -16,15 +16,15 @@ fi
 # If zsh-autosuggestions is installed, configure it to use Atuin's search. If
 # you'd like to override this, then add your config after the $(atuin init zsh)
 # in your .zshrc
-_zsh_autosuggest_strategy_atuin() {
-	suggestion=$(atuin search --cmd-only --limit 1 --search-mode prefix -- "$1")
-}
+# _zsh_autosuggest_strategy_atuin() {
+# 	suggestion=$(atuin search --cmd-only --limit 1 --search-mode prefix -- "$1")
+# }
 
-if [ "${ZSH_AUTOSUGGEST_STRATEGY:-}" != "" ]; then
-	ZSH_AUTOSUGGEST_STRATEGY=("atuin" "${ZSH_AUTOSUGGEST_STRATEGY[@]}")
-else
-	ZSH_AUTOSUGGEST_STRATEGY=("atuin")
-fi
+# if [ "${ZSH_AUTOSUGGEST_STRATEGY:-}" != "" ]; then
+# 	ZSH_AUTOSUGGEST_STRATEGY=("atuin" "${ZSH_AUTOSUGGEST_STRATEGY[@]}")
+# else
+# 	ZSH_AUTOSUGGEST_STRATEGY=("atuin")
+# fi
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1
 
