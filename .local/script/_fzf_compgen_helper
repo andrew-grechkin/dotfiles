@@ -11,15 +11,12 @@ function finish {
 }
 trap finish EXIT
 
-cat > "$IGNORE_FILE" <<END
+cat ~/.config/fd/ignore >> "$IGNORE_FILE"
+cat >> "$IGNORE_FILE" <<END
 **/.build/
 **/.cache/
 **/.cargo/
-**/.config/google-chrome/
-**/.git/
 **/.kube/
-**/.local/share/containers/
-**/.local/share/lilipod/containers/
 **/.m2/
 **/.snapshots/
 **/.ssh/
@@ -29,12 +26,10 @@ cat > "$IGNORE_FILE" <<END
 **/.venv/
 **/.vim/
 **/.zoom/
-**/@eaDir/
 **/Steam/
 **/dosdevices/
 **/games/
 **/node_modules/
-**/share/@bookingcom/
 **/share/nvim/
 **/share/nvm/
 **/share/perlbrew*
@@ -42,9 +37,6 @@ cat > "$IGNORE_FILE" <<END
 **/share/virtualenv/
 **/slib/
 **/venv/
-/media/nfs/
-/proc/
-/sys/
 END
 
 {
