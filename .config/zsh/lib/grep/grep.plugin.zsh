@@ -1,5 +1,9 @@
 # vim: filetype=zsh foldmethod=marker
 
+function igrep() {
+	sk --ansi -i -c "rg --color=always --line-number '{}'"
+}
+
 function is-grep-flag-available() {
 	echo | grep $1 "" >/dev/null 2>&1
 }

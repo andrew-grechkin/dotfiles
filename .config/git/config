@@ -126,7 +126,7 @@
 [fetch]
 	parallel         = 0
 	prune            = true
-	pruneTags        = false
+	pruneTags        = true
 	writeCommitGraph = true
 
 [format]
