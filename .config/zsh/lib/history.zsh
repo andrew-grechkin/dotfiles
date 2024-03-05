@@ -1,4 +1,5 @@
 # vim: filetype=zsh foldmethod=marker
+# shellcheck shell=bash
 
 # => environment -------------------------------------------------------------------------------------------------- {{{1
 
