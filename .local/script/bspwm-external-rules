@@ -2,7 +2,7 @@
 
 use v5.34;
 use autodie;
-use warnings     qw(FATAL utf8);
+use warnings qw(FATAL utf8);
 
 use List::Util qw(none);
 open(my $log, '>>', '/tmp/bspwm-external-rule.log') or die "open failed: $!";
@@ -30,6 +30,10 @@ if (none {m/\brectangle=\d/} @ARGV) {
         $output = 'layer=above center=on manage=on focus=off';
     } elsif (defined $loc_x && defined $loc_y && defined $size_w && defined $size_h && ($size_h || $size_w)) {
         $output = "center=off rectangle=${size_w}x${size_h}+${loc_x}+${loc_y}";
+    }
+
+    if ($xprop =~ m/_NET_WM_STATE_ABOVE/xms) {
+        $output .= ' state=floating';
     }
 }
 
