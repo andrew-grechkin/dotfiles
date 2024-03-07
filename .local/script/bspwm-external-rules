@@ -5,7 +5,10 @@ use autodie;
 use warnings qw(FATAL utf8);
 
 use List::Util qw(none);
-open(my $log, '>>', '/tmp/bspwm-external-rule.log') or die "open failed: $!";
+open(my $log, '>>', '/tmp/bspwm-external-rule.log')
+    or warn "open failed: $!";
+
+say {$log} "################################################################################################";
 say {$log} "args: @ARGV";
 
 my ($window_id, $class_name, $instance_name, $params) = @ARGV;
@@ -34,8 +37,23 @@ if (none {m/\brectangle=\d/} @ARGV) {
 
     if ($xprop =~ m/_NET_WM_STATE_ABOVE/xms) {
         $output .= ' state=floating';
+    } else {
+        if ($xprop =~ m/"Zoom Meeting"/ms || $xprop =~ m/"Zoom - Licensed account"/ms) {
+
+            # nothing to do
+        } elsif ($xprop =~ m/zoom_linux_float_video_window/ixms) {
+            $output .= ' state=floating sticky=on';
+        } elsif ($xprop =~ m/"zoom/ixms) {
+            $output .= ' state=floating';
+        }
     }
 }
+
+# bspc rule -a '*:*:Zoom - Licensed Account'       desktop='7'
+# bspc rule -a '*:*:Zoom Cloud Meetings'           desktop='7'
+# bspc rule -a '*:*:Zoom Meeting'                  desktop='7'
+# bspc rule -a '*:*:Zoom'                          desktop='7'
+# bspc rule -a '*:*:zoom'                          state=floating
 
 print {*STDOUT} $output if $output;
 say   {$log} "output: $output";
