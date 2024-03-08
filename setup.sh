@@ -68,6 +68,7 @@ if [[ "$USER" == "agrechkin" ]]; then
 	fi
 	ln -srf .config/bspwm                                    ~/.config/
 	ln -srf .config/containers                               ~/.config/
+	ln -srf .config/lazygit                                  ~/.config/
 	ln -srf .config/luaformatter                             ~/.config/
 	ln -srf .config/markdownlint.yaml                        ~/.config/
 	ln -srf .config/nvim                                     ~/.config/

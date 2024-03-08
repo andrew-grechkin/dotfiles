@@ -2,6 +2,7 @@
 **/autoload/plug.vim
 *.spl
 *.sug
+.config/lazygit/state.yml
 .config/mpv/watch_later
 .config/nvim/.luarc.json
 .config/shell/*.work
