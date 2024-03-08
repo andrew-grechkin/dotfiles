@@ -4,4 +4,9 @@ git:
   paging:
     colorArg: always
     pager: delta --dark --paging=never
-    useConfig: true
+    # useConfig: true
+
+keybinding:
+  universal:
+    scrollUpMain: <c-p>
+    scrollDownMain: <c-n>

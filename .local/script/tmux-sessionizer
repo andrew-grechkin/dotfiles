@@ -21,7 +21,7 @@ if [[ -z $SELECTED ]]; then
 	exit 0
 fi
 
-SELECTED_NAME=$(basename "$SELECTED" | tr . _)
+SELECTED_NAME=$(echo "${SELECTED#"$HOME/"}" | tr . _)
 IS_TMUX_RUNNING=$(pgrep tmux)
 
 if [[ -z $TMUX ]] && [[ -z $IS_TMUX_RUNNING ]]; then
