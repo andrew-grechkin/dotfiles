@@ -4,5 +4,5 @@ set -Eeuo pipefail
 
 TMP_FILE="$(mktemp)"
 
-tmux-pane | trim-trailing-whitespace > "$TMP_FILE"
-tmux new-window -n:history "nvim $TMP_FILE; rm -f $TMP_FILE"
+tmux-pane | trim-trailing-whitespace | perl -gpE 's/\A\R+|\R\K\R+\z//g' > "$TMP_FILE"
+tmux new-window -n:history "$(dirname "$0")/vi $TMP_FILE; rm -f $TMP_FILE"
