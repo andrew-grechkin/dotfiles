@@ -104,21 +104,45 @@ return {
                         lookahead = true, -- Automatically jump forward to textobj, similar to targets.vim
                         keymaps = {
                             -- You can use the capture groups defined in textobjects.scm
-                            ['aa'] = '@parameter.outer',
-                            ['ia'] = '@parameter.inner',
-                            ['af'] = '@function.outer',
-                            ['if'] = '@function.inner',
-                            ['ac'] = '@class.outer',
-                            ['ic'] = '@class.inner',
+                            ['aa'] = {query = '@parameter.outer', desc = 'around argument'},
+                            ['ia'] = {query = '@parameter.inner', desc = 'in argument'},
+                            ['af'] = {query = '@function.outer', desc = 'around function'},
+                            ['if'] = {query = '@function.inner', desc = 'in function'},
+                            ['ac'] = {query = '@class.outer', desc = 'around class'},
+                            ['ic'] = {query = '@class.inner', desc = 'in class'},
                         },
+                    },
+                    selection_modes = {
+                        ['@parameter.outer'] = 'v',
+                        ['@parameter.inner'] = 'v',
+                        ['@function.outer'] = 'V',
+                        ['@function.inner'] = 'V',
+                        ['@class.outer'] = 'V',
+                        ['@class.inner'] = 'V',
                     },
                     move = {
                         enable = true,
                         set_jumps = true, -- whether to set jumps in the jumplist
-                        goto_next_start = {[']f'] = '@function.outer', [']o'] = '@class.outer'},
-                        goto_next_end = {[']F'] = '@function.outer', [']O'] = '@class.outer'},
-                        goto_previous_start = {['[f'] = '@function.outer', ['[o'] = '@class.outer'},
-                        goto_previous_end = {['[F'] = '@function.outer', ['[O'] = '@class.outer'},
+                        goto_next_start = {
+                            [']a'] = '@parameter.outer',
+                            [']f'] = '@function.outer',
+                            [']o'] = '@class.outer',
+                        },
+                        goto_next_end = {
+                            [']A'] = '@parameter.outer',
+                            [']F'] = '@function.outer',
+                            [']O'] = '@class.outer',
+                        },
+                        goto_previous_start = {
+                            ['[a'] = '@parameter.outer',
+                            ['[f'] = '@function.outer',
+                            ['[o'] = '@class.outer',
+                        },
+                        goto_previous_end = {
+                            ['[A'] = '@parameter.outer',
+                            ['[F'] = '@function.outer',
+                            ['[O'] = '@class.outer',
+                        },
                     },
                     -- swap = {
                     --     enable = true,

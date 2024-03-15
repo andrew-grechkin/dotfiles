@@ -87,13 +87,13 @@ return {
                 desc = 'Test: watch file',
             },
             {
-                '[a',
+                '[1',
                 function() require('neotest').watch.jump.prev({status = 'failed'}) end,
                 mode = {'n'},
                 desc = 'Test: previous fail',
             },
             {
-                ']a',
+                ']1',
                 function() require('neotest').watch.jump.next({status = 'failed'}) end,
                 mode = {'n'},
                 desc = 'Test: next fail',
