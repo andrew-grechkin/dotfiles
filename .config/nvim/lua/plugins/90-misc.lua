@@ -22,13 +22,11 @@ return {
     {
         'vimwiki/vimwiki',
         enabled = not IS_KVM,
-        cmd = {'VimwikiIndex'},
+        -- cmd = {'VimwikiIndex'},
         init = function()
             vim.g.vimwiki_global_ext = 0
             vim.g.vimwiki_table_mappings = 0
-            vim.g.vimwiki_list = {
-                {path = '~/.local/share/wiki', syntax = 'markdown', ext = '.mdwiki'},
-            }
+            vim.g.vimwiki_list = {{path = '~/.local/share/wiki', syntax = 'markdown', ext = '.md'}}
         end,
     },
     -- 'vim-ruby/vim-ruby',

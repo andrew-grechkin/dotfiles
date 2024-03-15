@@ -96,6 +96,7 @@ return {
                         scope_incremental = '<c-s>',
                         node_decremental = ']]',
                     },
+                    disable = {'vimwiki', 'markdown'},
                 },
                 textobjects = {
                     select = {

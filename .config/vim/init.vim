@@ -349,7 +349,7 @@ let g:UltiSnipsListSnippets        = '<C-l>'
 
 let g:vimwiki_table_mappings = 0
 let g:vimwiki_list           = [
-	\ {'path': '~/.local/share/wiki', 'syntax': 'markdown', 'ext': '.mdwiki'},
+	\ {'path': '~/.local/share/wiki', 'syntax': 'markdown', 'ext': '.md'},
 \]
 
 let VIM_PLUG_URL      = 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
