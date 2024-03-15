@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -Eo pipefail
+
+if [[ -n "$(command -v delta)"  ]]; then
+	LOG_PAGER="delta"
+else
+	LOG_PAGER="$PAGER"
+fi
+
+CMD=(
+	sk
+	--ansi
+	--no-multi
+	--no-sort
+	--reverse
+	--tabstop=4
+	-i
+	-c 'git-log-wrapper -G "{}"'
+	--cmd-prompt='regex> '
+	--preview="show-commit {1} --color=always"
+	--preview-window=right:60%:border-left:wrap
+	--bind="ctrl-m:execute(show-commit {1} | $LOG_PAGER)"
+)
+
+exec "${CMD[@]}"
