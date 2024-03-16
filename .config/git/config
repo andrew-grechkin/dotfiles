@@ -138,6 +138,7 @@
 [grep]
 	extendedRegexp = true
 	lineNumber     = true
+	patternType    = perl
 
 [gpg "ssh"]
 	allowedSignersFile = ~/.config/git/allowed_signers

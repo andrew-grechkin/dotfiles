@@ -16,7 +16,7 @@ CMD=(
 	--reverse
 	--tabstop=4
 	-i
-	-c 'git-log-wrapper -G "{}"'
+	-c "git-log-wrapper $@ -P -G '{}'"
 	--cmd-prompt='regex> '
 	--preview="show-commit {1}"
 	--preview-window=right:60%:border-left:wrap

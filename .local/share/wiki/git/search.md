@@ -1,58 +1,78 @@
-# Git search
+# Grep code (WHERE it is)
 
-## Grep code (WHERE it is)
+man: git-grep
 
-### Useful options
+## Command
 
-- `--break`: add empty line between files
-- `--heading`: add file name
-- `-n`: add line numbers
-- `-p`: print context
-- `-P`: use PCRE
-- `--and`: combine by AND instead of OR
-
-### search function named name1 or name2 in ref (HEAD by default)
-
-```
-git grep --break --heading -n -P '\bdef\b' --and \( -P name1 -P name2 \) [ref]
+```bash
+git grep needle [ref...] -- [pathspec...]
 ```
 
-### count occurrences
+## Useful options
+
+- `--break`:   add empty line between files
+- `--heading`: group matches under file name
+- `-n`:        add line numbers
+- `-p`:        print context
+- `-P`:        use PCRE
+- `--and`:     combine by AND instead of OR
+- `-e`:        search regex
+
+## search function named name1 or name2 in ref (HEAD by default)
+
+```bash
+git grep -P --break --heading -n -e '\bdef\b' --and \( -e name1 -e name2 \) [ref]
 ```
+
+## count occurrences
+
+```bash
 git grep --count -P '\bdef\b'
 ```
 
-## Log (WHEN it was introduced)
+# Log changes (WHEN it was introduced)
 
-### Useful options
+man: git-log
 
-- `--author`: filter by author
-- `--grep`: filter by log message regex
-- `-S`: search for addition/deletion
-- `-G`: search difs for regex
-- `-p`: print context
-- `-L`: history of a line or a function
+## Command
 
-### Search my commits with message match
-
-```
-git log --author=agrechkin --grep='chore'
+```bash
+git log [ref...] -- [pathspec...]
 ```
 
-### Search for changes containing 'Backend'
+## Useful options
 
+- `--author`:    filter by author
+- `--committer`: filter by committer
+- `--since`:     filter since
+- `--until`:     filter until
+- `--no-merges`: filter out merge commits
+- `--grep`:      search regex in commit message
+- `-G`:          search regex in diffs
+- `-S`:          search exact match in occurrences
+- `-L`:          history of a line or a function
+- `-p`:          print context
+
+## Search my commits where commit message matching
+
+```bash
+git log --grep='chore'
 ```
+
+## Search for changes containing 'Backend'
+
+```bash
 git log -S Backend --oneline
 ```
 
-### Search for changes containing 'Backend' at the end of the line
+## Search for changes containing 'Backend' at the end of the line
 
-```
+```bash
 git log -G '\bBackend$' -p
 ```
 
-### Show history of a function/object in a file
+## Show history of a function/object in a file
 
-```
-git log -L ':Function-name:filename'
+```bash
+git log -L ':function_name:filename'
 ```

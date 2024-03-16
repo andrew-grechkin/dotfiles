@@ -134,4 +134,17 @@ return {
             end,
         },
     },
+    -- => --------------------------------------------------------------------------------------------------------- {{{1
+    -- { -- https://github.com/NeogitOrg/neogit
+    --     'NeogitOrg/neogit',
+    --     dependencies = {
+    --         'nvim-lua/plenary.nvim', -- required
+    --         'sindrets/diffview.nvim', -- optional - Diff integration
+
+    --         -- Only one of these is needed, not both.
+    --         'nvim-telescope/telescope.nvim',
+    --         'ibhagwan/fzf-lua',
+    --     },
+    --     config = true,
+    -- },
 }
