@@ -287,7 +287,7 @@ filextype *.kar,*.mid,*.midi
 " => File associations: Video ------------------------------------------------------------------------------------- {{{1
 
 filextype *.3gp,
-	\*.as[fx],*.avi,*.dat,*.divx,*.fl[icv],*.lrv,*.m2v,*.m4v,*.mkv,*.mov,*.mp4,*.mpeg,*.mpg,*.mts,*.ts,
+	\*.as[fx],*.avi,*.dat,*.divx,*.fl[icv],*.lrv,*.m2v,*.m4v,*.mkv,*.mov,*.mp4,*.mpeg,*.mpg,*.mts,
 	\*.ogv,*.qt,*.r[am],*.vob,*.webm,*.wmv
 	\ {View using mpv}
 	\ mpv %f:p %i &,
@@ -775,7 +775,7 @@ set classify+=' ::*.7z,,*.ace,,*.arj,,*.bz2,,*.cpio,,*.dz,,*.gz,,*.jar,,*.lzh
 set classify+=' ::*.bmp,,*.gif,,*.jp2,,*.jpeg,,*.jpg,,*.ico,,*.png,,*.ppm,,*.tga,,*.tif,,*.tiff,,*.xbm,,*.xcf,,*.xpm,,*.xspf,,*.xwd,,*.svg,,*.svgz::'
 set classify+=' ::*.aac,,*.anx,,*.asf,,*.au,,*.axa,,*.flac,,*.m2a,,*.m4a,,*.mid,,*.midi,,*.mp3,,*.mpc,,*.oga,,*.ogg,,*.ogx,,*.ra,,*.ram,,*.rm,,*.spx,,*.wav,,*.wma,,*.ac3::'
 set classify+=' ::*.avi,,*.axv,,*.divx,,*.m2v,,*.m4p,,*.m4v,,.mka,,*.mkv,,*.mov,,*.mp4,,*.lrv,,*.flv::'
-set classify+=' ::*.mp4v,,*.mpeg,,*.mpg,,*.nuv,,*.ogv,,*.pbm,,*.pgm,,*.qt,,*.vob,,*.wmv,,*.xvid,,*.ts::'
+set classify+=' ::*.mp4v,,*.mpeg,,*.mpg,,*.nuv,,*.ogv,,*.pbm,,*.pgm,,*.qt,,*.vob,,*.wmv,,*.xvid::'
 set classify+=' ::*.htm,,*.html,,*.[msx]html,,*.mht,,*.xml::'
 set classify+=' ::*.diff,,*.patch::'
 set classify+=' ::*.img,,*.iso::'
