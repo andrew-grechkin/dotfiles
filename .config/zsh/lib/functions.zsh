@@ -33,15 +33,15 @@ function disable-proxy() {
 
 # shellcheck source=/dev/null
 function activate() {
-	if [[ -r ".nvmrc" ]]; then
-		nvm use
-		return
-	fi
-
 	FILES=("dev.rc" ".venv/bin/activate")
 
 	if command git rev-parse HEAD &>/dev/null; then
 		REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+		if [[ -r ".nvmrc" ]] || [[ -r "$REPO_ROOT/.nvmrc" ]]; then
+			nvm use
+			return
+		fi
 
 		FILES+=("${FILES[@]/#/$REPO_ROOT/}")
 		FILES+=("$REPO_ROOT/projects/deployments/dev.rc")
