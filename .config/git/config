@@ -89,6 +89,9 @@
 	markUnblamableLines = true
 	; ignoreRevsFile = .git-blame-ignore-revs
 
+[clone]
+	rejectShallow = true
+
 [core]
 	autocrlf       = false
 	editor         = vi
