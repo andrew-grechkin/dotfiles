@@ -131,6 +131,8 @@ super + alt + {Left,Down,Up,Right}
 
 super + BackSpace
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-system-exit"
+super + equal
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-system-audio"
 super + Return
 	wezterm start --always-new-process /usr/bin/zsh
 
