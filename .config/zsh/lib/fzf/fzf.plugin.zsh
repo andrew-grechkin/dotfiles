@@ -148,10 +148,10 @@ zle -N fzf-git-files-widget
 zle -N fzf-git-hashes-widget
 zle -N fzf-git-tags-widget
 
-bindkey '^j^h' fzf-git-hashes-widget
-bindkey '^j^j' fzf-git-branches-widget
-bindkey '^j^y' fzf-git-files-widget
-bindkey '^j^u' fzf-git-tags-widget
+bindkey '^i^h' fzf-git-hashes-widget
+bindkey '^i^j' fzf-git-branches-widget
+bindkey '^i^y' fzf-git-files-widget
+bindkey '^i^u' fzf-git-tags-widget
 
 # => context completion ------------------------------------------------------------------------------------------- {{{1
 

@@ -43,6 +43,7 @@
 	m-dt         = !"f(){ git difftool -b -t vimdiff      `git m-span .. $@`; }; f"
 	m-log        = !"f(){ git log          --color=always `git m-span .. $@`; }; f"
 	m-span       = !"git-merge-span"
+	make-shallow = !"f(){ git fetch --prune-tags --prune; git tag -d $(git tag -l); git reflog expire --expire=all --all; git gc --prune=all; }; f"
 	mt           = mergetool
 	mt4          = mergetool --tool=nvimdiff4
 	mtg          = mergetool --gui
