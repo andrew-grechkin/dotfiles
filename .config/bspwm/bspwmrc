@@ -43,7 +43,7 @@ bspc rule -a 'floating'               state=floating center=on rectangle=1280x72
 bspc rule -a 'gpclient'               state=floating sticky=on
 bspc rule -a 'kscreen_osd_service'    state=floating sticky=on
 bspc rule -a 'matplotlib'             state=floating center=on rectangle=1280x720+0+0
-bspc rule -a 'mpv'                    state=floating sticky=on rectangle=564x317-600-360
+bspc rule -a 'mpv'                    state=floating sticky=on focus=off rectangle=564x317-600-360
 bspc rule -a 'pinentry'               state=floating sticky=on
 
 bspc rule -a 'Chromium'                          desktop='1'

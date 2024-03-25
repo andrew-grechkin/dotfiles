@@ -40,7 +40,7 @@ if ($params !~ m/\brectangle=\d/) {
             $output .= ' state=floating sticky=on';
         } elsif ($xprop =~ m/\Ajoin[?]action=join/xms) {
             $output .= ' state=floating focus=off';
-        } elsif ($xprop =~ m/"zoom/ixms) {
+        } elsif ($xprop =~ m/"zoom/xms) {
             $output .= ' state=floating';
         }
     }
