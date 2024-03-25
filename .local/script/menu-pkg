@@ -27,7 +27,14 @@ sub fetch_packages ($os_name) {
             'dnf repoquery -C --userinstalled --qf=%{name} 2>/dev/null',
             'dnf repoquery -C --available --qf=%{name} 2>/dev/null',
         ],
+        'Ubuntu' => [
+            'apt list --installed 2>/dev/null | grep -Po ".*?(?=\/)"',
+            'apt list --installed 2>/dev/null | grep -v "automatic" | grep -Po ".*?(?=\/)"',
+            'apt list 2>/dev/null | grep -Po ".*?(?=\/)"',
+        ],
     );
+
+    die "Not found fetcher for: $os_name\n" unless exists $commands{$os_name};
 
     my @result = map {chomp(my @lines = qx{$_}); \@lines} $commands{$os_name}->@*;
 
@@ -51,7 +58,16 @@ sub preview_command ($os_name) {
                 cat <(dnf -C info {1} 2>/dev/null | grep -vF 'Last metadata') <(rpm -ql {1} 2>/dev/null)
             fi
         },
+        'Ubuntu' => q{
+            if [[ {2} == "available" ]]; then
+                cat <(apt show {1} 2>/dev/null) <(apt-file list {1} 2>/dev/null)
+            else
+                cat <(apt show {1} 2>/dev/null) <(dpkg -L {1} 2>/dev/null)
+            fi
+        },
     );
+
+    die "Not found previewer for: $os_name\n" unless exists $commands{$os_name};
 
     return $commands{$os_name};
 }
@@ -66,7 +82,13 @@ sub fzf_options ($os_name) {
             '--bind', 'alt-a:execute(sudo dnf install --disableplugin=puppet {+1} </dev/tty >/dev/tty)+abort',
             '--bind', 'alt-r:execute(sudo dnf remove --disableplugin=puppet {+1} </dev/tty >/dev/tty)+abort',
         ],
+        'Ubuntu' => [
+            '--bind', 'alt-a:execute(sudo apt install {+1} </dev/tty >/dev/tty)+abort',
+            '--bind', 'alt-r:execute(sudo apt remove {+1} </dev/tty >/dev/tty)+abort',
+        ],
     );
+
+    die "Not found mutator for: $os_name\n" unless exists $commands{$os_name};
 
     return ($commands{$os_name}->@*, '--header', 'A-a:add A-r:remove',);
 }

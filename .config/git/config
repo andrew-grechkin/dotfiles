@@ -16,6 +16,8 @@
 	compress-a   = !"git-compress-aggressive"
 	d            = -c delta.side-by-side=true diff -b
 	dc           = -c delta.side-by-side=true diff -b --cached
+	dd           = -c delta.side-by-side=true diff
+	ddc          = -c delta.side-by-side=true diff --cached
 	ds           = diff -b --submodule=diff
 	dt           = difftool
 	dtg          = difftool --gui

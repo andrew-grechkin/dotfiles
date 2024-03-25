@@ -33,7 +33,8 @@ function disable-proxy() {
 
 # shellcheck source=/dev/null
 function activate() {
-	FILES=("dev.rc" ".venv/bin/activate")
+	VENV_PATH=".venv/bin/activate"
+	FILES=("dev.rc" "$VENV_PATH")
 
 	if command git rev-parse HEAD &>/dev/null; then
 		REPO_ROOT="$(git rev-parse --show-toplevel)"
@@ -54,12 +55,25 @@ function activate() {
 		fi
 	done
 
+	### common cases
 	if [[ -r "poetry.lock" ]]; then
+		# Python repo managed by poetry
 		if command -v poetry &>/dev/null; then
 			PYTHON_LOCAL="$(poetry env info -p)"
 			source "$PYTHON_LOCAL/bin/activate"
 			return
 		fi
+	elif [[ -r "requirements.txt" ]]; then
+		# Python repo managed by venv
+
+		echo "Preparing Python venv for the first time"
+		python -m venv .venv && source "$VENV_PATH"
+
+		python -m pip install -r 'requirements.txt'
+		if [[ -r "test/requirements.txt" ]]; then
+			python -m pip install -r 'test/requirements.txt'
+		fi
+		return
 	fi
 
 	tput bold && tput setaf 1
