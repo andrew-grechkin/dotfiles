@@ -146,13 +146,14 @@ function fzf-git-tags-widget()           LBUFFER+=$(fzf-git-tags           | std
 zle -N fzf-git-branches-widget
 zle -N fzf-git-files-widget
 zle -N fzf-git-hashes-widget
+zle -N fzf-git-remotes-widget
 zle -N fzf-git-tags-widget
 
-bindkey ';;' fzf-git-branches-widget
+bindkey ';;' fzf-git-files-widget
 bindkey ';h' fzf-git-hashes-widget
-bindkey ';j' fzf-git-files-widget
-bindkey ';k' fzf-git-tags-widget
-bindkey ';l' fzf-git-branches-widget
+bindkey ';j' fzf-git-branches-widget
+bindkey ';l' fzf-git-remotes-widget
+bindkey ';t' fzf-git-tags-widget
 
 # => context completion ------------------------------------------------------------------------------------------- {{{1
 
