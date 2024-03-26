@@ -139,11 +139,13 @@ function _fzf_complete_kubectl_post() {
 
 function fzf-git-branches-widget()       LBUFFER+=$(fzf-git-branches --all | stdin-join-lines)
 function fzf-git-files-widget()          LBUFFER+=$(fzf-git-files          | stdin-join-lines)
+function fzf-git-files-changed-widget()  LBUFFER+=$(fzf-git-files-changed  | stdin-join-lines)
 function fzf-git-hashes-widget()         LBUFFER+=$(fzf-git-hashes --all   | stdin-join-lines)
 function fzf-git-remotes-widget()        LBUFFER+=$(fzf-git-remotes        | stdin-join-lines)
 function fzf-git-tags-widget()           LBUFFER+=$(fzf-git-tags           | stdin-join-lines)
 
 zle -N fzf-git-branches-widget
+zle -N fzf-git-files-changed-widget
 zle -N fzf-git-files-widget
 zle -N fzf-git-hashes-widget
 zle -N fzf-git-remotes-widget
@@ -152,7 +154,8 @@ zle -N fzf-git-tags-widget
 bindkey ';;' fzf-git-files-widget
 bindkey ';h' fzf-git-hashes-widget
 bindkey ';j' fzf-git-branches-widget
-bindkey ';l' fzf-git-remotes-widget
+bindkey ';k' fzf-git-remotes-widget
+bindkey ';l' fzf-git-files-changed-widget
 bindkey ';t' fzf-git-tags-widget
 
 # => context completion ------------------------------------------------------------------------------------------- {{{1
