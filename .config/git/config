@@ -206,7 +206,8 @@
 	updateRefs          = true
 
 [rerere]
-	enabled = true
+	autoUpdate = true
+	enabled    = true
 
 [status]
 	showStash = true
