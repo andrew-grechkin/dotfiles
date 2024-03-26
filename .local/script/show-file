@@ -2,6 +2,13 @@
 
 set -Eeuo pipefail
 
+BAT_OPTIONS=(
+	--style=numbers
+	--color=always
+	--tabs=4
+	-pp
+)
+
 function header() {
 	stat "$1"
 
@@ -25,7 +32,7 @@ function body() {
 	EXT="${FILE##*.}"
 
 	if grep 'application/json' <<<"$TYPE" &>/dev/null; then
-		jq -S  --indent 2 < "$1" | bat -l JSON --style=numbers --color=always --tabs=4 && exit 0
+		jq -S  --indent 2 < "$1" | bat -l JSON "${BAT_OPTIONS[@]}" && exit 0
 	elif grep 'application/x-.*executable' <<<"$TYPE" &>/dev/null; then
 		{ readelf -dW "$1" && echo && nm -DC "$1"; } && exit 0
 	elif grep 'application/x-sharedlib' <<<"$TYPE" &>/dev/null; then
@@ -33,7 +40,7 @@ function body() {
 			{ readelf -dW "$1" && echo && nm -DC "$1"; } || { objdump -xfTC "$1"; }
 		} && exit 0
 	elif grep 'text/x-shellscript' <<<"$TYPE" &>/dev/null; then
-		bat -l 'Bourne Again Shell (bash)' --style=numbers --color=always --tabs=4 "$1" && exit 0
+		bat -l 'Bourne Again Shell (bash)' "${BAT_OPTIONS[@]}"  "$1" && exit 0
 	elif grep 'application/x-object' <<<"$TYPE" &>/dev/null; then
 		{ nm -ClS "$1"; echo; objdump -afltSd "$1"; } && exit 0
 	elif grep 'application/x-archive' <<<"$TYPE" &>/dev/null; then
@@ -49,8 +56,10 @@ function body() {
 				|| true
 		}
 		exit 0
+	elif [[ "$EXT" =~ conf$ ]]; then
+		bat -l conf "${BAT_OPTIONS[@]}" "$1" && exit 0
 	elif [[ "$EXT" =~ yaml?$ ]]; then
-		yaml-sanitize < "$1" | yamlfix - | bat -l yaml --style=numbers --color=always --tabs=4 && exit 0
+		yaml-sanitize < "$1" | yamlfix - | bat -l yaml "${BAT_OPTIONS[@]}" && exit 0
 	else
 		echo
 	fi
@@ -63,8 +72,7 @@ function footer() {
 	if grep 'charset=binary' <<<"$TYPE" &>/dev/null; then
 		hexdump -C "$1" && exit 0
 	elif (( FILESIZE < 1000000 )); then
-		bat --style=numbers --color=always --tabs=4 "$1"         \
-			|| pygmentize -O style=monokai -f console256 -g "$1" \
+		bat "${BAT_OPTIONS[@]}"  "$1" \
 			|| cat "$1"
 		(( FILESIZE > 255)) && return
 		echo

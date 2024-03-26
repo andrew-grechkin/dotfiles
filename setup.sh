@@ -63,9 +63,6 @@ command cp -rf ".config/htop"                                ~/.config/ 2>/dev/n
 command cp -rf ".config/locale.conf"                         ~/.config/ 2>/dev/null
 
 if [[ "$USER" == "agrechkin" ]]; then
-	if [[ ! "$(hostname)" =~ ^LL ]]; then
-		ln -srf .config/black                                ~/.config/
-	fi
 	ln -srf .config/bspwm                                    ~/.config/
 	ln -srf .config/containers                               ~/.config/
 	ln -srf .config/lazygit                                  ~/.config/
@@ -76,7 +73,6 @@ if [[ "$USER" == "agrechkin" ]]; then
 	ln -srf .config/perlcriticrc                             ~/.perlcriticrc
 	ln -srf .config/perlimports                              ~/.config/
 	ln -srf .config/perltidyrc                               ~/.perltidyrc
-	ln -srf .config/pylintrc                                 ~/.config/
 	ln -srf .config/sql-formatter.json                       ~/.config/
 	ln -srf .config/sqlfluff                                 ~/.config/
 	ln -srf .config/wireplumber                              ~/.config/
