@@ -10,7 +10,7 @@
 	browse       = !"git-browse \"$@\""
 	bush         = !"f(){ while true; do git push && break; git pull --no-tags --rebase || break; done }; f"
 	cl           = clone --filter=blob:none
-	co           = checkout
+	co           = !"f(){ echo 'Learn to use switch/restore commands instead'; }; f"
 	commit-again = !"git commit -eF \"$(git root)/.git/COMMIT_EDITMSG\" \"$@\""
 	compress     = !"git-compress"
 	compress-a   = !"git-compress-aggressive"
@@ -169,7 +169,7 @@
 	follow   = true
 
 [merge]
-	conflictstyle = diff3
+	conflictstyle = zdiff3
 	guitool       = meld
 	tool          = fugitive
 
