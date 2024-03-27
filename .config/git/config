@@ -1,6 +1,5 @@
 [alias]
 	aa           = add --all
-	add-mr-refs  = config --local --add remote.origin.fetch '+refs/merge-requests/*/head:refs/remotes/origin/merge-requests/*/head'
 	b            = branch -vv
 	behind       = !"MUB=\"$(git gmu)\"; echo \"Behind $MUB:\" &>/dev/stderr; git log --oneline HEAD..$MUB | wc -l"
 	bleach       = !"f(){ git fall; git b | perl -alE 'm/: gone]/ && $F[0] ne q(*) && system(qq(git branch -D $F[0]))'; }; f"
@@ -45,7 +44,6 @@
 	m-dt         = !"f(){ git difftool -b -t vimdiff      `git m-span .. $@`; }; f"
 	m-log        = !"f(){ git log          --color=always `git m-span .. $@`; }; f"
 	m-span       = !"git-merge-span"
-	make-shallow = !"f(){ git fetch --prune-tags --prune; git tag -d $(git tag -l); git reflog expire --expire=all --all; git gc --prune=all; }; f"
 	mt           = mergetool
 	mt4          = mergetool --tool=nvimdiff4
 	mtg          = mergetool --gui
@@ -83,6 +81,11 @@
 	# restore-origin-head = symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/master
 	remove-origin-head = !"f(){ git remote set-head -d \"${@:-origin}\"; }; f"
 	restore-origin-head = !"f(){ git remote set-head --auto \"${@:-origin}\"; }; f"
+
+	### experimental ---------------------------------------------------------------------------------------------------
+
+	add-mr-refs  = config --local --add remote.origin.fetch '+refs/merge-requests/*/head:refs/remotes/origin/merge-requests/*/head'
+	make-shallow = !"f(){ git fetch --prune-tags --prune; git tag -d $(git tag -l); git reflog expire --expire=all --all; git gc --prune=all; }; f"
 
 [apply]
 	whitespace = fix
