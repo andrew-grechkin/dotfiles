@@ -24,6 +24,5 @@
 .config/zsh/completion/_bk
 .local/bin
 .local/share/3rdparty/
-.local/share/distrobox/resolv.conf
 .ssh/authorized_keys
 worktrees/

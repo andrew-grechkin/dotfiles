@@ -1,36 +1,29 @@
 #!/usr/bin/env bash
-# https://github.com/ThePrimeagen/.dotfiles/blob/master/bin/.local/scripts/tmux-sessionizer
 
-DIRS=(
-	"$HOME/git/boo""king"
-	"$HOME/git/private"
+# idea from https://github.com/ThePrimeagen/.dotfiles/blob/master/bin/.local/scripts/tmux-sessionizer
+
+ROOT="$HOME/git"
+
+SELECTED=$(
+	fd -HuL -E 'bazel-*' -td -tf '\A.git\z' -d 4 "$ROOT" \
+		| sed -E "s|^$ROOT/||; s|/.git/?$||"             \
+		| fzf
 )
-
-EXISTING_DIRS=()
-for DIR in "${DIRS[@]}"; do
-	[[ -d "$DIR" ]] && EXISTING_DIRS+=("$DIR")
-done
-
-if [[ $# -eq 1 ]]; then
-	SELECTED=$1
-else
-	SELECTED=$(find "${EXISTING_DIRS[@]}" -mindepth 1 -maxdepth 1 -type d | fzf)
-fi
 
 if [[ -z $SELECTED ]]; then
 	exit 0
 fi
 
-SELECTED_NAME=$(echo "${SELECTED#"$HOME/"}" | tr . _)
-IS_TMUX_RUNNING=$(pgrep tmux)
+FULL_PATH="$ROOT/$SELECTED"
+SELECTED_NAME=$(echo "$SELECTED" | tr . _)
 
-if [[ -z $TMUX ]] && [[ -z $IS_TMUX_RUNNING ]]; then
-	tmux new-session -s "$SELECTED_NAME" -c "$SELECTED"
+if [[ -z $TMUX ]] && [[ -z "$(pgrep tmux 2>/dev/null)" ]]; then
+	tmux new-session -s "$SELECTED_NAME" -c "$FULL_PATH"
 	exit 0
 fi
 
-if ! tmux has-session -t="$SELECTED_NAME" 2> /dev/null; then
-	tmux new-session -ds "$SELECTED_NAME" -c "$SELECTED"
+if ! tmux has-session -t "$SELECTED_NAME" &>/dev/null; then
+	tmux new-session -ds "$SELECTED_NAME" -c "$FULL_PATH"
 fi
 
 tmux switch-client -t "$SELECTED_NAME"
