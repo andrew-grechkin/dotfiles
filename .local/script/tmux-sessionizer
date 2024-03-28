@@ -17,7 +17,7 @@ fi
 FULL_PATH="$ROOT/$SELECTED"
 SELECTED_NAME=$(echo "$SELECTED" | tr . _)
 
-if [[ -z $TMUX ]] && [[ -z "$(pgrep tmux 2>/dev/null)" ]]; then
+if [[ -z "${TMUX:-}" && -z "$(pgrep tmux 2>/dev/null)" ]]; then
 	tmux new-session -s "$SELECTED_NAME" -c "$FULL_PATH"
 	exit 0
 fi
