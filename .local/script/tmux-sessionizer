@@ -1,12 +1,24 @@
 #!/usr/bin/env bash
 
+set -Eeuo pipefail
+
 # idea from https://github.com/ThePrimeagen/.dotfiles/blob/master/bin/.local/scripts/tmux-sessionizer
 
-ROOT="$HOME/git"
+ROOT1="$HOME/git"
+ROOT2="/usr/local/git_tree"
 
 SELECTED=$(
-	fd -HuL -E 'bazel-*' -td -tf '\A.git\z' -d 4 "$ROOT" \
-		| sed -E "s|^$ROOT/||; s|/.git/?$||"             \
+	cat                                                                       \
+		<(                                                                    \
+			fd -HuL -E 'bazel-*' -td -tf '\A.git\z' -d 4 "$ROOT1" 2>/dev/null \
+			| perl -plE "s{^$ROOT1/(.*)}{$ROOT1\t\1}x"                      \
+		)                                                                     \
+		<(                                                                    \
+			fd -HuL -E 'bazel-*' -td -tf '\A.git\z' -d 2 "$ROOT2" 2>/dev/null \
+			| perl -plE "s{^$ROOT2/(.*)}{$ROOT2\t\1}x"                      \
+		)                                                                     \
+		| perl -plE "s{\/\.git\/?(?=$|\s)}{}g"                                \
+		| sort -u                                                             \
 		| fzf
 )
 
@@ -14,10 +26,12 @@ if [[ -z $SELECTED ]]; then
 	exit 0
 fi
 
-FULL_PATH="$ROOT/$SELECTED"
-SELECTED_NAME=$(echo "$SELECTED" | tr . _)
+IFS='	' read -r -a PARTS <<< "$SELECTED"
 
-if [[ -z "${TMUX:-}" && -z "$(pgrep tmux 2>/dev/null)" ]]; then
+FULL_PATH="${PARTS[0]}/${PARTS[1]}"
+SELECTED_NAME=$(echo "${PARTS[1]}" | tr . _)
+
+if [[ -z $TMUX ]] && [[ -z "$(pgrep tmux 2>/dev/null)" ]]; then
 	tmux new-session -s "$SELECTED_NAME" -c "$FULL_PATH"
 	exit 0
 fi
