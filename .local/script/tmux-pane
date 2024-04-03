@@ -2,4 +2,4 @@
 
 set -Eeuo pipefail
 
-tmux capture-pane -pJS - | trim-trailing-whitespace
+tmux capture-pane -pJS - | trim-borders
