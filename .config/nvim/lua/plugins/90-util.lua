@@ -7,6 +7,7 @@ return {
     { -- https://github.com/michaelb/sniprun
         'michaelb/sniprun',
         cmd = {'SnipRun', 'SnipInfo'},
+        enabled = IS_WORK and not IS_KVM,
         build = 'sh install.sh',
         config = function()
             require'sniprun'.setup {
