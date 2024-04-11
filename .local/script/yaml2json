@@ -41,7 +41,6 @@ sub main() {
 
     JSON()->relaxed if $options{'LENIENT'};
 
-
     my @formats = qw(JSON PERL YAML);
     if (1 < scalar grep {$options{$_}} @formats) {
         die sprintf "Please use only one format: %s\n", join ' | ', map lc, @formats;

@@ -31,8 +31,8 @@ function ssh_hosts_parsed_hosts() {
 	command grep -v '^\s*\(#\|$\)' /etc/hosts | command grep -Fv '0.0.0.0'
 }
 
-command cat <(
+{
 	ssh_config_parsed_hosts
 	ssh_known_parsed_hosts
 	ssh_hosts_parsed_hosts
-) | sort -u
+} | sort -u

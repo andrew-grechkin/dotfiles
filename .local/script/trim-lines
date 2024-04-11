@@ -7,10 +7,6 @@ use warnings     qw(FATAL utf8);
 use experimental qw(builtin);
 
 my $removed = chomp;
-
-s/^(?:[│][[:blank:]]?)//;
-s/[[:blank:]│]+$//;
-
-print $_, "\n" x $removed;
+print builtin::trim($_), "\n" x $removed;
 
 __END__

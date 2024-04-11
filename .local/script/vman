@@ -3,4 +3,5 @@
 set -Eeuo pipefail
 
 export MANPAGER="nvim +Man! -c ':nnoremap <buffer> q :quitall<CR>'"
+
 exec man "$1"
