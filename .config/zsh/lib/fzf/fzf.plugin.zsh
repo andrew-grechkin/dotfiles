@@ -140,19 +140,19 @@ function _fzf_complete_kubectl_post() {
 function fzf-git-branches-widget()       LBUFFER+=$(fzf-git-branches --all | stdin-join-lines)
 function fzf-git-files-widget()          LBUFFER+=$(fzf-git-files          | stdin-join-lines)
 function fzf-git-files-changed-widget()  LBUFFER+=$(fzf-git-files-changed  | stdin-join-lines)
-function fzf-git-hashes-widget()         LBUFFER+=$(fzf-git-hashes --all   | stdin-join-lines)
+function fzf-git-log-widget()            LBUFFER+=$(fzf-git-log-all        | stdin-join-lines)
 function fzf-git-remotes-widget()        LBUFFER+=$(fzf-git-remotes        | stdin-join-lines)
 function fzf-git-tags-widget()           LBUFFER+=$(fzf-git-tags           | stdin-join-lines)
 
 zle -N fzf-git-branches-widget
 zle -N fzf-git-files-changed-widget
 zle -N fzf-git-files-widget
-zle -N fzf-git-hashes-widget
+zle -N fzf-git-log-widget
 zle -N fzf-git-remotes-widget
 zle -N fzf-git-tags-widget
 
 bindkey ';;' fzf-git-files-widget
-bindkey ';h' fzf-git-hashes-widget
+bindkey ';h' fzf-git-log-widget
 bindkey ';j' fzf-git-branches-widget
 bindkey ';k' fzf-git-remotes-widget
 bindkey ';l' fzf-git-files-changed-widget
@@ -164,7 +164,7 @@ function fzf-detect-widget() {
 	setopt local_options ksh_glob
 	case "$LBUFFER" in
 		git+( )@(show)*( ))
-			RESULT=$(fzf-git-hashes --all | stdin-join-lines)
+			RESULT=$(fzf-git-log-all | stdin-join-lines)
 			;;
 		git+( )@(remote)+( )@(remove|rename|show)*( ))
 			RESULT=$(fzf-git-remotes | stdin-join-lines)
