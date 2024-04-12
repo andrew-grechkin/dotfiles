@@ -8,10 +8,13 @@ set -Eeuo pipefail
 }
 
 FORMATTER='jq -S'
-[[ -x "$(command -v json2yaml)" ]] && {
+if [[ -x "$(command -v json2yaml)" ]]; then
 	FORMATTER="json2yaml"
 	LANGUAGE="yaml"
-}
+elif [[ -x "$(command -v yq)" ]]; then
+	FORMATTER="yq -P -o yaml"
+	LANGUAGE="yaml"
+fi
 
 [[ -x "$(command -v bat)" ]] && {
 	COLORIZER="| bat -l ${LANGUAGE:-json} --color=always --style=header --file-name='$*'"
