@@ -42,6 +42,8 @@ super + m
 # toggle state
 super + f
 	bspc node -t "~floating"
+super + F
+	bspc node -t "~tiled"
 super + z
 	bspc node -t "~fullscreen"
 

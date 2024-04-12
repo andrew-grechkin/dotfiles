@@ -1,4 +1,4 @@
-# Grep code (WHERE it is)
+# Grep code (WHERE is it in the worktree)
 
 man: git-grep
 
@@ -53,7 +53,7 @@ git log [ref...] -- [pathspec...]
 - `-L`:          history of a line or a function
 - `-p`:          print context
 
-## Search my commits where commit message matching
+## Search commits where commit message matching
 
 ```bash
 git log --grep='chore'
@@ -75,4 +75,16 @@ git log -G '\bBackend$' -p
 
 ```bash
 git log -L ':function_name:filename'
+```
+
+## Show history of a file starting on line and until the end
+
+```bash
+git log -L 'line:filename'
+```
+
+## Show history of a file starting on lines
+
+```bash
+git log -L 'start-line,end-line:filename'
 ```
