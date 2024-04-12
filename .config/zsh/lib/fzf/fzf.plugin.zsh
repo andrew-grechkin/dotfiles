@@ -138,20 +138,23 @@ function _fzf_complete_kubectl_post() {
 # => git completion ----------------------------------------------------------------------------------------------- {{{1
 
 function fzf-git-branches-widget()       LBUFFER+=$(fzf-git-branches --all | stdin-join-lines)
-function fzf-git-files-widget()          LBUFFER+=$(fzf-git-files          | stdin-join-lines)
 function fzf-git-files-changed-widget()  LBUFFER+=$(fzf-git-files-changed  | stdin-join-lines)
-function fzf-git-log-widget()            LBUFFER+=$(fzf-git-log-all        | stdin-join-lines)
+function fzf-git-files-widget()          LBUFFER+=$(fzf-git-files          | stdin-join-lines)
+function fzf-git-log-all-widget()        LBUFFER+=$(fzf-git-log-all        | stdin-join-lines)
+function fzf-git-log-widget()            LBUFFER+=$(fzf-git-log-branch     | stdin-join-lines)
 function fzf-git-remotes-widget()        LBUFFER+=$(fzf-git-remotes        | stdin-join-lines)
 function fzf-git-tags-widget()           LBUFFER+=$(fzf-git-tags           | stdin-join-lines)
 
 zle -N fzf-git-branches-widget
 zle -N fzf-git-files-changed-widget
 zle -N fzf-git-files-widget
+zle -N fzf-git-log-all-widget
 zle -N fzf-git-log-widget
 zle -N fzf-git-remotes-widget
 zle -N fzf-git-tags-widget
 
 bindkey ';;' fzf-git-files-widget
+bindkey ';H' fzf-git-log-all-widget
 bindkey ';h' fzf-git-log-widget
 bindkey ';j' fzf-git-branches-widget
 bindkey ';k' fzf-git-remotes-widget
