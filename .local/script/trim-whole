@@ -1,4 +1,4 @@
-#!/usr/bin/env -S perl -n
+#!/usr/bin/env -S perl -gn
 
 use v5.38;
 use open ':locale';
@@ -6,7 +6,6 @@ use utf8;
 use warnings     qw(FATAL utf8);
 use experimental qw(builtin);
 
-my $removed = chomp;
-print builtin::trim($_), "\n" x $removed;
+print builtin::trim($_);
 
 __END__

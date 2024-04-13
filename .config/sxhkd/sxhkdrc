@@ -36,8 +36,8 @@ alt + F4
 #	bspc node -s biggest.window
 
 # alternate between the tiled and monocle layout
-super + m
-	bspc desktop -l next
+#super + m
+#	bspc desktop -l next
 
 # toggle state
 super + f
@@ -63,7 +63,7 @@ super + {_,shift + }{1-9,0}
 	bspc {desktop -f,node -d} '{1-9,0}'
 
 # focus the node in the given direction
-super + {_,shift + }{h,j,k,l}
+super + {_,ctrl + }{h,j,k,l}
 	bspc node -{f,s} {west,south,north,east}
 
 # focus the node for the given path jump
@@ -133,12 +133,12 @@ super + alt + {Left,Down,Up,Right}
 
 super + BackSpace
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-system-exit"
+super + Return
+	wezterm start --always-new-process /usr/bin/zsh
 super + equal
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-system-audio"
 super + minus
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-system-misc"
-super + Return
-	wezterm start --always-new-process /usr/bin/zsh
 
 # super + b
 #	exo-open --launch WebBrowser
@@ -156,10 +156,10 @@ super + r
 	wezterm start --always-new-process --class 'Main-Tmux' distrobox enter -n arch -- tmux -L arch
 super + t
 	wezterm start --always-new-process --class 'Main-Tmux' tmux
-super + y
-	wezterm start --always-new-process --class 'Main-Tmux' zellij
 super + u
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/fzf-select" unicode
+super + y
+	wezterm start --always-new-process --class 'Main-Tmux' zellij
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1
 
@@ -168,32 +168,31 @@ super + shift + Return
 
 super + shift + a
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-audio"
-super + shift + b
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "/media/nfs/home/doc/@technical"
-super + shift + d
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-man"
 super + shift + f
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-film"
-super + shift + i
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "/media/nfs/home/doc/@fiction"
-super + shift + m
+super + shift + h
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-mpv-history"
-super + shift + n
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "/media/nfs/home/doc/@study"
-# super + shift + n
-# 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/create-note"
+super + shift + j
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "${XDG_DATA_HOME}/cheatsheet"
+super + shift + k
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-man-keyword"
+super + shift + m
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-man-name"
 super + shift + p
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pacman"
-super + shift + s
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "${XDG_DATA_HOME}/cheatsheet"
 super + shift + u
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/fzf-select" emoji
-# super + shift + v
-# 	$HOME/.local/script/play-clipboard-url
 super + shift + w
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/open-vim-wiki"
 super + shift + y
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/fzf-select" nerd
+
+super + shift + l
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "/media/nfs/home/doc/@fiction"
+super + shift + colon
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "/media/nfs/home/doc/@technical"
+super + shift + quotedbl
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "/media/nfs/home/doc/@study"
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1
 

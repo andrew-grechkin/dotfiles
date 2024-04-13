@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-
-set -Eeuo pipefail
-
-TMP_FILE="$(mktemp)"
-
-tmux-pane | trim-right | perl -gpE 's/\A\R+|\R\K\R+\z//g' > "$TMP_FILE"
-tmux new-window -n:history "$(dirname "$0")/vi $TMP_FILE; rm -f $TMP_FILE"
