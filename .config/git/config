@@ -53,8 +53,10 @@
 	puba         = !"git push -u origin $(git bname) -o merge_request.create -o merge_request.remove_source_branch -o merge_request.merge_when_pipeline_succeeds"
 	redow        = !"f(){ git rebase -i --autosquash --keep-base --committer-date-is-author-date --update-refs `git gmb` \"$@\"; }; f"
 	root         = !"f(){ git rev-parse --show-superproject-working-tree --show-toplevel | head -1; }; f"
+	s            = !"menu-git-search"
 	sh           = show --show-signature
 	shd          = -c delta.side-by-side=true show --show-signature  --ignore-space-change
+	sm           = !"menu-git-search-message"
 	st           = status -b
 	unpub        = !"f(){ git push origin :$(git bname); }; f"
 	untag        = !"f(){ git push origin :$(git describe --exact-match --tags); }; f"

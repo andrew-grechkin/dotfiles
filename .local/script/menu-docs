@@ -2,4 +2,6 @@
 
 set -Eeuo pipefail
 
-glow /usr/share/doc
+cd "${1:-/usr/share/doc}"
+
+glow .

@@ -59,7 +59,7 @@ super + ctrl + {t,shift + t}
 	bspc node -t {tiled,pseudo_tiled}
 
 # focus or send to the given desktop
-super + {_,shift + }{1-9,0}
+super + {_,ctrl + }{1-9,0}
 	bspc {desktop -f,node -d} '{1-9,0}'
 
 # focus the node in the given direction
@@ -159,12 +159,21 @@ super + t
 super + u
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/fzf-select" unicode
 super + y
-	wezterm start --always-new-process --class 'Main-Tmux' zellij
+	wezterm start --always-new-process zellij
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1
 
 super + shift + Return
 	wezterm --config="enable_csi_u_key_encoding=false" start --always-new-process /usr/bin/zsh
+
+super + shift + y
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/fzf-select" nerd
+super + shift + u
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/fzf-select" emoji
+super + shift + p
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pacman"
+super + shift + braceleft
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pkg-search"
 
 super + shift + a
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-audio"
@@ -172,27 +181,26 @@ super + shift + f
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-film"
 super + shift + h
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-mpv-history"
-super + shift + j
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "${XDG_DATA_HOME}/cheatsheet"
 super + shift + k
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-man-keyword"
-super + shift + m
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-man-name"
-super + shift + p
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pacman"
-super + shift + u
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/fzf-select" emoji
-super + shift + w
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/open-vim-wiki"
-super + shift + y
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/fzf-select" nerd
-
 super + shift + l
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "/media/nfs/home/doc/@fiction"
 super + shift + colon
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "/media/nfs/home/doc/@technical"
 super + shift + quotedbl
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "/media/nfs/home/doc/@study"
+
+
+super + shift + n
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/open-vim-wiki"
+super + shift + m
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-man-name"
+super + shift + less
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-docs" "$HOME/.local/share/wiki"
+super + shift + greater
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-docs"
+super + shift + question
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "${XDG_DATA_HOME}/cheatsheet"
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1
 

@@ -13,6 +13,6 @@ SCRIPT=$(cat <<- 'EOSCRIPT'
 EOSCRIPT
 )
 
-sk --ansi -i -c 'man -wK --regex "{}"' \
-	| perl -nlE "$SCRIPT"              \
+sk --ansi --reverse -i -c 'man -wK --regex "{}"' \
+	| perl -nlE "$SCRIPT"                        \
 	| bash

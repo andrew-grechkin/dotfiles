@@ -4,8 +4,7 @@ use v5.38;
 use autodie;
 use open ':locale';
 use utf8;
-use warnings     qw(FATAL utf8);
-use experimental qw(builtin class declared_refs defer for_list refaliasing try);
+use warnings qw(FATAL utf8);
 
 use Mojo::File qw(path);
 

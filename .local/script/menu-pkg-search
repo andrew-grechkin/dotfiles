@@ -5,4 +5,4 @@ set -Eo pipefail
 # CMD='apt-file search -x "{}"'
 CMD='pacman -F -x "{}"'
 
-sk --ansi -i -c "$CMD"
+sk --ansi --reverse -i -c "$CMD"
