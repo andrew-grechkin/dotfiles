@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+cd "${1:-/usr/share/doc}"
+
+glow .
