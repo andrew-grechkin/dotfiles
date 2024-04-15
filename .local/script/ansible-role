@@ -21,7 +21,7 @@ export ANSIBLE_RETRY_FILES_ENABLED='False'
 ANSIBLE_ROLES_PATH="$PWD/roles:${ANSIBLE_ROLES_PATH:-}"
 export ANSIBLE_ROLES_PATH
 
-TMPFILE=$(mktemp)
+TMPFILE=$(mktemp -u)
 cat > "$TMPFILE" <<END
 ---
 - hosts: [all]

@@ -4,7 +4,7 @@ set -Eeuo pipefail
 
 FILE="$XDG_STATE_HOME/zsh/$HOSTNAME.history"
 
-TEMP_FILE=$(mktemp)
+TEMP_FILE=$(mktemp -u)
 
 function finish {
 	rm -f "$TEMP_FILE"

@@ -2,7 +2,7 @@
 
 set -Eeuo pipefail
 
-TMP_FILE="$(mktemp)"
+TMP_FILE="$(mktemp -u)"
 
 tmux-pane > "$TMP_FILE"
 

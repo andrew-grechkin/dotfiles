@@ -30,7 +30,7 @@ function recursively_remove_write_permission() {
 	done
 }
 
-IGNORE_FILE=$(mktemp)
+IGNORE_FILE=$(mktemp -u)
 
 function finish {
 	rm -f "$IGNORE_FILE"

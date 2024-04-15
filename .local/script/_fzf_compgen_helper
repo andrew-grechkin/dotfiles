@@ -4,7 +4,7 @@ set -Euo pipefail
 
 WD="${1/#\~/$HOME}"
 
-IGNORE_FILE=$(mktemp)
+IGNORE_FILE=$(mktemp -u)
 
 function finish {
 	rm -f "$IGNORE_FILE"
