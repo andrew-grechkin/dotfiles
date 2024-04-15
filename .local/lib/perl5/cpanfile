@@ -6,6 +6,7 @@ requires "Role::Tiny";
 requires "File::Map";
 requires "Log::Any";
 requires "Path::Tiny";
+requires "Regexp::Debugger";
 requires "Syntax::Keyword::Match";
 requires "Syntax::Operator::Equ";
 requires "Time::Moment";
@@ -67,7 +68,6 @@ feature 'repl' => sub {
 
 feature 'repl' => sub {
     requires "Devel::IPerl";
-    requires "Regexp::Debugger";
     requires "Reply";
     requires "Term::ReadKey";
     requires "Term::ReadLine::Gnu";
