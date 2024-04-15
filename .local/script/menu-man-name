@@ -45,7 +45,7 @@ SCRIPT=$(cat <<- 'EOSCRIPT'
 
 	$m = '\":nnoremap <buffer> q :quitall<CR>\"';
 
-	if ($n && none {$s eq $_} (2, 3)) {
+	if ($n && none {$s eq $_} (2, 3, '3ssl', '3caca', '3x', '7ssl')) {
 		$r{"$n/$s"} = sprintf(qq{%-40s (%s) %s\texport MANPAGER="nvim +Man! -c $m"; man -s $s $n}, $n, $sections{$s} // $s, $t);
 	}
 
