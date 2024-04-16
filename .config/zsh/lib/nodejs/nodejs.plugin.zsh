@@ -1,13 +1,26 @@
 # vim: filetype=zsh foldmethod=marker
 
+# => aliases ------------------------------------------------------------------------------------------------------ {{{1
+
+# => functions ---------------------------------------------------------------------------------------------------- {{{1
+
+function typescript-setup () {
+	npm install --save-dev @types/node
+}
+
+function npm-global-install () {
+	jq -r '.devDependencies | to_entries | map([.key, .value] | join("@")) | .[] | @sh' package.json \
+		| xargs -t npm -g install
+}
+
 # => exports ------------------------------------------------------------------------------------------------------ {{{1
 
-if [[ -d "$XDG_DATA_HOME/nvm" ]]; then
-	export NVM_DIR="$XDG_DATA_HOME/nvm"
+if [[ -d "$XDG_STATE_HOME/nvm" ]]; then
+	export NVM_DIR="$XDG_STATE_HOME/nvm"
 fi
 
 # => main --------------------------------------------------------------------------------------------------------- {{{1
 
-if [[ -r "$NVM_DIR/nvm.sh" ]]; then
+if [[ -x "$NVM_DIR/nvm.sh" ]]; then
 	source "$NVM_DIR/nvm.sh"
 fi

@@ -1,6 +1,1 @@
-#!/usr/bin/env bash
-
-set -Eeuo pipefail
-
-git-files-changed \
-	| fzf --multi --bind 'tab:toggle-out,shift-tab:toggle-in'
+fzf-git-files

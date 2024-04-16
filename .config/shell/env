@@ -22,7 +22,7 @@ DIRS=(
 	"$HOME/.cache/bin"
 	"$HOME/.cache/fzf/bin"
 	"$XDG_DATA_HOME/nvim/mason/bin"
-	"$XDG_DATA_HOME/npm/bin"
+	"$XDG_STATE_HOME/npm/bin"
 	"$GOPATH/bin"
 )
 

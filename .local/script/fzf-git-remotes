@@ -2,5 +2,8 @@
 
 set -Eeuo pipefail
 
-git-remotes \
+CURRENT_SCRIPT="$(basename "$0")"
+FETCHER="${CURRENT_SCRIPT#fzf-}"
+
+"$FETCHER" \
 	| fzf --multi --bind 'tab:toggle-out,shift-tab:toggle-in' --preview ''

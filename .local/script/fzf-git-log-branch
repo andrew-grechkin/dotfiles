@@ -2,5 +2,8 @@
 
 set -Eeuo pipefail
 
-git-log-branch "$@" \
-	| fzf-git-log --reload-command='git-log-branch'
+CURRENT_SCRIPT="$(basename "$0")"
+FETCHER="${CURRENT_SCRIPT#fzf-}"
+
+"$FETCHER" "$@" \
+	| fzf-git-log --reload-command="$FETCHER"

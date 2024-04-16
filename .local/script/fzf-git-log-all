@@ -1,6 +1,1 @@
-#!/usr/bin/env bash
-
-set -Eeuo pipefail
-
-git-log-all "$@" \
-	| fzf-git-log --reload-command='git-log-all'
+fzf-git-log-branch
