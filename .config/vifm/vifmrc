@@ -778,5 +778,5 @@ set classify+=' ::*.avi,,*.axv,,*.divx,,*.m2v,,*.m4p,,*.m4v,,.mka,,*.mkv,,*.m
 set classify+=' ::*.mp4v,,*.mpeg,,*.mpg,,*.nuv,,*.ogv,,*.pbm,,*.pgm,,*.qt,,*.vob,,*.wmv,,*.xvid::'
 set classify+=' ::*.htm,,*.html,,*.[msx]html,,*.mht,,*.xml::'
 set classify+=' ::*.diff,,*.patch::'
-set classify+=' ::*.img,,*.iso::'
-set classify+='󰛴 ::*.torrent::'
+set classify+=' ::*.img,,*.iso::'
+set classify+=' ::*.torrent::'

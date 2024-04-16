@@ -16,7 +16,7 @@ use constant {
     'UA'  => Mojo::UserAgent->new->max_redirects(2)->request_timeout(10)->tap(sub {$_->proxy->detect}),
     'URL' => Mojo::URL->new('https://raw.githubusercontent.com/ryanoasis/nerd-fonts/master/glyphnames.json'),
 };
-my $desc_file = path("$ENV{HOME}/.cache/nerd-font.txt");
+my $desc_file = path("$ENV{XDG_STATE_HOME}/nerd-font.txt");
 
 sub main() {
     convert_glyphnames() unless (-r $desc_file);
