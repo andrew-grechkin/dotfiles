@@ -4,8 +4,12 @@
 
 # => functions ---------------------------------------------------------------------------------------------------- {{{1
 
+function typescript-global-setup () {
+	npm install -g ts-node typescript @types/node
+}
+
 function typescript-setup () {
-	npm install --save-dev @types/node
+	npm install --save-dev nodemon ts-node typescript @types/node
 }
 
 function npm-global-install () {
@@ -15,8 +19,8 @@ function npm-global-install () {
 
 # => exports ------------------------------------------------------------------------------------------------------ {{{1
 
-if [[ -d "$XDG_STATE_HOME/nvm" ]]; then
-	export NVM_DIR="$XDG_STATE_HOME/nvm"
+if [[ -d "$XDG_CONFIG_HOME/nvm" ]]; then
+	export NVM_DIR="$XDG_CONFIG_HOME/nvm"
 fi
 
 # => main --------------------------------------------------------------------------------------------------------- {{{1

@@ -1,13 +1,5 @@
-#!/usr/bin/env perl
+#!/usr/bin/env bash
 
-use v5.38;
-use autodie;
-use open ':locale';
-use utf8;
-use warnings qw(FATAL utf8);
+set -Eeuo pipefail
 
-use Mojo::File qw(path);
-
-print path($ARGV[0])->stat->ino;
-
-__END__
+stat -c '%i' "$1"
