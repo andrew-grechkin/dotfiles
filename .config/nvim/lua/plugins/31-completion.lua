@@ -13,7 +13,14 @@ return {
             'quangnguyen30192/cmp-nvim-tags',
             {
                 'L3MON4D3/LuaSnip',
-                dependencies = {'rafamadriz/friendly-snippets', 'andrew-grechkin/vim-snippets'},
+                dependencies = {
+                    { -- url: https://github.com/rafamadriz/friendly-snippets
+                        'rafamadriz/friendly-snippets',
+                    },
+                    { -- url: https://github.com/andrew-grechkin/vim-snippets
+                        'andrew-grechkin/vim-snippets',
+                    },
+                },
                 config = function()
                     local plugin = require('luasnip')
                     require('luasnip.loaders.from_vscode').lazy_load()
@@ -111,8 +118,8 @@ return {
                     },
                     ['<C-d>'] = plugin.mapping(plugin.mapping.scroll_docs(4), {'i', 'c'}),
                     ['<C-u>'] = plugin.mapping(plugin.mapping.scroll_docs(-4), {'i', 'c'}),
-                    ['<C-j>'] = plugin.mapping.select_next_item(),
-                    ['<C-k>'] = plugin.mapping.select_prev_item(),
+                    ['<C-n>'] = plugin.mapping.select_next_item(),
+                    ['<C-p>'] = plugin.mapping.select_prev_item(),
                     -- ['<C-y>'] = plugin.config.disable, -- Specify `plugin.config.disable` if you want to remove the default `<C-y>` mapping.
                     -- Accept currently selected item. If none selected, `select` first item.
                     -- Set `select` to `false` to only confirm explicitly selected items.
