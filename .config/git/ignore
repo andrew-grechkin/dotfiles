@@ -2,6 +2,11 @@
 /worktrees/
 tags
 
+# nodejs
+.tap/
+node_modules/
+tsconfig.tsbuildinfo
+
 #ignore thumbnails created by windows
 Thumbs.db
 
