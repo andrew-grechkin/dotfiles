@@ -156,6 +156,9 @@ color-severity-low     = bold cyan
 
 [-NamingConventions::Capitalization]
 
+# false positive for signatures
+[-ValuesAndExpressions::RequireInterpolationOfMetachars]
+
 # => 5 ------------------------------------------------------------------------------------------------------------ {{{1
 
 # 5 Bangs::ProhibitBitwiseOperators [bangs bugs]

@@ -2,12 +2,21 @@ return {
     { -- https://github.com/nvim-neotest/neotest
         'nvim-neotest/neotest',
         dependencies = {
+            { -- https://github.com/nvim-neotest/nvim-nio
+                'nvim-neotest/nvim-nio',
+            },
+            { -- https://github.com/nvim-lua/plenary.nvim
+                'nvim-lua/plenary.nvim',
+            },
             { -- https://github.com/nvim-neotest/neotest-plenary
                 'nvim-neotest/neotest-plenary',
             },
             { -- https://github.com/nvim-neotest/neotest-python
                 'nvim-neotest/neotest-python',
             },
+            -- { -- https://github.com/nvim-neotest/neotest-jest
+            --     'nvim-neotest/neotest-jest',
+            -- },
             { -- https://github.com/nvim-neotest/neotest-vim-test
                 'nvim-neotest/neotest-vim-test',
                 dependencies = {
@@ -110,6 +119,13 @@ return {
                         args = {'--log-level=DEBUG', '--quiet'},
                         runner = 'pytest',
                     }),
+                    -- require('neotest-jest')({
+                    --     discovery = {enabled = false},
+                    --     jestCommand = 'npm test --',
+                    --     jestConfigFile = 'custom.jest.config.ts',
+                    --     env = {CI = true},
+                    --     cwd = function(_) return vim.fn.getcwd() end,
+                    -- }),
                     require('neotest-vim-test')({ignore_filetypes = {'lua', 'python', 'vim'}}),
                 },
                 output = {enabled = true, open_on_run = false},
