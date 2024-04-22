@@ -33,13 +33,13 @@ function disable-proxy() {
 
 # shellcheck source=/dev/null
 function activate() {
-	VENV_PATH=".venv/bin/activate"
-	FILES=("dev.rc" "$VENV_PATH")
+	VENV_PATH='.venv/bin/activate'
+	FILES=('dev.rc' "$VENV_PATH")
 
 	if command git rev-parse HEAD &>/dev/null; then
 		REPO_ROOT="$(git rev-parse --show-toplevel)"
 
-		if [[ -r ".nvmrc" ]] || [[ -r "$REPO_ROOT/.nvmrc" ]]; then
+		if [[ -r '.nvmrc' || -r "$REPO_ROOT/.nvmrc" ]]; then
 			nvm use
 			return
 		fi
@@ -56,29 +56,31 @@ function activate() {
 	done
 
 	### common cases
-	if [[ -r "poetry.lock" ]]; then
+	if [[ -r 'poetry.lock' ]]; then
 		# Python repo managed by poetry
 		if command -v poetry &>/dev/null; then
 			PYTHON_LOCAL="$(poetry env info -p)"
 			source "$PYTHON_LOCAL/bin/activate"
 			return
 		fi
-	elif [[ -r "requirements.txt" ]]; then
+	elif [[ -r 'requirements.txt' ]]; then
 		# Python repo managed by venv
 
 		echo "Preparing Python venv for the first time"
 		python -m venv .venv && source "$VENV_PATH"
 
 		python -m pip install -r 'requirements.txt'
-		if [[ -r "test/requirements.txt" ]]; then
+		if [[ -r 'test/requirements.txt' ]]; then
 			python -m pip install -r 'test/requirements.txt'
 		fi
 		return
 	fi
 
-	tput bold && tput setaf 1
-	echo "Unable to find any activation scripts"
-	tput sgr0
+	if [[ "${1:-verbose}" != 'silent' ]]; then
+		tput bold && tput setaf 1
+		echo 'Unable to find any activation scripts'
+		tput sgr0
+	fi
 }
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1

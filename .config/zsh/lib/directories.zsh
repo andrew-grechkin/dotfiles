@@ -45,3 +45,21 @@ if [[ -n ${DIRSTACK['file']} ]]; then
 		builtin print -l ${(u)my_stack[@]: 0:${DIRSTACK['size']}} >! "${DIRSTACK['file']}"
 	}
 fi
+
+# => cd hook ------------------------------------------------------------------------------------------------------ {{{1
+
+function on-cwd-change() {
+	if [[ -r '.nvmrc' || -r 'package.json' || 'project.json' ]]; then
+		activate 'silent'
+	fi
+}
+
+function on-prompt-show() {
+	if [[ -z "${FIRST_PROMPT_PROCESSED:-}" ]]; then
+		activate 'silent'
+		export FIRST_PROMPT_PROCESSED="$PWD"
+	fi
+}
+
+add-zsh-hook chpwd on-cwd-change
+add-zsh-hook precmd on-prompt-show
