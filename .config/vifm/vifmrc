@@ -767,7 +767,7 @@ mark u ~/.local/usr
 " => file icons --------------------------------------------------------------------------------------------------- {{{1
 
 set classify=' ::../::, :dir:/, :exe:, :reg:, :link:'
-set classify+=' ::.editorconfig,,.eslintrc.json,,.npmrc,,.nvmrc,,.prettierrc.yaml,,package.json,,tsconfig.json::'
+set classify+=' ::.editorconfig,,.eslintrc.js,,.eslintrc.json,,.npmrc,,.nvmrc,,.prettierrc.js,,.prettierrc.yaml,,package.json,,project.json,,tsconfig*.json::'
 set classify+=' ::package-lock.json::'
 set classify+=' ::*.sh::, ::*.cpp::, ::*.c::, ::*.hpp::, ::*.js::, ::*.pl,,*.pm::, ::*.py::, ::*.rb::, ::*.go::, ::*.json::, ::*.ts::'
 set classify+='© ::/^copying|license$/::, ::.git/,,*.git/::'

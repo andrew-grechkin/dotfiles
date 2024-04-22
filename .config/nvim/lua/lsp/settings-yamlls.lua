@@ -14,9 +14,6 @@ return { -- https://github.com/redhat-developer/yaml-language-server
             validate = true,
         },
     },
-    set_prepare = function(_, _) vim.print('haha') end,
-    set_on_attach = function(a, b)
-        vim.print(a)
-        vim.print(b)
-    end,
+    set_prepare = function(_, _) end,
+    set_on_attach = function(_, _) end,
 }
