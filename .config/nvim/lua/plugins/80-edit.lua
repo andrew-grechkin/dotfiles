@@ -9,7 +9,7 @@ return {
                 css = {'prettier'},
                 fb2 = {'xmllint'},
                 html = {'prettier', 'eslint'},
-                javascript = {{'prettierd', 'prettier'}},
+                javascript = {{'eslint_d', 'prettierd', 'prettier'}},
                 json = {'fixjson', 'jq'},
                 jsonc = {'fixjson', 'jq'},
                 lua = {{'lua-format', 'stylua'}},
