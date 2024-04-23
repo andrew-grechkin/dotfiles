@@ -33,6 +33,13 @@ function disable-proxy() {
 
 # shellcheck source=/dev/null
 function activate() {
+	if [[ "${1:-}" == 'silent' ]]; then
+		shift
+		SILENT=1
+	else
+		SILENT=0
+	fi
+
 	VENV_PATH='.venv/bin/activate'
 	FILES=('dev.rc' "$VENV_PATH")
 
@@ -76,7 +83,7 @@ function activate() {
 		return
 	fi
 
-	if [[ "${1:-verbose}" != 'silent' ]]; then
+	if [[ "$SILENT" != '1' ]]; then
 		tput bold && tput setaf 1
 		echo 'Unable to find any activation scripts'
 		tput sgr0
