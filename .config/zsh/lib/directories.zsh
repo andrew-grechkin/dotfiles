@@ -51,6 +51,8 @@ fi
 function on-cwd-change() {
 	if [[ -r '.nvmrc' || -r 'package.json' || 'project.json' ]]; then
 		activate 'silent'
+	elif [[ -r 'dist.ini' || -r 'cpanfile' ]]; then
+		activate 'silent'
 	fi
 }
 
