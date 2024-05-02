@@ -39,6 +39,13 @@ function enable-perlbrew() {
 		perlbrew lib create system@dev-default
 		perlbrew switch system@dev-default
 	fi
+
+	# create library dir if removed
+	if [[ -n "$PERLBREW_PERL" && -n "$PERLBREW_LIB" ]]; then
+		if [[ ! -d "$PERLBREW_ROOT/libs/$PERLBREW_PERL@$PERLBREW_LIB" ]]; then
+			perlbrew lib create "$PERLBREW_PERL@$PERLBREW_LIB"
+		fi
+	fi
 }
 
 function activate-local-perl() {

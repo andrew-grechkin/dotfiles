@@ -40,7 +40,7 @@ LIBRARY_NAME="${PERL_NAME}@dev-$REPO_NAME"
 # => check prerequisites ------------------------------------------------------------------------------------------ {{{1
 
 function check_prerequisites() {
-	[[ -x "$(command -v perlbrew)" ]] || {
+	[[ -x "$(command -v perlbrew)"  || -n "$PERLBREW" ]] || {
 		echo "perlbrew not found, installing it from (https://perlbrew.pl/)"
 		curl -sL https://install.perlbrew.pl | bash
 	}

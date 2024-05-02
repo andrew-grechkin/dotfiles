@@ -1,3 +1,6 @@
+requires "App::cpanminus";
+
+# Mojolicious
 requires "Future::AsyncAwait";
 requires "IO::Socket::SSL";
 requires "Mojolicious";
@@ -15,13 +18,18 @@ requires "YAML::XS";
 on 'develop' => sub {
     requires "App::perlimports";
     requires "Carp::Always";
+    requires "Code::TidyAll";
     requires "Data::Dump";
     requires "Data::Printer";
+    requires "Parallel::ForkManager"; # for Code::TidyAll
     requires "Perl::Critic";
     requires "Perl::Critic::Pulp";
+    requires "Sub::StrictDecl";
+    requires "Test2::Harness";
+    requires "Test2::Suite";
 };
 
-feature 'mojo' => sub {
+feature 'mojo-extras' => sub {
     requires "Cpanel::JSON::XS";
     requires "EV";
     requires "IO::Socket::Socks";
@@ -32,6 +40,7 @@ feature 'mojo' => sub {
 
 feature 'misc' => sub {
     requires "CHI";
+    requires "DateTime";
     requires "DateTime::TimeZone";
     requires "Neovim::Ext";
     requires "Sereal";
@@ -39,7 +48,6 @@ feature 'misc' => sub {
 };
 
 feature 'experiment' => sub {
-    requires "App::cpanminus";
     requires "List::UtilsBy";
     requires "assign";
 };
@@ -56,14 +64,6 @@ feature 'openapi' => sub {
     requires "Mojolicious::Plugin::OpenAPI";
     requires "Mojolicious::Plugin::Status";
     requires "Mojolicious::Plugin::SwaggerUI";
-};
-
-feature 'repl' => sub {
-    requires "Code::TidyAll";
-    requires "Parallel::ForkManager";
-    requires "Sub::StrictDecl";
-    requires "Test2::Harness";
-    requires "Test2::Suite";
 };
 
 feature 'repl' => sub {
