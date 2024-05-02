@@ -44,6 +44,8 @@ function enable-perlbrew() {
 	if [[ -n "$PERLBREW_PERL" && -n "$PERLBREW_LIB" ]]; then
 		if [[ ! -d "$PERLBREW_ROOT/libs/$PERLBREW_PERL@$PERLBREW_LIB" ]]; then
 			perlbrew lib create "$PERLBREW_PERL@$PERLBREW_LIB"
+			rm -f "$PERLBREW_ROOT/init"
+			perlbrew switch "$PERLBREW_PERL@$PERLBREW_LIB"
 		fi
 	fi
 }

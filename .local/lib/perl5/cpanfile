@@ -1,11 +1,15 @@
-requires "App::cpanminus";
-
-# Mojolicious
+requires "Cpanel::JSON::XS";
 requires "Future::AsyncAwait";
 requires "IO::Socket::SSL";
+requires "IO::Socket::Socks";
 requires "Mojolicious";
+requires "Net::DNS::Native";
 requires "Role::Tiny";
 
+requires "App::cpanminus";
+requires "Carp::Always";
+requires "Data::Dump";
+requires "Data::Printer";
 requires "File::Map";
 requires "Log::Any";
 requires "Path::Tiny";
@@ -14,13 +18,12 @@ requires "Syntax::Keyword::Match";
 requires "Syntax::Operator::Equ";
 requires "Time::Moment";
 requires "YAML::XS";
+requires "LWP::Protocol::https";
 
 on 'develop' => sub {
     requires "App::perlimports";
-    requires "Carp::Always";
     requires "Code::TidyAll";
     requires "Data::Dump";
-    requires "Data::Printer";
     requires "Parallel::ForkManager"; # for Code::TidyAll
     requires "Perl::Critic";
     requires "Perl::Critic::Pulp";
@@ -30,12 +33,17 @@ on 'develop' => sub {
 };
 
 feature 'mojo-extras' => sub {
-    requires "Cpanel::JSON::XS";
     requires "EV";
-    requires "IO::Socket::Socks";
-    requires "Net::DNS::Native";
-
     requires "Mojo::Run3";
+};
+
+feature 'mojo-openapi' => sub {
+    requires "Crypt::JWT";
+    requires "CryptX";
+    requires "Mojo::Pg";
+    requires "Mojolicious::Plugin::OpenAPI";
+    requires "Mojolicious::Plugin::Status";
+    requires "Mojolicious::Plugin::SwaggerUI";
 };
 
 feature 'misc' => sub {
@@ -55,15 +63,6 @@ feature 'experiment' => sub {
 feature 'image' => sub {
     requires "Image::ExifTool";
     requires "Image::Hash";
-};
-
-feature 'openapi' => sub {
-    requires "Crypt::JWT";
-    requires "CryptX";
-    requires "Mojo::Pg";
-    requires "Mojolicious::Plugin::OpenAPI";
-    requires "Mojolicious::Plugin::Status";
-    requires "Mojolicious::Plugin::SwaggerUI";
 };
 
 feature 'repl' => sub {
