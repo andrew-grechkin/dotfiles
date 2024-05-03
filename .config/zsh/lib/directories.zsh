@@ -49,9 +49,11 @@ fi
 # => cd hook ------------------------------------------------------------------------------------------------------ {{{1
 
 function on-cwd-change() {
-	if [[ -r '.nvmrc' || -r 'package.json' || 'project.json' ]]; then
-		activate 'silent'
-	elif [[ -r 'dist.ini' || -r 'cpanfile' ]]; then
+	if [[ -r '.gitignore' || -r 'Makefile' ]]                                    \
+		|| [[ -r '.nvmrc' || -r 'package.json' || -r 'project.json' ]]           \
+		|| [[ -r 'dev.rc' || -r '../dev.rc' || -r 'cpanfile' || -r 'dist.ini' ]] \
+		|| [[ -r 'requirements.txt' ]]; then
+
 		activate 'silent'
 	fi
 }

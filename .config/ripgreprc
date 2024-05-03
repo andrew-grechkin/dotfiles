@@ -26,6 +26,7 @@
 # --no-ignore-vcs
 
 --glob=!/.git/
+--glob=!/.venv/
 --glob=!/media/
 --glob=!/slib/
 --glob=!3rdparty/
