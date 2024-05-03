@@ -33,7 +33,7 @@ HYPHEN_INSENSITIVE=1
 REPORTTIME=10
 
 typeset -AHg DIRSTACK
-DIRSTACK['file']="$XDG_STATE_HOME/zsh/dirs"
+DIRSTACK['file']="$XDG_STATE_HOME/zsh/dirs@$HOSTNAME"
 DIRSTACK['size']=20
 
 # => load library and plugins ------------------------------------------------------------------------------------- {{{1

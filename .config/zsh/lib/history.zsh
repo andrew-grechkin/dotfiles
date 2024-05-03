@@ -26,7 +26,7 @@ if [[ -n "$HOSTNAME" ]] && [[ -n "$XDG_STATE_HOME" ]]; then
 	HISTFILE_DIR="$XDG_STATE_HOME/zsh"
 	mkdir -p "$HISTFILE_DIR" &>/dev/null
 
-	HISTFILE="$HISTFILE_DIR/${HOSTNAME}.history"
+	HISTFILE="$HISTFILE_DIR/history@${HOSTNAME}"
 	HISTFILE_BAK="${HISTFILE}.bak"
 
 	if [[ -r "$HISTFILE" ]]; then
