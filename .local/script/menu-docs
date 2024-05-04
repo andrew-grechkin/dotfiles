@@ -12,5 +12,6 @@ FZF_CMD=(
 	--reverse
 )
 
-fd -t f -e md | sort -u \
+fd -t f -e md | sort -u      \
+	| grep -Pvi '\blicenses?\b' \
 	| "${FZF_CMD[@]}"

@@ -11,6 +11,7 @@ requires "Carp::Always";
 requires "Data::Dump";
 requires "Data::Printer";
 requires "File::Map";
+requires "LWP::Protocol::https";
 requires "Log::Any";
 requires "Path::Tiny";
 requires "Regexp::Debugger";
@@ -18,7 +19,6 @@ requires "Syntax::Keyword::Match";
 requires "Syntax::Operator::Equ";
 requires "Time::Moment";
 requires "YAML::XS";
-requires "LWP::Protocol::https";
 
 on 'develop' => sub {
     requires "App::perlimports";
