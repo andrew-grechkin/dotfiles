@@ -17,4 +17,4 @@ fi
 command docker images \
 	--noheading       \
 	--sort=repository \
-	"${OPTIONS[@]}" 2>/dev/null
+	"${OPTIONS[@]}" "$@" 2>/dev/null
