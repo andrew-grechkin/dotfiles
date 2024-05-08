@@ -172,14 +172,23 @@ return {
                 env_file = '.env',
                 yank_dry_run = true,
                 custom_dynamic_variables = {
-                    ['PERSONAL_DQS_TOKEN'] = function()
-                        return dynamic_variable_from_command('PERSONAL_DQS_TOKEN', 'authxagent-issue-access-token-dqs')
+                    ['DQS_ACCESS_TOKEN'] = function()
+                        return dynamic_variable_from_command('DQS_ACCESS_TOKEN', 'authxagent-issue-access-token')
                     end,
-                    ['PERSONAL_PROD_TOKEN'] = function()
-                        return dynamic_variable_from_command('PERSONAL_PROD_TOKEN', 'authxagent-issue-access-token')
+                    ['DQS_S2S_TOKEN'] = function()
+                        return dynamic_variable_from_command('DQS_S2S_TOKEN', 'authxagent-issue-s2s-token')
+                    end,
+                    ['PROD_ACCESS_TOKEN'] = function()
+                        return dynamic_variable_from_command('PROD_ACCESS_TOKEN', 'authxagent-issue-access-token-prod')
+                    end,
+                    ['PROD_S2S_TOKEN'] = function()
+                        return dynamic_variable_from_command('PROD_S2S_TOKEN', 'authxagent-issue-s2s-token-token-prod')
                     end,
                     ['NOW'] = function()
                         return dynamic_variable_from_command('NOW', 'date --iso-8601=seconds')
+                    end,
+                    ['PERSONAL_DQS_TOKEN'] = function() -- deprecated
+                        return dynamic_variable_from_command('PERSONAL_DQS_TOKEN', 'authxagent-issue-access-token')
                     end,
                 },
             }
