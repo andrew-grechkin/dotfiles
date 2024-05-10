@@ -1,5 +1,5 @@
 return {
-    { -- url: https://github.com/tpope/vim-commentary
+    { -- https://github.com/tpope/vim-commentary
         'tpope/vim-commentary',
         dependencies = {'suy/vim-context-commentstring'},
         config = function()

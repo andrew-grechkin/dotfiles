@@ -1,5 +1,5 @@
 return {
-    { -- url: https://github.com/hrsh7th/nvim-cmp
+    { -- https://github.com/hrsh7th/nvim-cmp
         'hrsh7th/nvim-cmp',
         dependencies = {
             'andersevenrud/cmp-tmux',
@@ -14,10 +14,10 @@ return {
             {
                 'L3MON4D3/LuaSnip',
                 dependencies = {
-                    { -- url: https://github.com/rafamadriz/friendly-snippets
+                    { -- https://github.com/rafamadriz/friendly-snippets
                         'rafamadriz/friendly-snippets',
                     },
-                    { -- url: https://github.com/andrew-grechkin/vim-snippets
+                    { -- https://github.com/andrew-grechkin/vim-snippets
                         'andrew-grechkin/vim-snippets',
                     },
                 },

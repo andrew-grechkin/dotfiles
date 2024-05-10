@@ -63,20 +63,20 @@ return {
             if not IS_KVM then
                 lsps:append{
                     'ansible-language-server',
-                    'bzl',
-                    'clangd',
-                    'cmake-language-server',
+                    -- 'bzl',
+                    -- 'clangd',
+                    -- 'cmake-language-server',
                     'docker-compose-language-service',
                     'dockerfile-language-server',
                     'eslint-lsp',
                     -- 'flux-lsp',
-                    'graphql-language-service-cli',
+                    -- 'graphql-language-service-cli',
                     'helm-ls',
                     'jq-lsp',
                     'lua-language-server',
                     'marksman',
                     -- 'pkgbuild-language-server',
-                    'puppet-editor-services',
+                    -- 'puppet-editor-services',
                     'pyright',
                     'sqlls',
                     'stylelint-lsp',
@@ -85,10 +85,10 @@ return {
                 }
                 daps:append{'perl-debug-adapter'}
                 linters:append{
-                    'actionlint',
+                    -- 'actionlint',
                     'ansible-lint',
-                    'cmakelang',
-                    'cmakelint',
+                    -- 'cmakelang',
+                    -- 'cmakelint',
                     'luacheck',
                     'markdownlint',
                     'markuplint',
@@ -97,7 +97,13 @@ return {
                     'stylelint',
                     'vint',
                 }
-                formatters:append{'cmakelang', 'doctoc', 'gersemi', 'luaformatter', 'shellharden'}
+                formatters:append{
+                    -- 'cmakelang',
+                    'doctoc',
+                    -- 'gersemi',
+                    'luaformatter',
+                    'shellharden',
+                }
             end
 
             local ensure_installed = T {}

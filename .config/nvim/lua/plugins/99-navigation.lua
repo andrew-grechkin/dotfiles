@@ -1,5 +1,5 @@
 return {
-    { -- url: https://github.com/ibhagwan/fzf-lua
+    { -- https://github.com/ibhagwan/fzf-lua
         'ibhagwan/fzf-lua',
         lazy = false,
         dependencies = {
@@ -59,7 +59,7 @@ return {
         end,
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
-    { -- url: https://github.com/ThePrimeagen/harpoon
+    { -- https://github.com/ThePrimeagen/harpoon
         'ThePrimeagen/harpoon',
         keys = {
             {
@@ -142,7 +142,7 @@ return {
         end,
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
-    { -- url: https://github.com/vifm/vifm.vim
+    { -- https://github.com/vifm/vifm.vim
         'vifm/vifm.vim',
         config = function()
             vim.g.vifm_embed_split = 1
@@ -158,7 +158,7 @@ return {
         end,
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
-    { -- url: https://github.com/christoomey/vim-tmux-navigator
+    { -- https://github.com/christoomey/vim-tmux-navigator
         'christoomey/vim-tmux-navigator',
         config = function()
             local wk_ok, which_key = pcall(require, 'which-key')
@@ -178,16 +178,16 @@ return {
         end,
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
-    { -- url: https://github.com/mbbill/undotree
+    { -- https://github.com/mbbill/undotree
         'mbbill/undotree',
         cmd = {'UndotreeToggle'},
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
-    { -- url: https://github.com/nacro90/numb.nvim
+    { -- https://github.com/nacro90/numb.nvim
         'nacro90/numb.nvim',
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
-    { -- url: https://github.com/miteshP/nvim-navbuddy
+    { -- https://github.com/miteshP/nvim-navbuddy
         'SmiteshP/nvim-navbuddy',
         dependencies = {'SmiteshP/nvim-navic', 'MunifTanjim/nui.nvim'},
         cmd = {'Navbuddy'},

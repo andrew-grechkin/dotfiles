@@ -1,5 +1,5 @@
 return {
-    { -- url: https://github.com/folke/which-key.nvim
+    { -- https://github.com/folke/which-key.nvim
         'folke/which-key.nvim',
         config = function(_, _)
             local ok, which_key = pcall(require, 'which-key')

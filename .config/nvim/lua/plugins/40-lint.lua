@@ -1,0 +1,21 @@
+return {
+    { -- https://github.com/andrew-grechkin/nvim-lint
+        'andrew-grechkin/nvim-lint',
+        config = function()
+            local plugin = require('lint')
+
+            plugin.linters_by_ft = {
+                json = {'jsonlint'},
+                perl = {'perlimports', 'perlcritic'},
+                puppet = {'puppet-lint'},
+                sql = {'sqlfluff'},
+                yaml = {'yamllint'},
+            }
+
+            vim.api.nvim_create_autocmd({'BufWritePost'}, {
+                group = vim.api.nvim_create_augroup('lint_OnSave', {clear = true}),
+                callback = function() plugin.try_lint() end,
+            })
+        end,
+    },
+}
