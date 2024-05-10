@@ -1,13 +1,16 @@
 #!/usr/bin/env -S bash -Eeuo pipefail
 # shellcheck disable=SC1090
 
-FILE="$1"
-shift
+FILE="${1:-}"
 
-source "$FILE" && {
-	readarray -t VARS < <(sed -nE '/^[[:space:]]*#/d; s/^[[:space:]]*([[:alpha:]_][[:alnum:]_]+?)=.+/\1/p' "$FILE") || true
-	export "${VARS[@]}"
-}
+if [[ -n "$FILE" ]]; then
+	shift
+
+	source "$FILE" && {
+		readarray -t VARS < <(sed -nE '/^[[:space:]]*#/d; s/^[[:space:]]*([[:alpha:]_][[:alnum:]_]+?)=.+/\1/p' "$FILE") || true
+		export "${VARS[@]}"
+	}
+fi
 
 if [[ "${CURL:-0}" == "1" ]]; then
 	OPTS+=(
