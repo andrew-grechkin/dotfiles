@@ -2,6 +2,8 @@
 
 set -Eeo pipefail
 
+COMMAND_EXTRACT_COMMIT="echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | tr -d '\n'"
+
 CMD=(
 	fzf
 	--ansi
@@ -11,7 +13,7 @@ CMD=(
 	--scheme=history
 	--scroll-off=8
 	--track
-	--bind="ctrl-y:execute-silent(echo -n {1} | clipcopy)"
+	--bind="ctrl-y:execute-silent(${COMMAND_EXTRACT_COMMIT} | clipcopy)"
 	--bind='tab:accept,shift-tab:accept'
 	--header='Press C-v to preview, C-o to checkout, C-m/enter to show fullscreen'
 )
@@ -25,7 +27,7 @@ for i in ${!OPTIONS[*]}; do
 			--bind="alt-f:execute-silent(git fall)+reload(${OPTION#--reload-command=})"
 			--bind="alt-g:execute-silent(git up)+reload(${OPTION#--reload-command=})"
 			--bind="alt-m:execute-silent(ABB=\$(git gmb); git switch \$ABB)+reload(${OPTION#--reload-command=})"
-			--bind="alt-o:execute-silent(A=\$(git describe --all --always {1}); git switch --detach \${A/heads\/})+reload(${OPTION#--reload-command=})"
+			--bind="alt-o:execute-silent(C=\$(${COMMAND_EXTRACT_COMMIT}); A=\$(git describe --all --always \$C); git switch --detach \${A/heads\/})+reload(${OPTION#--reload-command=})"
 			--bind="ctrl-r:reload(${OPTION#--reload-command=})"
 		)
 		unset "OPTIONS[$i]"
@@ -39,9 +41,9 @@ else
 fi
 
 CMD+=(
-	--bind="alt-b:execute-silent(git browse {1})"
-	--bind="ctrl-m:execute(show-commit {1} ${OPTIONS[@]} | $LOG_PAGER)"
-	--preview="show-commit {1} --color=always ${OPTIONS[@]} | $LOG_PAGER"
+	--bind="alt-b:execute-silent(git browse \"\$(${COMMAND_EXTRACT_COMMIT})\")"
+	--bind="ctrl-m:execute(show-commit \"\$(${COMMAND_EXTRACT_COMMIT})\" ${OPTIONS[@]} | $LOG_PAGER)"
+	--preview="show-commit \"\$(${COMMAND_EXTRACT_COMMIT})\" --color=always ${OPTIONS[@]} | $LOG_PAGER"
 )
 
 exec "${CMD[@]}"

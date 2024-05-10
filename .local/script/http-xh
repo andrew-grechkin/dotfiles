@@ -1,0 +1,32 @@
+#!/usr/bin/env -S bash -Eeuo pipefail
+# shellcheck disable=SC1090
+
+FILE="$1"
+shift
+
+source "$FILE" && {
+	readarray -t VARS < <(sed -nE '/^[[:space:]]*#/d; s/^[[:space:]]*([[:alpha:]_][[:alnum:]_]+?)=.+/\1/p' "$FILE") || true
+	export "${VARS[@]}"
+}
+
+if [[ "${CURL:-0}" == "1" ]]; then
+	OPTS+=(
+		--curl
+	)
+else
+	OPTS+=(
+		--all
+		--pretty=all
+		--print=HBhbm
+	)
+fi
+
+if [[ -z "${VERB:-}" ]]; then
+	VERB='GET'
+fi
+
+if [[ -z "${HOST:-}" ]]; then
+	HOST=':80'
+fi
+
+xh "$VERB" "${HOST}${URI:-}" "${OPTS[@]}" "$@"

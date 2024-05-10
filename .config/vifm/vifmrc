@@ -452,6 +452,10 @@ filetype cpanfile
 	\ {Install Perl modules}
 	\ cpanm -nq --installdeps .
 
+filetype *.http
+	\ {Request with http-pure}
+	\ http-pure %f,
+
 " => File associations: office files ------------------------------------------------------------------------------ {{{1
 
 filextype *.odt,*.doc,*.docx,*.xls,*.xlsx,*.odp,*.pptx
