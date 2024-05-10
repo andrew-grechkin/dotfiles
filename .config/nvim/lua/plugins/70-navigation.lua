@@ -144,6 +144,7 @@ return {
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/vifm/vifm.vim
         'vifm/vifm.vim',
+        dependencies = {'folke/which-key.nvim'},
         config = function()
             vim.g.vifm_embed_split = 1
 
@@ -160,6 +161,7 @@ return {
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/christoomey/vim-tmux-navigator
         'christoomey/vim-tmux-navigator',
+        dependencies = {'folke/which-key.nvim'},
         config = function()
             local wk_ok, which_key = pcall(require, 'which-key')
             if wk_ok then
@@ -185,6 +187,7 @@ return {
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/nacro90/numb.nvim
         'nacro90/numb.nvim',
+        opts = {},
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/miteshP/nvim-navbuddy

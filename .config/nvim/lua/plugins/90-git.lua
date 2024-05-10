@@ -16,13 +16,13 @@ return {
                                     function()
                                         require('telescope').extensions.git_worktree.create_git_worktree()
                                     end,
-                                    ': workspace delete',
+                                    ': worktree create',
                                 },
                                 W = {
                                     function()
                                         require('telescope').extensions.git_worktree.git_worktrees()
                                     end,
-                                    ': workspaces list',
+                                    ': worktree list',
                                 },
                             },
                         },
