@@ -1,15 +1,44 @@
-#!/usr/bin/env -S bash -Eeuo pipefail
+#!/usr/bin/env bash
 # shellcheck disable=SC1090
+set -Eeuo pipefail
 
-FILE="${1:-}"
+VERB_URL=()
+if [[ $# -eq 0 ]]; then
+	if [[ -z "${URI:-}" ]]; then
+		echo 'Not enough arguments' >/dev/stderr
+		exit 1
+	else
+		VERB_URL+=("$URI")
+	fi
+else
+	FILE="${1:-}"
 
-if [[ -n "$FILE" ]]; then
-	shift
+	if [[ -n "$FILE" && -r "$FILE" ]]; then
+		shift
+		source "$FILE" && {
+			readarray -t VARS < <(sed -nE '/^[[:space:]]*#/d; s/^[[:space:]]*([[:alpha:]_][[:alnum:]_]+?)=.+/\1/p' "$FILE") || true
+			export "${VARS[@]}"
+		}
+		if [[ -n "${VERB:-}" ]]; then
+			VERB_URL+=("$VERB")
+		fi
 
-	source "$FILE" && {
-		readarray -t VARS < <(sed -nE '/^[[:space:]]*#/d; s/^[[:space:]]*([[:alpha:]_][[:alnum:]_]+?)=.+/\1/p' "$FILE") || true
-		export "${VARS[@]}"
-	}
+		if [[ -z "${HOST:-}" ]]; then
+			if [[ -z "${URI:-}" ]]; then
+				VERB_URL+=("${HOST:-:80}${URI:-/}")
+			else
+				VERB_URL+=("$URI")
+			fi
+		else
+				VERB_URL+=("${HOST}${URI:-/}")
+		fi
+	fi
+fi
+
+if [[ "$0" =~ xh$ ]]; then
+	XH=(xh)
+else
+	XH=(xhs)
 fi
 
 if [[ "${CURL:-0}" == "1" ]]; then
@@ -24,12 +53,10 @@ else
 	)
 fi
 
-if [[ -z "${VERB:-}" ]]; then
-	VERB='GET'
+if [[ -n "${BODY:-}" ]]; then
+	OPTS+=(
+		--raw="$BODY"
+	)
 fi
 
-if [[ -z "${HOST:-}" ]]; then
-	HOST=':80'
-fi
-
-xh "$VERB" "${HOST}${URI:-}" "${OPTS[@]}" "$@"
+"${XH[@]}" "${VERB_URL[@]}" "$@" "${OPTS[@]}"

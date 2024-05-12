@@ -62,7 +62,7 @@ git -c rebase.instructionFormat='%s%nexec GIT_COMMITTER_DATE="%cD" git commit --
 
 # Conflicts resolution
 
-Auto resolve conflicts using changes from working branch (ours - is the changes which we ared doing during rebase,
+Auto resolve conflicts using changes from working branch (ours - is the changes which we're doing during rebase,
 theirs is the branch which is being rebased)
 
 ```bash
