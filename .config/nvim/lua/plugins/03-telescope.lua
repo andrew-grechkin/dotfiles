@@ -5,36 +5,24 @@ if vim.version().major < 1 and vim.version().minor < 9 then telescope_version = 
 return {
     { -- https://github.com/nvim-telescope/telescope.nvim
         'nvim-telescope/telescope.nvim',
-        version = telescope_version,
-        dependencies = {
-            'nvim-lua/plenary.nvim',
-            {
-                'nvim-telescope/telescope-fzf-native.nvim',
-                build = 'make',
-                cond = function() return vim.fn.executable 'make' == 1 end,
-            },
-            'nvim-telescope/telescope-ui-select.nvim',
-        },
         config = function()
             local ok, plugin = pcall(require, 'telescope')
             if not ok then return end
 
             -- Enable telescope fzf native, if installed
             pcall(plugin.load_extension, 'fzf')
+
             local ta_ok, actions = pcall(require, 'telescope.actions')
             if not ta_ok then return end
 
             local config = {
                 defaults = {
-                    layout_strategy = 'bottom_pane',
                     layout_config = {
-                        height = 0.95,
+                        height = 0.96,
                         preview_cutoff = 120,
-                        prompt_position = 'bottom',
+                        prompt_position = 'top',
+                        width = 0.96,
                     },
-                    prompt_prefix = ': ',
-                    selection_caret = ' ',
-                    -- path_display = {'truncate'},
                     mappings = {
                         i = {
                             ['<C-n>'] = actions.cycle_history_next,
@@ -99,6 +87,11 @@ return {
                             ['?'] = actions.which_key,
                         },
                     },
+                    -- path_display = {'truncate'},
+                    prompt_prefix = ': ',
+                    scroll_strategy = 'limit',
+                    selection_caret = ' ',
+                    sorting_strategy = 'ascending',
                 },
                 pickers = {
                     -- Default configuration for builtin pickers goes here:
@@ -197,5 +190,15 @@ return {
                 which_key.register(visual_mappings, {mode = 'v', nowait = true, noremap = true})
             end
         end,
+        dependencies = {
+            'nvim-lua/plenary.nvim',
+            -- {
+            --     'nvim-telescope/telescope-fzf-native.nvim',
+            --     build = 'make',
+            --     cond = function() return vim.fn.executable 'make' == 1 end,
+            -- },
+            'nvim-telescope/telescope-ui-select.nvim',
+        },
+        version = telescope_version,
     },
 }

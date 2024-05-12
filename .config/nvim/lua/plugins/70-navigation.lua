@@ -1,13 +1,31 @@
 return {
     { -- https://github.com/ibhagwan/fzf-lua
         'ibhagwan/fzf-lua',
-        lazy = false,
+        config = function()
+            local plugin = require('fzf-lua')
+            plugin.setup({
+                git = {
+                    bcommits = {preview_pager = 'delta'},
+                    commits = {preview_pager = 'delta'},
+                    status = {preview_pager = 'delta'},
+                },
+                winopts = {preview = {layout = 'flex'}},
+            })
+            plugin.register_ui_select()
+
+            vim.api.nvim_create_user_command('Ft', function() require('fzf-lua').filetypes() end, {})
+        end,
         dependencies = {
             { -- url: https://github.com/junegunn/fzf
                 'junegunn/fzf',
                 build = './install --bin',
+                lazy = true,
             },
-            'nvim-tree/nvim-web-devicons',
+            { -- url: https://github.com/nvim-tree/nvim-web-devicons
+                'nvim-tree/nvim-web-devicons',
+                lazy = true,
+            },
+            'folke/which-key.nvim',
         },
         init = function() require('which-key').register({['<leader>r'] = {name = 'Repo (git)'}}) end,
         keys = {
@@ -43,24 +61,12 @@ return {
             {'<leader>rs', '<cmd>FzfLua git_status<CR>', mode = {'n'}, desc = 'fzf: status'},
             {'<leader>rt', '<cmd>FzfLua git_stash<CR>', mode = {'n'}, desc = 'fzf: stashes'},
         },
-        config = function()
-            local plugin = require('fzf-lua')
-            plugin.setup({
-                git = {
-                    bcommits = {preview_pager = 'delta'},
-                    commits = {preview_pager = 'delta'},
-                    status = {preview_pager = 'delta'},
-                },
-                winopts = {preview = {layout = 'flex'}},
-            })
-            plugin.register_ui_select()
-
-            vim.api.nvim_create_user_command('Ft', function() require('fzf-lua').filetypes() end, {})
-        end,
+        lazy = false,
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/ThePrimeagen/harpoon
         'ThePrimeagen/harpoon',
+        dependencies = {'nvim-telescope/telescope.nvim'},
         keys = {
             {
                 'z<Space>',
@@ -144,24 +150,23 @@ return {
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/vifm/vifm.vim
         'vifm/vifm.vim',
+        config = function() vim.g.vifm_embed_split = 1 end,
         dependencies = {'folke/which-key.nvim'},
-        config = function()
-            vim.g.vifm_embed_split = 1
-
-            local wk_ok, which_key = pcall(require, 'which-key')
-            if wk_ok then
-                local normal_mappings = {
-                    ['<leader><leader>n'] = {':EditVifm<CR>', 'vifm: split vertical'},
-                }
-
-                which_key.register(normal_mappings, {mode = 'n', nowait = true, noremap = true})
-            end
-        end,
+        keys = {
+            {
+                '<leader><leader>n',
+                ':EditVifm<CR>',
+                mode = {'n'},
+                desc = 'harpoon: add',
+                nowait = true,
+                noremap = true,
+            },
+        },
+        lazy = false,
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/christoomey/vim-tmux-navigator
         'christoomey/vim-tmux-navigator',
-        dependencies = {'folke/which-key.nvim'},
         config = function()
             local wk_ok, which_key = pcall(require, 'which-key')
             if wk_ok then
@@ -178,6 +183,7 @@ return {
                 which_key.register(mappings, {mode = 't', nowait = true, noremap = true})
             end
         end,
+        dependencies = {'folke/which-key.nvim'},
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/mbbill/undotree
@@ -192,8 +198,8 @@ return {
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/miteshP/nvim-navbuddy
         'SmiteshP/nvim-navbuddy',
-        dependencies = {'SmiteshP/nvim-navic', 'MunifTanjim/nui.nvim'},
         cmd = {'Navbuddy'},
+        dependencies = {'SmiteshP/nvim-navic', 'MunifTanjim/nui.nvim'},
         opts = {
             window = {
                 border = 'single', -- "rounded", "double", "solid", "none"
