@@ -1,4 +1,11 @@
 return {
+    { -- url: https://github.com/junegunn/fzf
+        -- needed as prerequisite for fzf-lua, but installed separately to force lazyness
+        -- if installed as dependency lazy = true is ignored and new commands are added
+        'junegunn/fzf',
+        build = './install --bin',
+        lazy = true,
+    },
     { -- https://github.com/ibhagwan/fzf-lua
         'ibhagwan/fzf-lua',
         config = function()
@@ -15,18 +22,7 @@ return {
 
             vim.api.nvim_create_user_command('Ft', function() require('fzf-lua').filetypes() end, {})
         end,
-        dependencies = {
-            { -- url: https://github.com/junegunn/fzf
-                'junegunn/fzf',
-                build = './install --bin',
-                lazy = true,
-            },
-            { -- url: https://github.com/nvim-tree/nvim-web-devicons
-                'nvim-tree/nvim-web-devicons',
-                lazy = true,
-            },
-            'folke/which-key.nvim',
-        },
+        dependencies = {'nvim-tree/nvim-web-devicons', 'folke/which-key.nvim'},
         init = function() require('which-key').register({['<leader>r'] = {name = 'Repo (git)'}}) end,
         keys = {
             {'<C-b>', '<cmd>FzfLua buffers<CR>', mode = {'n'}, desc = 'fzf: buffers'},
