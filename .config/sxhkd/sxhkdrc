@@ -136,7 +136,7 @@ super + BackSpace
 super + Return
 	wezterm start --always-new-process /usr/bin/zsh
 super + equal
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-system-audio"
+	wezterm start --always-new-process --class 'TermFloatingSmall' "$HOME/.local/script/menu-system-audio"
 super + minus
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-system-misc"
 
