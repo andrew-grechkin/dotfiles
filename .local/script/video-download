@@ -3,7 +3,12 @@
 set -Eeuo pipefail
 
 URL="$1"
-HEIGHT="${2:-1440}"
+
+HEIGHT="${HEIGHT:-}"
+
+if [[ -z "$HEIGHT" ]]; then
+	HEIGHT="${2:-1440}"
+fi
 
 [[ "${#URL}" -lt 16 ]] && {
 	URL="https://www.youtube.com/watch?v=$URL"
