@@ -1,4 +1,5 @@
 local f = vim.api.nvim_create_user_command
+
 f('DecodeUtf16', ':edit! ++enc=utf-16le | set fileformat=unix | set fileencoding=utf-8', {
     bang = true,
 })
