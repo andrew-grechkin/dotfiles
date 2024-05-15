@@ -1,6 +1,7 @@
 return {
     { -- https://github.com/akinsho/bufferline.nvim
         'akinsho/bufferline.nvim',
+        event = {'BufReadPost', 'BufNewFile'},
         -- keys = {
         --     {'<leader>bp', '<Cmd>BufferLineTogglePin<CR>', desc = 'Toggle pin'},
         --     {

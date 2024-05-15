@@ -1,14 +1,17 @@
 return {
     { -- https://github.com/Raimondi/delimitMate
         'Raimondi/delimitMate',
+        event = {'BufReadPost', 'BufNewFile'},
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/tpope/vim-repeat
         'tpope/vim-repeat',
+        event = {'BufReadPost', 'BufNewFile'},
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/tpope/vim-surround
         'tpope/vim-surround',
+        event = {'BufReadPost', 'BufNewFile'},
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/junegunn/vim-easy-align

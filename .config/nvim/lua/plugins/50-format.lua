@@ -1,6 +1,7 @@
 return {
     { -- https://github.com/stevearc/conform.nvim
         'stevearc/conform.nvim',
+        event = {'BufReadPre', 'BufNewFile'},
         opts = {
             formatters_by_ft = {
                 -- ['_'] = {'trim_newlines', 'trim_whitespace'},

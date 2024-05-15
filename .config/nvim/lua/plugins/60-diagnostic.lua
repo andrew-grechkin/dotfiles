@@ -2,8 +2,7 @@ return {
     { -- https://github.com/folke/todo-comments.nvim
         'folke/todo-comments.nvim',
         cmd = {'TodoTrouble', 'TodoTelescope'},
-        event = 'BufReadPost',
-        opts = {},
+        event = {'BufReadPost', 'BufNewFile'},
         keys = {
             -- TODO: fix keymaps
             -- {']a', function() require('todo-comments').jump_next() end, desc = 'Next todo comment'},
@@ -18,10 +17,12 @@ return {
             --     desc = 'Todo/Fix/Fixme',
             -- },
         },
+        opts = {},
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/folke/trouble.nvim
         'folke/trouble.nvim',
         config = true,
+        event = {'BufReadPost', 'BufNewFile'},
     },
 }

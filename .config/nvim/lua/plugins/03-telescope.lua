@@ -1,7 +1,3 @@
-local telescope_version = nil
-
-if vim.version().major < 1 and vim.version().minor < 9 then telescope_version = 'v0.1.1' end
-
 return {
     { -- https://github.com/nvim-telescope/telescope.nvim
         'nvim-telescope/telescope.nvim',
@@ -199,6 +195,5 @@ return {
             -- },
             'nvim-telescope/telescope-ui-select.nvim',
         },
-        version = telescope_version,
     },
 }

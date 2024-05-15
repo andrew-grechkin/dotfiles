@@ -90,7 +90,6 @@ return {
     },
     { -- https://github.com/rcarriga/nvim-dap-ui
         'rcarriga/nvim-dap-ui',
-        dependencies = {'jay-babu/mason-nvim-dap.nvim', 'mfussenegger/nvim-dap', 'nvim-neotest/nvim-nio'},
         config = function()
             local dap = require('dap')
             local ui = require('dapui')
@@ -144,5 +143,11 @@ return {
 
             which_key.register(normal_mappings)
         end,
+        dependencies = {
+            'jay-babu/mason-nvim-dap.nvim',
+            'mfussenegger/nvim-dap',
+            'nvim-neotest/nvim-nio',
+        },
+        lazy = true,
     },
 }

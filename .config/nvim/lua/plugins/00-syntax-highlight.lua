@@ -1,16 +1,6 @@
 return {
     { -- https://github.com/nvim-treesitter/nvim-treesitter
         'nvim-treesitter/nvim-treesitter',
-        enabled = true,
-        dependencies = {
-            { -- https://github.com/nvim-treesitter/nvim-treesitter-textobjects
-                'nvim-treesitter/nvim-treesitter-textobjects',
-            },
-            { -- https://github.com/nvim-treesitter/playground
-                'nvim-treesitter/playground',
-            },
-        },
-        -- build = ':TSUpdate',
         config = function()
             local ok, plugin = pcall(require, 'nvim-treesitter.configs')
             if not ok then return end
@@ -154,45 +144,58 @@ return {
 
             plugin.setup(config)
         end,
-    },
-    -- => --------------------------------------------------------------------------------------------------------- {{{1
-    -- Automatically highlights other instances of the word under your cursor.
-    -- This works with LSP, Treesitter, and regexp matching to find the other instances.
-    { -- https://github.com/RRethy/vim-illuminate
-        'RRethy/vim-illuminate',
-        dependencies = {'nvim-treesitter/nvim-treesitter'},
-        event = {'BufReadPost', 'BufNewFile'},
-        opts = {delay = 200, large_file_cutoff = 2000, large_file_overrides = {providers = {'lsp'}}},
-        config = function(_, opts)
-            local plugin = require('illuminate')
-            plugin.configure(opts)
+        dependencies = {
+            { -- https://github.com/nvim-treesitter/nvim-treesitter-context
+                'nvim-treesitter/nvim-treesitter-context',
+                opts = {},
+            },
+            { -- https://github.com/nvim-treesitter/nvim-treesitter-textobjects
+                'nvim-treesitter/nvim-treesitter-textobjects',
+            },
+            { -- https://github.com/nvim-treesitter/playground
+                'nvim-treesitter/playground',
+            },
+            -- Automatically highlights other instances of the word under your cursor.
+            -- This works with LSP, Treesitter, and regexp matching to find the other instances.
+            { -- https://github.com/RRethy/vim-illuminate
+                'RRethy/vim-illuminate',
+                event = {'BufReadPost', 'BufNewFile'},
+                config = function(_, opts)
+                    local plugin = require('illuminate')
+                    plugin.configure(opts)
 
-            local wk_ok, which_key = pcall(require, 'which-key')
-            if wk_ok then
-                local normal_mappings = {
-                    ['['] = {
-                        ['r'] = {
-                            function() plugin.goto_prev_reference(false) end,
-                            'TreeSitter: prev reference',
-                        },
-                    },
-                    [']'] = {
-                        ['r'] = {
-                            function() plugin.goto_next_reference(false) end,
-                            'TreeSitter: next reference',
-                        },
-                    },
-                }
+                    local wk_ok, which_key = pcall(require, 'which-key')
+                    if wk_ok then
+                        local normal_mappings = {
+                            ['['] = {
+                                ['r'] = {
+                                    function() plugin.goto_prev_reference(false) end,
+                                    'TreeSitter: prev reference',
+                                },
+                            },
+                            [']'] = {
+                                ['r'] = {
+                                    function() plugin.goto_next_reference(false) end,
+                                    'TreeSitter: next reference',
+                                },
+                            },
+                        }
 
-                which_key.register(normal_mappings, {mode = 'n', nowait = true, noremap = true})
-            end
-        end,
-    },
-    -- => --------------------------------------------------------------------------------------------------------- {{{1
-    { -- https://github.com/nvim-treesitter/nvim-treesitter-context
-        'nvim-treesitter/nvim-treesitter-context',
+                        which_key.register(normal_mappings, {
+                            mode = 'n',
+                            nowait = true,
+                            noremap = true,
+                        })
+                    end
+                end,
+                opts = {
+                    delay = 200,
+                    large_file_cutoff = 2000,
+                    large_file_overrides = {providers = {'lsp'}},
+                },
+            },
+        },
         enabled = vim.version().major > 0 or vim.version().minor > 8,
-        dependencies = {'nvim-treesitter/nvim-treesitter'},
-        opts = {},
+        event = {'BufReadPost', 'BufNewFile'},
     },
 }

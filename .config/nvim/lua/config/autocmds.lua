@@ -2,7 +2,8 @@ local function augroup(name) return vim.api.nvim_create_augroup('lconfig_' .. na
 
 -- [[ change CWD according to the project root ]]
 -- local rooter_notify_rec = nil
-vim.api.nvim_create_autocmd({'BufReadPost', 'VimEnter'}, {
+-- vim.api.nvim_create_autocmd({'BufReadPost', 'VimEnter'}, {
+vim.api.nvim_create_autocmd({'BufReadPost'}, {
     group = augroup('WindowAutoCD'),
     callback = function(ev)
         -- local notify_ok, notify = pcall(require, 'notify')

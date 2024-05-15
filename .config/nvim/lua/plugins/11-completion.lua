@@ -45,6 +45,7 @@ return {
                 lazy = true,
             },
         },
+        event = {'BufReadPost', 'BufNewFile'},
         config = function()
             local ok, plugin = pcall(require, 'cmp')
             if not ok then return end

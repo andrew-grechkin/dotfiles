@@ -16,6 +16,50 @@ return {
                 'folke/neodev.nvim',
                 opts = {},
             },
+            { -- https://github.com/williamboman/mason-lspconfig.nvim
+                'williamboman/mason-lspconfig.nvim',
+                dependencies = {'williamboman/mason.nvim'},
+                config = function()
+                    local ensure_installed = T {'bashls', 'jsonls', 'perlnavigator', 'yamlls'}
+
+                    local function on_attach(data, bufnr)
+                        -- data.config.capabilities = nil
+                        -- print('attached', vim.inspect(data.config))
+                        if data.config.set_on_attach then data.config.set_on_attach(data, bufnr) end
+                    end
+
+                    -- LSP settings (for overriding per client)
+                    local lsp_handlers = {
+                        ['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, {
+                            border = 'rounded',
+                        }),
+                        ['textDocument/signatureHelp'] = vim.lsp.with(vim.lsp.handlers.signature_help,
+                            {border = 'rounded'}),
+                    }
+
+                    local plugin = require('mason-lspconfig')
+                    plugin.setup {
+                        automatic_installation = true,
+                        ensure_installed = ensure_installed,
+                        handlers = {
+                            function(server_name)
+                                local opts = {on_attach = on_attach, handlers = lsp_handlers}
+                                local lsp_set_ok, settings = pcall(require,
+                                    string.format('lsp.settings-%s', server_name))
+                                if lsp_set_ok then
+                                    if settings.set_prepare then
+                                        settings.set_prepare(server_name, settings)
+                                    end
+                                    opts = vim.tbl_deep_extend('force', settings, opts)
+                                end
+
+                                -- Refer to https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md
+                                require('lspconfig')[server_name].setup(opts)
+                            end,
+                        },
+                    }
+                end,
+            },
         },
         config = function()
             -- vim.lsp.set_log_level('debug')
@@ -75,9 +119,11 @@ return {
                 end,
             })
         end,
+        event = {'BufReadPost', 'BufNewFile'},
     },
     { -- https://github.com/ray-x/lsp_signature.nvim
         'ray-x/lsp_signature.nvim',
+        event = {'BufReadPost', 'BufNewFile'},
         opts = {
             debug = false, -- set to true to enable debug logging
             -- log_path = 'debug_log_file_path', -- debug log path

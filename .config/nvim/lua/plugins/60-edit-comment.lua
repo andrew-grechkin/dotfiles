@@ -1,7 +1,6 @@
 return {
     { -- https://github.com/tpope/vim-commentary
         'tpope/vim-commentary',
-        dependencies = {'suy/vim-context-commentstring'},
         config = function()
             vim.cmd [[
                 nmap     <C-_>                         gcl
@@ -13,5 +12,7 @@ return {
                 augroup END
             ]]
         end,
+        event = {'BufReadPost', 'BufNewFile'},
+        dependencies = {'suy/vim-context-commentstring'},
     },
 }

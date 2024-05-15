@@ -1,13 +1,6 @@
 return {
     { -- https://github.com/rcarriga/nvim-notify
         'rcarriga/nvim-notify',
-        keys = {
-            {
-                '<leader><leader>N',
-                function() require('notify').dismiss({silent = true, pending = true}) end,
-                desc = 'Dismiss all notifications',
-            },
-        },
         init = function()
             local plugin = require('notify')
             vim.notify = plugin
@@ -19,6 +12,13 @@ return {
                 plugin(print_safe_args:concat('\n'), 'INFO', {title = 'Print'})
             end
         end,
+        keys = {
+            {
+                '<leader><leader>N',
+                function() require('notify').dismiss({silent = true, pending = true}) end,
+                desc = 'Dismiss all notifications',
+            },
+        },
         opts = {
             background_colour = '#000000',
             fps = 30,

@@ -1,6 +1,7 @@
 return {
     { -- https://github.com/polarmutex/git-worktree.nvim
         'nooproblem/git-worktree.nvim',
+        event = {'BufReadPost', 'BufNewFile'},
         config = function()
             require('git-worktree').setup()
             require('telescope').load_extension('git_worktree')
@@ -35,6 +36,12 @@ return {
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/tpope/vim-fugitive
         'tpope/vim-fugitive',
+        config = function()
+            vim.api.nvim_del_user_command('Gbrowse')
+            vim.api.nvim_del_user_command('Gremove')
+
+            vim.api.nvim_create_user_command('GBlame', 'Git blame', {})
+        end,
         dependencies = {
             { -- https://github.com/tpope/vim-rhubarb
                 'tpope/vim-rhubarb',
@@ -47,12 +54,7 @@ return {
                 end,
             },
         },
-        config = function()
-            vim.api.nvim_del_user_command('Gbrowse')
-            vim.api.nvim_del_user_command('Gremove')
-
-            vim.api.nvim_create_user_command('GBlame', 'Git blame', {})
-        end,
+        event = {'BufReadPost', 'BufNewFile'},
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/lewis6991/gitsigns.nvim

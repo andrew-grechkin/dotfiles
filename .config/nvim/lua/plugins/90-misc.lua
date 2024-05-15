@@ -17,12 +17,12 @@ return {
     {'gianarb/vim-flux', enabled = not IS_KVM, ft = {'flux'}},
     {'mgrabovsky/vim-cuesheet', enabled = not IS_KVM, ft = {'cuesheet'}},
     {'pearofducks/ansible-vim', enabled = not IS_KVM, ft = {'ansible'}},
-    {'potamides/pantran.nvim', enabled = not IS_KVM},
+    {'potamides/pantran.nvim', enabled = not IS_KVM, cmd = {'Pantran'}},
     {'tmux-plugins/vim-tmux', enabled = not IS_KVM, ft = {'tmux'}},
     {
         'vimwiki/vimwiki',
         enabled = not IS_KVM,
-        -- cmd = {'VimwikiIndex'},
+        cmd = {'VimwikiIndex'},
         init = function()
             vim.g.vimwiki_global_ext = 0
             vim.g.vimwiki_table_mappings = 0

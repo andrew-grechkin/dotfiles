@@ -22,5 +22,6 @@ return {
                 augroup END
             ]]
         end,
+        event = {'BufReadPost', 'BufNewFile'},
     },
 }

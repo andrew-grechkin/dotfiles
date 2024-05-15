@@ -48,6 +48,7 @@ return {
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/nelstrom/vim-visual-star-search
         'nelstrom/vim-visual-star-search',
+        event = {'BufReadPost', 'BufNewFile'},
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/andrew-grechkin/vim-grepper

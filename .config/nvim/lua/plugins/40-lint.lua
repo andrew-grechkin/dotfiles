@@ -17,5 +17,6 @@ return {
                 callback = function() plugin.try_lint() end,
             })
         end,
+        event = {'BufReadPre', 'BufNewFile'},
     },
 }
