@@ -207,6 +207,7 @@ return {
             ]])
 
             require('bqf').setup({
+                auto_enable = true,
                 auto_resize_height = true,
                 filter = {
                     fzf = {
@@ -221,6 +222,7 @@ return {
                     },
                 },
                 func_map = {pscrolldown = '<C-d>', pscrollup = '<C-u>', split = '<C-s>'},
+                magic_window = true,
                 preview = {winblend = 0},
             })
             -- :lua =require('bqf.config')
