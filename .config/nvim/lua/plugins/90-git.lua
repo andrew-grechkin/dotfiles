@@ -36,6 +36,7 @@ return {
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/tpope/vim-fugitive
         'tpope/vim-fugitive',
+        cmd = {'G'},
         config = function()
             vim.api.nvim_del_user_command('Gbrowse')
             vim.api.nvim_del_user_command('Gremove')
