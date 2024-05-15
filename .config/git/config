@@ -17,6 +17,7 @@
 	dc           = -c delta.side-by-side=true diff -b --cached
 	dd           = -c delta.side-by-side=true diff
 	ddc          = -c delta.side-by-side=true diff --cached
+	df           = !"git-diff-full -b"
 	ds           = diff -b --submodule=diff
 	dt           = difftool
 	dtg          = difftool --gui
