@@ -48,6 +48,7 @@ function activate() {
 
 		if [[ -r '.nvmrc' || -r "$REPO_ROOT/.nvmrc" ]]; then
 			nvm use
+			umask 0002
 			return
 		fi
 
@@ -58,6 +59,7 @@ function activate() {
 	for FILE in "${FILES[@]}"; do
 		if [[ -r "$FILE" ]]; then
 			source "$FILE"
+			umask 0002
 			return
 		fi
 	done
@@ -68,6 +70,7 @@ function activate() {
 		if command -v poetry &>/dev/null; then
 			PYTHON_LOCAL="$(poetry env info -p)"
 			source "$PYTHON_LOCAL/bin/activate"
+			umask 0002
 			return
 		fi
 	elif [[ -r 'requirements.txt' ]]; then
@@ -80,6 +83,7 @@ function activate() {
 		if [[ -r 'test/requirements.txt' ]]; then
 			python -m pip install -r 'test/requirements.txt'
 		fi
+		umask 0002
 		return
 	fi
 

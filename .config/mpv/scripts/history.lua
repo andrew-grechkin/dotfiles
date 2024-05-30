@@ -94,6 +94,7 @@ mp.register_event('file-loaded', function(event)
 
     -- if not video_format or ignore[video_format] ~= nil then return end
     if not audio_codec then return end
+    if string.find(path, '/fuse/') then return end
 
     add_to_history(path)
 end)
