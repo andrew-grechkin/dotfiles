@@ -21,7 +21,7 @@ our @EXPORT_OK = qw(
     save_connections
 );
 
-sub load_db_config ( $path, $dsn_extractor ) {
+sub load_db_config ( $out_path, $path, $dsn_extractor ) {
     my %result;
 
     return \%result unless -r $path;
@@ -33,47 +33,57 @@ sub load_db_config ( $path, $dsn_extractor ) {
             my ( undef, $dsn ) = $dsn_extractor->( $desc{'database'}, $handle );
             my \%dsn_props = $dsn->dsn_props;
             my $name       = "$desc{database}-$handle";
+            my $scheme     = $dsn->dbi_driver;
             my $host       = $dsn_props{'bkng_resolved_host'} // $dsn_props{'host'};
-            my $port       = $desc{'port'}                    // '3306';
+            my $port       = $desc{'port'};
             my $user       = url_escape( $desc{'username'} );
             my $pass       = url_escape( $desc{'password'} );
             my $db         = url_escape( $dsn_props{'database'} );
+            my %params     = (
+                'defaults-extra-file' => "$out_path/$name.$scheme.defaults",
+                'database'            => $dsn_props{'database'},
+            );
+
+            $params{'socket'} = $dsn_props{'mysql_socket'} if $dsn_props{'mysql_socket'};
+            $params{'host'}   = $host                      if $host;
+            $params{'port'}   = $port                      if $host && $port;
+
             $result{$name} = {
-                'name'           => $name,
-                'host'           => $host,
-                'port'           => $port,
-                'user'           => $desc{'username'},
-                'pass'           => $desc{'password'},
-                'db'             => $dsn_props{'database'},
-                'url'            => "mysql://$user:$pass\@$host:$port/$db",
-                'exec-mysqldump' => <<~"EO_MYSQLDUMP",
-                [client]
-                host=$host
-                port=$port
-                user=$desc{'username'}
-                password=$desc{'password'}
-                complete-insert
-                disable-keys
-                extended-insert
-                insert-ignore
-                no-create-db
-                no-create-info
-                no-tablespaces
-                set-gtid-purged=OFF
-                skip-add-locks
-                skip-column-statistics
-                skip-lock-tables
-                ssl-fips-mode=ON
-                compact
-                EO_MYSQLDUMP
-                'exec-mysql' => <<~"EO_MYSQL",
-                [client]
-                host=$host
-                port=$port
-                user=$desc{'username'}
-                password=$desc{'password'}
-                EO_MYSQL
+                'name'     => $name,
+                'user'     => $desc{'username'},
+                'pass'     => $desc{'password'},
+                'url'      => { 'scheme' => $dsn->dbi_driver, 'params' => \%params },
+                'defaults' => {
+                    "${scheme}dump.defaults" => <<~"EO_MYSQLDUMP",
+                    [client]
+                    user=$desc{'username'}
+                    password=$desc{'password'}
+                    complete-insert
+                    disable-keys
+                    extended-insert
+                    insert-ignore
+                    no-create-db
+                    no-create-info
+                    no-tablespaces
+                    set-gtid-purged=OFF
+                    skip-add-locks
+                    skip-column-statistics
+                    skip-lock-tables
+                    ssl-fips-mode=ON
+                    compact
+                    EO_MYSQLDUMP
+                    "$scheme.defaults" => <<~"EO_MYSQL",
+                    [client]
+                    user=$desc{'username'}
+                    password=$desc{'password'}
+                    EO_MYSQL
+                },
             };
+
+            for my $defaults ( sort keys $result{$name}{'defaults'}->%* ) {
+                $out_path->child( sprintf( '%s.%s', $name, $defaults ) )
+                    ->spurt( $result{$name}{'defaults'}{$defaults} );
+            }
         }
     }
 
@@ -89,6 +99,7 @@ sub load_connections ($path) {
 sub save_connections ( $path, $data_aref ) {
     $path->dirname->make_path;
     $path->spurt( JSON()->encode($data_aref) );
+
     return;
 }
 
