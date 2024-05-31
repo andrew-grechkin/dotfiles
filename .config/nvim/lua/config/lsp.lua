@@ -24,6 +24,7 @@ vim.keymap.set('n', '\\q', function()
     })
 end, {desc = 'LSP: format'})
 vim.keymap.set('n', '\\r', vim.lsp.buf.rename, {desc = 'LSP: rename'})
+
 vim.keymap.set('n', '\\wa', vim.lsp.buf.add_workspace_folder, {desc = 'LSP: workspace add foler'})
 vim.keymap.set('n', '\\wl', function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end,
     {desc = 'LSP: workspace list foler'})

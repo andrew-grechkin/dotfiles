@@ -41,7 +41,7 @@ function activate() {
 	fi
 
 	VENV_PATH='.venv/bin/activate'
-	FILES=('dev.rc' "$VENV_PATH")
+	FILES=('dev.rc' "$VENV_PATH" 'venv/bin/activate')
 
 	if command git rev-parse HEAD &>/dev/null; then
 		REPO_ROOT="$(git rev-parse --show-toplevel)"

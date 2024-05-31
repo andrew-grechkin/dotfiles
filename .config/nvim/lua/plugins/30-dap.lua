@@ -1,8 +1,30 @@
+-- https://github.com/mfussenegger/nvim-dap/wiki/Debug-Adapter-installation
 return {
-    -- https://github.com/mfussenegger/nvim-dap/wiki/Debug-Adapter-installation
     { -- https://github.com/mfussenegger/nvim-dap
         'mfussenegger/nvim-dap',
         lazy = true,
+        config = function()
+            local dap = require('dap')
+
+            -- this is optional but can be helpful when starting out
+            dap.set_log_level 'TRACE'
+
+            -- require('dap.ext.vscode').load_launchjs(nil, {cppdbg = {'c', 'cpp'}})
+
+            -- => perl -------------------------------------------------------------------------------------------- {{{1
+
+            dap.adapters.perl = {args = {}, command = 'perl-debug-adapter', type = 'executable'}
+            dap.configurations.perl = {
+                {
+                    name = 'Launch Perl',
+                    program = '${workspaceFolder}/${relativeFile}',
+                    request = 'launch',
+                    type = 'perl',
+                },
+            }
+
+            require('telescope').load_extension('dap')
+        end,
         dependencies = {
             { -- https://github.com/theHamsta/nvim-dap-virtual-text
                 'theHamsta/nvim-dap-virtual-text',
@@ -28,33 +50,33 @@ return {
                 'nvim-telescope/telescope-dap.nvim',
             },
         },
+    },
+    -- => --------------------------------------------------------------------------------------------------------- {{{1
+    { -- https://github.com/jay-babu/mason-nvim-dap.nvim
+        'jay-babu/mason-nvim-dap.nvim',
         config = function()
-            local dap = require('dap')
+            local plugin = require('mason-nvim-dap')
+            local ensure_installed = {'bash', 'python'}
 
-            -- this is optional but can be helpful when starting out
-            dap.set_log_level 'TRACE'
-
-            -- require('dap.ext.vscode').load_launchjs(nil, {cppdbg = {'c', 'cpp'}})
-
-            -- => perl -------------------------------------------------------------------------------------------- {{{1
-
-            dap.adapters.perl = {args = {}, command = 'perl-debug-adapter', type = 'executable'}
-            dap.configurations.perl = {
-                {
-                    name = 'Launch Perl',
-                    program = '${workspaceFolder}/${relativeFile}',
-                    request = 'launch',
-                    type = 'perl',
+            plugin.setup {
+                automatic_installation = true,
+                ensure_installed = ensure_installed,
+                handlers = {
+                    function(config)
+                        -- print(vim.inspect(config))
+                        -- all sources with no handler get passed here
+                        -- Keep original functionality
+                        plugin.default_setup(config)
+                    end,
                 },
             }
-
-            require('telescope').load_extension('dap')
         end,
+        dependencies = {'williamboman/mason.nvim'},
+        lazy = true,
     },
+    -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/mfussenegger/nvim-dap-python
         'mfussenegger/nvim-dap-python',
-        lazy = true,
-        dependencies = {'mfussenegger/nvim-dap'},
         config = function()
             local plugin = require('dap-python')
 
@@ -68,11 +90,12 @@ return {
             --     program = '${file}',
             -- })
         end,
-    },
-    { -- https://github.com/jbyuki/one-small-step-for-vimkind
-        'jbyuki/one-small-step-for-vimkind',
         lazy = true,
         dependencies = {'mfussenegger/nvim-dap'},
+    },
+    -- => --------------------------------------------------------------------------------------------------------- {{{1
+    { -- https://github.com/jbyuki/one-small-step-for-vimkind
+        'jbyuki/one-small-step-for-vimkind',
         config = function()
             local dap = require('dap')
 
@@ -87,7 +110,10 @@ return {
                 {name = 'Attach to running Neovim instance', request = 'attach', type = 'nlua'},
             }
         end,
+        dependencies = {'mfussenegger/nvim-dap'},
+        lazy = true,
     },
+    -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/rcarriga/nvim-dap-ui
         'rcarriga/nvim-dap-ui',
         config = function()

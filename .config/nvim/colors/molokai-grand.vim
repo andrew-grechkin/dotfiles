@@ -58,6 +58,10 @@ if &termguicolors ==# 1
 	hi Type                     guifg=#66D9EF                             gui=NONE
 	hi Typedef                  guifg=#66D9EF
 
+	hi LspInlayHint             guifg=#808080
+	hi LspCodeLens              guifg=#808080
+	hi LspCodeLensSeparator     guifg=#808080
+
 	hi ColorColumn                            guibg=#232526
 	hi Cursor                   guifg=#000000 guibg=#F8F8F0
 	hi CursorColumn                           guibg=#293739

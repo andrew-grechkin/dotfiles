@@ -1,7 +1,64 @@
 return {
-    -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/neovim/nvim-lspconfig
         'neovim/nvim-lspconfig',
+        config = function()
+            -- vim.lsp.set_log_level('debug')
+
+            -- => default commands -------------------------------------------------------------------------------- {{{1
+
+            -- vim.cmd [[ command! LspFormat execute 'lua vim.lsp.buf.formatting()' ]]
+
+            -- => default keybindings ----------------------------------------------------------------------------- {{{1
+
+            local wk_ok, which_key = pcall(require, 'which-key')
+            if not wk_ok then return end
+
+            -- h: lsp-buf
+            local au_normal_mappings = {
+                ['<leader>'] = {
+                    ['l'] = {
+                        name = 'LSP',
+                        c = {
+                            name = 'calls',
+                            i = {'<cmd>Telescope lsp_incoming_calls<CR>', 'incoming'},
+                            o = {'<cmd>Telescope lsp_outgoing_calls<CR>', 'outgoing'},
+                        },
+                        l = {'<cmd>LspInfo<CR>', 'Info'},
+                        s = {
+                            name = 'symbols',
+                            d = {'<cmd>Telescope lsp_document_symbols<CR>', 'document'},
+                            w = {'<cmd>Telescope lsp_workspace_symbols<CR>', 'workspace'},
+                            y = {
+                                '<cmd>Telescope lsp_dynamic_workspace_symbols<CR>',
+                                'dynamic workspace',
+                            },
+                        },
+                    },
+                },
+                ['g'] = {
+                    D = {'<cmd>FzfLua lsp_declarations<CR>', 'goto: declaration'},
+                    -- I = {vim.lsp.buf.implementation, 'goto: implementation'},
+                    I = {'<cmd>FzfLua lsp_implementations<CR>', 'goto: implementation'},
+                    -- d = {vim.lsp.buf.definition, 'goto: definition'},
+                    d = {'<cmd>FzfLua lsp_definitions<CR>', 'goto: definition'},
+                    -- r = {vim.lsp.buf.references, 'goto: references'},
+                    r = {'<cmd>FzfLua lsp_references<CR>', 'goto: references'},
+                    -- y = {vim.lsp.buf.type_definition, 'goto: type definition'},
+                    y = {'<cmd>FzfLua lsp_typedefs<CR>', 'goto: type definition'},
+                },
+            }
+
+            vim.api.nvim_create_autocmd('LspAttach', {
+                group = vim.api.nvim_create_augroup('UserLspConfig', {clear = true}),
+                callback = function(ev)
+                    -- Enable completion triggered by <c-x><c-o>
+                    vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
+
+                    -- See `:help vim.lsp.*` for documentation on any of the below functions
+                    which_key.register(au_normal_mappings, {bufer = ev.buf, noremap = true})
+                end,
+            })
+        end,
         dependencies = {
             -- { -- https://github.com/j-hui/fidget.nvim
             --     'j-hui/fidget.nvim',
@@ -61,64 +118,6 @@ return {
                 end,
             },
         },
-        config = function()
-            -- vim.lsp.set_log_level('debug')
-
-            -- => default commands -------------------------------------------------------------------------------- {{{1
-
-            -- vim.cmd [[ command! LspFormat execute 'lua vim.lsp.buf.formatting()' ]]
-
-            -- => default keybindings ----------------------------------------------------------------------------- {{{1
-
-            local wk_ok, which_key = pcall(require, 'which-key')
-            if not wk_ok then return end
-
-            -- h: lsp-buf
-            local au_normal_mappings = {
-                ['<leader>'] = {
-                    ['l'] = {
-                        name = 'LSP',
-                        c = {
-                            name = 'calls',
-                            i = {'<cmd>Telescope lsp_incoming_calls<CR>', 'incoming'},
-                            o = {'<cmd>Telescope lsp_outgoing_calls<CR>', 'outgoing'},
-                        },
-                        l = {'<cmd>LspInfo<CR>', 'Info'},
-                        s = {
-                            name = 'symbols',
-                            d = {'<cmd>Telescope lsp_document_symbols<CR>', 'document'},
-                            w = {'<cmd>Telescope lsp_workspace_symbols<CR>', 'workspace'},
-                            y = {
-                                '<cmd>Telescope lsp_dynamic_workspace_symbols<CR>',
-                                'dynamic workspace',
-                            },
-                        },
-                    },
-                },
-                ['g'] = {
-                    D = {'<cmd>FzfLua lsp_declarations<CR>', 'goto: declaration'},
-                    -- I = {vim.lsp.buf.implementation, 'goto: implementation'},
-                    I = {'<cmd>FzfLua lsp_implementations<CR>', 'goto: implementation'},
-                    -- d = {vim.lsp.buf.definition, 'goto: definition'},
-                    d = {'<cmd>FzfLua lsp_definitions<CR>', 'goto: definition'},
-                    -- r = {vim.lsp.buf.references, 'goto: references'},
-                    r = {'<cmd>FzfLua lsp_references<CR>', 'goto: references'},
-                    -- y = {vim.lsp.buf.type_definition, 'goto: type definition'},
-                    y = {'<cmd>FzfLua lsp_typedefs<CR>', 'goto: type definition'},
-                },
-            }
-
-            vim.api.nvim_create_autocmd('LspAttach', {
-                group = vim.api.nvim_create_augroup('UserLspConfig', {clear = true}),
-                callback = function(ev)
-                    -- Enable completion triggered by <c-x><c-o>
-                    vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
-
-                    -- See `:help vim.lsp.*` for documentation on any of the below functions
-                    which_key.register(au_normal_mappings, {bufer = ev.buf, noremap = true})
-                end,
-            })
-        end,
         event = {'BufReadPost', 'BufNewFile'},
     },
     { -- https://github.com/ray-x/lsp_signature.nvim

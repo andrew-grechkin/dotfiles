@@ -29,15 +29,21 @@ vim.keymap.set('n', '<leader>uc', function()
     end
 end, {desc = ' conceal'})
 
-local diagnostics_enabled = true
-vim.keymap.set('n', '<leader>ud', function()
-    diagnostics_enabled = not diagnostics_enabled
-    if diagnostics_enabled then
-        vim.diagnostic.enable()
+vim.keymap.set('n', '<leader>ud', function() vim.diagnostic.enable(not vim.diagnostic.is_enabled()) end,
+    {desc = ' diagnostics'})
+
+if vim.lsp.inlay_hint and vim.lsp.inlay_hint.enable then
+    vim.keymap.set('n', '<leader>uh', function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled()) end,
+        {desc = ' inlay Hints'})
+end
+
+vim.keymap.set('n', '<leader>ul', function()
+    if vim.lsp.status() then
+        vim.lsp.stop()
     else
-        vim.diagnostic.disable()
+        vim.lsp.start()
     end
-end, {desc = ' diagnostics'})
+end, {desc = ' lsp'})
 
 vim.keymap.set('n', '<leader>uT', function()
     if vim.b.ts_highlight then
@@ -46,9 +52,3 @@ vim.keymap.set('n', '<leader>uT', function()
         vim.treesitter.start()
     end
 end, {desc = ' treesitter highlight'})
-
-if vim.lsp.inlay_hint then
-    vim.keymap.set('n', '<leader>uh', function() vim.lsp.inlay_hint(0, nil) end, {
-        desc = ' inlay Hints',
-    })
-end

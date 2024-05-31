@@ -5,23 +5,30 @@ return {
         opts = {},
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
-    -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/WhoIsSethDaniel/mason-tool-installer.nvim
         'WhoIsSethDaniel/mason-tool-installer.nvim',
-        dependencies = {'williamboman/mason.nvim'},
         cmd = {'MasonToolsInstall', 'MasonToolsUpdate', 'MasonToolsClean'},
         config = function()
             local plugin = require('mason-tool-installer')
             -- https://github.com/hrsh7th/nvim-cmp/issues/1017#issuecomment-1141440976
             -- table.unpack = table.unpack or unpack
 
-            local lsps = T {}
-            local daps = T {}
+            local lsps = T {
+                'bash-language-server',
+                'json-lsp',
+                'perlnavigator',
+                'yaml-language-server',
+            }
+            local daps = T {'bash-debug-adapter', 'debugpy'}
             local linters = T {'jsonlint', 'shellcheck', 'yamllint'}
-            local formatters = T {'beautysh', 'fixjson', 'shfmt', 'yamlfix'}
+            local formatters = T {'beautysh', 'fixjson', 'yamlfix'}
+
             if not IS_KVM then
+                if IS_WORK then lsps:append{'gitlab-ci-ls'} end
                 lsps:append{
-                    'ansible-language-server',
+                    -- 'ansible-language-server',
+                    'autotools-language-server',
+                    'basedpyright',
                     -- 'bzl',
                     -- 'clangd',
                     -- 'cmake-language-server',
@@ -30,38 +37,41 @@ return {
                     'eslint-lsp',
                     -- 'flux-lsp',
                     -- 'graphql-language-service-cli',
-                    'helm-ls',
+                    -- 'helm-ls',
                     'jq-lsp',
                     'lua-language-server',
-                    'marksman',
+                    -- 'marksman',
                     -- 'pkgbuild-language-server',
                     -- 'puppet-editor-services',
-                    'pyright',
+                    -- 'pyright',
                     'sqlls',
-                    'stylelint-lsp',
+                    -- 'stylelint-lsp',
                     'typescript-language-server',
                     'vim-language-server',
                 }
                 daps:append{'perl-debug-adapter'}
                 linters:append{
                     -- 'actionlint',
-                    'ansible-lint',
+                    -- 'ansible-lint',
                     -- 'cmakelang',
                     -- 'cmakelint',
+                    'eslint_d',
                     'luacheck',
-                    'markdownlint',
-                    'markuplint',
-                    'proselint',
+                    -- 'markdownlint',
+                    -- 'markuplint',
+                    -- 'proselint',
                     'sqlfluff',
-                    'stylelint',
+                    -- 'stylelint',
                     'vint',
                 }
                 formatters:append{
                     -- 'cmakelang',
-                    'doctoc',
+                    'darker',
+                    -- 'doctoc',
                     -- 'gersemi',
                     'luaformatter',
                     'shellharden',
+                    -- 'shfmt',
                 }
             end
 
@@ -103,28 +113,6 @@ return {
                 -- start_delay = 3000,
             }
         end,
-    },
-    -- => --------------------------------------------------------------------------------------------------------- {{{1
-    { -- https://github.com/jay-babu/mason-nvim-dap.nvim
-        'jay-babu/mason-nvim-dap.nvim',
-        lazy = true,
         dependencies = {'williamboman/mason.nvim'},
-        config = function()
-            local plugin = require('mason-nvim-dap')
-            local ensure_installed = {'bash', 'python'}
-
-            plugin.setup {
-                automatic_installation = true,
-                ensure_installed = ensure_installed,
-                handlers = {
-                    function(config)
-                        -- print(vim.inspect(config))
-                        -- all sources with no handler get passed here
-                        -- Keep original functionality
-                        plugin.default_setup(config)
-                    end,
-                },
-            }
-        end,
     },
 }
