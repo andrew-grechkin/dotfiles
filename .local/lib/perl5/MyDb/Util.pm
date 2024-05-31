@@ -34,49 +34,49 @@ sub load_db_config ( $out_path, $path, $dsn_extractor ) {
             my \%dsn_props = $dsn->dsn_props;
             my $name       = "$desc{database}-$handle";
             my $scheme     = $dsn->dbi_driver;
-            my $host       = $dsn_props{'bkng_resolved_host'} // $dsn_props{'host'};
-            my $port       = $desc{'port'};
-            my $user       = url_escape( $desc{'username'} );
-            my $pass       = url_escape( $desc{'password'} );
-            my $db         = url_escape( $dsn_props{'database'} );
             my %params     = (
                 'defaults-extra-file' => "$out_path/$name.$scheme.defaults",
-                'database'            => $dsn_props{'database'},
+                'database'            => url_escape( $dsn_props{'database'} ),
             );
 
-            $params{'socket'} = $dsn_props{'mysql_socket'} if $dsn_props{'mysql_socket'};
-            $params{'host'}   = $host                      if $host;
-            $params{'port'}   = $port                      if $host && $port;
+            if ( $dsn_props{'mysql_socket'} ) {
+                $params{'socket'} = $dsn_props{'mysql_socket'};
+            } else {
+                my $host = $dsn_props{'bkng_resolved_host'} // $dsn_props{'host'};
+                my $port = $desc{'port'};
+
+                $params{'host'} = $host if $host;
+                $params{'port'} = $port if $host && $port;
+            }
 
             $result{$name} = {
                 'name'     => $name,
-                'user'     => $desc{'username'},
-                'pass'     => $desc{'password'},
+                'user'     => url_escape( $desc{'username'} ),
+                'password' => url_escape( $desc{'password'} ),
                 'url'      => { 'scheme' => $dsn->dbi_driver, 'params' => \%params },
                 'defaults' => {
                     "${scheme}dump.defaults" => <<~"EO_MYSQLDUMP",
-                    [client]
-                    user=$desc{'username'}
-                    password=$desc{'password'}
-                    complete-insert
-                    disable-keys
-                    extended-insert
-                    insert-ignore
-                    no-create-db
-                    no-create-info
-                    no-tablespaces
-                    set-gtid-purged=OFF
-                    skip-add-locks
-                    skip-column-statistics
-                    skip-lock-tables
-                    ssl-fips-mode=ON
-                    compact
-                    EO_MYSQLDUMP
+                        [client]
+                        user=$desc{'username'}
+                        password=$desc{'password'}
+                        complete-insert
+                        disable-keys
+                        extended-insert
+                        insert-ignore
+                        no-create-db
+                        no-tablespaces
+                        set-gtid-purged=OFF
+                        skip-add-locks
+                        skip-column-statistics
+                        skip-extended-insert
+                        skip-lock-tables
+                        compact
+                        EO_MYSQLDUMP
                     "$scheme.defaults" => <<~"EO_MYSQL",
-                    [client]
-                    user=$desc{'username'}
-                    password=$desc{'password'}
-                    EO_MYSQL
+                        [client]
+                        user=$desc{'username'}
+                        password=$desc{'password'}
+                        EO_MYSQL
                 },
             };
 
