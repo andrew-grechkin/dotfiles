@@ -12,18 +12,20 @@ use Data::Dumper qw(Dumper);
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
 use JSON::PP     qw();
 
-use YAML::XS qw();
+use Text::CSV qw();
+use YAML::XS  qw();
 
 use constant {
     'JSON'          => JSON::PP->new->pretty->space_before(0)->canonical->utf8(1),
     'JSON_ONE_LINE' => JSON::PP->new->pretty->space_before(0)->canonical->utf8(1)->indent(0),
+    'TSV' => Text::CSV->new({binary => 1, auto_diag => 0, escape_char => undef, sep_char => "\t", quote_char => undef}),
 };
 
 my %options = (
     'JSON'    => 0,
-    'LENIENT' => 0,
+    'LENIENT' => 1,
     'PERL'    => 0,
-    'UNJSON'  => 0,
+    'UNJSON'  => 1,
     'VERBOSE' => 0,
     'YAML'    => 0,
 );
@@ -76,55 +78,22 @@ sub process_file_handle ($data_aref, $type_sref, $fh) {
     my \@data = $data_aref;
     my \$type = $type_sref;
 
-    chomp(my @lines = <$fh>);
+    my @lines;
+    my @header = TSV()->header($fh);
+
+    TSV()->column_names(@header);
+    while (my $line_href = TSV()->getline_hr($fh)) {
+        chomp($line_href->%*);
+        unjson_recursive_inplace($line_href) if $options{'UNJSON'};
+        push @lines, $line_href;
+    }
 
     return unless @lines;
 
-    try {
-        my @decoded = map {JSON()->decode($_)} @lines;
-        $type ||= 'json';
-        push @data, @decoded;
-        return;
-    } catch ($err) {
-        ## not a multiline json
-    };
+    push @data, \@lines;
+    $type = 'tsv';
 
-    my $doc = join "\n", @lines;
-
-    my $json_error;
-    try {
-        my $decoded = JSON()->decode($doc);
-        $type ||= 'json';
-        push @data, $decoded;
-        return;
-    } catch ($err) {
-        ## not a json
-        $json_error = $err;
-    };
-
-    my $yaml_error;
-    try {
-        my @decoded = YAML::XS::Load($doc);
-        $type ||= 'yaml';
-        push @data, @decoded;
-        return;
-    } catch ($err) {
-        ## not a yaml
-        $yaml_error = $err;
-    };
-
-    use Data::Printer;
-    try {
-        my $decoded = eval Encode::decode('UTF-8', $doc, Encode::FB_CROAK); ## no critic [BuiltinFunctions::ProhibitStringyEval]
-        $type ||= 'perl';
-        push @data, $decoded;
-        return;
-    } catch ($err) {
-        ## not a perl
-    };
-
-    warn "unable to parse file as json: $json_error\n";
-    die "unable to parse file as yaml: $yaml_error\n";
+    return;
 }
 
 sub dump_data ($data_aref, $type) {
@@ -165,7 +134,7 @@ sub dump_data ($data_aref, $type) {
 
                 Encode::FB_CROAK,
             );
-        } elsif ($options{'JSON'} || $type eq 'yaml') {
+        } elsif ($options{'JSON'}) {
             if (@data > 1) {
                 $result .= JSON_ONE_LINE()->encode($it) . "\n";
             } else {
@@ -195,6 +164,7 @@ sub unjson_recursive_inplace ($data) {
             ## not an encoded json
         };
     }
+
     return $data;
 }
 
