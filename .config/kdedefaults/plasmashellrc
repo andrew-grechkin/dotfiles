@@ -1,7 +1,7 @@
 [Action_0]
 Automatic=true
 Description=Youtube links handeling
-Number of commands=3
+Number of commands=5
 Regexp=([^"\\s]+youtube.*watch\\?[^"\\s]+)|([^"\\s]+youtu.be[^"\\s]+)
 
 [Action_0/Command_0]
@@ -12,17 +12,31 @@ Icon=mpv
 Output=0
 
 [Action_0/Command_1]
-Commandline[$e]=tsp yt-dlp --no-config -f 'ba[ext=m4a]' -P '~/music/' '%0'
-Description=Download youtube audio
+Commandline[$e]=mpv --quiet --ytdl-raw-options='format="bv*[ext=webm][height<=1080]+ba/bv*[ext=mp4][height<=1080]+ba/b",sub-langs="en,nl,ru,de,it,pt"' -- '%0'
+Description=Play youtube video with mpv (1080p)
 Enabled=true
-Icon=youtube-dl
+Icon=mpv
 Output=0
 
 [Action_0/Command_2]
-Commandline[$e]=tsp yt-dlp -P '~/videos/' '%0'
-Description=Download youtube video
+Commandline[$e]=tsp ~/.local/script/video-download -h 1080 -- -P '~/videos' '%0'
+Description=Download youtube video (1080p)
 Enabled=true
-Icon=youtube-dl
+Icon=video-webm
+Output=0
+
+[Action_0/Command_3]
+Commandline[$e]=tsp ~/.local/script/video-download -h 1440 -- -P '~/videos' '%0'
+Description=Download youtube video (1440p)
+Enabled=true
+Icon=video-webm
+Output=0
+
+[Action_0/Command_4]
+Commandline[$e]=tsp ~/.local/script/audio-download -- -P '~/music' '%0'
+Description=Download youtube audio
+Enabled=true
+Icon=audio-mp4
 Output=0
 
 [General]

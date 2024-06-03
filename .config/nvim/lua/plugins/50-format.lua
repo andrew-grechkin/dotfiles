@@ -17,7 +17,7 @@ return {
                 markdown = {'prettierd'},
                 mysql = {'sql-formatter', 'mysql_sqlfluff'},
                 perl = {'perltidy'},
-                python = {{'darker', 'black', 'isort'}},
+                python = {{'darker', 'black'}},
                 sh = {'shellharden', 'beautysh'},
                 sql = {'sql-formatter', 'sqlfluff'},
                 typescript = {'eslint_d'},
@@ -27,6 +27,7 @@ return {
             formatters_by_ft_manual = {
                 json = {'jq-sort'},
                 perl = {'perlimports'},
+                python = {'isort'},
                 yaml = {'yaml-sanitize'},
             },
             log_level = vim.log.levels.DEBUG,

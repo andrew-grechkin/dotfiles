@@ -2,25 +2,36 @@
 
 set -Eeuo pipefail
 
-URL="$1"
+HEIGHT="${HEIGHT:-1440}"
 
-HEIGHT="${HEIGHT:-}"
+while getopts 'h:' opt; do
+	case ${opt} in
+		h)
+			HEIGHT="$OPTARG"
+			;;
+		:)
+			echo "Option -${OPTARG} requires an argument."
+			exit 1
+			;;
+		?)
+			exit 1
+			;;
+	esac
+done
 
-if [[ -z "$HEIGHT" ]]; then
-	HEIGHT="${2:-1440}"
-fi
+shift $((OPTIND - 1))
 
-[[ "${#URL}" -lt 16 ]] && {
-	URL="https://www.youtube.com/watch?v=$URL"
-}
+# [[ "${#URL}" -lt 16 ]] && {
+# 	URL="https://www.youtube.com/watch?v=$URL"
+# }
 
 OPTIONS=(
-	--prefer-free-formats
 	--format="bv*[ext=webm][height<=${HEIGHT}]+ba/bv*[ext=mp4][height<=${HEIGHT}]+ba/b"
 	--list-formats
 	--no-simulate
-	--write-info-json
+	--prefer-free-formats
+	# --write-info-json
 	--write-thumbnail
 )
 
-yt-dlp "${OPTIONS[@]}" "$URL"
+exec yt-dlp "${OPTIONS[@]}" "$@"
