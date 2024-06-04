@@ -36,7 +36,7 @@ Output=0
 Commandline[$e]=tsp ~/.local/script/audio-download -- -P '~/music' '%0'
 Description=Download youtube audio
 Enabled=true
-Icon=audio-mp4
+Icon=audio-flac
 Output=0
 
 [General]
