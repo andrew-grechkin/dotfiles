@@ -11,34 +11,34 @@ return {
             'hrsh7th/cmp-path',
             'lukas-reineke/cmp-rg',
             'quangnguyen30192/cmp-nvim-tags',
-            { -- https://github.com/L3MON4D3/LuaSnip
-                'L3MON4D3/LuaSnip',
-                -- dependencies = {
-                --     { -- https://github.com/rafamadriz/friendly-snippets
-                --         'rafamadriz/friendly-snippets',
-                --     },
-                --     { -- https://github.com/andrew-grechkin/vim-snippets
-                --         'andrew-grechkin/vim-snippets',
-                --     },
-                -- },
-                config = function()
-                    local plugin = require('luasnip')
-                    -- require('luasnip.loaders.from_vscode').lazy_load()
-                    require('luasnip.loaders.from_snipmate').lazy_load()
+            { -- https://github.com/saadparwaiz1/cmp_luasnip
+                'saadparwaiz1/cmp_luasnip',
+                dependencies = {
+                    { -- https://github.com/L3MON4D3/LuaSnip
+                        'L3MON4D3/LuaSnip',
+                        -- dependencies = {
+                        --     { -- https://github.com/rafamadriz/friendly-snippets
+                        --         'rafamadriz/friendly-snippets',
+                        --     },
+                        --     { -- https://github.com/andrew-grechkin/vim-snippets
+                        --         'andrew-grechkin/vim-snippets',
+                        --     },
+                        -- },
+                        config = function()
+                            local plugin = require('luasnip')
+                            -- require('luasnip.loaders.from_vscode').lazy_load()
+                            require('luasnip.loaders.from_snipmate').lazy_load()
 
-                    vim.keymap.set({'i', 's'}, '<C-j>', function() plugin.expand_or_jump(1) end, {
-                        silent = true,
-                    })
-                    -- vim.keymap.set({'i', 's'}, '<C-k>', function() plugin.jump(-1) end, {
-                    --     silent = true,
-                    -- })
-                end,
-                -- follow latest release.
-                -- version = 'v2.*', -- Replace <CurrentMajor> by the latest released major (first number of latest release)
-                -- -- install jsregexp (optional!).
-                -- build = 'make install_jsregexp',
+                            vim.keymap.set({'i', 's'}, '<C-j>', function()
+                                plugin.expand_or_jump(1)
+                            end, {silent = true})
+                            -- vim.keymap.set({'i', 's'}, '<C-k>', function() plugin.jump(-1) end, {
+                            --     silent = true,
+                            -- })
+                        end,
+                    },
+                },
             },
-            'saadparwaiz1/cmp_luasnip',
             { -- https://github.com/kristijanhusak/vim-dadbod-completion
                 'kristijanhusak/vim-dadbod-completion',
                 ft = {'sql', 'mysql', 'plsql'},
@@ -83,8 +83,9 @@ return {
             local rg_conf = {
                 name = 'rg',
                 keyword_length = 5,
-                option = {debounce = 500, additional_arguments = '--max-depth 4'},
+                option = {debounce = 500, additional_arguments = '--max-depth 8'},
             }
+
             local config = {
                 completion = {keyword_length = 2},
                 confirm_opts = {behavior = plugin.ConfirmBehavior.Replace, select = false},
@@ -149,7 +150,7 @@ return {
                     end,
                 },
                 sources = {
-                    {name = 'luasnip'},
+                    {name = 'luasnip', keyword_length = 2},
                     {name = 'vim-dadbod-completion'},
                     {name = 'nvim_lsp'},
                     {name = 'nvim_lua'},
