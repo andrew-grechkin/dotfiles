@@ -23,6 +23,7 @@ return {
     { -- https://github.com/folke/trouble.nvim
         'folke/trouble.nvim',
         config = true,
-        event = {'BufReadPost', 'BufNewFile'},
+        cmd = {'Trouble'},
+        version = (vim.version().major < 1 and vim.version().minor < 9) and 'v2.10.0' or nil,
     },
 }
