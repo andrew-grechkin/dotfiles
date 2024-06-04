@@ -132,13 +132,13 @@ super + alt + {Left,Down,Up,Right}
 # => applications ------------------------------------------------------------------------------------------------- {{{1
 
 super + BackSpace
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-system-exit"
+	wezterm start --always-new-process --class 'TermFloatingSmall' "$HOME/.local/script/menu-system-exit"
 super + Return
 	wezterm start --always-new-process /usr/bin/zsh
 super + equal
 	wezterm start --always-new-process --class 'TermFloatingSmall' "$HOME/.local/script/menu-system-audio"
 super + minus
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-system-misc"
+	wezterm start --always-new-process --class 'TermFloatingSmall' "$HOME/.local/script/menu-system-misc"
 
 # super + b
 #	exo-open --launch WebBrowser
