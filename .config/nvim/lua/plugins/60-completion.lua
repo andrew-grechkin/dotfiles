@@ -11,19 +11,19 @@ return {
             'hrsh7th/cmp-path',
             'lukas-reineke/cmp-rg',
             'quangnguyen30192/cmp-nvim-tags',
-            {
+            { -- https://github.com/L3MON4D3/LuaSnip
                 'L3MON4D3/LuaSnip',
-                dependencies = {
-                    { -- https://github.com/rafamadriz/friendly-snippets
-                        'rafamadriz/friendly-snippets',
-                    },
-                    { -- https://github.com/andrew-grechkin/vim-snippets
-                        'andrew-grechkin/vim-snippets',
-                    },
-                },
+                -- dependencies = {
+                --     { -- https://github.com/rafamadriz/friendly-snippets
+                --         'rafamadriz/friendly-snippets',
+                --     },
+                --     { -- https://github.com/andrew-grechkin/vim-snippets
+                --         'andrew-grechkin/vim-snippets',
+                --     },
+                -- },
                 config = function()
                     local plugin = require('luasnip')
-                    require('luasnip.loaders.from_vscode').lazy_load()
+                    -- require('luasnip.loaders.from_vscode').lazy_load()
                     require('luasnip.loaders.from_snipmate').lazy_load()
 
                     vim.keymap.set({'i', 's'}, '<C-j>', function() plugin.expand_or_jump(1) end, {
