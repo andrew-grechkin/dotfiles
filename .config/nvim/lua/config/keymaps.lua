@@ -17,6 +17,7 @@
 -- :help c_CTRL-U
 -- :help v_:
 vim.keymap.set('o', 'q', ':<C-u>normal! mzggVG<CR>`z', {desc = 'Object: whole file'})
+vim.keymap.set('o', 'V', ':<C-u>normal! mz0V<CR>`z', {desc = 'Object: whole line'})
 
 vim.keymap.set('n', '<leader>us', ':set spell!<CR>', {desc = ' spelling'})
 vim.keymap.set('n', '<leader>uw', ':set wrap!<CR>', {desc = ' word wrap'})
