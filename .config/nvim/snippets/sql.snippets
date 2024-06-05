@@ -1,0 +1,37 @@
+snippet tbl
+	CREATE TABLE ${1:table} (
+		${0:columns}
+	);
+
+snippet col
+	${1:name}	${2:type}	${3:default ''}	${0:not null}
+
+snippet ccol
+	${1:name}	VARCHAR2(${2:size})	${3:default ''}	${0:not null}
+
+snippet ncol
+	${1:name}	NUMBER	${3:default 0}	${0:not null}
+
+snippet dcol
+	${1:name}	DATE	${3:default sysdate}	${0:not null}
+
+snippet ind
+	CREATE INDEX ${0:$1_$2} on ${1:table}(${2:column});
+
+snippet uind
+	CREATE UNIQUE INDEX ${1:name} on ${2:table}(${0:column});
+
+snippet tblcom
+	COMMENT ON TABLE ${1:table} is '${0:comment}';
+
+snippet colcom
+	COMMENT ON COLUMN ${1:table}.${2:column} is '${0:comment}';
+
+snippet addcol
+	ALTER TABLE ${1:table} ADD (${2:column} ${0:type});
+
+snippet select
+	SELECT
+		*
+	FROM
+		${0:table}
