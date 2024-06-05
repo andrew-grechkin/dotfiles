@@ -1,7 +1,8 @@
 #!/usr/bin/env perl
 
-# COPYRIGHT: © 2023 Andrew Grechkin
-# LICENSE: ARTISTIC LICENSE 2.0
+# 🄯 2024 Andrew Grechkin
+# LICENSE: Artistic-2.0
+#          GPL-2.0-or-later
 
 use v5.38;
 use autodie;
@@ -10,7 +11,7 @@ use utf8;
 use warnings     qw(FATAL utf8);
 use experimental qw(builtin class declared_refs defer for_list refaliasing try);
 
-class Processor 3.00 {
+class Processor 3.01 {
     use Digest::SHA  qw(sha256_hex);
     use Encode       qw(decode);
     use Getopt::Long qw(:config auto_version bundling no_ignore_case);
@@ -126,13 +127,10 @@ class Processor 3.00 {
         $log->trace('Gathering files started');
         defer {$log->debugf('Gathering files finished: %d', $stats{'files_count'})};
 
-        foreach my $folder (@ARGV || '.') {
-            path($folder)->visit(
+        foreach my $dir (@ARGV ? @ARGV : ('.')) {
+            path($dir)->visit(
                 sub ($path, @) {
-                    $path !~ m/\@eaDir/
-                        or return;
-
-                    $path->is_file && !-l $path
+                    $self->_is_valid_path($path)
                         or return;
 
                     my $stat = $path->stat;
@@ -152,6 +150,13 @@ class Processor 3.00 {
         }
 
         return \%by_dev_ino;
+    }
+
+    method _is_valid_path ($path) {
+        return
+               $path !~ m/\@eaDir/
+            && $path->is_file
+            && !-l $path;
     }
 
     method _is_valid_file ($path, $stat) {
@@ -223,7 +228,7 @@ hardlinker
 
 =head1 DESCRIPTION
 
-Detect and hardlink all identical files in given folders.
+Detect and hardlink all identical files in given directories.
 
 =head1 SYNOPSIS
 
@@ -239,7 +244,7 @@ Do real changes on file system
 
 =item B<--recurse>
 
-Process subfolders
+Process subdirs
 
 =item B<--verbose>
 
