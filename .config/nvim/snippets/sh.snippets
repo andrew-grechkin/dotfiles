@@ -42,8 +42,7 @@ snippet case
 	esac
 
 snippet go
-	while getopts '${1:o}' ${2:opts}
-	do
+	while getopts '${1:o}' ${2:opts}; do
 		case $$2 in
 		${3:o0})
 			${0:#staments};;
@@ -54,40 +53,22 @@ snippet sdir "Set SCRIPT_DIR variable to directory script is located"
 	SCRIPT_DIR="\$( cd "\$( dirname "\${BASH_SOURCE[0]}" )" && pwd )"
 
 snippet getopt
-	__ScriptVersion="${1:version}"
-
-	#===  FUNCTION  ================================================================
-	#         NAME:  usage
-	#  DESCRIPTION:  Display usage information.
-	#===============================================================================
-	function usage ()
-	{
+	function usage () {
 		echo "Usage :  \$${0:0} [options] [--]
+		Options:
+		-h|help       Display this message
+		-v|version    Display script version"
+	}
 
-	    Options:
-	    -h|help       Display this message
-	    -v|version    Display script version"
-
-	}    # ----------  end of function usage  ----------
-
-	#-----------------------------------------------------------------------
-	#  Handle command line arguments
-	#-----------------------------------------------------------------------
-
-	while getopts ":hv" opt
-	do
-	  case \$opt in
-
-		h|help     )  usage; exit 0   ;;
-
-		v|version  )  echo "\$${0:0} -- Version \$__ScriptVersion"; exit 0   ;;
-
-		* )  echo -e "\\n  Option does not exist : \$OPTARG\\n"
-			  usage; exit 1   ;;
-
-	  esac    # --- end of case ---
+	while getopts ":hv" opt; do
+		case \$opt in
+			h|help     ) usage; exit 0;;
+			v|version  ) echo "\$${0:0} -- Version \$__ScriptVersion"; exit 0;;
+			*          ) echo -e "\\n  Option does not exist : \$OPTARG\\n"
+				usage; exit 1;;
+		esac
 	done
-	shift \$(($OPTIND-1))
+	shift \$(( $OPTIND-1 ))
 
 snippet root
 	if [ \$(id -u) -ne 0 ]; then exec sudo \$0; fi

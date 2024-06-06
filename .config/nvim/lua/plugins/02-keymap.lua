@@ -89,6 +89,7 @@ return {
                         ['t'] = {':tab split<CR>', 'tab: split'},
                         ['u'] = {':Lazy install<CR>', 'sync plugins'},
                         ['v'] = {':tabedit $MYVIMRC<CR>', 'init.vim'},
+                        ['w'] = {':bp|bd #<CR>', 'Close buffer, keep split'},
                     },
                     b = {name = 'Buffer', ['o'] = {BUF_ONLY, 'only'}},
                     -- p = {'`[ . strpart(getregtype(), 0, 1) . `]', 'Select latest pasted'},
@@ -194,7 +195,9 @@ return {
             which_key.register(command_mappings, {mode = 'c', nowait = true, noremap = true})
             which_key.register(norm_term_mappings, {mode = 'n', nowait = true, noremap = true})
 
-            vim.keymap.set('n', '<leader>Sr', ':%s/\\<<C-r><C-w>\\>/<C-r><C-w>/g<Left><Left>')
+            -- when added with whichkey the command is not redrawn
+            vim.keymap.set('n', '<leader>Sr', [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/g<Left><Left>]],
+                {desc = 'Replace word under cursor'})
             vim.cmd [[
                 :nnoremap <nowait> / /\v
             ]]
