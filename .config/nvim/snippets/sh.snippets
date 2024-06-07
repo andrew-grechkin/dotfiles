@@ -1,24 +1,31 @@
 snippet #!
-	#!/bin/sh
+	#!/usr/bin/env bash
+
+	set -Eeuo pipefail
 
 snippet if
-	if [ $1 ]; then
+	if [[ $1 ]]; then
 		${0:${VISUAL}}
 	fi
 
 snippet elif
-	elif [ $1 ]; then
+	elif [[ $1 ]]; then
 		${0:${VISUAL}}
 
 snippet wh
-	while [ $1 ]; do
+	while [[ $1 ]]; do
 		${0:${VISUAL}}
 	done
 
 snippet until
-	until [ $1 ]; do
+	until [[ $1 ]]; do
 		${0:${VISUAL}}
 	done
+
+snippet fun
+	function ${1:function_name}() {
+		$0
+	}
 
 snippet wht
 	while true; do
