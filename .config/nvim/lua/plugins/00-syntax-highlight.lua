@@ -1,6 +1,7 @@
 return {
     { -- https://github.com/nvim-treesitter/nvim-treesitter
         'nvim-treesitter/nvim-treesitter',
+        cmd = {'TSUpdate'},
         config = function()
             local ok, plugin = pcall(require, 'nvim-treesitter.configs')
             if not ok then return end
@@ -17,6 +18,7 @@ return {
                 'lua',
                 'make',
                 'regex',
+                'sql',
                 'toml',
                 'yaml',
             }
@@ -55,7 +57,6 @@ return {
                     'query',
                     'ruby',
                     'scss',
-                    'sql',
                     'ssh_config',
                     'strace',
                     'sxhkdrc',
