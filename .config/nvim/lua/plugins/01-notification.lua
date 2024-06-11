@@ -16,7 +16,7 @@ return {
             {
                 '<leader><leader>N',
                 function() require('notify').dismiss({silent = true, pending = true}) end,
-                desc = 'Dismiss all notifications',
+                desc = 'notifications: dismiss all',
             },
         },
         opts = {

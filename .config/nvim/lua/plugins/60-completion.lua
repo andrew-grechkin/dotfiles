@@ -54,6 +54,7 @@ return {
             -- vim.api.nvim_set_var('loaded_completion', true)
             local kind_icons = {
                 Class = ' (class)',
+                Cody = '󰧑 (cody)',
                 Color = ' (color)',
                 Constant = ' (const)',
                 Constructor = ' (cnstr)',
@@ -93,9 +94,11 @@ return {
                 formatting = {
                     fields = {'kind', 'abbr', 'menu'},
                     format = function(entry, vim_item)
-                        vim_item.kind = string.format('%s', kind_icons[vim_item.kind])
+                        vim_item.kind = kind_icons[vim_item.kind] and string.format('%s', kind_icons[vim_item.kind]) or
+                                            vim_item.kind
                         vim_item.menu = ({
                             buffer = '[buff]',
+                            cody = '[cody]',
                             dictionary = '[dict]',
                             luasnip = '[snip]',
                             nvim_lua = '[nvim]',
@@ -152,6 +155,7 @@ return {
                 sources = {
                     {name = 'luasnip', keyword_length = 2},
                     {name = 'vim-dadbod-completion'},
+                    {name = 'cody'},
                     {name = 'nvim_lsp'},
                     {name = 'nvim_lua'},
                     {name = 'path'},

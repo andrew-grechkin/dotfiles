@@ -245,6 +245,16 @@ snippet pvisit "Helper: path visit" b
 # => Headers ------------------------------------------------------------------------------------------------------ {{{1
 
 snippet head "Header: pragmas" b
+	use v5.40;
+	use autodie;
+	use open ':locale';
+	use utf8;
+	use warnings     qw(FATAL utf8);
+	use experimental qw(class declared_refs defer refaliasing);
+
+	${0}
+
+snippet head38 "Header: pragmas" b
 	use v5.38;
 	use autodie;
 	use open ':locale';
@@ -330,8 +340,8 @@ snippet usemod "Header: use Module::Runtime" b
 
 snippet useover "Header: use overload" b
     use overload
-        'bool'     => sub (\$self, @) {1},
-        'fallback' => 1;
+        'bool'     => sub {return true},
+        'fallback' => true;
 
 snippet usepath "Header: use Path::Tiny" b
 	use Path::Tiny qw(path);
@@ -385,35 +395,35 @@ snippet pkgm "Package: method call"
 # => Classes (Mojo) ----------------------------------------------------------------------------------------------- {{{1
 
 snippet base "Class: Mojo::Base base class" b
-	use v5.38;
+	use v5.40;
 	use Mojo::Base           qw(-base);
 	use namespace::autoclean qw();
 
 	${0}
 
 snippet basea "Class: Mojo::Base base class with async_await" b
-	use v5.38;
+	use v5.40;
 	use Mojo::Base           qw(-base -async_await);
 	use namespace::autoclean qw();
 
 	${0}
 
 snippet der "Class: Mojo::Base derived class" b
-	use v5.38;
+	use v5.40;
 	use Mojo::Base           qw(${1:Name});
 	use namespace::autoclean qw();
 
 	${0}
 
 snippet dera "Class: Mojo::Base derived class with async_await" b
-	use v5.38;
+	use v5.40;
 	use Mojo::Base           qw(${1:Name} -async_await);
 	use namespace::autoclean qw();
 
 	${0}
 
 snippet role "Class: Mojo::Base role" b
-	use v5.38;
+	use v5.40;
 	use Mojo::Base           qw(-role);
 	use namespace::autoclean qw();
 
@@ -489,7 +499,7 @@ snippet testh "Header: test pragmas" b
 snippet testm "Test: new module" b
 	#!/usr/bin/env perl
 
-	use v5.38;
+	use v5.40;
 
 	# core
 	use lib '.';

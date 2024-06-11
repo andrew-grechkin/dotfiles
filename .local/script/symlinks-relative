@@ -13,7 +13,7 @@ use List::Util   qw(min none);
 use Pod::Usage   qw(pod2usage);
 
 use Log::Any                qw($log);
-use Log::Any::Adapter       qw(Syslog), ( 'options' => 'pid,ndelay' );
+use Log::Any::Adapter       qw(Syslog), ('options' => 'pid,ndelay');
 use Log::Any::Adapter::Util qw(INFO TRACE WARNING);
 use Path::Tiny              qw(path);
 
@@ -29,7 +29,7 @@ sub main() {
     GetOptions(
         'apply|a'     => \$options{'APPLY'},
         'base|b'      => \$options{'BASE_DIR'},
-        'help|h'      => sub { pod2usage( '-verbose' => 99, 'exitval' => 0 ) },
+        'help|h'      => sub {pod2usage('-verbose' => 99, 'exitval' => 0)},
         'ignore|i=s@' => \$options{'IGNORE'},
         'recurse|r'   => \$options{'RECURSE'},
         'verbose|v+'  => \$options{'VERBOSE'},
@@ -38,23 +38,23 @@ sub main() {
     Log::Any::Adapter->set(
         'Multiplex',
         'adapters' => {
-            'Syslog' => [ 'options'   => 'pid,ndelay', 'log_level' => 'warning' ],
-            'Stderr' => [ 'log_level' => min( TRACE(), INFO() + $options{'VERBOSE'} ) ],
+            'Syslog' => ['options'   => 'pid,ndelay', 'log_level' => 'warning'],
+            'Stderr' => ['log_level' => min(TRACE(), INFO() + $options{'VERBOSE'})],
         },
     );
 
     @ARGV
-        or push( @ARGV, '.' );
+        or push(@ARGV, '.');
 
-    my $base_dir = path( $options{'BASE_DIR'} )->absolute;
-    my @ignore   = ( '\/@eaDir\/', '\/mason\/', '\/.local\/share\/containers\/', '\/.venv\/', $options{'IGNORE'}->@* );
+    my $base_dir = path($options{'BASE_DIR'})->absolute;
+    my @ignore   = ('\/@eaDir\/', '\/mason\/', '\/.local\/share\/containers\/', '\/.venv\/', $options{'IGNORE'}->@*);
     ## no critic [ValuesAndExpressions::RequireInterpolationOfMetachars]
 
     foreach my $folder (@ARGV) {
         path($folder)->visit(
-            sub ( $path, @ ) {
-                $path = path( decode( 'UTF-8', $path->stringify, Encode::FB_CROAK ) );
-                none { $path =~ m/$_/ } @ignore
+            sub ($path, @) {
+                $path = path(decode('UTF-8', $path->stringify, Encode::FB_CROAK));
+                none {$path =~ m/$_/} @ignore
                     or return;
 
                 -l $path
@@ -62,15 +62,15 @@ sub main() {
 
                 $path = $path->absolute;
 
-                my $link_target = decode( 'UTF-8', readlink $path, Encode::FB_CROAK );
+                my $link_target = decode('UTF-8', readlink $path, Encode::FB_CROAK);
                 my $is_munged   = 0;
 
-                if ( $link_target =~ m{\A\/rsyncd-munged\/}x ) {
+                if ($link_target =~ m{\A\/rsyncd-munged\/}x) {
                     $link_target = $link_target =~ s{\A\/rsyncd-munged\/}{}rx;
                     $is_munged   = 1;
                 }
 
-                check_link( $base_dir, $path, path($link_target), $is_munged );
+                check_link($base_dir, $path, path($link_target), $is_munged);
             },
             {
                 'follow_symlinks' => 0,
@@ -82,47 +82,47 @@ sub main() {
     return 0;
 }
 
-sub check_link ( $base_dir, $path, $link_target, $is_munged ) {    ## no critic [Subroutines::ProhibitManyArgs]
-    if ( $link_target->is_relative ) {
+sub check_link ($base_dir, $path, $link_target, $is_munged) { ## no critic [Subroutines::ProhibitManyArgs]
+    if ($link_target->is_relative) {
         try {
             my $link_parent   = $path->parent;
-            my $link_realpath = path( $link_parent, $link_target )->realpath;
-            if ( $link_realpath =~ m/\A $base_dir \/ /x ) {
+            my $link_realpath = path($link_parent, $link_target)->realpath;
+            if ($link_realpath =~ m/\A $base_dir \/ /x) {
                 if ($is_munged) {
-                    fix_link( $path, $link_target, 'munged ' );
+                    fix_link($path, $link_target, 'munged ');
                 } else {
-                    $log->tracef( 'Already good: %s -> %s', $path, $link_target );
+                    $log->tracef('Already good: %s -> %s', $path, $link_target);
                 }
                 return;
             }
         } catch ($err) {
             chomp($err);
-            $log->warnf( 'Link is broken, skipping: %s -> %s', $path, $link_target );
+            $log->warnf('Link is broken, skipping: %s -> %s', $path, $link_target);
             return;
         };
     } else {
-        if ( !$link_target->exists ) {
-            $log->warnf( 'Link is broken, skipping: %s -> %s', $path, $link_target );
+        if (!$link_target->exists) {
+            $log->warnf('Link is broken, skipping: %s -> %s', $path, $link_target);
             return;
         }
-        if ( $link_target =~ m/\A $base_dir \/ /x ) {
+        if ($link_target =~ m/\A $base_dir \/ /x) {
             my $link_parent = $path->parent;
             $link_target = $link_target->relative($link_parent);
-            fix_link( $path, $link_target );
+            fix_link($path, $link_target);
 
             return;
         }
     }
 
-    $log->warnf( 'External symlink, skipping: %s -> %s', $path, $link_target );
+    $log->warnf('External symlink, skipping: %s -> %s', $path, $link_target);
 
     return;
 }
 
-sub fix_link ( $path, $link_target, $which = '' ) {
-    $log->infof( 'Fixing %slink: %s -> %s', $which, $path, $link_target );
+sub fix_link ($path, $link_target, $which = '') {
+    $log->infof('Fixing %slink: %s -> %s', $which, $path, $link_target);
 
-    if ( $options{APPLY} ) {
+    if ($options{APPLY}) {
         $path->remove;
         symlink $link_target, $path;
     }

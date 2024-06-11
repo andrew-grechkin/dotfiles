@@ -146,5 +146,6 @@ return {
             vim.g.db_ui_use_nvim_notify = true
             vim.g.db_ui_win_position = 'right'
         end,
+        keys = {{'<leader><leader>d', ':DBUIToggle<CR>', desc = 'db ui: toggle'}},
     },
 }

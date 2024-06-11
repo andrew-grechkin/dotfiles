@@ -3,7 +3,16 @@ return {
         'sourcegraph/sg.nvim',
         enabled = not IS_KVM and (vim.version().major > 1 or vim.version().minor > 8),
         dependencies = {'nvim-lua/plenary.nvim'},
-        opts = {},
+        keys = {
+            'n',
+            {
+                '<leader><leader>c',
+                function() require('sg.cody.commands').toggle() end,
+                desc = 'cody: toggle',
+            },
+        },
+        lazy = false,
+        opts = {accept_tos = true},
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     -- -- Flash enhances the built-in search functionality by showing labels

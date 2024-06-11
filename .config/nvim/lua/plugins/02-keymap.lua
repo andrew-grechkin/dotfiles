@@ -6,6 +6,7 @@ return {
             if not ok then return end
 
             which_key.register({['<leader>u'] = {name = 'UI'}})
+            which_key.register({['<leader>t'] = {name = ''}})
 
             local config = {
                 plugins = {
@@ -83,15 +84,18 @@ return {
                     ['<leader>'] = {
                         name = 'Setup',
                         ['.'] = {':execute "lcd" dir#git_root()<CR>', 'cd to git-root'},
-                        ['d'] = {':DBUIToggle<CR>', 'db ui'},
-                        ['h'] = {'<cmd>checkhealth<CR>', 'Health'},
-                        ['m'] = {':belowright 10split term://zsh<CR>', 'open terminal'},
+                        ['h'] = {'<cmd>checkhealth<CR>', 'healthcheck: open'},
+                        ['m'] = {':belowright 10split term://zsh<CR>', 'terminal: open'},
                         ['t'] = {':tab split<CR>', 'tab: split'},
-                        ['u'] = {':Lazy install<CR>', 'sync plugins'},
+                        ['u'] = {':Lazy install<CR>', 'plugins: open'},
                         ['v'] = {':tabedit $MYVIMRC<CR>', 'init.vim'},
-                        ['w'] = {':bp|bd #<CR>', 'Close buffer, keep split'},
                     },
-                    b = {name = 'Buffer', ['o'] = {BUF_ONLY, 'only'}},
+                    b = {
+                        name = 'Buffer',
+                        ['b'] = {':bd<CR>', 'close'},
+                        ['f'] = {':bp|bd #<CR>', 'close, keep split'},
+                        ['o'] = {BUF_ONLY, 'only'},
+                    },
                     -- p = {'`[ . strpart(getregtype(), 0, 1) . `]', 'Select latest pasted'},
                     x = {':!xdg-open %<CR><CR>', 'Open in the default program'},
                     S = {name = 'Search'},

@@ -153,7 +153,7 @@ return {
                 '<leader><leader>n',
                 ':EditVifm<CR>',
                 mode = {'n'},
-                desc = 'harpoon: add',
+                desc = 'vifm: open',
                 nowait = true,
                 noremap = true,
             },

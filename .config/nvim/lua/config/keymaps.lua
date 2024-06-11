@@ -19,10 +19,10 @@
 vim.keymap.set('o', 'q', ':<C-u>normal! mzggVG<CR>`z', {desc = 'Object: whole file'})
 vim.keymap.set('o', 'V', ':<C-u>normal! mz0V<CR>`z', {desc = 'Object: whole line'})
 
-vim.keymap.set('n', '<leader>us', ':set spell!<CR>', {desc = ' spelling'})
-vim.keymap.set('n', '<leader>uw', ':set wrap!<CR>', {desc = ' word wrap'})
+vim.keymap.set('n', '<leader>ts', ':set spell!<CR>', {desc = ' spelling'})
+vim.keymap.set('n', '<leader>tw', ':set wrap!<CR>', {desc = ' word wrap'})
 
-vim.keymap.set('n', '<leader>uc', function()
+vim.keymap.set('n', '<leader>tc', function()
     if vim.o.conceallevel == 3 then
         vim.o.conceallevel = 0
     else
@@ -30,15 +30,15 @@ vim.keymap.set('n', '<leader>uc', function()
     end
 end, {desc = ' conceal'})
 
-vim.keymap.set('n', '<leader>ud', function() vim.diagnostic.enable(not vim.diagnostic.is_enabled()) end,
+vim.keymap.set('n', '<leader>td', function() vim.diagnostic.enable(not vim.diagnostic.is_enabled()) end,
     {desc = ' diagnostics'})
 
 if vim.lsp.inlay_hint and vim.lsp.inlay_hint.enable then
-    vim.keymap.set('n', '<leader>uh', function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled()) end,
-        {desc = ' inlay Hints'})
+    vim.keymap.set('n', '<leader>th', function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled()) end,
+        {desc = ' inlay hints'})
 end
 
-vim.keymap.set('n', '<leader>ul', function()
+vim.keymap.set('n', '<leader>tl', function()
     if vim.lsp.status() then
         vim.lsp.stop()
     else
@@ -46,7 +46,7 @@ vim.keymap.set('n', '<leader>ul', function()
     end
 end, {desc = ' lsp'})
 
-vim.keymap.set('n', '<leader>uT', function()
+vim.keymap.set('n', '<leader>tT', function()
     if vim.b.ts_highlight then
         vim.treesitter.stop()
     else
