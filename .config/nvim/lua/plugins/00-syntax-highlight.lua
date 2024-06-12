@@ -196,7 +196,7 @@ return {
                 },
             },
         },
-        enabled = vim.version().major > 0 or vim.version().minor > 8,
+        enabled = not (vim.version().major < 1 and vim.version().minor < 9),
         event = {'BufReadPost', 'BufNewFile'},
     },
 }

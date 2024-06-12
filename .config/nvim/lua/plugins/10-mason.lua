@@ -7,7 +7,7 @@ return {
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/WhoIsSethDaniel/mason-tool-installer.nvim
         'WhoIsSethDaniel/mason-tool-installer.nvim',
-        cmd = {'MasonToolsInstall', 'MasonToolsUpdate', 'MasonToolsClean'},
+        cmd = {'MasonToolsClean', 'MasonToolsUpdate'},
         config = function()
             local plugin = require('mason-tool-installer')
             -- https://github.com/hrsh7th/nvim-cmp/issues/1017#issuecomment-1141440976

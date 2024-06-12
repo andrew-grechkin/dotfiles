@@ -1,7 +1,7 @@
 return {
     { -- https://github.com/sourcegraph/sg.nvim
         'sourcegraph/sg.nvim',
-        enabled = not IS_KVM and (vim.version().major > 1 or vim.version().minor > 8),
+        enabled = not (vim.version().major < 1 and vim.version().minor < 9),
         dependencies = {'nvim-lua/plenary.nvim'},
         keys = {
             'n',
