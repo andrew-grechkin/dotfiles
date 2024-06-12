@@ -71,7 +71,7 @@ return {
                 vim.b[0].disable_autoformat = not (vim.b[0].disable_autoformat == nil and vim.g.disable_autoformat or
                                                   vim.b[0].disable_autoformat)
             end, {})
-            vim.keymap.set('n', '<leader>uf', '<cmd>ConformToggle<CR>', {desc = ' auto format'})
+            vim.keymap.set('n', '<leader>tf', '<cmd>ConformToggle<CR>', {desc = ' auto format'})
 
             opts.format_on_save = function(bufnr)
                 if vim.g.disable_autoformat or vim.b[bufnr].disable_autoformat then return end

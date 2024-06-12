@@ -1,3 +1,5 @@
+vim.lsp.inlay_hint.enable(true)
+
 vim.keymap.set('n', '<leader>K', function() -- run this twice to enter the window
     vim.lsp.buf.hover()
     vim.lsp.buf.hover()
