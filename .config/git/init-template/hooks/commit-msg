@@ -1,24 +1,20 @@
-#!/usr/bin/env perl
+#!/usr/bin/env bash
 
-use v5.28;
-use warnings;
+set -Eeuo pipefail
 
-use File::Basename qw();
+GIT_DIR="$(git rev-parse --git-dir)"
+GIT_URL="$(git config --get remote.origin.url)"
+GIT_WORK_TREE="$(git rev-parse --show-toplevel)"
 
-my %repo_actions = (
-    'main.git' => sub {
-        my $topic   = 'DEP';
-        my $regex   = qr{ \[ $topic- \d+ \] }xms;
-        my $message = <>;
-        if ($message !~ $regex) {
-            die "[POLICY] Your message is not formatted correctly. Expected [${topic}-xxx] ticket reference\n";
-        }
-    },
-);
+export GIT_DIR GIT_URL GIT_WORK_TREE
 
-my $repo = `git config --get remote.origin.url`;
-my $name = File::Basename::basename($repo);
+if test -d "$GIT_DIR/hooks/commit-msg.d"; then
+	for hook in "$GIT_DIR/hooks/commit-msg.d"/*; do
+		if [[ -x "$hook" ]]; then
+			echo "executing commit-msg hook: $hook" >/dev/stderr
+			"$hook" "$1"
+		fi
+	done
+fi
 
-foreach my $match (keys %repo_actions) {
-    $repo_actions{$match}->() if $name =~ m/$match/;
-}
+exit 42

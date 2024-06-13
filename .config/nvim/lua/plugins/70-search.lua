@@ -7,7 +7,19 @@ return {
             'n',
             {
                 '<leader><leader>c',
-                function() require('sg.cody.commands').toggle() end,
+                -- function() require('sg.cody.commands').toggle() end,
+                function()
+                    local chat = require('sg.cody.rpc.chat')
+                    if chat.last_chat then
+                        if vim.api.nvim_win_is_valid(chat.last_chat.windows.history_win) then
+                            chat.last_chat:close()
+                        else
+                            chat.last_chat:reopen()
+                        end
+                    else
+                        chat.new({window_type = 'split'})
+                    end
+                end,
                 desc = 'cody: toggle',
             },
         },
