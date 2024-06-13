@@ -19,6 +19,11 @@ function npm-global-install () {
 		| xargs -t npm -g install
 }
 
+function npm-global-common () {
+	npm install -g @commitlint/config-conventional @commitlint/cli
+	npm install -g neovim
+}
+
 # => exports ------------------------------------------------------------------------------------------------------ {{{1
 
 if [[ -d "$XDG_CONFIG_HOME/nvm" ]]; then
@@ -30,3 +35,5 @@ fi
 if [[ -r "$NVM_DIR/nvm.sh" ]]; then
 	source "$NVM_DIR/nvm.sh"
 fi
+
+# export NPM_CONFIG_PREFIX="$XDG_DATA_HOME/npm"

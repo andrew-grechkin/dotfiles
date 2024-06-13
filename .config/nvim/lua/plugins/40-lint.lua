@@ -5,6 +5,7 @@ return {
             local plugin = require('lint')
 
             plugin.linters_by_ft = {
+                gitcommit = {'commitlint'},
                 json = {'jsonlint'},
                 perl = {'perlimports', 'perlcritic'},
                 puppet = {'puppet-lint'},

@@ -32,6 +32,7 @@ ln -srf .zshenv                                              ~/
 
 [[ -d ~/.config/atuin ]] && rm -rf ~/.config/atuin
 
+ln -srf .config/.commitlintrc.yaml                           ~/.config/
 ln -srf .config/atuin                                        ~/.config/
 ln -srf .config/chromium-flags.conf                          ~/.config/
 ln -srf .config/chromium-flags.conf                          ~/.config/chrome-flags.conf
