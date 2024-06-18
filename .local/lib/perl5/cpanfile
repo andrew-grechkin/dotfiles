@@ -53,6 +53,7 @@ feature 'misc' => sub {
     requires "Neovim::Ext";
     requires "Sereal";
     requires "Sort::Naturally";
+    requires "Text::CSV";
 };
 
 feature 'experiment' => sub {

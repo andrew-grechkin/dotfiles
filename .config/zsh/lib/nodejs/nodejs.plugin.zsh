@@ -34,6 +34,7 @@ fi
 
 if [[ -r "$NVM_DIR/nvm.sh" ]]; then
 	source "$NVM_DIR/nvm.sh"
+	source "$NVM_DIR/bash_completion"
 fi
 
 # export NPM_CONFIG_PREFIX="$XDG_DATA_HOME/npm"
