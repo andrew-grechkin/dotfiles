@@ -17,4 +17,4 @@ if test -d "$GIT_DIR/hooks/commit-msg.d"; then
 	done
 fi
 
-exit 42
+exit 0

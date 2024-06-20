@@ -14,7 +14,8 @@ use Sub::Util      qw(set_subname);
 my $match = qr/main[.]git$/;
 my $name  = basename($GIT_URL);
 
-return unless $name =~ $match;
+$name =~ $match
+    or exit 0;
 
 my $message = do {local $/ = undef; open my $fh, '<', $ARGV[0]; <$fh>};
 
