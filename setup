@@ -95,13 +95,13 @@ if [[ "$USER" == "agrechkin" ]]; then
 	ln -srf .local/share/vim-plug                            ~/.local/share/
 	ln -srf .local/share/wiki                                ~/.local/share/
 
-	[[ -x submodules/private/setup.sh ]] && {
+	[[ -x submodules/private/setup ]] && {
 		echo 'Executing private/setup'
-		(exec submodules/private/setup.sh)
+		(exec submodules/private/setup)
 	}
-	[[ -x submodules/secret/setup.sh ]]  && {
+	[[ -x submodules/secret/setup ]]  && {
 		echo 'Executing secret/setup'
-		(exec submodules/secret/setup.sh)
+		(exec submodules/secret/setup)
 	}
 else
 	ln -srfn .config/vim                                     ~/.config/nvim

@@ -1,21 +1,20 @@
 #!/usr/bin/env perl
 
-use v5.36;
+use v5.40;
 use warnings qw(FATAL utf8);
 use Test2::V0;
 use Test2::Tools::Spec;
-use experimental qw(builtin declared_refs defer for_list refaliasing try);
-
-use DateTime::TimeZone qw();
+use experimental qw(class declared_refs defer refaliasing);
 
 use MyTime::Util qw(
     from_mysql_timestamp
     in_other_timezone
     overwrite_timezone
+    timezone
 );
 
-my $tz1 = DateTime::TimeZone->new('name' => 'UTC');
-my $tz2 = DateTime::TimeZone->new('name' => 'Asia/Tehran');
+my $tz1 = timezone('UTC');
+my $tz2 = timezone('Asia/Tehran');
 
 {                                                                              # experimental dynamic test
     my %tests = (
@@ -44,18 +43,18 @@ tests 'MyTime::Util::from_mysql_timestamp' => sub {
 
 tests 'MyTime::Util::in_other_timezone' => sub {
     is(in_other_timezone('2021-02-01T22:00:00+01:00', $tz1),  '2021-02-01T21:00:00Z',      "No DST @{[$tz1->name]}");
-    is(in_other_timezone('2021-05-01T22:00:00+02:00', $tz1,), '2021-05-01T20:00:00Z',      "   DST @{[$tz1->name]}");
+    is(in_other_timezone('2021-05-01 22:00:00+02:00', $tz1,), '2021-05-01T20:00:00Z',      "   DST @{[$tz1->name]}");
     is(in_other_timezone('2021-02-01T22:00:00+01:00', $tz2),  '2021-02-02T00:30:00+03:30', "No DST @{[$tz2->name]}");
-    is(in_other_timezone('2021-05-01T22:00:00+02:00', $tz2,), '2021-05-02T00:30:00+04:30', "   DST @{[$tz2->name]}");
+    is(in_other_timezone('2021-05-01 22:00:00+02:00', $tz2,), '2021-05-02T00:30:00+04:30', "   DST @{[$tz2->name]}");
 };
 
 tests 'MyTime::Util::overwrite_timezone' => sub {
     is(overwrite_timezone('2021-02-01T22:00:00+01:00', $tz1),  '2021-02-01T22:00:00Z',      "No DST @{[$tz1->name]}");
-    is(overwrite_timezone('2021-05-01T22:00:00+02:00', $tz1,), '2021-05-01T22:00:00Z',      "   DST @{[$tz1->name]}");
+    is(overwrite_timezone('2021-05-01 22:00:00+02:00', $tz1,), '2021-05-01T22:00:00Z',      "   DST @{[$tz1->name]}");
     is(overwrite_timezone('2021-02-01T22:00:00+01:00', $tz2),  '2021-02-01T22:00:00+03:30', "No DST @{[$tz2->name]}");
-    is(overwrite_timezone('2021-05-01T22:00:00+02:00', $tz2,), '2021-05-01T22:00:00+04:30', "   DST @{[$tz2->name]}");
+    is(overwrite_timezone('2021-05-01 22:00:00+02:00', $tz2,), '2021-05-01T22:00:00+04:30', "   DST @{[$tz2->name]}");
 };
 
 done_testing();
 
-__END__$
+__END__
