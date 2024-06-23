@@ -98,7 +98,6 @@ return {
                 row = 0,
                 col = 1,
             },
-            yadm = {enable = false},
 
             on_attach = function(bufnr)
                 local plugin = package.loaded.gitsigns
