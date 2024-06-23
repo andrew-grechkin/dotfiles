@@ -1,8 +1,12 @@
 package TestService::Action::Mojo;
 
-use v5.36;
+use v5.40;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
 use Mojo::Base   qw(TestService::Action);
-use experimental qw(builtin declared_refs defer for_list refaliasing try);
+use experimental qw(class declared_refs defer refaliasing);
 use namespace::autoclean;
 
 use Carp qw(croak);
@@ -104,7 +108,5 @@ sub decode_tx ($self, $tx) {
 
     return $data;
 }
-
-1;
 
 __END__

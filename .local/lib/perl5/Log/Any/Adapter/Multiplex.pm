@@ -2,10 +2,13 @@ package Log::Any::Adapter::Multiplex;
 
 # ABSTRACT: Adapter to use allow structured logging across other adapters
 
-use v5.36;
-use parent       qw(Log::Any::Adapter::Base);
+use v5.40;
+use autodie;
+use open ':locale';
+use utf8;
 use warnings     qw(FATAL utf8);
-use experimental qw(builtin declared_refs defer for_list refaliasing try);
+use parent       qw(Log::Any::Adapter::Base);
+use experimental qw(class declared_refs defer refaliasing);
 
 use Carp       qw();
 use List::Util qw();
@@ -65,8 +68,6 @@ sub structured ($self, $level, $category, @structured_log_args) {
         );
     }
 }
-
-1;
 
 __END__
 

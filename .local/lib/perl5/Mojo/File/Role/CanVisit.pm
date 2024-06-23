@@ -2,7 +2,13 @@ package Mojo::File::Role::CanVisit;
 
 # ABSTRACT: Package Mojo::File::Role::CanVisit
 
-use v5.36;
+use v5.40;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(class declared_refs defer refaliasing);
+
 use Mojo::Base qw(-role);
 
 use File::Find            qw();
@@ -29,7 +35,5 @@ sub visit ($self, $cb, $options = {}) {
 
     return \%stat;
 }
-
-1;
 
 __END__

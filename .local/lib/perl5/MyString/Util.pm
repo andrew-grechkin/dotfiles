@@ -1,11 +1,11 @@
 package MyString::Util;
 
-use v5.36;
+use v5.40;
 use autodie;
 use open ':locale';
 use utf8;
 use warnings     qw(FATAL utf8);
-use experimental qw(builtin declared_refs defer for_list refaliasing try);
+use experimental qw(class declared_refs defer refaliasing);
 
 use Sub::Util qw();
 use overload  qw();
@@ -101,7 +101,5 @@ sub stringify_array {
             : 'undef'
     } @_;
 }
-
-1;
 
 __END__

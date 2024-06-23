@@ -1,9 +1,11 @@
 package MyList::Util;
 
-use v5.36;
+use v5.40;
+use autodie;
+use open ':locale';
 use utf8;
 use warnings     qw(FATAL utf8);
-use experimental qw(builtin declared_refs defer for_list refaliasing try);
+use experimental qw(class declared_refs defer refaliasing);
 
 use List::Util qw(min sum0);
 use Storable   qw(dclone);
@@ -171,7 +173,7 @@ sub permutations ($array_ref) {
 
     do {
         push(@result, dclone($array_ref));
-    } while (sjt_next_permutation($array_ref, \@d)); ## no critic [ControlStructures::ProhibitPostfixControls]
+    } while (sjt_next_permutation($array_ref, \@d));
 
     return \@result;
 }
@@ -232,7 +234,5 @@ sub sorted_quantile ($q, $aref) {
     my $index = min(int(($size + 1) * $q), $size) - 1;
     return $index >= 0 ? $values[$index] : undef;
 }
-
-1;
 
 __END__

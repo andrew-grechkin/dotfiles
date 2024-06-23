@@ -1,12 +1,12 @@
 #!/usr/bin/env perl
 
-use v5.36;
+use v5.40;
 use warnings qw(FATAL utf8);
 
 use Test2::V0;
 use Test2::Tools::Spec;
 
-use experimental qw(builtin declared_refs defer for_list refaliasing try);
+use experimental qw(class declared_refs defer refaliasing);
 
 use MyHash::Util qw();
 

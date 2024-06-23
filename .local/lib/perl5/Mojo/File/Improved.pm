@@ -2,8 +2,12 @@ package Mojo::File::Improved;
 
 # ABSTRACT: Package Mojo::File::Improved
 
-use v5.36;
-use warnings qw(FATAL utf8);
+use v5.40;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(class declared_refs defer refaliasing);
 
 use Exporter qw(import);
 our @EXPORT_OK = qw(
@@ -27,7 +31,5 @@ sub path {
 sub tempdir {
     return path(File::Temp->newdir(@_));
 }
-
-1;
 
 __END__

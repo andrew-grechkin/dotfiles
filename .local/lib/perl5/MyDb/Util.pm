@@ -1,9 +1,11 @@
 package MyDb::Util;
 
-use v5.36;
+use v5.40;
+use autodie;
+use open ':locale';
 use utf8;
 use warnings     qw(FATAL utf8);
-use experimental qw(builtin declared_refs defer for_list refaliasing try);
+use experimental qw(class declared_refs defer refaliasing);
 
 use JSON::PP qw();
 
@@ -21,25 +23,25 @@ our @EXPORT_OK = qw(
     save_connections
 );
 
-sub load_db_config ( $out_path, $path, $dsn_extractor ) {
+sub load_db_config ($out_path, $path, $dsn_extractor) {
     my %result;
 
     return \%result unless -r $path;
 
-    my \%data = JSON()->decode( $path->slurp() )->{'database'};
-    foreach my $handles ( values %data ) {
-        foreach my $handle ( sort keys $handles->%* ) {
+    my \%data = JSON()->decode($path->slurp())->{'database'};
+    foreach my $handles (values %data) {
+        foreach my $handle (sort keys $handles->%*) {
             my \%desc = $handles->{$handle};
-            my ( undef, $dsn ) = $dsn_extractor->( $desc{'database'}, $handle );
+            my (undef, $dsn) = $dsn_extractor->($desc{'database'}, $handle);
             my \%dsn_props = $dsn->dsn_props;
             my $name       = "$desc{database}-$handle";
             my $scheme     = $dsn->dbi_driver;
             my %params     = (
                 'defaults-extra-file' => "$out_path/$name.$scheme.defaults",
-                'database'            => url_escape( $dsn_props{'database'} ),
+                'database'            => url_escape($dsn_props{'database'}),
             );
 
-            if ( $dsn_props{'mysql_socket'} ) {
+            if ($dsn_props{'mysql_socket'}) {
                 $params{'socket'} = $dsn_props{'mysql_socket'};
             } else {
                 my $host = $dsn_props{'bkng_resolved_host'} // $dsn_props{'host'};
@@ -51,9 +53,9 @@ sub load_db_config ( $out_path, $path, $dsn_extractor ) {
 
             $result{$name} = {
                 'name'     => $name,
-                'user'     => url_escape( $desc{'username'} ),
-                'password' => url_escape( $desc{'password'} ),
-                'url'      => { 'scheme' => $dsn->dbi_driver, 'params' => \%params },
+                'user'     => url_escape($desc{'username'}),
+                'password' => url_escape($desc{'password'}),
+                'url'      => {'scheme' => $dsn->dbi_driver, 'params' => \%params},
                 'defaults' => {
                     "${scheme}dump.defaults" => <<~"EO_MYSQLDUMP",
                         [client]
@@ -80,9 +82,9 @@ sub load_db_config ( $out_path, $path, $dsn_extractor ) {
                 },
             };
 
-            for my $defaults ( sort keys $result{$name}{'defaults'}->%* ) {
-                $out_path->child( sprintf( '%s.%s', $name, $defaults ) )
-                    ->spurt( $result{$name}{'defaults'}{$defaults} );
+            for my $defaults (sort keys $result{$name}{'defaults'}->%*) {
+                $out_path->child(sprintf('%s.%s', $name, $defaults))
+                    ->spurt($result{$name}{'defaults'}{$defaults});
             }
         }
     }
@@ -91,14 +93,14 @@ sub load_db_config ( $out_path, $path, $dsn_extractor ) {
 }
 
 sub load_connections ($path) {
-    my \@data = JSON()->decode( $path->slurp() );
+    my \@data = JSON()->decode($path->slurp());
 
     return \@data;
 }
 
-sub save_connections ( $path, $data_aref ) {
+sub save_connections ($path, $data_aref) {
     $path->dirname->make_path;
-    $path->spurt( JSON()->encode($data_aref) );
+    $path->spurt(JSON()->encode($data_aref));
 
     return;
 }

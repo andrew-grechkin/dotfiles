@@ -1,11 +1,12 @@
 package TestService::Action;
 
-use v5.36;
+use v5.40;
 use autodie;
 use open 'IO' => ':locale';
+use utf8;
 use warnings     qw(FATAL utf8);
 use Mojo::Base   qw(-base -signatures);
-use experimental qw(builtin declared_refs defer for_list refaliasing try);
+use experimental qw(class declared_refs defer refaliasing);
 
 use JSON::PP qw();
 use List::Util 1.60 qw(zip);
@@ -86,7 +87,5 @@ sub _get_writer ($self, $path) {
 sub _process_path ($self, $path, $test_name, $test) {
     return $path =~ s{\$\$name}{$test_name}xgr;
 }
-
-1;
 
 __END__

@@ -1,11 +1,11 @@
 package AnyArchive::Extract;
 
-use v5.36;
+use v5.40;
 use autodie;
 use open ':locale';
 use utf8;
 use warnings     qw(FATAL utf8);
-use experimental qw(builtin declared_refs defer for_list refaliasing try);
+use experimental qw(class declared_refs defer refaliasing);
 
 use Carp       qw(croak);
 use List::Util qw(first);
@@ -72,8 +72,6 @@ sub _command_tar (@options) {
 sub _command_7zip (@options) {
     return ['7z', 'x', '-y', sub ($, $, $, $extract_path) {return "-o$extract_path"}, '--', \&_get_filename];
 }
-
-1;
 
 __END__
 
