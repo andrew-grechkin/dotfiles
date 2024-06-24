@@ -372,7 +372,7 @@ filetype *.yaml,*.yml
 	\ {Sanitize yaml}
 	\ yaml-sanitize -i %c,
 	\ {Convert yaml -> json}
-	\ json2yaml %c > %c:r.json &,
+	\ yaml2json %c > %c:r.json &,
 
 filetype *.md5
 	\ {Check MD5 hash sum}
