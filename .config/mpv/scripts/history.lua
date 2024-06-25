@@ -60,6 +60,13 @@ local add_to_history = function(path)
     if mp.get_property_native('osc') == false then table.insert(opt, '--no-osc') end
     if mp.get_property_native('term-osd') == 'force' then table.insert(opt, '--term-osd=force') end
     if mp.get_property_native('audio-display') == false then table.insert(opt, '--no-audio-display') end
+    if mp.get_property_native('ytdl-raw-options') then
+        local params = {}
+        for k, v in pairs(mp.get_property_native('ytdl-raw-options')) do
+            table.insert(params, ([[%s="%s"]]):format(k, v))
+        end
+        table.insert(opt, ([[--ytdl-raw-options='%s']]):format(table.concat(params, ',')))
+    end
 
     local fp = io.open(MPV_HIST_LOG, 'a+');
     if fp then

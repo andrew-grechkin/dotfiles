@@ -4,7 +4,8 @@ set -Eeuo pipefail
 
 FILE="$XDG_STATE_HOME/mpv/play.history"
 
-perl - "$FILE" <<'END_SCRIPT' | fzf-execute --bind='ctrl-y:execute-silent(echo -n {2} | perl -nE "print m/\"(.+)\"$/" | clipcopy)'
+# perl - "$FILE" <<'END_SCRIPT' | fzf-execute --bind='ctrl-y:execute-silent(echo -n {3} | perl -nE "print m/\"(.+)\"$/" | clipcopy)'
+perl - "$FILE" <<'END_SCRIPT' | fzf-execute --bind='ctrl-u:execute-silent(echo -n {3} | clipcopy)'
 	use v5.34;
 
 	my $fn = $ARGV[0];
