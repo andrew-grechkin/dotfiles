@@ -189,11 +189,6 @@ class ParserTSV {
         TSV()->print(\*STDOUT, [TSV()->column_names]);
 
         TSV()->print_hr(\*STDOUT, $_) foreach $data_aref->[0]->@*;
-
-#         TSV()->column_names(qw(A B));
-#         TSV()->print(\*STDOUT, [TSV()->column_names]);
-#         TSV()->print_hr(\*STDOUT, {'A' => 'a', 'B' => '1'});
-#         TSV()->print_hr(\*STDOUT, {'A' => 'b', 'B' => '2'});
         return;
     }
 }
