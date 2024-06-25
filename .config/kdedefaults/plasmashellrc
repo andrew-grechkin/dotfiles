@@ -1,7 +1,7 @@
 [Action_0]
 Automatic=true
 Description=Youtube links handeling
-Number of commands=5
+Number of commands=6
 Regexp=([^"\\s]+youtube.*watch\\?[^"\\s]+)|([^"\\s]+youtu.be[^"\\s]+)
 
 [Action_0/Command_0]
@@ -33,6 +33,13 @@ Icon=video-webm
 Output=0
 
 [Action_0/Command_4]
+Commandline[$e]=mpv --quiet --ytdl-raw-options='format="ba/b"' -- '%0'
+Description=Play youtube audio
+Enabled=true
+Icon=audio-flac
+Output=0
+
+[Action_0/Command_5]
 Commandline[$e]=tsp ~/.local/script/audio-download -- -P '~/music' '%0'
 Description=Download youtube audio
 Enabled=true
