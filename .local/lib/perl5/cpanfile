@@ -46,6 +46,7 @@ feature 'mojo-openapi' => sub {
 
 feature 'sqlite' => sub {
     requires "DBD::SQLite";
+    requires "Mojo::SQLite";
 };
 
 feature 'misc' => sub {

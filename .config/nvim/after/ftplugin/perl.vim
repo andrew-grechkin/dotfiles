@@ -4,7 +4,11 @@ setlocal expandtab smarttab shiftwidth=4 softtabstop=4 tabstop=4
 setlocal foldmethod=syntax
 
 setlocal iskeyword+=$,@,%
-setlocal path+=lib/**,slib/**,/usr/lib/perl5/**,/usr/share/perl5/**
+setlocal path=.,,./lib/**,./slib/**,~/.local/lib/perl5/**
+if !empty($PERL_LOCAL_LIB_ROOT)
+	setlocal path+=$PERL_LOCAL_LIB_ROOT/lib/perl5/**
+end
+setlocal path+=/usr/lib/perl5/**,/usr/share/perl5/**
 setlocal suffixesadd=.pm
 setlocal wildignore+=*\\webservice\\*
 

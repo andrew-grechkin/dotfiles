@@ -7,3 +7,7 @@ IS_KVM = not not string.find(HOSTNAME, 'king.com')
 PRIVATE_DOMAIN = 'boo' .. 'king'
 -- SUPERUSER = string.gsub(vim.fn.system('sh -c \'echo $UID\''), '^%s*(.-)%s*$', '%1') == '1027'
 -- VIM_CONFIG_FILE = resolve(expand($MYVIMRC))
+
+-- because runtime/ftplugin/perl.vim has a crap perlpath initialization set it upfront to avoid initialization code from
+-- running
+vim.g.perlpath = ''
