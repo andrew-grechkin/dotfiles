@@ -29,10 +29,10 @@ git-in-repo && {
 	if [[ -n "$(git rev-parse --verify "$REF^2" 2>/dev/null)" ]]; then
 		# is a merge commit
 
-		git --no-pager show "${SHOW_OPTIONS[@]}" --pretty=fuller "$REF" "$@"
-		echo
-		echo 'Commits:'
+		echo 'Merged commits:'
 		git --no-pager log --color=always --oneline "$REF"^1.."$REF"^2
+		echo
+		git --no-pager show "${SHOW_OPTIONS[@]}" --pretty=fuller --dd --minimal --patch "$REF" "$@"
 
 		echo
 		SHOW_OPTIONS+=(--first-parent)
@@ -48,12 +48,20 @@ git-in-repo && {
 			elif git merge-base --is-ancestor "$REF" "$MAIN_UPSTREAM_BRANCH"; then
 				SPAN="$REF"
 			else
-				SPAN="$MAIN_UPSTREAM_BRANCH..$REF"
+				# SPAN="$MAIN_UPSTREAM_BRANCH..$REF"
+				COMMITS="$(git --no-pager log --color=always --oneline "$MAIN_UPSTREAM_BRANCH..$REF")"
+				if (( $(echo "$COMMITS" | wc -l) > 1 )); then
+					echo "Combined diff for commits:"
+					echo "$COMMITS"
+					git --no-pager diff --pretty=fuller --merge-base "$MAIN_UPSTREAM_BRANCH" "$REF" "$@"
+					echo
+				fi
+				SPAN="$REF"
 			fi
 		else
 			SPAN="$REF"
 		fi
-	fi
 
-	git --no-pager show --patch "${SHOW_OPTIONS[@]}" "$SPAN" "$@"
+		git --no-pager show --patch --pretty=fuller "${SHOW_OPTIONS[@]}" "$SPAN" "$@"
+	fi
 } 2>/dev/null | "${GIT_PAGER[@]}"
