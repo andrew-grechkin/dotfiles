@@ -6,6 +6,13 @@ RUN_QUOTE = 1
 
 local MPV_HIST_DIR = os.getenv('XDG_STATE_HOME') .. '/mpv';
 local MPV_HIST_LOG = MPV_HIST_DIR .. '/play.history';
+local HIST_FILE_BY_TYPE = {
+    ['directory'] = MPV_HIST_DIR .. '/play.directory.history',
+    ['file'] = MPV_HIST_DIR .. '/play.file.history',
+    ['undef'] = (MPV_HIST_DIR .. '/play.undef.history'),
+    ['youtube'] = (MPV_HIST_DIR .. '/play.youtube.history'),
+    ['youtube-music'] = (MPV_HIST_DIR .. '/play.youtube-music.history'),
+}
 os.execute('mkdir -p ' .. MPV_HIST_DIR)
 
 local add_to_history = function(path)
@@ -16,6 +23,7 @@ local add_to_history = function(path)
     log.debug(('add_to_history: %s %s'):format(utils.to_string(title), path))
 
     local stat = utils.file_info(path)
+    local type = 'undef'
 
     if stat and (stat.is_dir or stat.is_file) then
 
@@ -31,10 +39,11 @@ local add_to_history = function(path)
         -- log.debug(('title: "%s"'):format(title))
 
         if stat.is_dir then
-            title = 'directory: ' .. title
+            type = 'directory'
         else
-            title = 'file: ' .. title
+            type = 'file'
         end
+
     else
         -- title = title:match('^%s*(.-)%s*$')
         -- title = title:match('^%(*(.-)%)*$')
@@ -51,24 +60,30 @@ local add_to_history = function(path)
 
         if title == nil or title == '' then title = path end
 
-        title = 'youtube: ' .. title
+        type = 'youtube'
     end
-
-    log.info(('"%s" %s'):format(title, path))
 
     local opt = {'--quiet'}
     if mp.get_property_native('osc') == false then table.insert(opt, '--no-osc') end
     if mp.get_property_native('term-osd') == 'force' then table.insert(opt, '--term-osd=force') end
     if mp.get_property_native('audio-display') == false then table.insert(opt, '--no-audio-display') end
-    if mp.get_property_native('ytdl-raw-options') then
+    if mp.get_property_native('vid') == false then table.insert(opt, '--vid=no') end
+
+    local ytdl = mp.get_property_native('ytdl-raw-options')
+    if ytdl then
         local params = {}
-        for k, v in pairs(mp.get_property_native('ytdl-raw-options')) do
+        for k, v in pairs(ytdl) do
+            if type == 'youtube' and k == 'format' and v == 'ba/b' then type = 'youtube-music' end
             table.insert(params, ([[%s="%s"]]):format(k, v))
         end
-        table.insert(opt, ([[--ytdl-raw-options='%s']]):format(table.concat(params, ',')))
+        if #params > 0 then table.insert(opt, ([[--ytdl-raw-options='%s']]):format(table.concat(params, ','))) end
     end
 
-    local fp = io.open(MPV_HIST_LOG, 'a+');
+    title = ('%s: %s'):format(type, title)
+
+    log.info(('"%s" %s'):format(title, path))
+
+    local fp = io.open(HIST_FILE_BY_TYPE[type], 'a+');
     if fp then
         fp:write(('[%s]\t%s\tmpv %s --\t"%s"\n'):format(os.date('%Y-%m-%dT%X'), title, table.concat(opt, ' '), path));
         fp:close();

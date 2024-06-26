@@ -2,29 +2,45 @@
 
 set -Eeuo pipefail
 
-FILE="$XDG_STATE_HOME/mpv/play.history"
+DIR="$XDG_STATE_HOME/mpv"
+# FILE="$XDG_STATE_HOME/mpv/play.history"
 
 # perl - "$FILE" <<'END_SCRIPT' | fzf-execute --bind='ctrl-y:execute-silent(echo -n {3} | perl -nE "print m/\"(.+)\"$/" | clipcopy)'
-perl - "$FILE" <<'END_SCRIPT' | fzf-execute --bind='ctrl-u:execute-silent(echo -n {3} | clipcopy)'
+perl - "$DIR"/play*history <<'END_SCRIPT' | fzf-execute --bind='ctrl-u:execute-silent(echo -n {3} | clipcopy)'
 	use v5.34;
 
-	my $fn = $ARGV[0];
+	use List::Util qw(shuffle);
+	my %merge;
+	foreach my $file (shuffle @ARGV) {
+		open(my $fhr, '<', $file)
+			or die "Unable to open file: $file\n";
+		chomp(my @lines = <$fhr>);
+		close($fhr);
 
-	chomp(my @lines = <<>>);
+		my %d;
+		foreach my $line (@lines) {
+			my ($time, $title, $cmd, $path) = $line =~ m/^(\[.+?\])\t(.+?)\t(.+)\t(.+)$/;
 
-	my %d;
+			my $key = $title . $path;
+			if (exists $merge{$key}) {
+				$d{$key} = [sprintf("%s	%s	%s", $title, $cmd, $path), $time, $line] if $time gt $merge{$key}->[1];
+			} else {
+				$d{$key} = [sprintf("%s	%s	%s", $title, $cmd, $path), $time, $line];
+			}
+		}
 
-	foreach my $line (@lines) {
-		my ($time, $title, $cmd, $path) = $line =~ m/^(\[.+?\])\t(.+?)\t(.+)\t(.+)$/;
+		my @result = sort {$a->[1] cmp $b->[1]} values %d;
 
-		$d{$path} = [sprintf("%s	%s	%s", $title, $cmd, $path), $time, $line];
+		open(my $fhw, '>', $file)
+			or die "Unable to open file: $file\n";
+		say {$fhw} ($_->[2]) foreach @result;
+		close($fhw);
+
+		@merge{keys %d} = values %d;
 	}
 
 	END {
-		my @result = sort {$a->[1] cmp $b->[1]} values %d;
+		my @result = sort {$a->[1] cmp $b->[1]} values %merge;
 		say {*STDOUT} ($_->[0]) foreach reverse @result;
-		open(my $fh, '>', $fn)
-			or die "Unable to open file: $fn\n";
-		say {$fh} ($_->[2]) foreach @result;
 	}
 END_SCRIPT
