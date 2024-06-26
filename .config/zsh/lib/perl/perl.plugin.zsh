@@ -8,7 +8,7 @@ unset    PERLBREW_MANPATH
 # export   PERLBREW_ROOT="${PERLBREW_ROOT:-$XDG_DATA_HOME/perlbrew@$HOSTNAME}"
 export   PERLBREW_ROOT="$XDG_DATA_HOME/perlbrew@${HOSTNAME:-$(hostname)}"
 export   PERLBREW_HOME="$PERLBREW_ROOT"
-export PERL_CPANM_HOME="$XDG_RUNTIME_DIR/cpanm"
+export PERL_CPANM_HOME="$XDG_CACHE_HOME/cpanm"
 
 # => aliases ------------------------------------------------------------------------------------------------------ {{{1
 
