@@ -190,6 +190,8 @@ color-severity-low     = bold cyan
 # 5 Variables::ProhibitConditionalDeclarations [bugs core]
 # 5 Variables::RequireLexicalLoopIterators [bugs certrec core pbp]
 
+[-InputOutput::ProhibitInteractiveTest]
+
 # Added: Readonly, base, File::Slurp, common::sense, Class::Load, Any::Moose, Error, Getopt::Std, HTML::Template,
 #        IO::Socket::INET6, JSON, JSON::Any, List::MoreUtils, Mouse, Net::IRC, XML::Simple, Sub::Infix
 [Modules::ProhibitEvilModules]
