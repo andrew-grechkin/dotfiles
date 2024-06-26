@@ -44,6 +44,10 @@ feature 'mojo-openapi' => sub {
     requires "Mojolicious::Plugin::SwaggerUI";
 };
 
+feature 'sqlite' => sub {
+    requires "DBD::SQLite";
+};
+
 feature 'misc' => sub {
     requires "CHI";
     requires "DateTime";
@@ -65,6 +69,7 @@ feature 'image' => sub {
 };
 
 feature 'repl' => sub {
+    requires "DBI::Shell";
     requires "Devel::IPerl";
     requires "Reply";
     requires "Term::ReadKey";
