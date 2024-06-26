@@ -17,7 +17,7 @@ my @supported = (
 
 sub execute ($archive_path, $items_aref, $root = undef) {
     my $format = first {$archive_path =~ $_->{'suffix'}} @supported
-        or croak "Unsupported archive format: $archive_path";
+        or croak "Unsupported archive format for: $archive_path";
 
     my @items
         = $root

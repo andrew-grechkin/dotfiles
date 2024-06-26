@@ -23,13 +23,11 @@ requires "YAML::XS";
 on 'develop' => sub {
     requires "App::perlimports";
     requires "Code::TidyAll";
-    requires "Data::Dump";
     requires "Parallel::ForkManager"; # for Code::TidyAll
     requires "Perl::Critic";
     requires "Perl::Critic::Pulp";
     requires "Sub::StrictDecl";
     requires "Test2::Harness";
-    requires "Test2::Suite";
 };
 
 feature 'mojo-extras' => sub {

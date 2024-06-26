@@ -28,7 +28,7 @@ sub main() {
     my $error_code = 0;
     foreach my $archive (map {path($_)} @ARGV) {
         $archive->exists
-            or die "Archive $archive doesn't exist\n";
+            or die "Archive doesn't exist: $archive\n";
 
         try {
             my $basename    = AnyArchive::Extract::basename($archive);
