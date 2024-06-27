@@ -1,46 +1,116 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env perl
 
-set -Eeuo pipefail
+use v5.38;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin class declared_refs defer for_list refaliasing try);
 
-DIR="$XDG_STATE_HOME/mpv"
-# FILE="$XDG_STATE_HOME/mpv/play.history"
+use IPC::Open2 qw(open2);
 
-# perl - "$FILE" <<'END_SCRIPT' | fzf-execute --bind='ctrl-y:execute-silent(echo -n {3} | perl -nE "print m/\"(.+)\"$/" | clipcopy)'
-perl - "$DIR"/play*history <<'END_SCRIPT' | fzf-execute --bind='ctrl-u:execute-silent(echo -n {3} | clipcopy)'
-	use v5.34;
+use constant {
+    DIR => "$ENV{XDG_STATE_HOME}/mpv",
+    TSV => "$ENV{XDG_STATE_HOME}/mpv/play.history.tsv",
+};
 
-	use List::Util qw(shuffle);
-	my %merge;
-	foreach my $file (shuffle @ARGV) {
-		open(my $fhr, '<', $file)
-			or die "Unable to open file: $file\n";
-		chomp(my @lines = <$fhr>);
-		close($fhr);
+sub main {
+    my %merge;
+    foreach my $path (glob(DIR() . '/*.history'), TSV()) {
+        -r $path or next;
 
-		my %d;
-		foreach my $line (@lines) {
-			my ($time, $title, $cmd, $path) = $line =~ m/^(\[.+?\])\t(.+?)\t(.+)\t(.+)$/;
+        my \%data = parse_file($path);
+        @merge{keys %data} = values %data;
+    }
 
-			my $key = $title . $path;
-			if (exists $merge{$key}) {
-				$d{$key} = [sprintf("%s	%s	%s", $title, $cmd, $path), $time, $line] if $time gt $merge{$key}->[1];
-			} else {
-				$d{$key} = [sprintf("%s	%s	%s", $title, $cmd, $path), $time, $line];
-			}
-		}
+    my @result = sort {$a->[0] cmp $b->[0]} values %merge;
 
-		my @result = sort {$a->[1] cmp $b->[1]} values %d;
+    open(my $fhw, '>', TSV())
+        or die sprintf("unable to open file: %s\n", TSV());
+    say {$fhw} "localtime\ttype\ttitle\tcommand\tpath";
+    say {$fhw} ($_->[2]) foreach @result;
+    close($fhw);
 
-		open(my $fhw, '>', $file)
-			or die "Unable to open file: $file\n";
-		say {$fhw} ($_->[2]) foreach @result;
-		close($fhw);
+#     say {*STDOUT} ($_->[1]) foreach @result;
+    my @cmd = ('fzf-execute', '--bind=ctrl-u:execute-silent(echo -n {3} | clipcopy)');
+    my $pid = open2('>&STDOUT', my $chld_in, @cmd);
+    binmode($chld_in, ':encoding(UTF-8)');
 
-		@merge{keys %d} = values %d;
-	}
+    if (not defined $pid) {
+        say {*STDERR} 'failed to execute fzf';
+        return 1;
+    }
 
-	END {
-		my @result = sort {$a->[1] cmp $b->[1]} values %merge;
-		say {*STDOUT} ($_->[0]) foreach reverse @result;
-	}
-END_SCRIPT
+    say {$chld_in} ($_->[1]) foreach reverse @result;
+    close $chld_in;
+
+    waitpid($pid, 0)
+        or die "unable to wait for child to finish: $!\n";
+
+    return 0;
+}
+
+sub parse_file($path) {
+    open(my $fhr, '<', $path)
+        or die "unable to open file: $path\n";
+
+    my $result;
+    if ($path =~ m/[.]tsv$/) {
+        $result = parse_tsv($fhr);
+    } else {
+        $result = parse_deprecated($fhr);
+    }
+    close($fhr);
+
+    return $result;
+}
+
+sub parse_tsv($fh) {
+    my %result;
+
+    my $header = <$fh>;
+    while (my $line = <$fh>) {
+        chomp($line);
+        my ($localtime, $type, $title, $cmd, $path) = split m/\t/, $line;
+        unless ($localtime && $cmd && $path) {
+            die "unable to parse line: $line";
+        }
+        $path =~ s/['"](.+?)['"]/'$1'/g;
+
+        my $key = $type . $path;
+        $result{$key} = [
+            $localtime,
+            sprintf("%s: %s\t%s %s", $type, $title, $cmd, $path),
+            sprintf("%s\t%s\t%s\t%s\t%s", $localtime, $type, $title, $cmd, $path),
+        ];
+    }
+
+    return \%result;
+}
+
+sub parse_deprecated($fh) {
+    my %result;
+
+    while (my $line = <$fh>) {
+        chomp($line);
+        my ($localtime, $type, $title, $cmd, $path) = $line =~ m/^\[(.+?)\]\t(.+?): (.+?)\t(.+)\t(.+)$/;
+        unless ($localtime && $cmd && $path) {
+            die "unable to parse line: $line";
+        }
+
+        $path =~ s/['"](.+?)['"]/'$1'/g;
+
+        my $key = $type . $path;
+        $result{$key} = [
+            $localtime,
+            sprintf("%s: %s\t%s %s", $type, $title, $cmd, $path),
+            sprintf("%s\t%s\t%s\t%s\t%s", $localtime, $type, $title, $cmd, $path),
+        ];
+    }
+
+    return \%result;
+}
+
+exit main();
+
+__END__

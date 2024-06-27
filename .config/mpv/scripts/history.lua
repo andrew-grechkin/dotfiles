@@ -5,14 +5,7 @@ local utils = require 'mp.utils'
 RUN_QUOTE = 1
 
 local MPV_HIST_DIR = os.getenv('XDG_STATE_HOME') .. '/mpv';
-local MPV_HIST_LOG = MPV_HIST_DIR .. '/play.history';
-local HIST_FILE_BY_TYPE = {
-    ['directory'] = MPV_HIST_DIR .. '/play.directory.history',
-    ['file'] = MPV_HIST_DIR .. '/play.file.history',
-    ['undef'] = (MPV_HIST_DIR .. '/play.undef.history'),
-    ['youtube'] = (MPV_HIST_DIR .. '/play.youtube.history'),
-    ['youtube-music'] = (MPV_HIST_DIR .. '/play.youtube-music.history'),
-}
+local MPV_HIST_FILE = MPV_HIST_DIR .. '/play.history.tsv';
 os.execute('mkdir -p ' .. MPV_HIST_DIR)
 
 local add_to_history = function(path)
@@ -79,13 +72,21 @@ local add_to_history = function(path)
         if #params > 0 then table.insert(opt, ([[--ytdl-raw-options='%s']]):format(table.concat(params, ','))) end
     end
 
-    title = ('%s: %s'):format(type, title)
+    log.info(('%s: %s -> %s'):format(type, title, path))
 
-    log.info(('"%s" %s'):format(title, path))
+    local hist_stat = utils.file_info(MPV_HIST_FILE)
+    if not hist_stat then
+        local fp = io.open(MPV_HIST_FILE, 'a+')
+        if fp then
+            fp:write('localtime\ttype\ttitle\tcommand\tpath\n')
+            fp:close();
+        end
+    end
 
-    local fp = io.open(HIST_FILE_BY_TYPE[type], 'a+');
+    local fp = io.open(MPV_HIST_FILE, 'a+');
     if fp then
-        fp:write(('[%s]\t%s\tmpv %s --\t"%s"\n'):format(os.date('%Y-%m-%dT%X'), title, table.concat(opt, ' '), path));
+        fp:write(('%s\t%s\t%s\tmpv %s --\t\'%s\'\n'):format(os.date('%Y-%m-%dT%X'), type, title, table.concat(opt, ' '),
+            path));
         fp:close();
     end
 end
