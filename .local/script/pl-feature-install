@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+OPTS=("$@")
+OPTS=("${OPTS[@]/#/--with-feature=}" )
+
+LOCATION="$HOME/.local/lib/perl5"
+nice cpanm -nq --installdeps "$LOCATION" --with-develop "${OPTS[@]}"

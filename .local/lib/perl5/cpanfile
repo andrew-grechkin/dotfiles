@@ -10,8 +10,9 @@ requires "App::cpanminus";
 requires "Carp::Always";
 requires "Data::Dump";
 requires "Data::Printer";
+requires "DateTime::TimeZone";
 requires "File::Map";
-requires "LWP::Protocol::https";
+# requires "LWP::Protocol::https";
 requires "Log::Any";
 requires "Path::Tiny";
 requires "Regexp::Debugger";
@@ -20,12 +21,19 @@ requires "Syntax::Operator::Equ";
 requires "Time::Moment";
 requires "YAML::XS";
 
+requires "Neovim::Ext";
+requires "Text::CSV";
+
 on 'develop' => sub {
-    requires "App::perlimports";
-    requires "Code::TidyAll";
-    requires "Parallel::ForkManager"; # for Code::TidyAll
+    requires "MetaCPAN::Client";
     requires "Perl::Critic";
     requires "Perl::Critic::Pulp";
+};
+
+feature 'develop' => sub {
+#    requires "App::perlimports"; dep-hell
+    requires "Code::TidyAll";
+    requires "Parallel::ForkManager"; # for Code::TidyAll
     requires "Sub::StrictDecl";
     requires "Test2::Harness";
 };
@@ -52,11 +60,8 @@ feature 'sqlite' => sub {
 feature 'misc' => sub {
     requires "CHI";
     requires "DateTime";
-    requires "DateTime::TimeZone";
-    requires "Neovim::Ext";
     requires "Sereal";
     requires "Sort::Naturally";
-    requires "Text::CSV";
 };
 
 feature 'experiment' => sub {
@@ -70,8 +75,8 @@ feature 'image' => sub {
 };
 
 feature 'repl' => sub {
-    requires "DBI::Shell";
-    requires "Devel::IPerl";
+#    requires "DBI::Shell"; dep-hell
+#    requires "Devel::IPerl"; dep-hell
     requires "Reply";
     requires "Term::ReadKey";
     requires "Term::ReadLine::Gnu";

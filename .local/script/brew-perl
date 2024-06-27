@@ -11,7 +11,7 @@ set -Eo pipefail
 LOCATION="$HOME/.local/lib/perl5"
 
 # shellcheck disable=SC1091
-source "$LOCATION/dev.rc" nice cpanm -nq --installdeps "$LOCATION" --with-all-features --with-develop
+source "$LOCATION/dev.rc" nice cpanm -nq --installdeps "$LOCATION" --with-develop --with-feature=mojo-extras
 
 # => switch to the library  --------------------------------------------------------------------------------------- {{{1
 

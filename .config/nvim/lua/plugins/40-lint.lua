@@ -7,7 +7,8 @@ return {
             plugin.linters_by_ft = {
                 gitcommit = {'commitlint'},
                 json = {'jsonlint'},
-                perl = {'perlimports', 'perlcritic'},
+                -- perl = {'perlimports', 'perlcritic'},
+                perl = {'perlcritic'},
                 puppet = {'puppet-lint'},
                 sql = {'sqlfluff'},
                 yaml = {'yamllint'},

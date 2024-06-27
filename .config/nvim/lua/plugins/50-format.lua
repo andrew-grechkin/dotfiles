@@ -27,7 +27,7 @@ return {
             formatters_by_ft_manual = {
                 json = {'jq-sort'},
                 jsonc = {'jq-sort-one-line'},
-                perl = {'perlimports'},
+                -- perl = {'perlimports'},
                 python = {'isort'},
                 yaml = {'yaml-sanitize'},
             },
