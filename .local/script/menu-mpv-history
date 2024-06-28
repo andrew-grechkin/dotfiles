@@ -33,8 +33,9 @@ sub main {
 
     if (-t STDOUT) {
         my @cmd = (
-            'fzf-execute', "--bind=ctrl-r:reload($0)",
-            '--bind=ctrl-u:execute-silent(echo -n {3} | clipcopy)',
+            'fzf-execute',
+            "--bind=ctrl-r:reload($0)",
+            q{--bind=ctrl-u:execute-silent(echo -n {3} | grep -Po "\".+?\"" | clipcopy)},
             sprintf('--bind=alt-r:execute-silent(grep -vF {3} %s | sponge %s)+reload(%s)', TSV(), TSV(), $0),
         );
 
@@ -81,7 +82,7 @@ sub parse_tsv($fh) {
         unless ($localtime && $cmd && $path) {
             die "unable to parse line: $line";
         }
-        $path =~ s/['"](.+?)['"]/'$1'/g;
+        $path =~ s/['"](.+?)['"]/"$1"/g;
 
         my $key = $type . $path;
         $result{$key} = [
