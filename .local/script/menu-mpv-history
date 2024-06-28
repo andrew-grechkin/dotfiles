@@ -16,7 +16,7 @@ use constant {
 
 sub main {
     my %merge;
-    foreach my $path (glob(DIR() . '/*.history'), TSV()) {
+    foreach my $path (TSV()) {
         -r $path or next;
 
         my \%data = parse_file($path);
@@ -31,21 +31,29 @@ sub main {
     say {$fhw} ($_->[2]) foreach @result;
     close($fhw);
 
-#     say {*STDOUT} ($_->[1]) foreach @result;
-    my @cmd = ('fzf-execute', '--bind=ctrl-u:execute-silent(echo -n {3} | clipcopy)');
-    my $pid = open2('>&STDOUT', my $chld_in, @cmd);
-    binmode($chld_in, ':encoding(UTF-8)');
+    if (-t STDOUT) {
+        my @cmd = (
+            'fzf-execute', "--bind=ctrl-r:reload($0)",
+            '--bind=ctrl-u:execute-silent(echo -n {3} | clipcopy)',
+            sprintf('--bind=alt-r:execute-silent(grep -vF {3} %s | sponge %s)+reload(%s)', TSV(), TSV(), $0),
+        );
 
-    if (not defined $pid) {
-        say {*STDERR} 'failed to execute fzf';
-        return 1;
+        my $pid = open2('>&STDOUT', my $chld_in, @cmd);
+        binmode($chld_in, ':encoding(UTF-8)');
+
+        if (not defined $pid) {
+            say {*STDERR} 'failed to execute fzf';
+            return 1;
+        }
+
+        say {$chld_in} ($_->[1]) foreach reverse @result;
+        close $chld_in;
+
+        waitpid($pid, 0)
+            or die "unable to wait for child to finish: $!\n";
+    } else {
+        say {*STDOUT} ($_->[1]) foreach reverse @result;
     }
-
-    say {$chld_in} ($_->[1]) foreach reverse @result;
-    close $chld_in;
-
-    waitpid($pid, 0)
-        or die "unable to wait for child to finish: $!\n";
 
     return 0;
 }
@@ -57,8 +65,6 @@ sub parse_file($path) {
     my $result;
     if ($path =~ m/[.]tsv$/) {
         $result = parse_tsv($fhr);
-    } else {
-        $result = parse_deprecated($fhr);
     }
     close($fhr);
 
@@ -80,30 +86,7 @@ sub parse_tsv($fh) {
         my $key = $type . $path;
         $result{$key} = [
             $localtime,
-            sprintf("%s: %s\t%s %s", $type, $title, $cmd, $path),
-            sprintf("%s\t%s\t%s\t%s\t%s", $localtime, $type, $title, $cmd, $path),
-        ];
-    }
-
-    return \%result;
-}
-
-sub parse_deprecated($fh) {
-    my %result;
-
-    while (my $line = <$fh>) {
-        chomp($line);
-        my ($localtime, $type, $title, $cmd, $path) = $line =~ m/^\[(.+?)\]\t(.+?): (.+?)\t(.+)\t(.+)$/;
-        unless ($localtime && $cmd && $path) {
-            die "unable to parse line: $line";
-        }
-
-        $path =~ s/['"](.+?)['"]/'$1'/g;
-
-        my $key = $type . $path;
-        $result{$key} = [
-            $localtime,
-            sprintf("%s: %s\t%s %s", $type, $title, $cmd, $path),
+            sprintf("%s: %s\t%s\t%s",     $type, $title, $cmd, $path),
             sprintf("%s\t%s\t%s\t%s\t%s", $localtime, $type, $title, $cmd, $path),
         ];
     }
