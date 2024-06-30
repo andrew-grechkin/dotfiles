@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+FILE=$(realpath "${*: -1}")
+ROOT=$(git root)
+FILE=$(realpath -s --relative-to="$ROOT" "$FILE")
+
+COMMAND_EXTRACT_COMMIT="echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | tr -d '\n'"
+
+HEADER=$(
+	cat <<- EOF_HEADER
+	History of a file: '${FILE}'
+	Press A-p to preview, C-m/enter to show file
+	EOF_HEADER
+)
+
+if [[ -t 1 ]]; then
+	CMD=(
+		fzf
+		--ansi
+		--no-multi
+		--no-sort
+		--reverse
+		--scheme=history
+		--scroll-off=8
+		--track
+		--bind="ctrl-y:execute-silent(${COMMAND_EXTRACT_COMMIT} | clipcopy)"
+		--header-first
+		--header="$HEADER"
+	)
+
+	CMD+=(
+		--bind="alt-b:execute-silent(git browse \"\$(""$COMMAND_EXTRACT_COMMIT)\")"
+		--bind="ctrl-m:execute(git show \"\$(${COMMAND_EXTRACT_COMMIT}):$FILE\" | bat --color=always --style=numbers)"
+		--preview="git show \"\$(${COMMAND_EXTRACT_COMMIT}):$FILE\" | bat --color=always --style=numbers --paging=never"
+		--bind="ctrl-r:reload($0 $FILE)"
+	)
+
+	"$0" "$@" | "${CMD[@]}"
+else
+	git-log-branch "$@"
+fi
