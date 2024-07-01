@@ -2,15 +2,20 @@
 
 set -Eeuo pipefail
 
-FILE=$(realpath "${*: -1}")
+PTH=$(realpath "${*: -1}")
 ROOT=$(git root)
-FILE=$(realpath -s --relative-to="$ROOT" "$FILE")
+PTH_REL_ROOT=$(realpath -s --relative-to="$ROOT" "$PTH")
+
+ARGV=("$@")
+ARGV=("${ARGV[@]:0:${#ARGV[@]}-1}" "$PTH_REL_ROOT")
+
+cd "$ROOT"
 
 COMMAND_EXTRACT_COMMIT="echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | tr -d '\n'"
 
 HEADER=$(
 	cat <<- EOF_HEADER
-	History of a file: '${FILE}'
+	History of a file: '${PTH_REL_ROOT}'
 	Press A-p to preview, C-m/enter to show file
 	EOF_HEADER
 )
@@ -31,13 +36,14 @@ if [[ -t 1 ]]; then
 	)
 
 	CMD+=(
-		--bind="alt-b:execute-silent(git browse \"\$(""$COMMAND_EXTRACT_COMMIT)\")"
-		--bind="ctrl-m:execute(git show \"\$(${COMMAND_EXTRACT_COMMIT}):$FILE\" | bat --color=always --style=numbers)"
-		--preview="git show \"\$(${COMMAND_EXTRACT_COMMIT}):$FILE\" | bat --color=always --style=numbers --paging=never"
-		--bind="ctrl-r:reload($0 $FILE)"
+		--bind="alt-b:execute-silent(git browse \"\$($COMMAND_EXTRACT_COMMIT)\")"
+		--bind="alt-d:execute(git diff \"\$($COMMAND_EXTRACT_COMMIT)\" HEAD -- \"$PTH_REL_ROOT\" | delta | less)"
+		--bind="ctrl-m:execute(git show \"\$(${COMMAND_EXTRACT_COMMIT}):$PTH_REL_ROOT\" | bat --color=always --style=numbers)"
+		--preview="git show \"\$(${COMMAND_EXTRACT_COMMIT}):$PTH_REL_ROOT\" | bat --color=always --style=numbers --paging=never"
+		# --bind="ctrl-r:reload($0 $FILE)"
 	)
 
-	"$0" "$@" | "${CMD[@]}"
+	"$0" "${ARGV[@]}" | "${CMD[@]}"
 else
-	git-log-branch "$@"
+	git-log-branch "${ARGV[@]}"
 fi

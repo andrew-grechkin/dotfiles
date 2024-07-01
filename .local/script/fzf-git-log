@@ -2,7 +2,11 @@
 
 set -Eeo pipefail
 
-COMMAND_EXTRACT_COMMIT="echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | tr -d '\n'"
+if [[ -z "$GIT_PREFIX" ]]; then
+	GIT_PREFIX="$(git rev-parse --show-prefix)"
+fi
+
+COMMAND_EXTRACT_COMMIT='echo {} | grep -o "[[:xdigit:]]\{6,\}" | head -1 | tr -d "\n"'
 
 CMD=(
 	fzf
@@ -41,9 +45,9 @@ else
 fi
 
 CMD+=(
-	--bind="alt-b:execute-silent(git browse \"\$(${COMMAND_EXTRACT_COMMIT})\")"
-	--bind="ctrl-m:execute(show-commit \"\$(${COMMAND_EXTRACT_COMMIT})\" ${OPTIONS[@]} | $LOG_PAGER)"
-	--preview="show-commit \"\$(${COMMAND_EXTRACT_COMMIT})\" --color=always ${OPTIONS[@]} | $LOG_PAGER"
+	--bind="alt-b:execute-silent(git browse \$(${COMMAND_EXTRACT_COMMIT}))"
+	--bind="ctrl-m:execute(show-commit \$(${COMMAND_EXTRACT_COMMIT}) ${OPTIONS[@]} | $LOG_PAGER)"
+	--preview="show-commit \$(${COMMAND_EXTRACT_COMMIT}) --color=always ${OPTIONS[@]} | $LOG_PAGER"
 )
 
 exec "${CMD[@]}"
