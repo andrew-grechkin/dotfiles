@@ -1,11 +1,11 @@
 #!/usr/bin/env perl
 
-use v5.38;
+use v5.34;
 use autodie;
 use open ':locale';
 use utf8;
 use warnings     qw(FATAL utf8);
-use experimental qw(builtin class declared_refs defer for_list refaliasing try);
+use experimental qw(declared_refs refaliasing signatures);
 
 use IPC::Open2 qw(open2);
 
