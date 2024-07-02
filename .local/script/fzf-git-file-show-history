@@ -38,9 +38,9 @@ if [[ -t 1 ]]; then
 	CMD+=(
 		--bind="alt-b:execute-silent(git browse \"\$($COMMAND_EXTRACT_COMMIT)\")"
 		--bind="alt-d:execute(git diff \"\$($COMMAND_EXTRACT_COMMIT)\" HEAD -- \"$PTH_REL_ROOT\" | delta | less)"
-		--bind="ctrl-m:execute(git show \"\$(${COMMAND_EXTRACT_COMMIT}):$PTH_REL_ROOT\" | bat --color=always --style=numbers)"
-		--preview="git show \"\$(${COMMAND_EXTRACT_COMMIT}):$PTH_REL_ROOT\" | bat --color=always --style=numbers --paging=never"
-		# --bind="ctrl-r:reload($0 $FILE)"
+		--bind="ctrl-m:execute(git show \"\$(${COMMAND_EXTRACT_COMMIT}):$PTH_REL_ROOT\" | bat --color=always --file-name=$PTH_REL_ROOT)"
+		--preview="git show \"\$(${COMMAND_EXTRACT_COMMIT}):$PTH_REL_ROOT\" | bat --color=always --file-name=$PTH_REL_ROOT --paging=never"
+		# --bind="ctrl-r:reload($0 ${ARGV[@]})"
 	)
 
 	"$0" "${ARGV[@]}" | "${CMD[@]}"

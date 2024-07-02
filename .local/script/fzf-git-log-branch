@@ -3,7 +3,7 @@
 set -Eeuo pipefail
 
 CURRENT_SCRIPT="$(basename "$0")"
-FETCHER="${CURRENT_SCRIPT#fzf-}"
+export FETCHER="${CURRENT_SCRIPT#fzf-}"
 
 "$FETCHER" "$@" \
 	| fzf-git-log --reload-command="$FETCHER"
