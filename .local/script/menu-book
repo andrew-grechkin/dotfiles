@@ -2,16 +2,16 @@
 
 set -Eeuo pipefail
 
-FOLDER="${1:-/media/nfs/home/doc/@technical}"
+DIR="${1:-/media/nfs/home/doc/@technical}"
 
 function list_files() {
 	(
-		cd "$FOLDER"
+		cd "$DIR"
 		while read -r LINE; do
 			if [[ "$LINE" =~ \.pdf\|\.djvu ]]; then
-				echo "$LINE	zathura - <\"${FOLDER}/$LINE\""
+				echo "$LINE	zathura - <\"${DIR}/$LINE\""
 			elif [[ "$LINE" =~ \.fb2\|\.epub\|\.ePub ]]; then
-				echo "$LINE	xdg-open \"${FOLDER}/$LINE\""
+				echo "$LINE	xdg-open \"${DIR}/$LINE\""
 			fi
 		done < <(fd --no-ignore -t file -e pdf -e djvu -e fb2 -e epub --relative-path)
 	) | sort

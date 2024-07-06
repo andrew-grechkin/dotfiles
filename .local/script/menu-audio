@@ -2,13 +2,13 @@
 
 set -Eeuo pipefail
 
-FOLDER="${1:-/media/nfs/home/music}"
+DIR="${1:-/media/nfs/home/music}"
 
 function list_files() {
 	(
-		cd "$FOLDER"
+		cd "$DIR"
 		while read -r LINE; do
-			echo "$LINE	mpv --quiet --no-osc --term-osd=force --no-audio-display -- \"${FOLDER}/$LINE\""
+			echo "$LINE	mpv --quiet --no-osc --term-osd=force --no-audio-display -- \"${DIR}/$LINE\""
 		done < <(fd --no-ignore -t d -E '@eaDir' --relative-path)
 	) | sort
 }

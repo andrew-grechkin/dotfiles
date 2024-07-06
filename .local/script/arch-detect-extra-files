@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-# ABSTRACT: Detect all extra files in Arch linux system folders
+# ABSTRACT: Detect all extra files in Arch linux system dirs
 
 use v5.36;
 use autodie;
@@ -22,7 +22,7 @@ eval {
 };
 
 use constant {
-    'FOLDERS'  => [qw(/boot /etc /opt /srv /usr /var)],
+    'DIRS'     => [qw(/boot /etc /opt /srv /usr /var)],
     'CATEGORY' => {
         'AccountsService cache' => {
             'level' => 2,
@@ -191,8 +191,8 @@ sub _pacman_files() {
 
 sub _system_files (%pacman_files) {
     my %files;
-    foreach my $folder (FOLDERS()->@*) {
-        Path::Tiny::path($folder)->visit(
+    foreach my $dir (DIRS()->@*) {
+        Path::Tiny::path($dir)->visit(
             sub ($path, $) {
                 $path->is_file
                     or return;
@@ -253,7 +253,7 @@ arch-detect-extra-files
 
 =head1 DESCRIPTION
 
-Detect all extra files in Arch linux system folders.
+Detect all extra files in Arch linux system dirs.
 This can help to find and backup manual configuration or remove undesired changes made on system.
 Increasing verbosity level allows to unfold well known categories.
 

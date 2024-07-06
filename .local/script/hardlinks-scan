@@ -33,8 +33,8 @@ sub main() {
         or push(@ARGV, '.');
 
     my %files;
-    foreach my $folder (@ARGV) {
-        path($folder)->visit(
+    foreach my $dir (@ARGV) {
+        path($dir)->visit(
             sub ($path, $) {
                 $path->is_file && !-l $path
                     or return;

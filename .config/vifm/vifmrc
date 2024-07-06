@@ -518,7 +518,7 @@ filetype *.7z,*.epub,*.whl,
 	\*.bz2,*.gz,*.lz,*.lzma,*.lzop,*.xz,*.zst,*.Z
 	\ {Mount with fuse3-p7zip}
 	\ FUSE_MOUNT|fuse3-p7zip %SOURCE_FILE %DESTINATION_DIR,
-	\ {Extract to subfolder...}
+	\ {Extract to subdir...}
 	\ archive-extract %f 2>/dev/null,
 	\ {Extract here...}
 	\ archive-extract --here %f 2>/dev/null,
