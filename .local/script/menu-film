@@ -2,13 +2,13 @@
 
 set -Eeuo pipefail
 
-FOLDER="${1:-/media/nfs/home/video}"
+DIR="${1:-/media/nfs/home/video}"
 
 function list_files() {
 	(
-		cd "$FOLDER"
+		cd "$DIR"
 		while read -r LINE; do
-			echo "$LINE	mpv --quiet -- \"${FOLDER}/$LINE\""
+			echo "$LINE	mpv --quiet -- \"${DIR}/$LINE\""
 		done < <(fd --no-ignore -t file -e webm -e mkv -e avi -e mp4 -e ts --relative-path)
 	) | sort
 }

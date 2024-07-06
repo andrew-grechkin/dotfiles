@@ -57,7 +57,7 @@ sub main {
     process();
 
     if ($options{'MOVE'}) {
-        $log->info('moving duplicate files to own folders');
+        $log->info('moving duplicate files to own dirs');
         foreach my $checksum (keys %result_accumulator) {
             my $dest = path($checksum);
             foreach ($result_accumulator{$checksum}->@*) {
@@ -87,8 +87,8 @@ sub gather_files() {
 
     my %by_dev_ino;
     my $counter = 0;
-    foreach my $folder (@ARGV) {
-        path($folder)->visit(
+    foreach my $dir (@ARGV) {
+        path($dir)->visit(
             sub ($path, @) {
                 _is_valid_path($path)
                     or return;
@@ -208,7 +208,7 @@ detect-duplicate-images
 
 =head1 DESCRIPTION
 
-Detect duplicate images in given folders.
+Detect duplicate images in given dirs.
 
 =head1 SYNOPSIS
 
@@ -224,7 +224,7 @@ Do real changes on file system
 
 =item B<--recurse>
 
-Process subfolders
+Process subdirs
 
 =item B<--verbose>
 

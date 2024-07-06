@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# iterate through all hardlinks found in current folder and show them in fzf
+# iterate through all hardlinks found in current dir and show them in fzf
 
 set -Euo pipefail
 

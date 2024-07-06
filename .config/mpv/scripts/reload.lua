@@ -10,7 +10,7 @@
 -- SETTINGS
 --
 -- To override default setting put the `lua-settings/reload.conf` file in
--- mpv user folder, on linux it is `~/.config/mpv`.
+-- mpv user dir, on linux it is `~/.config/mpv`.
 -- name should match the name of the script.
 --
 -- Default `reload.conf` settings:

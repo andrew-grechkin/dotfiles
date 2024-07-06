@@ -50,8 +50,8 @@ sub main() {
     my @ignore   = ('\/@eaDir\/', '\/mason\/', '\/.local\/share\/containers\/', '\/.venv\/', $options{'IGNORE'}->@*);
     ## no critic [ValuesAndExpressions::RequireInterpolationOfMetachars]
 
-    foreach my $folder (@ARGV) {
-        path($folder)->visit(
+    foreach my $dir (@ARGV) {
+        path($dir)->visit(
             sub ($path, @) {
                 $path = path(decode('UTF-8', $path->stringify, Encode::FB_CROAK));
                 none {$path =~ m/$_/} @ignore

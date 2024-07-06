@@ -41,7 +41,7 @@ alias mv='mv -i'
 alias rm='rm -i'
 alias dangling-symlinks='ls -v **/*(-@)'
 alias dangling-symlinks-remove='rm -v **/*(-@)'
-alias remove-empty-folders='find . -depth -type d -empty -delete'
+alias remove-empty-dirs='find . -depth -type d -empty -delete'
 
 # => git ---------------------------------------------------------------------------------------------------------- {{{1
 
