@@ -4,23 +4,23 @@
 
 * exact match
     ```bash
-    ls folder_name
+    ls dir_name
     ```
 * recursively first level
     ```bash
-    ls folder_name/*
+    ls dir_name/*
     ```
 * recursively second level
     ```bash
-    ls folder_name/*/*
+    ls dir_name/*/*
     ```
 * recursively full tree
     ```bash
-    ls folder_name/**/*
+    ls dir_name/**/*
     ```
 * recursively full tree with regex matching
     ```bash
-    ls folder_name/**/*.txt
+    ls dir_name/**/*.txt
     ```
 
 ### Examples
@@ -115,7 +115,7 @@
     ```bash
     ls **/*(.G)
     ```
-* all folders recursively owned by me
+* all dirs recursively owned by me
     ```bash
     ls **/*(/U)
     ```

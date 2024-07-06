@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-# ABSTRACT: Detect all extra files in Arch linux system folders
+# ABSTRACT: Detect all extra files in Arch linux system dirs
 
 use v5.36;
 use autodie;
@@ -13,8 +13,6 @@ use Getopt::Long qw(:config auto_version bundling no_ignore_case);
 use Pod::Usage   qw(pod2usage);
 
 use YAML::XS qw();
-
-use constant {'FOLDERS' => [qw(/boot /etc /opt /srv /usr /var)]};
 
 our $VERSION = 1.2;
 
@@ -69,7 +67,7 @@ arch-detect-extra-files
 
 =head1 DESCRIPTION
 
-Detect all extra files in Arch linux system folders.
+Detect all extra files in Arch linux system dirs.
 This can help to find and backup manual configuration or remove undesired changes made on system.
 Increasing verbosity level allows to unfold well known categories.
 

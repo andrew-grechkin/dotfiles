@@ -27,7 +27,7 @@ pcall(require, 'setup-plugins')
 -- "=&rtp                                                                        " read variable to register
 -- :verbose set tw? wm?
 -- :verbose set formatoptions?
--- :vimfiles                                                                     " Config folder structure
+-- :vimfiles                                                                     " Config dir structure
 -- :scriptnames
 -- :help -V                                                                      " Trace all vim open files
 -- :help filetype-overrule

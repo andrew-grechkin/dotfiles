@@ -6,9 +6,9 @@ SOURCE='home.ams::'
 DEST='.'
 
 if [[ $# -eq 0 ]]; then
-	mapfile -t FOLDERS < <(fd --no-hidden -t d -d 1)
+	mapfile -t DIRS < <(fd --no-hidden -t d -d 1)
 else
-	FOLDERS=("$@")
+	DIRS=("$@")
 fi
 
 RSYNC_PARAMS=(
@@ -25,10 +25,10 @@ RSYNC_PARAMS=(
 	-HhrtlDXx
 )
 
-for FOLDER in "${FOLDERS[@]}"; do
+for DIR in "${DIRS[@]}"; do
 	echo -n "$(tput setaf 3)"
-	echo "Checking $FOLDER..."
+	echo "Checking $DIR..."
 	echo -n "$(tput sgr0)"
 
-	rsync "${RSYNC_PARAMS[@]}" "${SOURCE}${FOLDER}/" "${DEST}/${FOLDER}/"
+	rsync "${RSYNC_PARAMS[@]}" "${SOURCE}${DIR}/" "${DEST}/${DIR}/"
 done
