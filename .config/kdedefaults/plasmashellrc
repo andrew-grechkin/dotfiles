@@ -5,7 +5,7 @@ Number of commands=8
 Regexp=([^"\\s]+youtube.*watch\\?[^"\\s]+)|([^"\\s]+youtu.be[^"\\s]+)
 
 [Action_0/Command_0]
-Commandline[$e]=mpv --quiet --ytdl-raw-options='format="b[height<=1080]",sub-langs="en,nl,ru,fr,de,it,pt"' -- '%0'
+Commandline[$e]=mpv --quiet --ytdl-raw-options='format="b[height<=1080]/bv*[ext=webm][height<=480]+ba/bv*[ext=mp4][height<=480]+ba/b",sub-langs="en,nl,ru,fr,de,it,pt"' -- '%0'
 Description=Play youtube video with mpv
 Enabled=true
 Icon=mpv
@@ -36,6 +36,7 @@ Output=0
 Commandline[$e]=---
 Description=—
 Enabled=false
+Icon=
 Output=0
 
 [Action_0/Command_5]
