@@ -18,7 +18,7 @@ if [[ "$#" -eq "1" ]] && [[ "$1" =~ \.git/?$ ]]; then
 
 	nice git -C "$REPO" gc
 else
-	fd -HuL -td -tf -0 '\.git\z' "${1:-$PWD}" | {
+	fd -HuL -E 'bazel-*' -td -tf -0 '\A\.git\z' "${1:-$PWD}" | {
 		if [[ -n "$(command -v parallel)" ]]; then
 			parallel -j-50% --delay 0.3 -0 "$0" {}
 		else
@@ -26,3 +26,5 @@ else
 		fi
 	}
 fi
+
+exit 0
