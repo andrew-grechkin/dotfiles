@@ -61,7 +61,7 @@ local config = {
     },
     font_size = FONT_SIZE,
     warn_about_missing_glyphs = false,
-    window_background_opacity = 0.90,
+    window_background_opacity = 0.95,
     window_padding = {left = 0, right = 0, top = 0, bottom = 0},
 }
 

@@ -3,6 +3,10 @@
 set -Eeuo pipefail
 
 VERB_URL=()
+if [[ -n "${VERB:-}" ]]; then
+	VERB_URL+=("$VERB")
+fi
+
 if [[ $# -eq 0 ]]; then
 	if [[ -z "${URI:-}" ]]; then
 		echo 'Not enough arguments' >/dev/stderr
@@ -30,7 +34,7 @@ else
 				VERB_URL+=("$URI")
 			fi
 		else
-				VERB_URL+=("${HOST}${URI:-/}")
+			VERB_URL+=("${HOST}${URI:-/}")
 		fi
 	fi
 fi
