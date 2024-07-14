@@ -17,9 +17,27 @@ return {
     {'gianarb/vim-flux', enabled = not IS_KVM, ft = {'flux'}},
     {'mgrabovsky/vim-cuesheet', enabled = not IS_KVM, ft = {'cuesheet'}},
     {'pearofducks/ansible-vim', enabled = not IS_KVM, ft = {'ansible'}},
-    {'potamides/pantran.nvim', enabled = not IS_KVM, cmd = {'Pantran'}},
+    { -- https://github.com/potamides/pantran.nvim
+        'potamides/pantran.nvim',
+        enabled = not IS_KVM,
+        cmd = {'Pantran'},
+        opts = {
+            default_engine = 'google',
+            engines = {
+                google = {
+                    -- Default languages can be defined on a per engine basis. In this case
+                    -- `:lua require("pantran.async").run(function()
+                    -- vim.pretty_print(require("pantran.engines").yandex:languages()) end)`
+                    -- can be used to list available language identifiers.
+                    default_source = 'auto',
+                    default_target = 'en',
+                },
+            },
+            ui = {width_percentage = 0.9, height_percentage = 0.8},
+        },
+    },
     {'tmux-plugins/vim-tmux', enabled = not IS_KVM, ft = {'tmux'}},
-    {
+    { -- https://github.com/vimwiki/vimwiki
         'vimwiki/vimwiki',
         enabled = not IS_KVM,
         cmd = {'VimwikiIndex'},
