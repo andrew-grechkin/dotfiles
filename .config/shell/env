@@ -28,21 +28,6 @@ DIRS=(
 
 append_path "${DIRS[@]}"
 
-function join_by { local IFS="$1"; shift; echo "$*"; }
-FZF_DEFAULT_OPTS_ARRAY=(
-	'alt-p:toggle-preview,ctrl-alt-w:toggle-preview-wrap,ctrl-s:toggle-sort'
-	'ctrl-d:half-page-down,ctrl-u:half-page-up'
-	'ctrl-n:preview-down,ctrl-p:preview-up'
-	#'shift-left:change-preview-window(80%|60%)'
-	#'shift-right:change-preview-window(40%|60%)'
-	#'ctrl-d:delete-char'
-	'ctrl-w:backward-kill-word'
-	'ctrl-y:execute-silent(echo -n {} | clipcopy)'
-	'esc:cancel'
-	'home:top'
-	'tab:accept,shift-tab:accept'
-)
-FZF_DEFAULT_OPTS_JOINED=$(join_by ',' "${FZF_DEFAULT_OPTS_ARRAY[@]}")
+export FZF_DEFAULT_OPTS_FILE="$XDG_CONFIG_HOME/fzfrc"
 
-export FZF_DEFAULT_OPTS="--scroll-off=4 --tabstop=4 --bind='$FZF_DEFAULT_OPTS_JOINED' --preview-window=right:60%:border-left:wrap:hidden --header='C-j/k:move C-m/enter:view A-p:preview C-n/p:p-move C-y:yank'"
 export PATH

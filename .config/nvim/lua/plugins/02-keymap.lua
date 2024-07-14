@@ -1,7 +1,7 @@
 return {
     { -- https://github.com/folke/which-key.nvim
         'folke/which-key.nvim',
-        version = (vim.version().major < 1 and vim.version().minor < 9) and 'v1.6.1' or nil,
+        version = (vim.version().major < 1 and vim.version().minor < 9) and 'v1.6.1' or 'v2.1.0',
         config = function(_, _)
             local ok, which_key = pcall(require, 'which-key')
             if not ok then return end
