@@ -148,6 +148,7 @@ return {
         'vifm/vifm.vim',
         config = function() vim.g.vifm_embed_split = 1 end,
         dependencies = {'folke/which-key.nvim'},
+        cmd = {'EditVifm'},
         keys = {
             {
                 '<leader><leader>n',

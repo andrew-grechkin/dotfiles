@@ -82,7 +82,6 @@ return {
             ]]
         end,
         config = function()
-
             vim.cmd [[
                 runtime plugin/grepper.vim                                         " initialize g:grepper with default values
                 let g:grepper.highlight   = 1
