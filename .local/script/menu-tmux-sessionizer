@@ -36,7 +36,10 @@ if [[ -z $TMUX ]] && [[ -z "$(pgrep tmux 2>/dev/null)" ]]; then
 	exit 0
 fi
 
-if ! tmux has-session -t "$SELECTED_NAME" &>/dev/null; then
+# has-session seems broken because it matches the beginning of the name, so sessions with similar names but different
+# suffixes are false positively detected as existing
+# if ! tmux has-session -t "$SELECTED_NAME" &>/dev/null; then
+if ! tmux list-sessions | grep -P "${SELECTED_NAME}:" &>/dev/null; then
 	tmux new-session -ds "$SELECTED_NAME" -c "$FULL_PATH"
 fi
 

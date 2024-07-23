@@ -39,25 +39,25 @@ git-in-repo && {
 		SPAN="$REF^1..$REF^2"
 	else
 		if git gmr &>/dev/null; then
-			# has remote
-			COMMIT="$(git rev-parse "$REF" 2>/dev/null)"
-			MAIN_UPSTREAM_BRANCH="$(git gmu 2>/dev/null)"
-			MAIN_UPSTREAM_COMMIT="$(git rev-parse "$MAIN_UPSTREAM_BRANCH" 2>/dev/null)"
-			if [[ "$MAIN_UPSTREAM_COMMIT" = "$COMMIT" ]]; then
-				SPAN="$REF"
-			elif git merge-base --is-ancestor "$REF" "$MAIN_UPSTREAM_BRANCH"; then
-				SPAN="$REF"
-			else
-				# SPAN="$MAIN_UPSTREAM_BRANCH..$REF"
-				COMMITS="$(git --no-pager log --color=always --oneline "$MAIN_UPSTREAM_BRANCH..$REF")"
-				if (( $(echo "$COMMITS" | wc -l) > 1 )); then
-					echo "Combined diff for commits:"
-					echo "$COMMITS"
-					git --no-pager diff --pretty=fuller --merge-base "$MAIN_UPSTREAM_BRANCH" "$REF" "$@"
-					echo
-				fi
-				SPAN="$REF"
-			fi
+			# # has remote
+			# COMMIT="$(git rev-parse "$REF" 2>/dev/null)"
+			# MAIN_UPSTREAM_BRANCH="$(git gmu 2>/dev/null)"
+			# MAIN_UPSTREAM_COMMIT="$(git rev-parse "$MAIN_UPSTREAM_BRANCH" 2>/dev/null)"
+			# if [[ "$MAIN_UPSTREAM_COMMIT" = "$COMMIT" ]]; then
+			# 	SPAN="$REF"
+			# elif git merge-base --is-ancestor "$REF" "$MAIN_UPSTREAM_BRANCH"; then
+			# 	SPAN="$REF"
+			# else
+			# 	# SPAN="$MAIN_UPSTREAM_BRANCH..$REF"
+			# 	COMMITS="$(git --no-pager log --color=always --oneline "$MAIN_UPSTREAM_BRANCH..$REF")"
+			# 	if (( $(echo "$COMMITS" | wc -l) > 1 )); then
+			# 		echo "Combined diff for commits:"
+			# 		echo "$COMMITS"
+			# 		git --no-pager diff --pretty=fuller --merge-base "$MAIN_UPSTREAM_BRANCH" "$REF" "$@"
+			# 		echo
+			# 	fi
+			SPAN="$REF"
+			# fi
 		else
 			SPAN="$REF"
 		fi
