@@ -6,6 +6,12 @@ if [[ -z "$GIT_PREFIX" ]]; then
 	GIT_PREFIX="$(git rev-parse --show-prefix)"
 fi
 
+if [[ -n "$(command -v delta)"  ]]; then
+	LOG_PAGER="delta"
+else
+	LOG_PAGER="$PAGER"
+fi
+
 COMMAND_EXTRACT_COMMIT='echo {} | grep -o "[[:xdigit:]]\{6,\}" | head -1 | tr -d "\n"'
 
 CMD=(
@@ -17,37 +23,24 @@ CMD=(
 	--scheme=history
 	--scroll-off=8
 	--track
-	--bind="ctrl-y:execute-silent(${COMMAND_EXTRACT_COMMIT} | clipcopy)"
-	--bind='tab:accept,shift-tab:accept'
-	--header='Press C-v to preview, C-o to checkout, C-m/enter to show fullscreen'
-)
-
-OPTIONS=("$@")
-for i in ${!OPTIONS[*]}; do
-	OPTION="${OPTIONS[$i]}"
-	if [[ "$OPTION" =~ --reload-command= ]]; then
-		CMD+=(
-			--header='C-j/k:move C-m/enter:view A-p:preview C-n/p:p-move C-y:yank C-r:reload A-f:fetch A-g:pull A-m:co-m A-o:co A-b:browse'
-			--bind="alt-f:execute-silent(git fall)+reload(${OPTION#--reload-command=})"
-			--bind="alt-g:execute-silent(git up)+reload(${OPTION#--reload-command=})"
-			--bind="alt-m:execute-silent(ABB=\$(git gmb); git switch \$ABB)+reload(${OPTION#--reload-command=})"
-			--bind="alt-o:execute-silent(C=\$(${COMMAND_EXTRACT_COMMIT}); A=\$(git describe --all --always \$C); git switch --detach \${A/heads\/})+reload(${OPTION#--reload-command=})"
-			--bind="ctrl-r:reload(${OPTION#--reload-command=})"
-		)
-		unset "OPTIONS[$i]"
-	fi
-done
-
-if [[ -n "$(command -v delta)"  ]]; then
-	LOG_PAGER="delta"
-else
-	LOG_PAGER="$PAGER"
-fi
-
-CMD+=(
 	--bind="alt-b:execute-silent(git browse \$(${COMMAND_EXTRACT_COMMIT}))"
 	--bind="ctrl-m:execute(show-commit \$(${COMMAND_EXTRACT_COMMIT}) ${OPTIONS[@]} | $LOG_PAGER)"
+	--bind="ctrl-y:execute-silent(${COMMAND_EXTRACT_COMMIT} | clipcopy)"
+	--bind="shift-tab:become(echo -n \$(${COMMAND_EXTRACT_COMMIT}))"
+	--bind="tab:become(echo -n \$(${COMMAND_EXTRACT_COMMIT}))"
+	--header='Press C-v to preview, C-o to checkout, C-m/enter to show fullscreen'
 	--preview="show-commit \$(${COMMAND_EXTRACT_COMMIT}) --color=always ${OPTIONS[@]} | $LOG_PAGER"
 )
 
-exec "${CMD[@]}"
+if [[ -n "$FETCHER" ]]; then
+	CMD+=(
+		--bind="alt-f:execute-silent(git fall)+reload(${FETCHER})"
+		--bind="alt-g:execute-silent(git up)+reload(${FETCHER})"
+		--bind="alt-m:execute-silent(ABB=\$(git gmb); git switch \$ABB)+reload(${FETCHER})"
+		--bind="alt-o:execute-silent(C=\$(${COMMAND_EXTRACT_COMMIT}); A=\$(git describe --all --always \$C); git switch --detach \${A/heads\/})+reload(${FETCHER})"
+		--bind="ctrl-r:reload(${FETCHER})"
+		--header='C-j/k:move C-m/enter:view A-p:preview C-n/p:p-move C-y:yank C-r:reload A-f:fetch A-g:pull A-m:co-m A-o:co A-b:browse'
+	)
+fi
+
+exec "${CMD[@]}" "$@"
