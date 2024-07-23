@@ -3,24 +3,14 @@
 set -Eeuo pipefail
 
 CURRENT_SCRIPT="$(basename "$0")"
-FETCHER="${CURRENT_SCRIPT#fzf-}"
-
-COMMAND_EXTRACT_COMMIT='echo {} | grep -o "[[:xdigit:]]\{6,\}" | head -1 | tr -d "\n"'
+export FETCHER="${CURRENT_SCRIPT#fzf-}"
 
 CMD=(
-	fzf
-	--ansi
-	--no-multi
-	--no-sort
-	--reverse
-	--scheme=history
-	--scroll-off=8
-	--track
-	--bind="ctrl-y:execute-silent(${COMMAND_EXTRACT_COMMIT} | clipcopy)"
-	--bind='tab:accept,shift-tab:accept'
-	--bind="ctrl-m:become(echo -n \$(${COMMAND_EXTRACT_COMMIT}))"
-	--header='Press C-v to preview, C-o to checkout, C-m/enter to show fullscreen'
+	fzf-git-log
+	--multi
+	--bind="ctrl-m:become(echo -n {+1})"
+	--bind='tab:toggle+down,shift-tab:toggle+up'
 )
 
-"$FETCHER" \
+"$FETCHER" "$@" \
 	| "${CMD[@]}"
