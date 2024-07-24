@@ -27,7 +27,7 @@ return {
                 if IS_WORK then lsps:append{'gitlab-ci-ls'} end
                 lsps:append{
                     -- 'ansible-language-server',
-                    'autotools-language-server',
+                    -- 'autotools-language-server',
                     'basedpyright',
                     -- 'bzl',
                     -- 'clangd',
