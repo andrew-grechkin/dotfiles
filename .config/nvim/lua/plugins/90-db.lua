@@ -148,4 +148,7 @@ return {
         end,
         keys = {{'<leader><leader>d', ':DBUIToggle<CR>', desc = 'db ui: toggle'}},
     },
+    { -- https://github.com/lifepillar/pgsql.vim
+        'lifepillar/pgsql.vim',
+    },
 }
