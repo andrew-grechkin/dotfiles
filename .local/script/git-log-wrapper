@@ -3,7 +3,7 @@
 
 set -Eeuo pipefail
 
-MAX=9999
+GIT_MAX_COUNT="${GIT_MAX_COUNT:-9999}"
 
 git-in-repo && {
 	# make sure all paths can be passed relative to current dir, not relative to the repo root when script called as
@@ -14,10 +14,9 @@ git-in-repo && {
 	CMD=(git log
 		--color=always
 		--abbrev-commit
-		# --date='format-local:%Y-%m-%d %H:%M'
-		--format='%C(yellow)%h %C(bold blue)%<(24,trunc)%an%G?%C(auto)%d%C(reset) %s'
-		# --format='%C(yellow)%h %C(bold blue)%<(20,trunc)%an%C(reset) %G?(%C(green)%cd, %cr%C(reset)) %s%C(auto)%d'
-		--max-count="$MAX"
+		--date='format-local:%Y-%m-%d'
+		--format='%C(yellow)%h %C(green)%cd %C(bold cyan)%G?%C(bold blue)%<(24,trunc)%an%C(auto)%d%C(reset) %s'
+		--max-count="$GIT_MAX_COUNT"
 		--topo-order
 		"$@"
 	)
