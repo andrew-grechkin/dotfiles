@@ -5,15 +5,9 @@
 .config/lazygit/state.yml
 .config/nvim/.luarc.json
 .config/shell/*.work
-.config/systemd/user/default.target.wants
+.config/systemd/user/*.wants/
 .config/systemd/user/git-maintenance*
-.config/systemd/user/graphical-session-pre.target.wants
 .config/systemd/user/plasma-kwin_x11.service
-.config/systemd/user/plasma-workspace.target.wants
-.config/systemd/user/sockets.target.wants
-.config/systemd/user/timers.target.wants
-.config/systemd/user/tracker-extract-3.service
-.config/systemd/user/tracker-miner-fs-3.service
 .config/vifm/scripts/README
 .config/vifm/vifm-help.txt
 .config/vifm/vifminfo*
