@@ -1,11 +1,11 @@
 package MyDb::Util;
 
-use v5.40;
+use v5.36;
 use autodie;
 use open ':locale';
 use utf8;
 use warnings     qw(FATAL utf8);
-use experimental qw(class declared_refs defer refaliasing);
+use experimental qw(declared_refs defer refaliasing signatures);
 
 use JSON::PP qw();
 
