@@ -9,7 +9,7 @@ git-in-repo && {
 	# make sure all paths can be passed relative to current dir, not relative to the repo root when script called as
 	# git alias
 	# check how aliases run with a bang: man git-config
-	[[ -n "$GIT_PREFIX" ]] && cd -- "$GIT_PREFIX"
+	[[ -n "${GIT_PREFIX:-}" ]] && cd -- "$GIT_PREFIX"
 
 	CMD=(git log
 		--color=always

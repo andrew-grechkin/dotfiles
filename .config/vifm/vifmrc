@@ -134,6 +134,7 @@ command! df     df -h %m 2> /dev/null
 
 " compare
 command! diff   vimdiff %f %F
+command! ddiff  diff-dirs %f %F %m
 
 " search
 command! vgrep  vim "+grep %a"
