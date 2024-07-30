@@ -30,7 +30,7 @@
 	fam          = !"fzf-git-log-all-merges"
 	fall         = fetch --all --force
 	fg           = !"fzf-git-log-branch-graph"
-	fh           = !"f(){ cd -- \"${GIT_PREFIX:-.}\"; fzf-git-file-show-history \"$@\"; }; f"
+	fh           = !"f(){ cd -- \"${GIT_PREFIX:-.}\" && GIT_PREFIX="" fzf-git-file-show-history \"$@\"; }; f"
 	fr           = !"fzf-git-log-reflog"
 	fw           = !"fzf-git-log-branch $(git gmu)..HEAD"
 	ha           = !"git --no-pager log --abbrev-commit --all --color=always --graph --pretty=oneline --topo-order"
