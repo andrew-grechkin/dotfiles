@@ -4,25 +4,30 @@ set -Eeuo pipefail
 
 git-in-repo || exit 95
 
-PTH=$(realpath "${*: -1}")
-ROOT=$(git root)
-PTH_REL_ROOT=$(realpath -s --relative-to="$ROOT" "$PTH")
-
-ARGV=("$@")
-ARGV=("${ARGV[@]:0:${#ARGV[@]}-1}" "$PTH_REL_ROOT")
-
-cd "$ROOT"
-
-COMMAND_EXTRACT_COMMIT="echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | tr -d '\n'"
-
-HEADER=$(
-	cat <<- EOF_HEADER
-	History of a file: '${PTH_REL_ROOT}'
-	Press A-b: browse, A-d: diff, A-p: preview, C-b: blame, C-m/enter: view
-	EOF_HEADER
-)
-
 if [[ -t 1 ]]; then
+	PTH="${*: -1}"
+
+	if [[ -z "$PTH" || "$PTH" == '--' || "$PTH" == "$0" ]]; then
+		echo "Provide relative path to file" > /dev/stderr
+		exit 1
+	fi
+
+	# if [[ ! -e "$PTH" ]]; then
+	# 	echo "Path not found: $PTH" > /dev/stderr
+	# 	exit 2
+	# fi
+
+	PTH_REL_ROOT=$(realpath -s --relative-to="$(git root)" "$(realpath "$PTH")")
+
+	COMMAND_EXTRACT_COMMIT="echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | tr -d '\n'"
+
+	HEADER=$(
+		cat <<- EOF_HEADER
+		History of a file: '${PTH_REL_ROOT}'
+		Press A-b: browse, A-d: diff, A-p: preview, C-b: blame, C-m/enter: view
+		EOF_HEADER
+	)
+
 	CMD=(
 		fzf
 		--ansi
@@ -43,10 +48,9 @@ if [[ -t 1 ]]; then
 		--bind="ctrl-b:execute(git blame -M -w \"\$(${COMMAND_EXTRACT_COMMIT})\" \"$PTH_REL_ROOT\" | delta --paging=always)"
 		--bind="ctrl-m:execute(git show \"\$(${COMMAND_EXTRACT_COMMIT}):$PTH_REL_ROOT\" | bat --color=always --paging=always --file-name=$PTH_REL_ROOT)"
 		--preview="git show \"\$(${COMMAND_EXTRACT_COMMIT}):$PTH_REL_ROOT\" | bat --color=always --paging=never --file-name=$PTH_REL_ROOT"
-		# --bind="ctrl-r:reload($0 ${ARGV[@]})"
 	)
 
-	"$0" "${ARGV[@]}" | "${CMD[@]}"
+	"$0" "$@" | "${CMD[@]}"
 else
-	git-log-branch "${ARGV[@]}"
+	git-log-branch --follow "$@"
 fi
