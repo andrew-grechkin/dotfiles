@@ -23,7 +23,7 @@ return {
             'nvim-tree/nvim-web-devicons',
             'folke/which-key.nvim',
         },
-        init = function() require('which-key').register({['<leader>r'] = {name = 'Repo (git)'}}) end,
+        init = function() require('which-key').register({['<leader>r'] = {name = 'Repo (git+fzf)'}}) end,
         keys = {
             {'<C-b>', '<cmd>FzfLua buffers<CR>', mode = {'n'}, desc = 'fzf: buffers'},
             {'<C-h>', '<cmd>FzfLua oldfiles<CR>', mode = {'n'}, desc = 'fzf: history'},
@@ -62,6 +62,35 @@ return {
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/ThePrimeagen/harpoon
         'ThePrimeagen/harpoon',
+        config = function()
+            local plugin = require('harpoon')
+            local config = {
+                -- sets the marks upon calling `toggle` on the ui, instead of require `:w`.
+                save_on_toggle = false,
+
+                -- saves the harpoon file upon every change. disabling is unrecommended.
+                save_on_change = true,
+
+                -- sets harpoon to run the command immediately as it's passed to the terminal when calling `sendCommand`.
+                enter_on_sendcmd = false,
+
+                -- closes any tmux windows harpoon that harpoon creates when you close Neovim.
+                tmux_autoclose_windows = false,
+
+                -- filetypes that you want to prevent from adding to the harpoon list menu.
+                excluded_filetypes = {'harpoon'},
+
+                -- set marks specific to each git branch inside git repository
+                mark_branch = false,
+
+                -- enable tabline with harpoon marks
+                tabline = false,
+                tabline_prefix = '   ',
+                tabline_suffix = '   ',
+            }
+            plugin.setup(config)
+            require('telescope').load_extension('harpoon')
+        end,
         dependencies = {'nvim-telescope/telescope.nvim'},
         keys = {
             {
@@ -113,42 +142,13 @@ return {
                 desc = 'harpoon: 4',
             },
         },
-        config = function()
-            local plugin = require('harpoon')
-            local config = {
-                -- sets the marks upon calling `toggle` on the ui, instead of require `:w`.
-                save_on_toggle = false,
-
-                -- saves the harpoon file upon every change. disabling is unrecommended.
-                save_on_change = true,
-
-                -- sets harpoon to run the command immediately as it's passed to the terminal when calling `sendCommand`.
-                enter_on_sendcmd = false,
-
-                -- closes any tmux windows harpoon that harpoon creates when you close Neovim.
-                tmux_autoclose_windows = false,
-
-                -- filetypes that you want to prevent from adding to the harpoon list menu.
-                excluded_filetypes = {'harpoon'},
-
-                -- set marks specific to each git branch inside git repository
-                mark_branch = false,
-
-                -- enable tabline with harpoon marks
-                tabline = false,
-                tabline_prefix = '   ',
-                tabline_suffix = '   ',
-            }
-            plugin.setup(config)
-            require('telescope').load_extension('harpoon')
-        end,
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/vifm/vifm.vim
         'vifm/vifm.vim',
+        cmd = {'EditVifm'},
         config = function() vim.g.vifm_embed_split = 1 end,
         dependencies = {'folke/which-key.nvim'},
-        cmd = {'EditVifm'},
         keys = {
             {
                 '<leader><leader>n',

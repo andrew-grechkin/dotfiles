@@ -93,8 +93,8 @@ return {
                     },
                     b = {
                         name = 'Buffer',
-                        ['b'] = {':bd<CR>', 'close'},
-                        ['f'] = {':bp|bd #<CR>', 'close, keep split'},
+                        ['b'] = {':bp|bd #<CR>', 'close, keep split'},
+                        ['c'] = {':bd<CR>', 'close'},
                         ['o'] = {BUF_ONLY, 'only'},
                     },
                     -- p = {'`[ . strpart(getregtype(), 0, 1) . `]', 'Select latest pasted'},
