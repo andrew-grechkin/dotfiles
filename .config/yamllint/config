@@ -1,9 +1,7 @@
 ---
 extends: default
-yaml-files:
-  - '*.yaml'
-  - '*.yml'
-  - .yamllint
+yaml-files: ['*.yaml', '*.yml', .yamllint]
+
 rules:
   braces:
     forbid: false
@@ -23,7 +21,8 @@ rules:
     level: warning
   empty-lines: enable
   empty-values: disable
-  hyphens: enable
+  hyphens:
+    max-spaces-after: 3
   indentation:
     spaces: consistent
     indent-sequences: whatever
