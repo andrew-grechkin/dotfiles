@@ -173,10 +173,7 @@ return {
                 }
                 local visual_mappings = {
                     ['<leader>'] = {
-                        r = {
-                            name = 'Repo (git)',
-                            l = {'<cmd>Telescope git_bcommits_range<CR>', 'commits for sel lines'},
-                        },
+                        r = {l = {'<cmd>Telescope git_bcommits_range<CR>', 'commits for sel lines'}},
                         s = {
                             name = 'Search ',
                             g = {'<cmd>Telescope grep_string<CR>', ': grep string'},
