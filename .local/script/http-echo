@@ -16,12 +16,17 @@ use Mojo::JSON           qw(encode_json);
 local $ENV{MOJO_LOG_LEVEL} = 'error';
 local $OUTPUT_AUTOFLUSH = 1;
 
-my $repeat = 0;
+use constant {'DEFAULT_PORT' => $ENV{'HTTP_ECHO_PORT'} // 3456};
 
-GetOptions('repeat|r' => \$repeat)
-    or die "Unable to process command line options\n";
+my $repeat = $ENV{'HTTP_ECHO_REPEAT'} // 0;
+my $port   = DEFAULT_PORT();
 
-my $daemon = Mojo::Server::Daemon->new(listen => ['http://*:3000'], silent => 1);
+GetOptions(
+    'port|p=s' => \$port,
+    'repeat|r' => \$repeat,
+) or die "Unable to process command line options\n";
+
+my $daemon = Mojo::Server::Daemon->new(listen => ["http://*:$port"], silent => 1);
 
 $daemon->unsubscribe('request')->on(
     request => sub ($daemon, $tx) {

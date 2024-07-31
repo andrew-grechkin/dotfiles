@@ -50,10 +50,18 @@ if [[ "${CURL:-0}" == "1" ]]; then
 		--curl
 	)
 else
+	if [[ -t 1 ]]; then
+		OPTS+=(
+			--all
+			--pretty=all
+			--print=HBhbm
+		)
+	fi
+fi
+
+if [[ "${VERB_URL[*]}" =~ 'prod' ]]; then
 	OPTS+=(
-		--all
-		--pretty=all
-		--print=HBhbm
+		--https
 	)
 fi
 
