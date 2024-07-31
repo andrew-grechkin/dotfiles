@@ -10,6 +10,7 @@ return { -- https://github.com/redhat-developer/yaml-language-server
                 ['https://json.schemastore.org/kustomization.json'] = 'kustomization.{yml,yaml}',
                 ['https://raw.githubusercontent.com/docker/compose/master/compose/config/compose_spec.json'] = 'docker-compose*.{yml,yaml}',
                 ['https://json.schemastore.org/prettierrc.json'] = '.prettierrc.yaml',
+                ['schemas/ComponentTemplateConfig/3.2.0.json'] = 'template-configs/**/*.yaml',
             },
             validate = true,
         },
