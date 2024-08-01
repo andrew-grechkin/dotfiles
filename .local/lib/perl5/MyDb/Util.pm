@@ -82,6 +82,7 @@ sub load_db_config ($out_path, $path, $dsn_extractor) {
                 },
             };
 
+            $out_path->make_path;
             for my $defaults (sort keys $result{$name}{'defaults'}->%*) {
                 $out_path->child(sprintf('%s.%s', $name, $defaults))
                     ->spurt($result{$name}{'defaults'}{$defaults});
