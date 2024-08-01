@@ -18,6 +18,7 @@ return {
                 mysql = {'sql-formatter', 'mysql_sqlfluff'},
                 perl = {'perltidy'},
                 python = {{'darker', 'black'}},
+                pgsql = {'sql-formatter', 'sqlfluff'},
                 sh = {'shellharden', 'beautysh'},
                 sql = {'sql-formatter', 'sqlfluff'},
                 typescript = {'eslint_d'},
