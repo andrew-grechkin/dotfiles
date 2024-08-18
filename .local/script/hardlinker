@@ -133,14 +133,19 @@ class Processor 3.01 {
                     $self->_is_valid_path($path)
                         or return;
 
+                    my $decoded_path = decode('UTF-8', $path->stringify, Encode::FB_CROAK);
+                    $log->tracef('found:   %s', $decoded_path);
+
+                    $self->_is_ignored_path($decoded_path)
+                        and return;
+
                     my $stat = $path->stat;
                     $self->_is_valid_file($path, $stat)
                         or return;
 
-                    $log->tracef('found: %s', $path);
                     ++$stats{'files_count'};
                     my \%it = $by_dev_ino{sprintf('d(%d)i(%d)', $stat->dev, $stat->ino)}[0] //= {'stat' => $stat};
-                    push($it{'paths'}->@*, decode('UTF-8', $path->stringify, Encode::FB_CROAK));
+                    push($it{'paths'}->@*, $decoded_path);
                 },
                 {
                     'follow_symlinks' => $follow,
@@ -153,10 +158,17 @@ class Processor 3.01 {
     }
 
     method _is_valid_path ($path) {
-        return
-               $path !~ m/\@eaDir/
-            && $path->is_file
+        return $path->is_file
             && !-l $path;
+    }
+
+    method _is_ignored_path ($decoded_path) {
+        my $result = $decoded_path =~ m/\@eaDir/
+            || $decoded_path =~ m/\#snapshot/;
+
+        $log->tracef('ignored: %s', $decoded_path) if $result;
+
+        return $result;
     }
 
     method _is_valid_file ($path, $stat) {

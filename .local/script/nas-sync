@@ -2,8 +2,8 @@
 
 set -Euo pipefail
 
-SOURCE='home.ams::'
-DEST='.'
+SRC=${SRC:-"home.ams::"}
+DST=${DST:-"./"}
 
 if [[ $# -eq 0 ]]; then
 	mapfile -t DIRS < <(fd --no-hidden -t d -d 1)
@@ -18,15 +18,17 @@ RSYNC_PARAMS=(
 	--exclude=".Trash-*"
 	--exclude="@eaDir"
 	--rsh=ssh
-	--delete
 	--info=progress2
 	-P
 	-HahXx
+	--no-owner
+	--no-group
 )
+
 for DIR in "${DIRS[@]}"; do
 	echo -n "$(tput setaf 3)"
-	echo "Synchronizing $DIR..."
+	echo "Synchronizing $DIR from ${SRC}..."
 	echo -n "$(tput sgr0)"
 
-	rsync "${RSYNC_PARAMS[@]}" "${SOURCE}${DIR}/" "${DEST}/${DIR}/"
+	rsync "${RSYNC_PARAMS[@]}" "${SRC}${DIR}/" "${DST}${DIR}/"
 done

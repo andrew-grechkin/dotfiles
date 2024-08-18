@@ -9,6 +9,15 @@ GRP="$(id -ng "$USR")"
 USR_HOME="$(eval echo ~"$USR")"
 echo "$USR_HOME"
 
+shopt -s dotglob
+shopt -s extglob
+
+GLOBIGNORE='#snapshot'
+
+sudo chown -c -R "${USR}:${GRP}" -- *
+sudo chmod -c -R 'a+rX,ug+w,o-w' -- *
+sudo fd -u -E '**/#snapshot/' -E '**/@eaDir/' -t d -x chmod -c g+s --
+
 function recursively_remove_write_permission() {
 	REAL_PATH="$1"
 	while [[ "$REAL_PATH" != "$USR_HOME" ]] && [[ "$REAL_PATH" != "/home/$USR" ]] && [[ "$REAL_PATH" != "/" ]]; do
@@ -17,12 +26,6 @@ function recursively_remove_write_permission() {
 		sudo chmod -c 'go-w' "$REAL_PATH"
 	done
 }
-
-shopt -s dotglob
-
-sudo chown -c -R "${USR}:${GRP}" -- *
-sudo chmod -c -R 'a+rX,ug+w,o-w' -- *
-sudo fd -u -E "@eaDir" -t d -x chmod -c g+s --
 
 if [[ -e ".gnupg" ]]; then
 	echo "$(tput setaf 3)Correcting .gnupg mode$(tput sgr0)"
