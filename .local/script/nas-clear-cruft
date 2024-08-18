@@ -4,4 +4,4 @@ set -eEuo pipefail
 
 renice -n 5 "$$" > /dev/null
 
-sudo fd --one-file-system --follow -us --prune -t d -g '@eaDir' -x rm -rf --
+sudo fd --one-file-system --follow -us -E '**/#snapshot/' --prune -t d -g '@eaDir' -x rm -rf --
