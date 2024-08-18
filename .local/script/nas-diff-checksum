@@ -21,10 +21,12 @@ RSYNC_PARAMS=(
 	--delete
 	--dry-run
 	-i
+	--info=progress2
 	-HhrtlDXx
 	--no-owner
 	--no-group
 	--omit-dir-times
+	--checksum
 )
 
 for DIR in "${DIRS[@]}"; do

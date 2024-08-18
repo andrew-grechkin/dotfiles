@@ -18,18 +18,17 @@ RSYNC_PARAMS=(
 	--exclude=".Trash-*"
 	--exclude="@eaDir"
 	--rsh=ssh
-	--delete
-	--dry-run
-	-i
-	-HhrtlDXx
+	--info=progress2
+	-P
+	-HahXx
 	--no-owner
 	--no-group
-	--omit-dir-times
+	--checksum
 )
 
 for DIR in "${DIRS[@]}"; do
 	echo -n "$(tput setaf 3)"
-	echo "Comparing ${DST}${DIR} with ${SRC}..."
+	echo "Synchronizing $DIR from ${SRC}..."
 	echo -n "$(tput sgr0)"
 
 	rsync "${RSYNC_PARAMS[@]}" "${SRC}${DIR}/" "${DST}${DIR}/"

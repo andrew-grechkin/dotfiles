@@ -18,7 +18,7 @@ if [[ "$#" -eq "1" ]] && [[ "$1" =~ \.git/?$ ]]; then
 			&& nice git -C "$REPO" -c color.ui=always pull
 	fi
 else
-	fd -HuL -E 'bazel-*' -td -tf -0 '\A\.git\z' "${1:-$PWD}" | {
+	fd -uL -0 -E 'bazel-*' -td -tf '\A\.git\z' "${1:-$PWD}" | sort -z | {
 		if [[ -n "$(command -v parallel)" ]]; then
 			parallel -j-2 --delay 0.3 -0 "$0" {}
 		else
