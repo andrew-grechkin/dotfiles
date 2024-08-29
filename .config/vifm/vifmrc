@@ -436,6 +436,14 @@ filetype *.base64
 	\ {Decode}
 	\ base64 --decode %c > %c:r &,
 
+filetype *.base64c
+	\ {Decode}
+	\ sed -e 's/^#//' %c | base64 --decode > %c:r &,
+
+filetype *.shx
+	\ {Decode}
+	\ sed -e '1,,/^### Base64 BEGIN/d' %c | sed -e '/^### Base64 END/,,$d' | sed -e 's/^#//g' | base64 -d > %c:r.tgz,
+
 filetype *.txt
 	\ {View in less}
 	\ less,
