@@ -40,10 +40,10 @@ open(STDOUT, ">/dev/tty")
 
 my @editor = ('vi');
 
-if (exists $ENV{EDITOR}) {
-    @editor = split(' ', $ENV{EDITOR});
-} elsif (exists $ENV{VISUAL}) {
+if (exists $ENV{VISUAL}) {
     @editor = split(' ', $ENV{VISUAL});
+} elsif (exists $ENV{EDITOR}) {
+    @editor = split(' ', $ENV{EDITOR});
 } elsif (-x '/usr/bin/editor') {
     @editor = '/usr/bin/editor';
 }
