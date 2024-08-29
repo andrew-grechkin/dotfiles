@@ -1,0 +1,41 @@
+# vim: filetype=dockerfile
+
+FROM docker.io/library/archlinux:base-devel
+
+LABEL                                                               \
+    com.github.containers.toolbox="true"                            \
+    name="arch-toolbox"                                             \
+    summary="Base image for creating Arch Linux Toolbox containers" \
+    usage="This image is meant to be used with the toolbox command" \
+    version="base-devel"
+
+RUN echo "%wheel ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/toolbox
+RUN pacman -Syu --needed --noconfirm \
+    bash-completion   \
+    diffutils         \
+    flatpak-xdg-utils \
+    git               \
+    gnupg             \
+    keyutils          \
+    lsof              \
+    man-db            \
+    man-pages         \
+    mlocate           \
+    mtr               \
+    nss-mdns          \
+    openssh           \
+    pigz              \
+    procps-ng         \
+    rsync             \
+    sudo              \
+    tcpdump           \
+    time              \
+    traceroute        \
+    tree              \
+    unzip             \
+    vte-common        \
+    wget              \
+    words             \
+    xorg-xauth        \
+    zip               \
+    && yes | pacman -Scc

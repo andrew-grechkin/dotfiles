@@ -1,6 +1,7 @@
 return {
     { -- https://github.com/stevearc/conform.nvim
         'stevearc/conform.nvim',
+        version = (vim.version().major < 1 and vim.version().minor < 10) and 'v6.1.0' or nil,
         event = {'BufReadPre', 'BufNewFile'},
         opts = {
             formatters_by_ft = {
