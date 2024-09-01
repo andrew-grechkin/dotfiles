@@ -23,7 +23,7 @@ if [[ "$#" -eq "1" ]] && [[ "$1" =~ \.git/?$ ]]; then
 	echo "Gc $REPO"
 	echo -n "$(tput sgr0)"
 
-	nice git -C "$REPO" gc
+	nice git -C "$REPO" gc --keep-largest-pack --prune=now
 else
 	fd -uL -0 -E 'bazel-*' -td -tf '\.git\z' "${1:-$PWD}" | sort -z | {
 		if [[ -n "$(command -v parallel)" ]]; then
