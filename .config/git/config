@@ -106,7 +106,7 @@
 
 [core]
 	autocrlf       = false
-	editor         = vi
+	; editor         = vi
 	fsmonitor      = true
 	longpaths      = true
 	pager          = less

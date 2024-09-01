@@ -1,10 +1,19 @@
 #!/usr/bin/env perl
 
-use v5.34;
+use v5.36;
 use autodie;
 use open ':locale';
 use utf8;
-use warnings     qw(FATAL utf8);
+
+# Lua is a piece of shit, honestly, it even doesn't have any utf8 encoding/decoding in it's core library so it writes
+# history strings in mpv "as is" in it's encoding, thus any title in history not properly encoded in utf8 (which is not
+# a rare case for old video files for example) will warn on non-utf8 character and exit if such warning is fatal.
+# Here we need to be ready to read the history file with non-utf8 characters written by Lua and that's why fatal utf8
+# warnings are disable.
+# Frankly speaking any language is as pathetic as it's core library pathetic is and Lua's core library is not even a joke.
+
+# use warnings     qw(FATAL utf8);
+
 use experimental qw(declared_refs refaliasing signatures);
 
 use IPC::Open2 qw(open2);
