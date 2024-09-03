@@ -460,7 +460,9 @@ filextype *.pro
 
 filetype cpanfile
 	\ {Install Perl modules}
-	\ cpanm -nq --installdeps .
+	\ cpanm -nq --installdeps .,
+	\ {Install Perl modules (all)}
+	\ cpanm -nv --installdeps . --with-develop --with-all-features,
 
 filetype *.http
 	\ {Request with http-pure}

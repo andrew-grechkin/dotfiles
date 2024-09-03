@@ -2,7 +2,7 @@
 
 set -Eeuo pipefail
 
-if [[ "${1:-}" == "-f" ]]; then
+if [[ "${1:-}" == "--force" ]]; then
 	mapfile -t RUNNING_CONTAINERS < <(command docker ps -q)
 	[[ -n "${RUNNING_CONTAINERS[*]}" ]] && {
 		echo "Stopping running contaiers: ${#RUNNING_CONTAINERS[@]}"

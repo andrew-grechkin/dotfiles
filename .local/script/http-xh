@@ -41,27 +41,21 @@ fi
 
 if [[ "$0" =~ xh$ ]]; then
 	XH=(xh)
+
+	if [[ "${VERB_URL[*]}" =~ 'prod' ]]; then
+		opts+=(
+			--https
+		)
+	fi
 else
 	XH=(xhs)
 fi
 
-if [[ "${CURL:-0}" == "1" ]]; then
-	OPTS+=(
-		--curl
-	)
-else
-	if [[ -t 1 ]]; then
-		OPTS+=(
-			--all
-			--pretty=all
-			--print=HBhbm
-		)
-	fi
-fi
-
-if [[ "${VERB_URL[*]}" =~ 'prod' ]]; then
-	OPTS+=(
-		--https
+if [[ -t 1 ]]; then
+	opts+=(
+		--all
+		--pretty=all
+		--print=HBhbm
 	)
 fi
 
@@ -71,4 +65,14 @@ if [[ -n "${BODY:-}" ]]; then
 	)
 fi
 
-"${XH[@]}" "${VERB_URL[@]}" "$@" "${OPTS[@]}"
+echo -n "portable: " > /dev/stderr
+"${XH[@]}" "${VERB_URL[@]}" "$@" "${OPTS[@]}" --curl | tee /dev/stderr | primarycopy
+echo > /dev/stderr
+
+cmd=("${XH[@]}" "${VERB_URL[@]}" "$@" "${opts[@]}" "${OPTS[@]}")
+cmd_str="${cmd[0]}$(printf ' %q' "${cmd[@]:1}")"
+echo -n "executing: " > /dev/stderr
+echo -e "$cmd_str" > /dev/stderr
+echo > /dev/stderr
+
+"${cmd[@]}"
