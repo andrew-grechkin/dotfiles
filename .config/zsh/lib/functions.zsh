@@ -46,6 +46,10 @@ function activate() {
 	if command git rev-parse HEAD &>/dev/null; then
 		REPO_ROOT="$(git rev-parse --show-toplevel)"
 
+		if [[ "$REPO_ROOT" = ~/git/private/dotfiles ]]; then
+			return
+		fi
+
 		if [[ -r '.nvmrc' || -r "$REPO_ROOT/.nvmrc" ]]; then
 			nvm use
 			umask 0002

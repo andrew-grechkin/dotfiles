@@ -7,7 +7,7 @@ BACKGROUND_APPS=(
 	sxhkd
 	picom
 	redshift
-	"$(realpath ~/.local/script/bspwm-watch-monitor)"
+	"$(realpath ~/.local/script/bspwm-init)"
 )
 
 echo 'Starting background apps...'

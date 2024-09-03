@@ -1,0 +1,78 @@
+#!/usr/bin/env perl
+
+use v5.38;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(builtin declared_refs refaliasing);
+
+use English    qw(-no_match_vars);
+use IPC::Open2 qw(open2);
+
+use constant {'ABORTED' => 130};
+
+sub main {
+    my \@history = fetch_history();
+
+    my @cmd = (
+        'fzf', '--reverse', "--delimiter=\t", '--no-multi', '--with-nth=2',
+        '--preview=echo {2..}',
+        '--bind=ctrl-y:execute-silent()',
+        '--preview-window=right:50%:border-left:wrap:nohidden',
+    );
+
+    my $pid = open2(my $chld_out, my $chld_in, @cmd) // do {
+        say {*STDERR} 'failed to execute fzf';
+        return 1;
+    };
+
+    foreach my ($index, $value) (builtin::indexed(@history)) {
+        say {$chld_in} ($index, "\t", substr($value =~ s{\R}{\\n}grm =~ s{\t}{\\t}grm, 0, 500));
+    }
+    close $chld_in;
+
+    waitpid($pid, 0)
+        or die "unable to wait for child to finish: $!\n";
+
+    my $child_exit_status = $CHILD_ERROR >> 8;
+    exit if $child_exit_status == ABORTED();
+
+    my $out = <$chld_out>;
+    close $chld_out;
+
+    my ($num) = split m/\t/, $out, 2;
+
+    save_to_clipboard($history[$num]) if defined $num;
+
+    return 0;
+}
+
+sub fetch_history() {
+    my $payload
+        = `dbus-send --print-reply --dest=org.kde.klipper /klipper org.kde.klipper.klipper.getClipboardHistoryMenu`;
+
+    $payload =~ s{.*?array\s\[\R}{}xms;
+    $payload =~ s{\R?\s+\]\R\z}{}xms;
+
+    my @m = split m/.*?string\s\"/x, $payload;
+
+    s{\"\R*\z}{} foreach @m;
+
+    @m = grep {$_} @m;
+
+    return \@m;
+}
+
+sub save_to_clipboard($str) {
+    open(my $pipe => '|-', 'clipcopy')
+        or die $!;
+    print {$pipe} $str;
+    close $pipe
+        or die $!;
+    return;
+}
+
+exit main();
+
+__END__

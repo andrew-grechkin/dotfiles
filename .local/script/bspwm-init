@@ -1,0 +1,142 @@
+#!/usr/bin/env perl
+
+use v5.34;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(declared_refs refaliasing signatures);
+
+use IO::Socket::UNIX;
+use JSON::PP qw();
+
+# => configuration ------------------------------------------------------------------------------------------------ {{{1
+
+use constant {
+    'MONITORS' => [qr{\AHDMI-}, qr{\ADP-}, qr{\AeDP-}],
+    'DESKTOPS' => [1 .. 9, 0],
+};
+
+# => implementation ----------------------------------------------------------------------------------------------- {{{1
+
+use constant {
+    'SOCK_PATH'        => '/tmp/bspwm_0_0-socket',
+    'SOCK_BUFFER_SIZE' => 64 * 1024,
+    'JSON_CODER'       =>
+        JSON::PP->new->utf8->pretty->canonical->convert_blessed->allow_blessed->boolean_values(0, 1)->indent(0),
+};
+
+use constant {                                                                 # BSPWM commands
+    'COMMAND_SUBSCRIBE_ALL'  => [qw(subscribe all)],
+    'COMMAND_QUERY_NODE'     => [qw(query --tree --node %s)],
+    'COMMAND_QUERY_MONITORS' => [qw(query --monitors --names)],
+};
+
+use constant {
+    'BSPWM_EVENT_PROCESSORS' => [{
+            'match' => qr{\Amonitor_geometry}x,
+            'cb'    => \&rearrange_monitors,
+        },
+    ],
+};
+
+sub rearrange_monitors ($parts_aref = undef, $init = 0) {
+    my $str      = sock_req(undef, SOCK_PATH(), COMMAND_QUERY_MONITORS());
+    my %monitors = map {$_ => undef} split m/\R+/, $str;
+
+    # unfortunately monitor_remove event is not reliable and it's necessary to check xrandr status
+    # send monitor_remove event if detected that monitor is disconnected in xrandr
+    my $xrandr = `xrandr`;
+    say "xrandr: $xrandr";
+
+    my @to_remove;
+    foreach my $monitor (keys %monitors) {
+        if ($xrandr =~ m/^$monitor\s+disconnected/xms) {
+            delete $monitors{$monitor};
+            push(@to_remove, $monitor);
+        } elsif ($xrandr =~ m/^$monitor\s+connected/xms) {
+            undef $monitors{$monitor};
+        }
+    }
+
+    process_monitors_change(\%monitors, $init);
+
+    foreach my $monitor (@to_remove) {
+        my @cmd = ('monitor', $monitor, '-r');
+        sock_req(undef, SOCK_PATH(), \@cmd);
+    }
+
+    return;
+}
+
+sub process_monitors_change ($monitors_href, $init = 0) {
+    my \%monitors = $monitors_href;
+
+    my @ordered_monitors;
+    foreach my $monitor_match (MONITORS()->@*) {
+        push(@ordered_monitors, grep {$_ =~ $monitor_match} keys %monitors);
+    }
+    my @desktops   = DESKTOPS()->@*;
+    my $batch_size = scalar @desktops / scalar @ordered_monitors;
+
+    for (my $i = 0; $i < @ordered_monitors - 1; ++$i) {
+        $monitors{$ordered_monitors[$i]} = [splice @desktops, 0, $batch_size];
+    }
+    push($monitors{$ordered_monitors[-1]}->@*, @desktops);
+
+    foreach my $monitor (@ordered_monitors) {
+        my \@desktops = $monitors{$monitor};
+        if ($init) {
+            my @cmd = ('monitor', $monitor, '-d', @desktops);
+            sock_req(undef, SOCK_PATH(), \@cmd);
+        } else {
+            foreach my $desktop (@desktops) {
+                my @cmd = ('desktop', $desktop, '--to-monitor', $monitor, '--follow');
+                sock_req(undef, SOCK_PATH(), \@cmd);
+            }
+        }
+    }
+    sock_req(undef, SOCK_PATH(), ['desktop', 'Desktop', '-r']);
+
+    say 'Monitors: ', JSON_CODER()->encode(\%monitors);
+    return;
+}
+
+sub sock_req ($cb, $path, $command, %additional) {
+    my $client = IO::Socket::UNIX->new(
+        'Type' => SOCK_STREAM(),
+        'Peer' => $path,
+    ) or die "Cannot create socket - $IO::Socket::errstr\n";
+
+    if (ref $command eq 'ARRAY') {
+        $command = join("\0", $command->@*) . "\0";
+    }
+    $command = sprintf($command, $additional{'params'}->@*) if $additional{'params'};
+    say sprintf('req: %s, %s, %s', $path, $command =~ s/\N{NULL}/ /rg, JSON_CODER()->encode(\%additional));
+
+    $client->send($command);
+    $client->shutdown(SHUT_WR());
+
+    my $buffer;
+    while (1) {
+        $client->recv($buffer, SOCK_BUFFER_SIZE());
+        chomp($buffer);
+        $cb->($buffer) if defined $cb;
+        last           if not $additional{'loop'};
+    }
+
+    $client->close();
+    say "res: $buffer";
+    return $buffer;
+}
+
+sub main() {
+    sleep 1;
+    rearrange_monitors(undef, 1);
+
+    return 0;
+}
+
+exit main();
+
+__END__

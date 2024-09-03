@@ -2,6 +2,7 @@
 
 # => aliases ------------------------------------------------------------------------------------------------------ {{{1
 
+alias      gpg-agent-stop='gpgconf --kill all'
 alias       gpg-edit-card='gpg --edit-card'
 alias            gpg-edit='gpg --expert --edit-key'
 alias   gpg-export-public='gpg --export --armor'
