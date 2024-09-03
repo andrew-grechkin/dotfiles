@@ -24,7 +24,7 @@ CMD=(
 	--scroll-off=8
 	--track
 	--bind="alt-b:execute-silent(git browse \$(${COMMAND_EXTRACT_COMMIT}))"
-	--bind="ctrl-m:execute(show-commit \$(${COMMAND_EXTRACT_COMMIT}) ${OPTIONS[@]} | $LOG_PAGER)"
+	--bind="ctrl-m:execute(show-commit \$(${COMMAND_EXTRACT_COMMIT}) ${OPTIONS[@]} --show-signature | $LOG_PAGER)"
 	--bind="ctrl-y:execute-silent(${COMMAND_EXTRACT_COMMIT} | clipcopy)"
 	--bind="shift-tab:become(echo -n \$(${COMMAND_EXTRACT_COMMIT}))"
 	--bind="tab:become(echo -n \$(${COMMAND_EXTRACT_COMMIT}))"

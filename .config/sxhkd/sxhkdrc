@@ -167,10 +167,14 @@ super + y
 super + shift + Return
 	wezterm --config="enable_csi_u_key_encoding=false" start --always-new-process /usr/bin/zsh
 
+super + shift + t
+    dbus-send --print-reply --dest=io.crow_translate.CrowTranslate /io/crow_translate/CrowTranslate/MainWindow io.crow_translate.CrowTranslate.MainWindow.translateSelection
 super + shift + y
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/fzf-select" nerd
 super + shift + u
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/fzf-select" emoji
+super + shift + o
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-clipboard"
 super + shift + p
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pacman"
 super + shift + braceleft
@@ -259,6 +263,12 @@ XF86Calculator
 #	cmus-remote --next
 
 # => mouse -------------------------------------------------------------------------------------------------------- {{{1
+
+button8
+    dbus-send --print-reply --dest=io.crow_translate.CrowTranslate /io/crow_translate/CrowTranslate/MainWindow io.crow_translate.CrowTranslate.MainWindow.translateSelection
+
+button9
+    dbus-send --print-reply --dest=org.kde.klipper /klipper org.kde.klipper.klipper.showKlipperPopupMenu
 
 #button8
 #	cmus-remote --prev
