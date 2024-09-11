@@ -35,5 +35,6 @@
 --glob=!fuse/
 --glob=!google-chrome/
 --glob=!opera/
+--glob=!yarn.lock
 
 # --with-filename
