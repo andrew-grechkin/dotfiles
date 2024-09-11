@@ -50,3 +50,5 @@ x64-[Dd]ebug*/
 x64-[Rr]elease*/
 
 hypnotoad.pid
+
+.venv/
