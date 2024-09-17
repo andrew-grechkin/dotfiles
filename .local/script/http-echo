@@ -7,13 +7,19 @@ use utf8;
 use warnings     qw(FATAL utf8);
 use experimental qw(class declared_refs defer refaliasing);
 
+## no critic [Variables::RequireLocalizedPunctuationVars]
+# this is accessed at compile time so it must be in begin block
+BEGIN {
+#     $ENV{MOJO_EVENTEMITTER_DEBUG} = 1;
+    $ENV{MOJO_LOG_LEVEL} = 'error';
+}
+
 use English      qw(-no_match_vars);
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
 
 use Mojo::Server::Daemon qw();
 use Mojo::JSON           qw(encode_json);
 
-local $ENV{MOJO_LOG_LEVEL} = 'error';
 local $OUTPUT_AUTOFLUSH = 1;
 
 use constant {'DEFAULT_PORT' => $ENV{'HTTP_ECHO_PORT'} // 3456};
@@ -63,6 +69,7 @@ $daemon->unsubscribe('request')->on(
     },
 );
 
+say {*STDERR} "Web application available at http://127.0.0.1:$port";
 $daemon->run;
 
 __END__
