@@ -15,23 +15,25 @@
 	show   = delta
 
 [delta]
-	features                      = line-numbers decorations navigate
+	features                      = decorations line-numbers navigate
 	hyperlinks                    = true
 	side-by-side                  = false
 	syntax-theme                  = "zenburn"
     tabs                          = 4
 
 [delta "decorations"]
-	commit-decoration-style      = brightblue ul ol
-	commit-style                 = bold brightcyan
-	file-decoration-style        = brightcyan box
-	file-style                   = bold brightyellow
+	commit-decoration-style      = BrightBlue ul ol
+	commit-style                 = BrightCyan
+	file-decoration-style        = Cyan box
+	file-style                   = BrightYellow
 	hunk-header-style            = none
 	hunk-header-decoration-style = none
+    minus-style                  = syntax "#302020"
+    plus-style                   = syntax "#203020"
 
 [delta "interactive"]
 	keep-plus-minus-markers = false
 
 [delta "line-numbers"]
-	line-numbers-left-style  = cyan
-	line-numbers-right-style = cyan
+	line-numbers-left-style  = Cyan
+	line-numbers-right-style = Cyan

@@ -15,16 +15,16 @@
 	commit-again = !"git commit -eF \"$(git root)/.git/COMMIT_EDITMSG\" \"$@\""
 	compress     = !"git-compress"
 	compress-a   = !"git-compress-aggressive"
-	d            = -c delta.side-by-side=true diff -b
-	dc           = -c delta.side-by-side=true diff -b --cached
+	d            = -c delta.side-by-side=true diff --ignore-space-change
+	dc           = -c delta.side-by-side=true diff --ignore-space-change --cached
 	dd           = -c delta.side-by-side=true diff
 	ddc          = -c delta.side-by-side=true diff --cached
-	df           = !"git-diff-full -b"
-	ds           = diff -b --submodule=diff
+	df           = !"git-diff-full --ignore-space-change"
+	ds           = diff --ignore-space-change --submodule=diff
 	dt           = difftool
 	dtg          = difftool --gui
-	dtw          = !"git difftool -b -t vimdiff $(git gmb)..HEAD"
-	dw           = !"git diff -b --color=always $(git gmb)..HEAD"
+	dtw          = !"git difftool --ignore-space-change -t vimdiff $(git gmb)..HEAD"
+	dw           = !"git diff --ignore-space-change --color=always $(git gmb)..HEAD"
 	f            = !"fzf-git-log-branch"
 	fa           = !"fzf-git-log-all"
 	fag          = !"fzf-git-log-all-graph"
@@ -44,9 +44,9 @@
 	lw           = !"git-log-branch $(git gmrh)..HEAD"
 	m            = !"git checkout $(git gmb)"
 	m-base       = !"f(){ git merge-base ${1:-$(git gmb)} HEAD; }; f"
-	m-diff       = !"f(){ git diff     -b  --color=always `git m-span .. $@`; }; f"
-	m-dt         = !"f(){ git difftool -b -t vimdiff      `git m-span .. $@`; }; f"
-	m-log        = !"f(){ git log          --color=always `git m-span .. $@`; }; f"
+	m-diff       = !"f(){ git diff     --ignore-space-change --color=always `git m-span .. $@`; }; f"
+	m-dt         = !"f(){ git difftool --ignore-space-change -t vimdiff     `git m-span .. $@`; }; f"
+	m-log        = !"f(){ git log                            --color=always `git m-span .. $@`; }; f"
 	m-span       = !"git-merge-span"
 	mt           = mergetool
 	mt4          = mergetool --tool=nvimdiff4
@@ -59,8 +59,8 @@
 	redow        = !"f(){ git rebase -i --autosquash --keep-base --committer-date-is-author-date --update-refs `git gmb` \"$@\"; }; f"
 	root         = !"f(){ git rev-parse --show-superproject-working-tree --show-toplevel | head -1; }; f"
 	s            = !"menu-git-search"
-	sh           = show --show-signature
-	shd          = -c delta.side-by-side=true show --show-signature  --ignore-space-change
+	sh           =                            show --show-signature --color=always --ignore-space-change --stat --pretty=fuller --dd --minimal --patch
+	shd          = -c delta.side-by-side=true show --show-signature --color=always --ignore-space-change --stat --pretty=fuller --dd --minimal --patch
 	sm           = !"menu-git-search-message"
 	st           = status -b
 	unpub        = !"f(){ git push origin :$(git bname); }; f"
