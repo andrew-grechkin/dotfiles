@@ -293,7 +293,7 @@ filextype *.3gp,
 	\ {View using mpv}
 	\ mpv %f:p %i &,
 	\ {View using mpv True color terminal}
-	\ mpv %f:p -vo tct 2>/dev/null,
+	\ mpv %f:p --really-quiet -vo tct 2>/dev/null,
 	\ {View using ffplay}
 	\ ffplay -fs -autoexit,
 	\ {View using mplayer}

@@ -54,6 +54,9 @@ for FILE in "${FILES[@]}"; do
 	builtin source "$FILE"
 done
 
+ZSH_HIGHLIGHT_STYLES[alias]='fg=11,bold'
+ZSH_HIGHLIGHT_STYLES[command]='fg=10,bold'
+
 # => PATH prepare (head) ------------------------------------------------------------------------------------------ {{{1
 
 [[ -n "$HOMEBREW_PREFIX" ]] && [[ -d "$HOMEBREW_PREFIX" ]] && path=("$HOMEBREW_PREFIX/bin"             "${path[@]}")

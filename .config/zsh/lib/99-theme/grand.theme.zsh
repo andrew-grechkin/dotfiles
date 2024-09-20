@@ -3,6 +3,7 @@
 # url: http://zsh.sourceforge.net/Doc/Release/User-Contributions.html#Version-Control-Information
 # url: https://github.com/zsh-users/zsh/blob/master/Misc/vcs_info-examples
 # url: https://timothybasanov.com/2016/04/23/zsh-prompt-and-vcs_info.html
+# man zshmisc
 
 autoload -Uz vcs_info
 
@@ -29,7 +30,7 @@ function precmd() {
 	ZSH_THEME['GIT_PROMPT_SHA_BEFORE']='%F{231}%B'
 	ZSH_THEME['GIT_PROMPT_SHA_AFTER']='%b%K{black}%F{36}'
 	ZSH_THEME['CLOCK']='%K{29}%F{231}%B%T%b%f%k'
-	ZSH_THEME['CWD']='%F{cyan}:%f%B%F{blue}%~%f%b'
+	ZSH_THEME['CWD']='%F{cyan}:%f%B%F{12}%~%f%b'
 
 	local history='$[HISTCMD-1]'
 	local no_error='%K{black}%F{29}%f%k'
@@ -37,14 +38,13 @@ function precmd() {
 	ZSH_THEME['RETURN']="%(?.${no_error}.${is_error})"
 
 	# Check if we are root
-	[[ $UID -ne 0 ]] && ZSH_THEME['USER']='%F{green}%n%f' || ZSH_THEME['USER']='%F{red}%n%f'
-	[[ $UID -ne 0 ]] && ZSH_THEME['LINE2START']=' \$'   || ZSH_THEME['LINE2START']=' #'
+	ZSH_THEME['USER']='%(!.%F{red}%n%f.%F{green}%n%f)'
 
 	# Check if we are on SSH or not
 	[[ -n "$SSH_CLIENT" || -n "$SSH2_CLIENT" ]] && ZSH_THEME['HOST']='%F{red}%M%f' || ZSH_THEME['HOST']='%F{green}%M%f'
 
 	PROMPT="${ZSH_THEME['CLOCK']}${ZSH_THEME['RETURN']} "'${vcs_info_msg_0_}'"%b%k%f%{$reset_color%}
-${ZSH_THEME['USER']}%F{cyan}@%f${ZSH_THEME['HOST']}${ZSH_THEME['CWD']}${ZSH_THEME['LINE2START']} ${RPS1}%b%k%f% "
+${ZSH_THEME['USER']}%F{cyan}@%f${ZSH_THEME['HOST']}${ZSH_THEME['CWD']} %(!.#.$) ${RPS1}%b%k%f% "
 	RPROMPT=''
 }
 
@@ -61,6 +61,6 @@ else
 fi
 zstyle    ':vcs_info:*'                 get-revision             true
 zstyle    ':vcs_info:*'                 stagedstr                '%B%F{green}+'
-zstyle    ':vcs_info:*'                 unstagedstr              '%B%F{yellow}*'
+zstyle    ':vcs_info:*'                 unstagedstr              '%B%F{11}*'
 zstyle    ':vcs_info:*'                 formats                  '%K{23}%F{231}%b%K{29}%F{23} %F{233}%i%k%F{29} %u%c%m '
 zstyle    ':vcs_info:*'                 actionformats            '%K{23}%F{231}%b%K{29}%F{23} %F{233}%i%k%F{29} %a %m '

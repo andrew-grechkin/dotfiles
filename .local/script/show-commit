@@ -24,7 +24,7 @@ git-in-repo && {
 	# check the REF
 	git rev-parse --verify "$REF" &>/dev/null || return
 
-	SHOW_OPTIONS=(--color=always --ignore-space-change --stat)
+	SHOW_OPTIONS=(--color=always --ignore-all-space --stat)
 
 	if [[ -n "$(git rev-parse --verify "$REF^2" 2>/dev/null)" ]]; then
 		# is a merge commit

@@ -18,14 +18,14 @@ end
 local config = {
     check_for_updates = false,
     adjust_window_size_when_changing_font_size = false,
-    bold_brightens_ansi_colors = true,
+    bold_brightens_ansi_colors = false,
     colors = {
         background = '#000000',
         foreground = '#eaeaea',
         ansi = {
             '#000000',
             '#dd1111',
-            '#11dd11',
+            '#117711',
             '#aa5511',
             '#4444dd',
             '#aa11aa',

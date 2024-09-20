@@ -5,16 +5,28 @@ use v5.36;
 @ARGV
     or push @ARGV, 'HEAD';
 
-my $cmd = 'git rev-parse --verify ' . join( ' ', @ARGV );
+my $cmd = 'git rev-parse --verify ' . $ARGV[0];
 
-chomp( my $git_remote_url = `git remote get-url origin` );
-chomp( my $ref            = qx{$cmd} );
+chomp(my $git_remote_url = `git remote get-url origin`);
+chomp(my $ref            = qx{$cmd});
 
 my $final_url = 'unknown';
-if ( $git_remote_url =~ m/^git@/ && $git_remote_url =~ m/gitlab[.]boo/x ) {
+if ($git_remote_url =~ m/^git@/ && $git_remote_url =~ m/gitlab[.]boo/x) {
     my $gitlab_remote_url = $git_remote_url =~ s/^git@ | [.]git$//grx;
     $gitlab_remote_url =~ s{:}{/}gx;
-    $final_url = sprintf 'https://%s/-/commits/%s', $gitlab_remote_url, $ref;
+    if (@ARGV > 1) {
+        $final_url = sprintf 'https://%s/-/blob/%s/%s', $gitlab_remote_url, $ref, $ARGV[-1];
+    } else {
+        $final_url = sprintf 'https://%s/-/commits/%s', $gitlab_remote_url, $ref;
+    }
+} elsif ($git_remote_url =~ m/^git@/ && $git_remote_url =~ m/github[.]com/x) {
+    my $github_remote_url = $git_remote_url =~ s/^git@ | [.]git$//grx;
+    $github_remote_url =~ s{:}{/}gx;
+    if (@ARGV > 1) {
+        $final_url = sprintf 'https://%s/blob/%s/%s', $github_remote_url, $ref, $ARGV[-1];
+    } else {
+        $final_url = sprintf 'https://%s/commit/%s', $github_remote_url, $ref;
+    }
 }
 
 say $final_url;
