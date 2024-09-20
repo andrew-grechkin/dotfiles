@@ -24,7 +24,7 @@ if [[ -t 1 ]]; then
 	HEADER=$(
 		cat <<- EOF_HEADER
 		History of a file: '${PTH_REL_ROOT}'
-		Press A-b: browse, A-d: diff, A-p: preview, C-b: blame, C-a: commit, C-m/enter: view
+		Press A-b: browse, A-d: diff, A-p: preview, C-b: blame, C-a: all, C-o: only, C-m/enter: view
 		EOF_HEADER
 	)
 
@@ -45,7 +45,8 @@ if [[ -t 1 ]]; then
 	CMD+=(
 		--bind="alt-b:execute-silent(git browse \"\$($COMMAND_EXTRACT_COMMIT)\" -- \"$PTH\")"
 		--bind="alt-d:execute(git diff \"\$($COMMAND_EXTRACT_COMMIT)\" HEAD -- \"$PTH_REL_ROOT\" | delta --paging=always)"
-		--bind="ctrl-a:execute(show-commit \$(${COMMAND_EXTRACT_COMMIT}) --show-signature)"
+		--bind="ctrl-a:execute(show-commit \$(${COMMAND_EXTRACT_COMMIT}) --show-signature | delta --paging=always)"
+		--bind="ctrl-o:execute(show-commit \$(${COMMAND_EXTRACT_COMMIT}) --show-signature -- \"$PTH_REL_ROOT\" | delta --paging=always)"
 		--bind="ctrl-b:execute(git blame -M -w \"\$(${COMMAND_EXTRACT_COMMIT})\" \"$PTH_REL_ROOT\" | delta --paging=always)"
 		--bind="ctrl-m:execute(git show \"\$(${COMMAND_EXTRACT_COMMIT}):$PTH_REL_ROOT\" | bat --color=always --paging=always --file-name=$PTH_REL_ROOT)"
 		--preview="git show \"\$(${COMMAND_EXTRACT_COMMIT}):$PTH_REL_ROOT\" | bat --color=always --paging=never --file-name=$PTH_REL_ROOT"
