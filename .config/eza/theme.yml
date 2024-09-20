@@ -1,0 +1,126 @@
+---
+# url: https://github.com/eza-community/eza/blob/main/man/eza_colors-explanation.5.md
+
+broken_symlink: {foreground: Red, is_bold: true, is_underline: true, is_blink: true}
+
+filekinds:
+  directory: {foreground: LightBlue}
+  executable: {foreground: LightGreen}
+  normal: {foreground: Gray, is_dimmed: true}
+  symlink: {foreground: LightCyan}
+  # pipe
+  # block_device
+  # char_device
+  # socket
+  # special
+  # mount_point
+
+perms:
+  user_read: {foreground: Yellow}
+  user_write: {foreground: Red}
+  user_execute_file: {foreground: Green}
+  user_execute_other: {foreground: Green}
+  ###
+  group_read: {foreground: Yellow}
+  group_write: {foreground: Red}
+  group_execute: {foreground: Green}
+  ###
+  other_read: {foreground: LightYellow}
+  other_write: {foreground: LightRed, is_bold: true}
+  other_execute: {foreground: LightGreen}
+  # special_user_file
+  # special_other
+  # attribute
+
+size:
+  # major: {foreground: LightYellow}
+  # minor: {foreground: LightYellow}
+  number_byte: {foreground: Cyan}
+  number_kilo: {foreground: Cyan}
+  number_mega: {foreground: LightCyan, is_bold: true}
+  number_giga: {foreground: LightCyan, is_bold: true, is_underline: true}
+  number_huge: {foreground: LightCyan, is_bold: true, is_underline: true}
+  unit_byte: {foreground: LightRed}
+  unit_kilo: {foreground: LightRed}
+  unit_mega: {foreground: LightYellow}
+  unit_giga: {foreground: LightYellow}
+  unit_huge: {foreground: LightYellow}
+
+users:
+  user_you: {foreground: Green}
+  user_other: {foreground: Yellow}
+  user_root: {foreground: Red}
+  group_yours: {foreground: Green}
+  group_other: {foreground: Yellow}
+  group_root: {foreground: Red}
+
+date: {foreground: 31}
+
+# links:
+#   normal
+#   multi_link_file
+
+# git:
+#   new
+#   modified
+#   deleted
+#   renamed
+#   ignored
+#   conflicted
+
+# git_repo:
+#   branch_main
+#   branch_other
+#   git_clean
+#   git_dirty
+
+# security_context:
+#   none:
+#   selinux:
+#     colon
+#     user
+#     role
+#     typ
+#     range
+
+# file_type:
+#   image
+#   video
+#   music
+#   crypto
+#   document
+#   compressed
+#   temp
+#   compiled
+#   build
+#   source
+
+filenames:
+  # Just change the icon glyph
+  Cargo.toml: {icon: {glyph: 🦀}}
+  Cargo.lock: {icon: {glyph: 🦀}}
+  package.json: {icon: {glyph: 🦀}, style: {foreground: White}}
+
+extensions:
+  # Change the filename color and icon
+  # NOTE: not all unicode glyphs support color changes
+  rs: {filename: {foreground: Red}, icon: {glyph: 🦀}}
+
+  # Change the icon glyph and color
+  nix: {icon: {glyph: ❄, style: {foreground: White}}}
+
+# punctuation:
+
+# inode:
+
+# blocks:
+
+# header:
+
+# octal:
+
+# flags:
+
+# control_char:
+
+# broken_path_overlay:
