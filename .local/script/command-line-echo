@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+echo "i'am:   $0"
+echo "params: $*"
+
+if [[ -t 0 ]]; then
+	echo "STDIN is tty"
+else
+	echo
+	echo -n "$(tput setaf 3)"
+	echo "STDIN is passed:"
+	echo -n "$(tput sgr0)"
+	cat
+fi
+
+for FILE in "$@"; do
+	if [[ -r $FILE ]]; then
+		echo
+		echo -n "$(tput setaf 3)"
+		echo "passed file: $FILE"
+		echo -n "$(tput sgr0)"
+		cat "$FILE"
+	fi
+done

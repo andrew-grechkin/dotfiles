@@ -8,6 +8,10 @@
     ```bash
     clipcopy < path/to/file
     ```
+* Pass data as STDIN from a process (space is required between < < in bash), as a temp file from process and as an ordinary file
+    ```bash
+    command-line-echo < <(cat README.md) <(cat README.md) README.md
+    ```
 * Pipe STDIN from heredoc (type end-word for stop reading)
     ```bash
     clipcopy <<'END'
@@ -20,19 +24,19 @@
     ```bash
     clipcopy <<END
     ```
-* Pipe STDIN from string
+* Pipe STDIN from a string
     ```bash
     clipcopy <<<'arbitrary string'
     ```
-* Pipe STDERR to file
+* Pipe STDERR to a file
     ```bash
     clippaste 2>/dev/null
     ```
-* Pipe all output to file
+* Pipe all output to a file
     ```bash
     clippaste &>/dev/null
     ```
-* Explicitly write to output stream
+* Explicitly write to an output stream
     ```bash
     echo 'to Standard Output' >&1
     >&1 echo 'to Standard Output'
@@ -68,6 +72,11 @@
     ```
 
 ## [Process substitution](http://zsh.sourceforge.net/Doc/Release/Expansion.html#Process-Substitution)
+
+* Multiplex STDOUT to several processes. Redirect to `/dev/null` is necessary to prevent tee from printing to STDOUT. The order of execution is reversed
+    ```bash
+    clippaste | tee >(cat) >(cat) >/dev/null
+    ```
 
 * Connect output of the other process with /dev/fd file (when application doesn't support read from STDIN)
     ```bash

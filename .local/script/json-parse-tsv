@@ -1,0 +1,3 @@
+#!/usr/bin/env -S jq -nR --from-file
+
+[ inputs | split("\t") ]

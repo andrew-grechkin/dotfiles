@@ -85,7 +85,7 @@ local add_to_history = function(path)
 
     local fp = io.open(MPV_HIST_FILE, 'a+');
     if fp then
-        fp:write(('%s\t%s\t%s\tmpv %s --\t\'%s\'\n'):format(os.date('%Y-%m-%dT%X'), type, title, table.concat(opt, ' '),
+        fp:write(('%s\t%s\t%s\tmpv %s --\t"%s"\n'):format(os.date('!%Y-%m-%dT%XZ'), type, title, table.concat(opt, ' '),
             path));
         fp:close();
     end
