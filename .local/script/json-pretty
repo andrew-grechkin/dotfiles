@@ -7,7 +7,7 @@ set -Eeuo pipefail
 	exit 1
 }
 
-FORMATTER='jq -S'
+FORMATTER='jq --indent 2 -S'
 if [[ -x "$(command -v json2yaml)" ]]; then
 	FORMATTER="json2yaml"
 	LANGUAGE="yaml"
@@ -17,7 +17,13 @@ elif [[ -x "$(command -v yq)" ]]; then
 fi
 
 [[ -x "$(command -v bat)" ]] && {
-	COLORIZER="| bat -l ${LANGUAGE:-json} --color=always --style=header --file-name='$*'"
+	if [[ -n "$*" ]]; then
+		FILENAME="$*"
+	else
+		FILENAME="STDIN.${LANGUAGE:-json}"
+	fi
+
+	COLORIZER="| bat --wrap=never -l ${LANGUAGE:-json} --color=always --style=header --file-name='$FILENAME'"
 }
 
 bash -c "$FORMATTER ${COLORIZER:-}"

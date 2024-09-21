@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+# url: https://codeberg.org/aryak/mozhi
+
+instance="https://mozhi.canine.tools"
+# instance="https://nyc1.mz.ggtyler.dev"
+
+# engine="duckduckgo"
+engine="google"
+source="auto"
+
+current_script="$(basename "$0")"
+if [[ "$current_script" == text-translate-* ]]; then
+	target="${current_script#text-translate-}"
+else
+	target="en"
+fi
+
+# detect working instance (unfortunately a lot of them are broken)
+# xh https://codeberg.org/aryak/mozhi/raw/branch/master/instances.json | jq -r '.[].link // empty'
+# xh https://codeberg.org/aryak/mozhi/raw/branch/master/instances.json | jq -r '.[].link // empty' | xargs -r -I '{}' bash -c "echo 'checking: {}:'; xh '{}/api/translate' --ignore-stdin --form text='$text' engine='$engine' from='$source' to='$target'"
+
+# man: getopt
+VALID_ARGS=$(getopt -o i:e:s:t:h --long instance:,engine:,source:,target:,help -- "$@")
+
+# reorder args in a proper order
+eval set -- "$VALID_ARGS"
+
+while [ : ]; do
+	case "$1" in
+		-e | --engine)
+			engine="$2"
+			shift 2
+			;;
+		-i | --instance)
+			instance="$2"
+			shift 2
+			;;
+		-s | --source)
+			source="$2"
+			shift 2
+			;;
+		-t | --target)
+			target="$2"
+			shift 2
+			;;
+		? | -h | --help)
+			cat <<END_HELP
+Translate text
+Usage: $(basename "$0") [options] <<< 'Some text'
+
+OPTIONS
+  -h, --help      show usage instructions
+  -i, --instance  mozhi instance to use for translations (default: $instance)
+  -s, --source    source language to use (default: $source)
+  -t, --target    target language to use (default: $target)
+END_HELP
+			exit 1
+			;;
+		--) shift;
+			break
+			;;
+	esac
+done
+
+# here text is passed as a temp file to prevent any issues with quotes in the text
+# this approach doesn't involve any quoting and makes sure text is passed as-is for urlencoding
+json=$(xh "$instance/api/translate" --ignore-stdin --form text=@<(cat "$@") engine="$engine" from="$source" to="$target")
+
+echo "$json" | jq -r '.["translated-text"]'
