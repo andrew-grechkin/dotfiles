@@ -19,3 +19,9 @@ Tim	15	cats,dogs
 Joe	11	rabbits,birds
 INPUT_DATA_END
 ```
+
+```bash
+# export environment variables from JSON object keys
+# (e.g. $FOO from jq query ".foo")
+export $(jq -r '@sh "FOO=\(.foo) BAZ=\(.baz)"')
+```

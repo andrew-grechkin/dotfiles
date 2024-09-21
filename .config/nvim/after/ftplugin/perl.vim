@@ -32,7 +32,6 @@ let b:man_default_sections = '3,2'
 setlocal equalprg=perltidy\ -q
 setlocal formatprg=perltidy\ -q
 setlocal keywordprg=:Perldoc
-" setlocal keywordprg=:vertical\ Man
 
 command! -nargs=1 Perldoc :setlocal splitright
 	\| :vnew

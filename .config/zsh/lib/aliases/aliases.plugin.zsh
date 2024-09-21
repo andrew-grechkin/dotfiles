@@ -1,6 +1,10 @@
 # vim: foldmethod=marker
 # Based on https://github.com/robbyrussell/oh-my-zsh
 
+# => builtin ------------------------------------------------------------------------------------------------------ {{{1
+
+alias help='run-help'
+
 # => apps --------------------------------------------------------------------------------------------------------- {{{1
 
 alias htop='htop -u "$USER"'
@@ -41,7 +45,7 @@ alias mv='mv -i'
 alias rm='rm -i'
 alias dangling-symlinks='ls -v **/*(-@)'
 alias dangling-symlinks-remove='rm -v **/*(-@)'
-alias remove-empty-dirs='find . -depth -type d -empty -delete'
+alias dir-remove-empty='find . -depth -type d -empty -delete'
 
 # => git ---------------------------------------------------------------------------------------------------------- {{{1
 
@@ -86,10 +90,6 @@ fi
 
 alias mbsync='mbsync -c ~/.config/isync/mbsyncrc andrew-grechkin julia-grechkina'
 
-# => web ---------------------------------------------------------------------------------------------------------- {{{1
-
-alias cget='command curl -LO -C - --'
-
 # => misc --------------------------------------------------------------------------------------------------------- {{{1
 
 alias -g xa='xargs -d "\n" -ri'
@@ -97,9 +97,9 @@ alias fm='vifm . .'
 alias dd='command dd oflag=sync conv=sparse,excl status=progress'
 alias :q='exit'
 alias :qa='exit'
-alias this-is-mine=' sudo chown "${USER}:$(id -ng)" -R -- *; sudo chmod -R u+rwX,g+rX -- *; fd -u -E "@eaDir" -t d -x chmod g+s'
+alias take-ownership=' sudo chown "${USER}:$(id -ng)" -R -- *; sudo chmod -R u+rwX,g+rX -- *; fd -u -E "@eaDir" -t d -x chmod g+s'
 
-alias fix-agent='eval $(tmux showenv -s SSH_AUTH_SOCK)'
+alias ssh-agent-fix='eval $(tmux showenv -s SSH_AUTH_SOCK)'
 
 alias file-hardlinks='find . -xdev -samefile'
 
@@ -115,18 +115,12 @@ alias grab-cd-tracks='abcde -xk    -o flac,ogg:"--quality=5" -a default,cue'
 
 # => diff/patch --------------------------------------------------------------------------------------------------- {{{1
 
-alias diffdirs='diff -wBNuar'
-
-# => co stream ---------------------------------------------------------------------------------------------------- {{{1
-
-alias run8='make -f ~/git/public/andrew-grechkin/centos-rpmbuild-docker/Makefile run8'
-alias run9='make -f ~/git/public/andrew-grechkin/centos-rpmbuild-docker/Makefile run9'
-alias build8-here='make -f ~/git/public/andrew-grechkin/centos-rpmbuild-docker/Makefile build8'
-alias build9-here='make -f ~/git/public/andrew-grechkin/centos-rpmbuild-docker/Makefile build9'
+alias dir-diff='diff -wBNuar'
 
 # => flatpak ------------------------------------------------------------------------------------------------------ {{{1
 
-alias setup-flatpak='sudo flatpak --system remote-delete flathub; flatpak remote-add --if-not-exists --user flathub "https://dl.flathub.org/repo/flathub.flatpakrepo"'
+alias flatpak-user-setup='flatpak remote-add --if-not-exists --user flathub "https://dl.flathub.org/repo/flathub.flatpakrepo"'
+# alias flatpak-user-setup='sudo flatpak --system remote-delete flathub; flatpak remote-add --if-not-exists --user flathub "https://dl.flathub.org/repo/flathub.flatpakrepo"'
 
 # => network ------------------------------------------------------------------------------------------------------ {{{1
 
