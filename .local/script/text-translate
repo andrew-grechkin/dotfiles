@@ -28,6 +28,7 @@ VALID_ARGS=$(getopt -o i:e:s:t:h --long instance:,engine:,source:,target:,help -
 # reorder args in a proper order
 eval set -- "$VALID_ARGS"
 
+# shellcheck disable=SC2078
 while [ : ]; do
 	case "$1" in
 		-e | --engine)
@@ -67,6 +68,5 @@ done
 
 # here text is passed as a temp file to prevent any issues with quotes in the text
 # this approach doesn't involve any quoting and makes sure text is passed as-is for urlencoding
-json=$(xh "$instance/api/translate" --ignore-stdin --form text=@<(cat "$@") engine="$engine" from="$source" to="$target")
-
-echo "$json" | jq -r '.["translated-text"]'
+xh "$instance/api/translate" --ignore-stdin --form text=@<(cat "$@") engine="$engine" from="$source" to="$target" \
+	| jq -r '.["translated-text"]'
