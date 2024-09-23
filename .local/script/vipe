@@ -17,22 +17,25 @@ if (!GetOptions('suffix=s' => \$suffix)) {
 $suffix = ".$suffix" if $suffix =~ m/^[^.]/;
 
 my ($fh, $tmp) = tempfile(UNLINK => 1, SUFFIX => $suffix);
-die 'cannot create tempfile' unless $fh;
+$fh
+    or die 'cannot create tempfile';
+
 if (!-t STDIN) {
     print {$fh} <STDIN>
         or die "write temp: $!";
 }
-close $fh;
 
+close $fh;
 close STDIN;
-open(STDIN, "</dev/tty")
+
+open(STDIN, '<', '/dev/tty')
     or die "reopen stdin: $!";
 
-open(my $out, ">&STDOUT")
+open(my $out, '>&', \*STDOUT)
     or die "save stdout: $!";
 
 close STDOUT;
-open(STDOUT, ">/dev/tty")
+open(STDOUT, '>', '/dev/tty')
     or die "reopen stdout: $!";
 
 my @editor = ('vi');
@@ -57,6 +60,7 @@ print {$out} <$in>
     or die "write failure: $!";
 
 close $in;
+close $out;
 
 __END__
 
