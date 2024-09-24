@@ -59,8 +59,10 @@ for FILE in "${FILES[@]}"; do
 	builtin source "$FILE"
 done
 
-ZSH_HIGHLIGHT_STYLES[alias]='fg=11,bold'
-ZSH_HIGHLIGHT_STYLES[command]='fg=10,bold'
+if [[ -n "$ZSH_HIGHLIGHT_STYLES" ]]; then
+	ZSH_HIGHLIGHT_STYLES[alias]='fg=11,bold'
+	ZSH_HIGHLIGHT_STYLES[command]='fg=10,bold'
+fi
 
 # => PATH prepare (head) ------------------------------------------------------------------------------------------ {{{1
 
