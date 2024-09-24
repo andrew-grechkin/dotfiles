@@ -11,31 +11,28 @@ LABEL                                                               \
 
 RUN echo "%wheel ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/toolbox
 RUN pacman -Syu --needed --noconfirm \
-    bash-completion   \
-    diffutils         \
-    flatpak-xdg-utils \
-    git               \
-    gnupg             \
-    keyutils          \
-    lsof              \
-    man-db            \
-    man-pages         \
-    mlocate           \
-    mtr               \
-    nss-mdns          \
-    openssh           \
-    pigz              \
-    procps-ng         \
-    rsync             \
-    sudo              \
-    tcpdump           \
-    time              \
-    traceroute        \
-    tree              \
-    unzip             \
-    vte-common        \
-    wget              \
-    words             \
-    xorg-xauth        \
-    zip               \
-    && yes | pacman -Scc
+    base                    \
+    base-devel              \
+    flatpak-xdg-utils       \
+    nss-mdns                \
+    plocate                 \
+    sudo                    \
+    xorg-xauth              \
+    ansible                 \
+    fzf                     \
+    reflector               \
+    tmux                    \
+    vim                     \
+    xsel                    \
+    zsh                     \
+    && yes | pacman -Scc    \
+    && sed -i 's|.*\(en_US\.UTF-8\)|\1|' /etc/locale.gen \
+    && locale-gen
+
+RUN pacman -Syu --noconfirm \
+    man-db                  \
+    man-pages               \
+    && yes | pacman -Scc    \
+    && mandb
+
+ENV LC_ALL=en_US.UTF-8
