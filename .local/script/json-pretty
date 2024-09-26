@@ -8,22 +8,26 @@ set -Eeuo pipefail
 }
 
 FORMATTER='jq --indent 2 -S'
-if [[ -x "$(command -v json2yaml)" ]]; then
-	FORMATTER="json2yaml"
-	LANGUAGE="yaml"
-elif [[ -x "$(command -v yq)" ]]; then
-	FORMATTER="yq -P -o yaml"
-	LANGUAGE="yaml"
-fi
+COLORIZER=''
 
-[[ -x "$(command -v bat)" ]] && {
-	if [[ -n "$*" ]]; then
-		FILENAME="$*"
-	else
-		FILENAME="STDIN.${LANGUAGE:-json}"
+if [[ -t 1 ]]; then
+	if [[ -x "$(command -v json2yaml)" ]]; then
+		FORMATTER="json2yaml"
+		LANGUAGE="yaml"
+	elif [[ -x "$(command -v yq)" ]]; then
+		FORMATTER="yq -P -o yaml"
+		LANGUAGE="yaml"
 	fi
 
-	COLORIZER="| bat --wrap=never -l ${LANGUAGE:-json} --color=always --style=header --file-name='$FILENAME'"
-}
+	[[ -x "$(command -v bat)" ]] && {
+		if [[ -n "$*" ]]; then
+			FILENAME="$*"
+		else
+			FILENAME="STDIN.${LANGUAGE:-json}"
+		fi
+
+		COLORIZER="| bat --wrap=never -l ${LANGUAGE:-json} --color=always --style=header --file-name='$FILENAME'"
+	}
+fi
 
 bash -c "$FORMATTER ${COLORIZER:-}"
