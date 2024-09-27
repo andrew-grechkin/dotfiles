@@ -72,6 +72,9 @@ local add_to_history = function(path)
         if #params > 0 then table.insert(opt, ([[--ytdl-raw-options='%s']]):format(table.concat(params, ','))) end
     end
 
+    title = title:gsub('[\n\r\t]', {['\n'] = '\\n', ['\r'] = '\\r', ['\t'] = '\\t'})
+    path = path:gsub('[\n\r\t]', {['\n'] = '\\n', ['\r'] = '\\r', ['\t'] = '\\t'})
+
     log.info(('%s: %s -> %s'):format(type, title, path))
 
     local hist_stat = utils.file_info(MPV_HIST_FILE)
