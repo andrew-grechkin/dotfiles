@@ -237,7 +237,7 @@ sub main() {
     }
 
     if ($options{'LINE_BY_LINE'}) {
-        while (<>) {
+        while (<<>>) {
             chomp;
 
             open my $fh, '<', \$_;
