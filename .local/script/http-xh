@@ -51,7 +51,7 @@ else
 	XH=(xhs)
 fi
 
-if [[ -t 1 ]]; then
+if [[ -t 1 && -z "$JQ" ]]; then
 	opts+=(
 		--all
 		--pretty=all
@@ -65,14 +65,20 @@ if [[ -n "${BODY:-}" ]]; then
 	)
 fi
 
-echo -n "portable: " > /dev/stderr
+>/dev/stderr echo -n "portable: "
 "${XH[@]}" "${VERB_URL[@]}" "$@" "${OPTS[@]}" --curl | tee /dev/stderr | primarycopy
-echo > /dev/stderr
+>/dev/stderr echo
 
 cmd=("${XH[@]}" "${VERB_URL[@]}" "$@" "${opts[@]}" "${OPTS[@]}")
 cmd_str="${cmd[0]}$(printf ' %q' "${cmd[@]:1}")"
-echo -n "executing: " > /dev/stderr
-echo -e "$cmd_str" > /dev/stderr
-echo > /dev/stderr
+>/dev/stderr echo -n "executing: "
 
-"${cmd[@]}"
+if [[ -n "$JQ" ]]; then
+	>/dev/stderr echo -e "$cmd_str" " | jq -S '$JQ'"
+	>/dev/stderr echo
+	"${cmd[@]}" | jq -S "$JQ"
+else
+	>/dev/stderr echo -e "$cmd_str"
+	>/dev/stderr echo
+	"${cmd[@]}"
+fi

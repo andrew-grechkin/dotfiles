@@ -14,7 +14,7 @@ set vicmd=vi
 set iooptions=fastfilecloning
 set dirsize=nitems
 if $HAS_MOUSE == '1'
-"	set mouse='a'
+	set mouse='a'
 endif
 set slowfs+=/media/nfs
 
@@ -115,14 +115,15 @@ set sizefmt=units:iec,precision:2,nospace
 
 " => Commands ----------------------------------------------------------------------------------------------------- {{{1
 " man: https://vifm.info/manual.shtml#Command%20macros
+" help: vifm-macros
 
 command! reload :write | restart
 
 " create
 command! take    :mkdir %a | cd %a
 command! ln      ln %f:p %D
-command! cp      cp -av --sparse=auto --reflink=auto -- %f:p %D/
-command! cpl     cp -av --link                       -- %f:p %D/
+command! cp      tsp cp -av --sparse=auto --reflink=auto -- %f:p %D/
+command! cpl     tsp cp -av --link                       -- %f:p %D/
 command! cprsync rsync-copy-fat                         %f:p %D/
 
 " execute
@@ -130,7 +131,8 @@ command! run    !! ./%c
 command! make   !!make %a
 
 " info
-command! df     df -h %m 2> /dev/null
+command! t      tsp %m
+command! df     df -h %m
 
 " compare
 command! diff   vimdiff %f %F
@@ -142,14 +144,14 @@ command! hlinks hlinks %c %u
 " command! hlinks sudo btrfs inspect-internal inode-resolve "$(inode %c)" "$(findmnt -n --raw --output=target -T %d)" %u
 
 " pack
-command! p      tar -cvaf   %c.tzst %f
-command! z      7z a        %c.7z   %f
+command! p      tsp tar -cvaf   %c.tzst %f
+command! z      tsp 7z a        %c.7z   %f
 
 " repack
-command! rep    archive-convert %c
+command! rep    tsp archive-convert %c
 
 " unpack
-command! unp    archive-extract-here %c
+command! unp    tsp archive-extract --here %c
 
 " checksum
 command! md     find %c -type f -print0 | sort -z | xargs --null md5sum -b > %c.md5
@@ -160,7 +162,7 @@ command! encrypt gpg-encrypt %f
 command! decrypt gpg-decrypt %f
 
 " processing
-command! hardlinker hardlinker -av
+command! hardlinker tsp hardlinker -ar
 
 command! tail tail -f %f
 
@@ -261,7 +263,7 @@ fileviewer *.mp3
 
 filetype *.wav
 	\ {Encode to FLAC}
-	\ flac -8 %f,
+	\ flac -8,
 filetype *.wav
 	\ {Encode to mp3}
 	\ lame -b 128 -m j -h -V 1 -B 256 -F %c %c:r.mp3,
@@ -276,10 +278,10 @@ filetype *.ape
 	\ mac %c %c:r.wav -d,
 filetype *.flac
 	\ {Decode to wav}
-	\ flac -d %f,
+	\ flac -d,
 filetype *.wv
 	\ {Decode to wav}
-	\ wvunpack %f,
+	\ wvunpack,
 filextype *.kar,*.mid,*.midi
 	\ timidity -ig -- %f %i &,
 "filetype *.kar,*.mid,*.midi
@@ -315,9 +317,9 @@ filetype *.html,*.htm
 	\ links,
 	\ lynx,
 fileviewer *.htm,*.html
-	\ html2text2 %f
+	\ html2text2
 fileviewer *.mht,*.mhtml
-	\ mhtml-parse -l %f
+	\ mhtml-parse -l
 
 " => File associations: Images ------------------------------------------------------------------------------------ {{{1
 
@@ -340,6 +342,10 @@ fileviewer *.bmp,*.dng,*.gif,.*.ico,*.icon,*.jp2,*.jpg,*.jpeg,*.png,*.xpm,*.svg,
 
 " => File associations: misc -------------------------------------------------------------------------------------- {{{1
 
+filetype *.svct
+	\ {Execute service-test}
+	\ test-service -vv %c,
+
 filetype *.spec
 	\ {Edit}
 	\ vi %c,
@@ -349,24 +355,21 @@ filetype *.spec
 	\ make -f ~/git/public/andrew-grechkin/centos-rpmbuild-docker/Makefile build9 %s,
 
 fileviewer *.rpm
-	\ rpm -qi %f
+	\ rpm -qi
 
 filetype CMakeLists.txt
 	\ {Build...}
 	\ build-cmake %d,
 
-" filetype *.[1-8]
-" 	\ man ./%c,
-" fileviewer *.[1-8]
-" 	\ man ./%c | col -b,
-
 filetype *.json
 	\ {View json}
 	\ jq -S --indent 2 < %c | bat -l JSON --paging=always,
 	\ {Reformat json}
-	\ reformat -a %f,
+	\ reformat -a,
 	\ {Convert json -> yaml}
 	\ json2yaml %c > %c:r.yaml &,
+" fileviewer *.json
+" 	\ 2yaml %f | bat --wrap=never -l yaml --color=always --style=header --file-name=%f
 
 filetype *.yaml,*.yml
 	\ {View yaml}
@@ -391,10 +394,6 @@ filetype *.sha256
 filetype *.sha512
 	\ {Check SHA512 hash sum}
 	\ sha512sum -c %f %S,
-
-filetype *.asc,*.sig
-	\ {Check signature}
-	\ !!gpg --verify,
 
 fileviewer *.pub
 	\ gpg-show %c
@@ -426,19 +425,28 @@ filetype *.torrent
 fileviewer *.torrent
 	\ dump_torrent -v,
 
-filetype *.gpg
-	\ {Decrypt}
+filetype !{*/}!{.*/}/.gpg$/
+	\ {GPG decrypt}
 	\ gpg-decrypt,
-fileviewer *.gpg
+fileviewer !{*/}!{.*/}/.gpg$/
 	\ gpg --decrypt,
 
-filetype *.base64
-	\ {Decode}
-	\ base64 --decode %c > %c:r &,
+filetype !{*/}!{.*/}/.asc$|.sig$/
+	\ {GPG signature verify}
+	\ !!gpg --verify,
+fileviewer !{*/}!{.*/}/.asc$|.sig$/
+	\ gpg --verify,
 
-filetype *.base64c
-	\ {Decode}
+filetype !{*/}!{.*/}/.base64$/
+	\ {Decode base64}
+	\ base64 --decode %c > %c:r &,
+fileviewer !{*/}!{.*/}/.base64$/
+	\ base64 --decode %c,
+filetype !{*/}!{.*/}/.base64c$/
+	\ {Decode base64 commented}
 	\ sed -e 's/^#//' %c | base64 --decode > %c:r &,
+fileviewer !{*/}!{.*/}/.base64c$/
+	\ sed -e 's/^#//' %c | base64 --decode,
 
 filetype *.shx
 	\ {Decode}
@@ -448,11 +456,11 @@ filetype *.txt
 	\ {View in less}
 	\ less,
 	\ {Recode from cp866}
-	\ text-recode cp866 %f,
+	\ text-recode cp866,
 	\ {Recode from cp1251}
-	\ text-recode cp1251 %f,
+	\ text-recode cp1251,
 	\ {Recode from koi8}
-	\ text-recode koi8 %f,
+	\ text-recode koi8,
 
 " Qt projects
 filextype *.pro
@@ -466,7 +474,7 @@ filetype cpanfile
 
 filetype *.http
 	\ {Request with http-pure}
-	\ http-pure %f,
+	\ http-pure,
 
 " => File associations: office files ------------------------------------------------------------------------------ {{{1
 
@@ -577,76 +585,64 @@ filetype main.yaml
 	\ {Execute ansible role}
 	\ ansible-role  %d:h -K --ask-vault-pass -i localhost,, ,
 
-filetype *.svct
-	\ {Execute service-test}
-	\ test-service -vv %c,
+" => File associations: all files --------------------------------------------------------------------------------- {{{1
 
-" => Default file execution --------------------------------------------------------------------------------------- {{{1
-
-" Open all other files with default system programs (you can also remove all
-" :file[x]type commands above to ensure they don't interfere with system-wide
-" settings).  By default all unknown files are opened with 'vi[x]cmd'
-" uncommenting one of lines below will result in ignoring 'vi[x]cmd' option
-" for unknown file types.
-" For *nix:
-"filetype *
-"	\ xdg-open
-" For OS X:
-" filetype * open
-" For Windows:
-" filetype * start, explorer
-
-filetype *[^/],.*[^/]
+filetype !{*/}!{.*/}
 	\ {Edit in vim}
 	\ vi %c %n,
 	\ {View in less}
 	\ less %c %n,
-	\ {Show history}
-	\ git fh -- %c %n || true,
 	\ {Show file}
 	\ show-file %c | less %c %n,
-	\ {Compress}
-	\ archive-create %f,
-	\ {Show hardlins}
+	\ {Show history}
+	\ git fh -- %c %n || true,
+	\ {Show hardlinks}
 	\ sudo hardlinks-for %f | less,
+fileviewer !{*/}!{.*/}
+	\ show-file,
 
-filetype *[^/$|.gpg$],.*[^/$|.gpg$]
-	\ {Encrypt}
-	\ gpg-encrypt %f,
-filetype *[^/$|.asc$|.sig$],.*[^/$|.asc$|.sig$]
-	\ {Sign}
-	\ gpg-sign %f,
-filetype *[^/$|.base64$],.*[^/$|.base64$]
+" => File associations: all but some files ------------------------------------------------------------------------ {{{1
+
+filetype !{*/}!{.*/}!/.gpg$/
+	\ {GPG encrypt}
+	\ gpg-encrypt,
+
+filetype !{*/}!{.*/}!/.asc$/!/.sig$/
+	\ {GPG signature create}
+	\ gpg-sign,
+
+filetype !{*/}!{.*/}!/.base64$/
 	\ {Encode base64}
-	\ base64 %c > %c.base64,
+	\ base64 %c > %c.base64 &,
 
-filetype */,.*/
+" => File associations: all dirs ---------------------------------------------------------------------------------- {{{1
+
+filetype {*/},{.*/}
 	\ {Show dir}
 	\ show-dir %c | less,
-	\ {Compress zstd}
-	\ archive-create %f,
-	\ {Compress tar.gz}
-	\ archive-create --type="tar.gz" %f,
 	\ {Play dir recursively background}
 	\ execute-detached mpv --quiet --no-osc --term-osd=force --no-audio-display --vid=no -- %c:p,
 	\ {Play dir recursively foreground}
 	\ mpv --no-osc --term-osd=force --no-audio-display --vid=no -- %c:p %s,
-
-" => Preview ------------------------------------------------------------------------------------------------------ {{{1
-
-" Default file viewer
-fileviewer *[^/],.*[^/]
-	\ show-file,
-
-" Default dir viewer
-fileviewer */,.*/
+	\ {Compress (foreground) tar.zstd}
+	\ tar -c %f | pv | zstd > %f.tzst,
+fileviewer {*/},{.*/}
 	\ show-dir,
+
+" => File associations: all --------------------------------------------------------------------------------------- {{{1
+
+filetype {*},{.*}
+	\ {Compress (background) tar.zstd}
+	\ tsp archive-create %c,
+	\ {Compress (background) tar.gz}
+	\ tsp archive-create --type="tar.gz",
 
 " => Save state between sessions ---------------------------------------------------------------------------------- {{{1
 
 " What should be saved automatically between vifm sessions. Drop "savedirs"
 " value if you don't want vifm to remember last visited directories for you.
-set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,phistory,fhistory,dirstack,registers,bookmarks,bmarks
+" set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,phistory,fhistory,dirstack,registers,bookmarks,bmarks
+set vifminfo=bmarks,bookmarks,chistory,dhistory,dirstack,fhistory,phistory,registers,savedirs,shistory,state,tui
 
 " => Examples of configuring both panels -------------------------------------------------------------------------- {{{1
 
