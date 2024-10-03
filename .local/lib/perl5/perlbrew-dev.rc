@@ -6,7 +6,7 @@
 
 # => environment -------------------------------------------------------------------------------------------------- {{{1
 
-REQUIRED_PERL_VERSION="${REQUIRED_PERL_VERSION:-5.40.0}"
+PERL_VERSION_REQUIRED="${PERL_VERSION_REQUIRED:-5.40.0}"
 
 if command git rev-parse HEAD &>/dev/null; then
 	REPO_ROOT="$(git rev-parse --show-toplevel)"
@@ -17,6 +17,9 @@ else
 	REPO_ROOT="$(dirname "$SCRIPT")"
 	REPO_NAME="${REPO_NAME:-default}"
 fi
+
+PERL_NAME="perl-$PERL_VERSION_REQUIRED"
+PERLBREW_LIBRARY_NAME="${PERL_NAME}@dev-$REPO_NAME"
 
 NPROC=4
 [[ -x "$(command -v nproc)" ]] && {
@@ -29,13 +32,11 @@ if [[ -r "$PERLCRITIC_PATH" ]]; then
 fi
 
 HOSTNAME="${HOSTNAME:-$(hostname)}"
-export PERLBREW_ROOT="${PERLBREW_ROOT:-$HOME/.local/share/perlbrew@$HOSTNAME}"
+export PERLBREW_ROOT="${PERLBREW_ROOT:-$XDG_STATE_HOME/perlbrew/$HOSTNAME}"
 export PERLBREW_HOME="${PERLBREW_HOME:-$PERLBREW_ROOT}"
+
 export PATH="$REPO_ROOT/bin:$REPO_ROOT/script:$PATH:$PERLBREW_ROOT/bin"
 export PERL5LIB="$REPO_ROOT/lib:${PERL5LIB:-}"
-
-PERL_NAME="perl-$REQUIRED_PERL_VERSION"
-LIBRARY_NAME="${PERL_NAME}@dev-$REPO_NAME"
 
 # => check prerequisites ------------------------------------------------------------------------------------------ {{{1
 
@@ -47,6 +48,8 @@ function check_prerequisites() {
 
 	[[ -f "$PERLBREW_ROOT/etc/bashrc" ]] || {
 		perlbrew init
+		perlbrew self-install
+		perlbrew install-patchperl
 	}
 
 	# shellcheck disable=SC1091
@@ -64,7 +67,7 @@ function install_perl() {
 	grep -E "\s${PERL_NAME}\s*$" < <(perlbrew list) &>/dev/null || {
 		# https://raw.githubusercontent.com/Perl/perl5/blead/INSTALL
 		echo "Installing required perl: $PERL_NAME (nproc: $NPROC)"
-		nice perlbrew install -nf -j "$NPROC" "$REQUIRED_PERL_VERSION" --as "$PERL_NAME" \
+		nice perlbrew install -nf -j "$NPROC" "$PERL_VERSION_REQUIRED" --as "$PERL_NAME" \
 			-Dinc_version_list=none                                                      \
 			-Duserelocatableinc                                                          \
 			|| return 1
@@ -74,15 +77,15 @@ function install_perl() {
 }
 
 function install_modules() {
-	if [[ ! -f "$PERLBREW_ROOT/libs/${LIBRARY_NAME}/finished" ]]; then
-		grep -E "\s${LIBRARY_NAME}\s*$" < <(perlbrew lib-list) &>/dev/null || {
-			echo "Creating Perl local dev library: $LIBRARY_NAME"
-			perlbrew lib create "$LIBRARY_NAME" || return 1
+	if [[ ! -f "$PERLBREW_ROOT/libs/${PERLBREW_LIBRARY_NAME}/finished" ]]; then
+		grep -E "\s${PERLBREW_LIBRARY_NAME}\s*$" < <(perlbrew lib-list) &>/dev/null || {
+			echo "Creating Perl local dev library: $PERLBREW_LIBRARY_NAME"
+			perlbrew lib create "$PERLBREW_LIBRARY_NAME" || return 1
 			echo
 			[[ -r "$REPO_ROOT/cpanfile" ]] && {
 				echo "Installing required modules from '$REPO_ROOT/cpanfile'"
-				perlbrew exec --with "$LIBRARY_NAME" nice cpanm -nq --installdeps "$REPO_ROOT"
-				touch "$PERLBREW_ROOT/libs/${LIBRARY_NAME}/finished"
+				perlbrew exec --with "$PERLBREW_LIBRARY_NAME" nice cpanm -nq --installdeps "$REPO_ROOT" 2>&1 | grep -vF 'LIBARCHIVE.xattr.com.apple.provenance'
+				touch "$PERLBREW_ROOT/libs/${PERLBREW_LIBRARY_NAME}/finished"
 			}
 		}
 	fi
@@ -94,9 +97,10 @@ function install_modules() {
 if check_prerequisites && install_perl && install_modules; then
 	# different actions if running as part of another script or directly in a user shell
 	if [[ -z "${PS1:-}" ]]; then
-		[[ -n "$*" ]] && perlbrew exec --with "$LIBRARY_NAME" "$@"
+		[[ -n "$*" ]] && perlbrew exec --with "$PERLBREW_LIBRARY_NAME" "$@"
 	else
-		perlbrew use "$LIBRARY_NAME"
+		# for interactive SHELL only
+		perlbrew use "$PERLBREW_LIBRARY_NAME"
 	fi
 	(exit 0)
 else

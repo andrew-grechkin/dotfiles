@@ -1,0 +1,23 @@
+# vim: filetype=zsh foldmethod=marker
+
+rvm_path="$XDG_STATE_HOME/rvm/${HOSTNAME:-$(hostname)}"
+
+# => install (if necessary) --------------------------------------------------------------------------------------- {{{1
+
+if [[ ! -d "$rvm_path" ]]; then
+	1>/dev/stderr echo "> first run installing rvm to $rvm_path (one time initialization)..."
+	2>/dev/null   git clone --depth=1 git@github.com:rvm/rvm.git "$rvm_path"
+	1>/dev/null   mkdir -p "$rvm_path"/{archives,rubies,src,user}
+fi
+
+# => aliases ------------------------------------------------------------------------------------------------------ {{{1
+
+# => main --------------------------------------------------------------------------------------------------------- {{{1
+
+if [[ -d "$rvm_path" ]]; then
+	export rvm_path
+	PATH="$rvm_path/bin:$PATH"
+fi
+
+source-file "$rvm_path/scripts/rvm"
+source-file "$rvm_path/environments/default"
