@@ -5,10 +5,12 @@
 unset    PERLBREW_PATH
 unset    PERLBREW_MANPATH
 
-# export   PERLBREW_ROOT="${PERLBREW_ROOT:-$XDG_DATA_HOME/perlbrew@$HOSTNAME}"
-export   PERLBREW_ROOT="$XDG_DATA_HOME/perlbrew@${HOSTNAME:-$(hostname)}"
+# export   PERLBREW_ROOT="${PERLBREW_ROOT:-$XDG_DATA_HOME/perlbrew/$HOSTNAME}"
+export   PERLBREW_ROOT="$XDG_STATE_HOME/perlbrew/${HOSTNAME:-$(hostname)}"
 export   PERLBREW_HOME="$PERLBREW_ROOT"
 export PERL_CPANM_HOME="$XDG_CACHE_HOME/cpanm"
+
+PATH="$PATH:$PERLBREW_ROOT/bin"
 
 # => aliases ------------------------------------------------------------------------------------------------------ {{{1
 
@@ -26,6 +28,8 @@ function enable-perlbrew() {
 		mkdir -p "$PERLBREW_ROOT"
 		perlbrew init
 		perlbrew install-cpanm
+		perlbrew install-patchperl
+		perlbrew self-install
 	}
 
 	# make system perl available for perlbrew
@@ -72,8 +76,6 @@ function export-perl5lib() {
 }
 
 # => main --------------------------------------------------------------------------------------------------------- {{{1
-
-PATH="$PATH:$PERLBREW_ROOT/bin"
 
 if (( $+commands[perlbrew] )); then                                              # perlbrew is the preferred way of managing perl and libraries
 	enable-perlbrew

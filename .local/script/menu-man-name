@@ -2,7 +2,7 @@
 
 set -Eo pipefail
 
-export PERLBREW_ROOT="${PERLBREW_ROOT:-$XDG_DATA_HOME/perlbrew}"
+export PERLBREW_ROOT="$PERLBREW_ROOT"
 export PERLBREW_HOME="$PERLBREW_ROOT"
 
 # shellcheck source=/dev/null

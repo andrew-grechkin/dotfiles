@@ -8,18 +8,25 @@ set -Eo pipefail
 
 # => environment -------------------------------------------------------------------------------------------------- {{{1
 
-LOCATION="$HOME/.local/lib/perl5"
+site_location="$HOME/.local/lib/perl5"
 
+# install required perl version and define environment variables
 # shellcheck disable=SC1091
-source "$LOCATION/dev.rc" nice cpanm -nq --installdeps "$LOCATION" --with-develop --with-feature=mojo-extras
+source "$site_location/perlbrew-dev.rc"
+
+# install modules into specific library
+# shellcheck disable=SC1091
+echo "Installing required modules from '$site_location/cpanfile'"
+
+source "$site_location/perlbrew-dev.rc" nice cpanm -nq --installdeps "$site_location" --with-develop --with-feature=mojo-extras 2>&1 | grep -vF 'LIBARCHIVE.xattr.com.apple.provenance'
 
 # => switch to the library  --------------------------------------------------------------------------------------- {{{1
 
-echo "Switching to '$LIBRARY_NAME'"
+echo "Switching to '$PERLBREW_LIBRARY_NAME'"
 (
 	# shellcheck disable=SC1091
 	source "$PERLBREW_ROOT/etc/bashrc"
-	rm -f "$PERLBREW_ROOT/init" && perlbrew switch "$LIBRARY_NAME"
+	rm -f "$PERLBREW_ROOT/init" && perlbrew switch "$PERLBREW_LIBRARY_NAME"
 )
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1
