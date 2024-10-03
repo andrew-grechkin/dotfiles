@@ -186,8 +186,8 @@ return {
 
             local norm_term_mappings = {
                 ['<leader>'] = {
-                    ['\''] = {':belowright vsplit<CR>', 'vsplit right'},
-                    ['"'] = {':belowright split<CR>', 'split below'},
+                    ['""'] = {':belowright vsplit<CR>', 'vsplit right'},
+                    ['\''] = {':belowright split<CR>', 'split below'},
                 },
             }
 

@@ -7,15 +7,31 @@ set -Eeuo pipefail
 	exit 1
 }
 
-FORMATTER='jq --indent 2 -S'
-COLORIZER=''
+formatter='| jq --indent 2 -S'
+colorizer=''
+color='auto'
 
-if [[ -t 1 ]]; then
+eval set -- "$(getopt -o c --long color: -- "$@")"
+
+# shellcheck disable=SC2078
+while [ : ]; do
+	case "$1" in
+		-c | --color)
+			color="$2"
+			shift 2
+			;;
+		--) shift;
+			break
+			;;
+	esac
+done
+
+if [[ -t 1 || "$color" == 'always' ]]; then
 	if [[ -x "$(command -v json2yaml)" ]]; then
-		FORMATTER="json2yaml"
+		formatter="| json2yaml"
 		LANGUAGE="yaml"
 	elif [[ -x "$(command -v yq)" ]]; then
-		FORMATTER="yq -P -o yaml"
+		formatter="| yq -P -o yaml"
 		LANGUAGE="yaml"
 	fi
 
@@ -26,8 +42,8 @@ if [[ -t 1 ]]; then
 			FILENAME="STDIN.${LANGUAGE:-json}"
 		fi
 
-		COLORIZER="| bat --wrap=never -l ${LANGUAGE:-json} --color=always --style=header --file-name='$FILENAME'"
+		colorizer="| bat --wrap=never -l ${LANGUAGE:-json} --color="$color" --style=header --file-name='$FILENAME'"
 	}
 fi
 
-bash -c "$FORMATTER ${COLORIZER:-}"
+bash -c "cat $* $formatter ${colorizer:-}"
