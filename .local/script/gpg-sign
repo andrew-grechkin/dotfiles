@@ -3,5 +3,5 @@
 set -Eeuo pipefail
 
 for FILE in "$@"; do
-	command gpg --detach-sign "$FILE"
+	command gpg --detach-sign --armor "$FILE"
 done
