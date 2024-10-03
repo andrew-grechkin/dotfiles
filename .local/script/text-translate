@@ -23,10 +23,7 @@ fi
 # xh https://codeberg.org/aryak/mozhi/raw/branch/master/instances.json | jq -r '.[].link // empty' | xargs -r -I '{}' bash -c "echo 'checking: {}:'; xh '{}/api/translate' --ignore-stdin --form text='$text' engine='$engine' from='$source' to='$target'"
 
 # man: getopt
-VALID_ARGS=$(getopt -o i:e:s:t:h --long instance:,engine:,source:,target:,help -- "$@")
-
-# reorder args in a proper order
-eval set -- "$VALID_ARGS"
+eval set -- "$(getopt -o i:e:s:t:h --long instance:,engine:,source:,target:,help -- "$@")"
 
 # shellcheck disable=SC2078
 while [ : ]; do
