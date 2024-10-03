@@ -2,151 +2,104 @@ snippet marker
 	// => ------------------------------------------------------------------------------------------------------------- {{{1
 	$0
 
-# Functions
-# prototype
-snippet proto
-	${1:class_name}.prototype.${2:method_name} = function(${3}) {
-		${0:${VISUAL}}
-	};
+# => Helpers ------------------------------------------------------------------------------------------------------ {{{1
 
-snippet fun "function"
-	function ${1:function_name}(${2}) {
-		${0:${VISUAL}}
-	}
+snippet jsonp "Helper: JSON decode"
+	JSON.parse(${0:jstr});
 
-snippet asf "async function"
-	async function ${1:function_name}(${2}) {
-		${0:${VISUAL}}
-	}
+snippet jsons "Helper: JSON encode"
+	JSON.stringify(${0:object});
 
-snippet anf "" w
-	function(${1}) {
-		${0:${VISUAL}}
-	}
+snippet timeout "Helper: schedule execution"
+	setTimeout(function () {${0}}${2}, ${1:10});
 
-snippet vaf
-	var ${1:function_name} = function(${2}) {
-		${0:${VISUAL}}
-	};
+snippet ed "Helper: export default"
+	export default ${0}
 
-snippet vf
-	var ${1:function_name} = function $1(${2}) {
-		${0:${VISUAL}}
-	};
+snippet keys "Helper: keys of an object"
+	Object.values(${0})
 
-snippet (f
-	(function(${1}) {
-		${0:${VISUAL}}
-	}(${2}));
+snippet vals "Helper: values of an object"
+	Object.values(${0})
 
-snippet ;fe
-	;(function(${1}) {
-		${0:${VISUAL}}
-	}(${2}))
+# => Imports ------------------------------------------------------------------------------------------------------ {{{1
 
-snippet sdf
-	var ${1:function_name} = function (${2:argument}) {
-		${3}
+snippet imp "Import: member from module"
+	import {${1:name}} from '${2:module}';
 
-		$1 = function ($2) {
-			${0:${VISUAL}}
-		};
-	};
+snippet impd "Import: default from module"
+	import ${1:name} from '${2:$1}';
 
-snippet if "if (condition) { ... }"
-	if (${1:true}) {
-		${0:${VISUAL}}
-	}
+snippet impas "Import: * from module"
+	import * as ${1:name} from '${2:$1}';
 
-snippet ife "if (condition) { ... } else { ... }"
-	if (${1:true}) {
-		${0:${VISUAL}}
-	} else {
-		${2}
-	}
+snippet useformat "Import: format"
+	import {format} from 'node:util';
 
-snippet ter Ternary: `condition ? true : false`
-	$1 ? $2: $0
+# => JSDoc -------------------------------------------------------------------------------------------------------- {{{1
 
-snippet switch
-	switch (${1:expression}) {
-		case '${3:case}':
-			${4}
-			break;
-		${0}
-		default:
-			${2}
-	}
+snippet @block "JSDoc: block"
+	/**
+	 * ${0:description}
+	 */
 
-snippet case "case 'xyz': ... break"
-	case '${1:case}':
-		${0:${VISUAL}}
-		break;
+snippet @par "JSDoc: @param"
+	@param {${1:type}} ${2:name}
 
-snippet try "try { ... } catch(e) { ... }"
-	try {
-		${0:${VISUAL}}
-	} catch (${1:e}) {
-		${2:/* handle error */}
-	}
+snippet @pard "JSDoc: @param with description"
+	@param {${1:type}} ${2:name} - ${0:description}
 
-snippet tryf "try { ... } catch(e) { ... } finally { ... }"
-	try {
-		${0:${VISUAL}}
-	} catch (${1:e}) {
-		${2:/* handle error */}
-	} finally {
-		${3:/* be executed regardless of the try / catch result*/}
-	}
+snippet @ret "JSDoc: @returns"
+	@returns {${1:type}}
 
-snippet terr
-	throw new Error('${1:error message}')
+snippet @retd "JSDoc: @returns with description"
+	@returns {${1:type}} ${0:description}
 
-snippet ret
-	return ${0:result};
+snippet @type "JSDoc: @typedef"
+	@typedef {import("@mojojs/core").$1} ${1:type}
 
-snippet for "for (...) {...}"
-	for (let ${1:i} = 0, ${2:len} = ${3:Things.length}; $1 < $2; $1++) {
+# => Functions ---------------------------------------------------------------------------------------------------- {{{1
+
+snippet fun "Function: named (sync)"
+	function ${1:name}(${2}) {
 		${0:${VISUAL}}
 	}
 
-snippet forr "reversed for (...) {...}"
-	for (let ${2:i} = ${1:Things.length} - 1; $2 >= 0; $2--) {
+snippet funa "Function: named (async)"
+	async function ${1:name}(${2}) {
 		${0:${VISUAL}}
 	}
 
-snippet wh "(condition) { ... }"
-	while (${1:true}) {
-		${0:${VISUAL}}
-	}
-
-snippet wht "(true) { ... }"
-	while (true) {
-		${0:${VISUAL}}
-	}
-
-snippet do "do { ... } while (condition)"
-	do {
-		${0:${VISUAL}}
-	} while ($1);
-
-snippet fori
-	for (let ${1:prop} in ${2:object}) {
-		${0:$2[$1]}
-	}
-
-snippet :f
-	${1:method_name}: function (${2:attribute}) {
+snippet :fun "Function: named (sync) attribute of an object"
+	${1:name}: function (${2:attribute}) {
 		${0:${VISUAL}}
 	},
 
-snippet has
-	hasOwnProperty(${0})
+snippet :funa "Function: named (async) attribute of an object"
+	${1:name}: async function (${2:attribute}) {
+		${0:${VISUAL}}
+	},
+
+
+snippet fun*
+	function* ${1:name}(${2}) {
+		${0:${VISUAL}}
+	}
+
+snippet cfun
+	const ${1:name} = (${2}) => {
+		${0:${VISUAL}}
+	}
+
+snippet cfuna
+	const ${1:function_name} = async (${2}) => {
+		${0:${VISUAL}}
+	}
 
 snippet sing
 	function ${1:Singleton} (${2:argument}) {
 		// the cached instance
-		var instance;
+		let instance;
 
 		// rewrite the constructor
 		$1 = function $1($2) {
@@ -166,6 +119,176 @@ snippet sing
 
 		return instance;
 	}
+
+# => Conditionals ------------------------------------------------------------------------------------------------- {{{1
+
+snippet ter "Conditional: ternary"
+	${1:condition} ? ${2:expression} : ${3:expression};
+
+snippet if "Conditional: if"
+	if (${1}) {
+		${0:${VISUAL}}
+	}
+
+snippet ife "Conditional: if..else"
+	if (${1}) {
+		${2:${VISUAL}}
+	} else {
+		${0}
+	}
+
+snippet switch "Conditional: switch"
+	switch (${1:expression}) {
+		case '${3:case}':
+			${4}
+			break;
+		${0}
+		default:
+			${2}
+	}
+
+snippet case "Conditional: case"
+	case '${1:case}':
+		${0:${VISUAL}}
+		break;
+
+# => Loops -------------------------------------------------------------------------------------------------------- {{{1
+
+snippet fin "Loop: for property names in an object"
+	for (const ${1:prop} in ${2:object}) {
+		${0:$2[$1]}
+	}
+
+snippet fof "Loop: for iterator"
+	for (const ${1:prop} of ${2:object}) {
+		${0:$1}
+	}
+
+snippet forc "Loop: for C-style"
+	for (let ${1:i} = 0, ${2:len} = ${3:Things.length}; $1 < $2; ++$1) {
+		${0:${VISUAL}}
+	}
+
+snippet while "Loop: while"
+	while (${1}) {
+		${2:${VISUAL}}
+	}
+	${0}
+
+snippet do "Loop: do"
+	do {
+		${0:${VISUAL}}
+	} while ($1);
+
+# => Error checking ----------------------------------------------------------------------------------------------- {{{1
+
+snippet try "Error checking: try"
+	try {
+		${0:${VISUAL}}
+	} catch (${2:err}) {
+		${3:...}
+	}
+
+snippet tryf "Error checking: try finally"
+	try {
+		${1:${VISUAL}}
+	} catch (${2:err}) {
+		${3:...}
+	} finally {
+		${4:...}
+	}
+	${0}
+
+snippet thr "Error checking: throw an error"
+	throw new Error('${1:error message}')
+
+# => Console ------------------------------------------------------------------------------------------------------ {{{1
+
+snippet ca "Console: assert"
+	console.assert(${1:expression}, ${0:obj});
+
+snippet cd "Console: debug"
+	console.debug(${0});
+
+snippet ce "Console: error"
+	console.error(${0});
+
+snippet ci "Console: info"
+	console.info(${0});
+
+snippet cl "Console: log"
+	console.log(${0});
+
+snippet clj "Console: log JSON encoded"
+	console.log(JSON.stringify(${0}, null, 2));
+
+snippet ct "Console: trace"
+	console.trace(${0:label});
+
+snippet cw "Console: warn"
+	console.warn(${0});
+
+snippet ctime "Console: stopwatch"
+	console.time("${1:label}");
+	${0:${VISUAL}}
+	console.timeEnd("$1");
+
+snippet ctimestamp "Console: timestamp"
+	console.timeStamp("${1:label}");
+
+snippet cclear "Console: clear"
+	console.clear();
+
+snippet cdir "Console: dir"
+	console.dir(${0:obj});
+
+snippet cdirx "Console: dirxml"
+	console.dirxml(${1:object});
+
+snippet cgroup "Console: group"
+	console.group("${1:label}");
+	${0:${VISUAL}}
+	console.groupEnd();
+
+snippet cgroupc "Console: group collapsed"
+	console.groupCollapsed("${1:label}");
+	${0:${VISUAL}}
+	console.groupEnd();
+
+snippet cprof "Console: profile"
+	console.profile("${1:label}");
+	${0:${VISUAL}}
+	console.profileEnd();
+
+snippet ctable "Console: table"
+	console.table(${1:"${2:value}"});
+
+# => Classes ------------------------------------------------------------------------------------------------------ {{{1
+
+snippet cla "Class: base"
+	class ${1} {
+		${0:${VISUAL}}
+	}
+
+snippet clac "Class: base with constructor"
+	class ${1} {
+		constructor(${2}) {
+			${0:${VISUAL}}
+		}
+	}
+
+snippet clax "Class: derived"
+	class ${1} extends ${2} {
+		${0:${VISUAL}}
+	}
+
+snippet proto
+	${1:class_name}.prototype.${2:method_name} = function(${3}) {
+		${0:${VISUAL}}
+	};
+
+snippet has
+	hasOwnProperty(${0})
 
 snippet obj
 	function object(o) {
@@ -211,24 +334,6 @@ snippet prop
 		}
 	);
 
-snippet /**
-	/**
-	 * ${0:description}
-	 *
-	 */
-
-snippet @par
-	@param {${1:type}} ${2:name} ${0:description}
-
-snippet @ret
-	@return {${1:type}} ${0:description}
-
-snippet jsonp
-	JSON.parse(${0:jstr});
-
-snippet jsons
-	JSON.stringify(${0:object});
-
 snippet get
 	getElementsBy${1:TagName}('${0}')
 
@@ -247,159 +352,5 @@ snippet qs
 snippet qsa
 	${1:document}.querySelectorAll('${0:CSS selector}')
 
-snippet de
-	debugger;
-
-snippet cl "console.log"
-	console.log(${0});
-
-snippet cd "console.debug"
-	console.debug(${0});
-
-snippet ce "console.error"
-	console.error(${0});
-
-snippet cw "console.warn"
-	console.warn(${0});
-
-snippet ci "console.info"
-	console.info(${0});
-
-snippet ct "console.trace"
-	console.trace(${0:label});
-
-snippet ctime "console.time ... console.timeEnd"
-	console.time("${1:label}");
-	${0:${VISUAL}}
-	console.timeEnd("$1");
-
-snippet ctimestamp "console.timeStamp"
-	console.timeStamp("${1:label}");
-
-snippet ca "console.assert"
-	console.assert(${1:expression}, ${0:obj});
-
-snippet cclear "console.clear"
-	console.clear();
-
-snippet cdir "console.dir"
-	console.dir(${0:obj});
-
-snippet cdirx "console.dirxml"
-	console.dirxml(${1:object});
-
-snippet cgroup "console.group"
-	console.group("${1:label}");
-	${0:${VISUAL}}
-	console.groupEnd();
-
-snippet cgroupc "console.groupCollapsed"
-	console.groupCollapsed("${1:label}");
-	${0:${VISUAL}}
-	console.groupEnd();
-
-snippet cprof "console.profile"
-	console.profile("${1:label}");
-	${0:${VISUAL}}
-	console.profileEnd();
-
-snippet ctable "console.table"
-	console.table(${1:"${2:value}"});
-
-snippet clstr "console.log stringified"
-	console.log(JSON.stringify(${0}, null, 2));
-
-snippet us
-	'use strict';
-
-snippet timeout
-	setTimeout(function () {${0}}${2}, ${1:10});
-
-snippet const
-	const ${1} = ${0};
-
-snippet constn
-	const ${1} = new ${0};
-
-snippet let
-	let ${1} = ${0};
-
-snippet im "import xyz from 'xyz'"
-	import ${1} from '${2:$1}';
-
-snippet imas "import * as xyz from 'xyz'"
-	import * as ${1} from '${2:$1}';
-
-snippet imm "import { member } from 'xyz'"
-	import { ${1} } from '${2}';
-
-snippet cla
-	class ${1} {
-		${0:${VISUAL}}
-	}
-
-snippet clax
-	class ${1} extends ${2} {
-		${0:${VISUAL}}
-	}
-
-snippet clac
-	class ${1} {
-		constructor(${2}) {
-			${0:${VISUAL}}
-		}
-	}
-
-snippet foro "for (const prop of object}) { ... }"
-	for (const ${1:prop} of ${2:object}) {
-		${0:$1}
-	}
-
-snippet forl "for (let prop of object}) { ... }"
-	for (let ${1:prop} of ${2:object}) {
-		${0:$1}
-	}
-
-snippet fun*
-	function* ${1:function_name}(${2}) {
-		${0:${VISUAL}}
-	}
-
-snippet c=>
-	const ${1:function_name} = (${2}) => {
-		${0:${VISUAL}}
-	}
-
-snippet ca=>
-	const ${1:function_name} = async (${2}) => {
-		${0:${VISUAL}}
-	}
-
-snippet caf
-	const ${1:function_name} = (${2}) => {
-		${0:${VISUAL}}
-	}
-
-snippet casf
-	const ${1:function_name} = async (${2}) => {
-		${0:${VISUAL}}
-	}
-
-snippet =>
-	(${1}) => {
-		${0:${VISUAL}}
-	}
-
-snippet af "() =>"
-	(${1}) => ${0:${VISUAL}}
-
-snippet afb "() => {}"
-	(${1}) => {
-		${0:${VISUAL}}
-	}
-
 snippet sym
 	const ${1} = Symbol('${0}');
-
-snippet ed
-	export default ${0}
