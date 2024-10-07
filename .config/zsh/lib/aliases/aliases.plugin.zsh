@@ -5,6 +5,8 @@
 
 alias help='run-help'
 
+alias vi-tsv='vi -c "set filetype=csv"'
+
 # => apps --------------------------------------------------------------------------------------------------------- {{{1
 
 alias htop='htop -u "$USER"'

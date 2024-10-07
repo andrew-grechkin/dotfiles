@@ -11,7 +11,7 @@ formatter='| jq --indent 2 -S'
 colorizer=''
 color='auto'
 
-eval set -- "$(getopt -o c --long color: -- "$@")"
+eval set -- "$(getopt --options 'c:' --longoptions 'color:' -- "$@")"
 
 # shellcheck disable=SC2078
 while [ : ]; do
