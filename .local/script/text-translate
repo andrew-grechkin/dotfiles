@@ -23,7 +23,7 @@ fi
 # xh https://codeberg.org/aryak/mozhi/raw/branch/master/instances.json | jq -r '.[].link // empty' | xargs -r -I '{}' bash -c "echo 'checking: {}:'; xh '{}/api/translate' --ignore-stdin --form text='$text' engine='$engine' from='$source' to='$target'"
 
 # man: getopt
-eval set -- "$(getopt -o i:e:s:t:h --long instance:,engine:,source:,target:,help -- "$@")"
+eval set -- "$(getopt --options 'i:e:s:t:h' --longoptions 'instance:,engine:,source:,target:,help' -- "$@")"
 
 # shellcheck disable=SC2078
 while [ : ]; do
