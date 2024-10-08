@@ -48,6 +48,7 @@
 	m-dt         = !"f(){ git difftool --ignore-space-change -t vimdiff     `git m-span .. $@`; }; f"
 	m-log        = !"f(){ git log                            --color=always `git m-span .. $@`; }; f"
 	m-span       = !"git-merge-span"
+	mrs          = !"fzf-git-gl-mr-list"
 	mt           = mergetool
 	mt4          = mergetool --tool=nvimdiff4
 	mtg          = mergetool --gui
@@ -69,11 +70,12 @@
 	what         = whatchanged --show-signature
 
 	### helper ---------------------------------------------------------------------------------------------------------
+
 	# detect main remote branch
 	gmb          = !"f(){ R=\"$(git gmr \"${@:-HEAD}\")\"; [[ -n \"$R\" ]] && { git gmu \"${@:-HEAD}\" | grep -Po \"(?<=\\b$R/)\\w+$\"; } || git rev-parse --abbrev-ref --symbolic-full-name HEAD; }; f"
 	# detect main remote name by .git/config branch or refs/remotes/.../HEAD
 	gmr          = !"f(){ git config --local --get \"branch.$(git pbranch \"${@:-HEAD}\").remote\" 2>/dev/null || git show-ref 2>/dev/null | grep -Po '(?<=\\brefs/remotes/)[^\\/]+(?=/HEAD\\b)' | head -1; }; f"
-	# detect main remote/HEAD ref name by refs/remotes/.../HEAD
+	# detect main <remote>/HEAD ref name by refs/remotes/.../HEAD
 	gmrh         = !"f(){ git show-ref  2>/dev/null | grep -Po '(?<=\\brefs/remotes/)[^\\/]+/HEAD\\b' | head -1; }; f"
 	# detect main upstream branch
 	gmu          = !"f(){ git pbranch $(git gmrh); }; f"

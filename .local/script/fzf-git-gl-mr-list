@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+[[ -x "$(command -v fzf)" ]] || {
+	echo "fzf is not installed. Please install from 'https://github.com/junegunn/fzf#installation'"
+	exit 1
+}
+
+eval set -- "$(getopt --options 'h:p:' --longoptions 'host:,project:' -- "$@")"
+
+# shellcheck disable=SC2078
+while [ : ]; do
+	case "$1" in
+		-h | --host)
+			HOST="$2"
+			shift 2
+			;;
+		-p | --project)
+			PROJECT="$2"
+			shift 2
+			;;
+		--) shift;
+			break
+			;;
+	esac
+done
+
+source "$(dirname "$0")/git-gl-common"
+
+current_script="$(basename "$0")"
+fetcher=(
+	"${current_script#fzf-}"
+	--project="$PROJECT"
+	--table
+)
+
+fzf_cmd=(
+	fzf
+	--ansi
+	--bind="alt-a:execute-silent(git-gl-mr-approve -h \"$HOST\" -p \"$PROJECT\" {+1})+reload-sync(${fetcher[*]})"
+	--bind="alt-b:execute-silent(python3 -mwebbrowser {6})"
+	--bind="alt-p:toggle-preview,ctrl-alt-w:toggle-preview-wrap,ctrl-s:toggle-sort"
+	--bind="alt-r:execute-silent(git-gl-mr-approve -h \"$HOST\" -p \"$PROJECT\" {+1} -u)+reload-sync(${fetcher[*]})"
+	--bind="ctrl-m:execute(git-gl-mr-diff {1} | delta --paging=always)"
+	--bind="ctrl-r:reload-sync(${fetcher[*]})"
+	--bind="ctrl-y:execute-silent(echo -n {} | clipcopy)"
+	--bind="esc:cancel"
+	--bind="home:top"
+	--bind="tab:toggle+down,shift-tab:toggle+up"
+	--delimiter=$'\u00a0'
+	--header-lines=1
+	--header='A-a:approve A-b:browse A-p:preview A-r:revoke C-r:reload C-y:yank Enter:diff'
+	--multi
+	--preview-window=right:60%:border-left:wrap:hidden
+	--preview="git-gl-mr-diff {1} | delta"
+	--reverse
+	--scroll-off=4
+	--tabstop=4
+	--track
+)
+
+"${fetcher[@]}" | "${fzf_cmd[@]}"

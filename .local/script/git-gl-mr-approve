@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+eval set -- "$(getopt --options 'uh:p:' --longoptions 'unapprove,host:,project:' -- "$@")"
+
+action="approve"
+jobs=4
+
+[[ -x "$(command -v nproc)" ]] && {
+	jobs="$(nproc)"
+}
+
+# shellcheck disable=SC2078
+while [ : ]; do
+	case "$1" in
+		-h | --host)
+			HOST="$2"
+			shift 2
+			;;
+		-p | --project)
+			PROJECT="$2"
+			shift 2
+			;;
+		-u | --unapprove)
+			action="unapprove"
+			shift
+			;;
+		--) shift;
+			break
+			;;
+	esac
+done
+
+source "$(dirname "$0")/git-gl-common"
+
+# https://docs.gitlab.com/ee/api/merge_request_approvals.html#approve-merge-request
+if [[ -x "$(command -v xhs)" ]]; then
+	http_fetch_command=(
+		xhs
+		POST
+		"$HOST/api/v4/projects/$(url_encode "$PROJECT")/merge_requests/{}/$action" "${COMMON_XH_OPTIONS[@]}"
+	)
+else
+	http_fetch_command=(
+		curl
+		-s
+		-X POST
+		-H "accept: application/json"
+		-H "private-token: $TOKEN"
+		"https://${HOST}/api/v4/projects/$(url_encode "$PROJECT")/merge_requests/{}/$action"
+	)
+fi
+
+echo -n "$@" | xargs --no-run-if-empty -I{} -P "$jobs" "${http_fetch_command[@]}"
