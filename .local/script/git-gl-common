@@ -1,0 +1,56 @@
+# vim: filetype=sh
+# shellcheck disable=SC2034
+
+function url_encode() {
+	printf %s "$1" | jq -sRr @uri
+}
+
+function join() {
+	local IFS=$'\t';
+	echo -e "$*"
+}
+
+if [[ -t 1 ]]; then
+	INTERACTIVE=1
+	PRINT_HEADER=1
+else
+	INTERACTIVE=0
+	PRINT_HEADER=0
+fi
+
+if [[ -z "${PROJECT:-}" ]]; then
+	if git-in-repo; then
+		set +e
+		current_branch=$(git rev-parse --verify --abbrev-ref HEAD 2>/dev/null)
+		REMOTE=$(git config --local --get "branch.$current_branch.remote" 2>/dev/null || git show-ref 2>/dev/null | grep -Po '(?<=\\brefs/remotes/)[^\\/]+(?=/HEAD\\b)' | head -1)
+		repo_url="$(git config --get "remote.${REMOTE}.url")"
+		IFS=":" read -r -a parts <<< "$repo_url"
+		HOST="${parts[0]#*@}"
+		PROJECT="${parts[1]%.git}"
+		set -e
+	else
+		>/dev/stderr "undefined project"
+		exit 1
+	fi
+fi
+
+HOST="${HOST:-gitlab.com}"
+TOKEN="${GITLAB_PERSONAL_TOKEN:-}"
+if [[ -z "$TOKEN" ]]; then
+	token_file="${XDG_CONFIG_HOME:-~/.config}/gitlab/${HOST}.token"
+	if [[ -r "$token_file" ]]; then
+		TOKEN="$(cat "$token_file")"
+	else
+		>/dev/stderr echo "Please provide gitlab token with 'api' permission as one of:"
+		>/dev/stderr echo "  - GITLAB_PERSONAL_TOKEN env variable"
+		>/dev/stderr echo "  - $token_file file"
+	fi
+fi
+
+COMMON_XH_OPTIONS=(
+	"accept: application/json"
+	"private-token: $TOKEN"
+	--check-status
+	--ignore-stdin
+	--no-follow
+)
