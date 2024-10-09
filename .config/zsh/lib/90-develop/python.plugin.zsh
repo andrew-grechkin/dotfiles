@@ -29,6 +29,6 @@ function enable-pyenv() {
 
 # => main --------------------------------------------------------------------------------------------------------- {{{1
 
-if (( $+commands[pyenv] )); then
-	enable-pyenv
-fi
+# if (( $+commands[pyenv] )); then
+# 	enable-pyenv
+# fi
