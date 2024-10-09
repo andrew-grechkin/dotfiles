@@ -6,11 +6,11 @@ alias npr='npm run'
 
 # => functions ---------------------------------------------------------------------------------------------------- {{{1
 
-function typescript-global-setup () {
+function npm-typescript-global-setup () {
 	npm install -g ts-node typescript @types/node
 }
 
-function typescript-setup () {
+function npm-typescript-setup () {
 	npm install --save-dev nodemon ts-node typescript @types/node
 }
 
@@ -24,34 +24,36 @@ function npm-global-common () {
 	npm install -g neovim
 }
 
-function nvm-lazy-load() {
-	unset -f node npm nvm
-
-	source-file "$NVM_DIR/nvm.sh"
-	source-file "$NVM_DIR/bash_completion"
-}
-
-node() {
-	nvm-lazy-load
-	node "$@"
-}
-
-npm() {
-	nvm-lazy-load
-	npm "$@"
-}
-
-nvm() {
-	nvm-lazy-load
-	nvm "$@"
-}
-
 # => exports ------------------------------------------------------------------------------------------------------ {{{1
 
-if [[ -d "$XDG_CONFIG_HOME/nvm" ]]; then
-	export NVM_DIR="$XDG_CONFIG_HOME/nvm"
-fi
+# export NPM_CONFIG_PREFIX="$XDG_DATA_HOME/npm"
 
 # => main --------------------------------------------------------------------------------------------------------- {{{1
 
-# export NPM_CONFIG_PREFIX="$XDG_DATA_HOME/npm"
+if [[ -x $(command -v fnm) ]]; then
+	eval "$(fnm env --use-on-cd --shell zsh)"
+elif [[ -d "$XDG_CONFIG_HOME/nvm" ]]; then
+	export NVM_DIR="$XDG_CONFIG_HOME/nvm"
+
+	function nvm-lazy-load() {
+		unset -f node npm nvm
+
+		source-file "$NVM_DIR/nvm.sh"
+		source-file "$NVM_DIR/bash_completion"
+	}
+
+	node() {
+		nvm-lazy-load
+		node "$@"
+	}
+
+	npm() {
+		nvm-lazy-load
+		npm "$@"
+	}
+
+	nvm() {
+		nvm-lazy-load
+		nvm "$@"
+	}
+fi

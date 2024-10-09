@@ -30,12 +30,6 @@ function activate() {
 	if command git rev-parse HEAD &>/dev/null; then
 		REPO_ROOT="$(git rev-parse --show-toplevel)"
 
-		if [[ -r '.nvmrc' || -r "$REPO_ROOT/.nvmrc" ]]; then
-			nvm use
-			umask 0002
-			return
-		fi
-
 		FILES+=("${FILES[@]/#/$REPO_ROOT/}")
 		FILES+=("$REPO_ROOT/projects/deployments/dev.rc")
 	fi
