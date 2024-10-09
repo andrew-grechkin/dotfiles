@@ -116,6 +116,12 @@ snippet xwhi "Loop one-line: while"
 
 # => Error checking ----------------------------------------------------------------------------------------------- {{{1
 
+snippet ais "Error checking: assert_is"
+	assert_is(${1:${VISUAL}}, ${2:\$match}, ${0:\$name}) if DEBUG;
+
+snippet alike "Error checking: assert_like"
+	assert_like(${1:${VISUAL}}, ${2:\$regex}, ${0:\$name}) if DEBUG;
+
 snippet try "Error checking: try"
 	try {
 		${1:...}
@@ -264,6 +270,10 @@ snippet head38 "Header: pragmas" b
 	use experimental qw(builtin class declared_refs defer for_list refaliasing try);
 
 	${0}
+
+snippet useas "Header: use Carp::Assert" b
+    use Carp::Assert       qw(DEBUG);
+    use Carp::Assert::More qw(assert_is);
 
 snippet useau "Header: use autoclean" b
 	use namespace::autoclean qw(-except import);
