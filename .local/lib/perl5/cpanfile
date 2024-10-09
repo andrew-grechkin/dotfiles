@@ -8,6 +8,8 @@ requires "Role::Tiny";
 
 requires "App::cpanminus";
 requires "Carp::Always";
+requires "Carp::Assert";
+requires "Carp::Assert::More";
 requires "Data::Dump";
 requires "Data::Printer";
 requires "DateTime::TimeZone";
@@ -25,7 +27,6 @@ requires "Neovim::Ext";
 requires "Text::CSV";
 
 on 'develop' => sub {
-    requires "Carp::Assert";
     requires "MetaCPAN::Client";
     requires "Perl::Critic";
     requires "Perl::Critic::Pulp";

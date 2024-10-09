@@ -362,7 +362,9 @@ filetype CMakeLists.txt
 	\ build-cmake %d,
 
 filetype *.json
-	\ {View json}
+	\ {Repl jq}
+	\ jq-repl %c,
+	\ {View}
 	\ jq -S --indent 2 < %c | bat -l JSON --paging=always,
 	\ {Reformat json}
 	\ reformat -a,
@@ -372,12 +374,20 @@ filetype *.json
 " 	\ 2yaml %f | bat --wrap=never -l yaml --color=always --style=header --file-name=%f
 
 filetype *.yaml,*.yml
-	\ {View yaml}
+	\ {Repl jq}
+	\ yaml2json %c | jq-repl,
+	\ {View}
 	\ yaml-sanitize %c | bat -l yaml --paging=always,
 	\ {Sanitize yaml}
 	\ yaml-sanitize -i %c,
 	\ {Convert yaml -> json}
 	\ yaml2json %c > %c:r.json &,
+
+filetype *.tsv
+	\ {View}
+	\ vi -c "set filetype=csv" %c,
+	\ {Repl jq}
+	\ tsv2json %c | jq-repl,
 
 filetype *.md5
 	\ {Check MD5 hash sum}
