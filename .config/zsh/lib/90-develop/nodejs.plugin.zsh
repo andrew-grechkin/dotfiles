@@ -24,6 +24,28 @@ function npm-global-common () {
 	npm install -g neovim
 }
 
+function nvm-lazy-load() {
+	unset -f node npm nvm
+
+	source-file "$NVM_DIR/nvm.sh"
+	source-file "$NVM_DIR/bash_completion"
+}
+
+node() {
+	nvm-lazy-load
+	node "$@"
+}
+
+npm() {
+	nvm-lazy-load
+	npm "$@"
+}
+
+nvm() {
+	nvm-lazy-load
+	nvm "$@"
+}
+
 # => exports ------------------------------------------------------------------------------------------------------ {{{1
 
 if [[ -d "$XDG_CONFIG_HOME/nvm" ]]; then
@@ -31,10 +53,5 @@ if [[ -d "$XDG_CONFIG_HOME/nvm" ]]; then
 fi
 
 # => main --------------------------------------------------------------------------------------------------------- {{{1
-
-if [[ -r "$NVM_DIR/nvm.sh" ]]; then
-	source "$NVM_DIR/nvm.sh"
-	source "$NVM_DIR/bash_completion"
-fi
 
 # export NPM_CONFIG_PREFIX="$XDG_DATA_HOME/npm"
