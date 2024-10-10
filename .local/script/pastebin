@@ -8,8 +8,9 @@ set -Eeuo pipefail
 #  <command> | pastebin      - copies stdin to termbin/pastebin
 #  pastebin <file> <file>... - copies file's contents to termbin/pastebin
 
-if [[ -n "$(command -v pastebin-work)" ]] && [[ -n "$(command -v is-work-network)" ]] && is-work-network; then
-	cat "${@}" | pastebin-work
+if is-work-network; then
+	echo "$0 shouldn't be used in private network"
+	exit 1
 else
 	if [[ -n "$(command -v socat)" ]]; then
 		URL=$(tr -d '\0' < <(cat "${@}" | socat - TCP4:termbin.com:9999))
