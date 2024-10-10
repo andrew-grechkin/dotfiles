@@ -27,17 +27,33 @@ else
 	input="$1"
 fi
 
+if [[ -x "$(command -v json-pretty)" ]]; then
+	prettify=(json-pretty --no-filename --color=always)
+else
+	prettify=(jq -SC)
+fi
+
 FZF_CMD=(
 	fzf
-	--bind="ctrl-d:execute(echo {q}; echo; jq -S -r {q} \"$input\")+abort"
-	--bind="ctrl-m:execute(jq -r {q} \"$input\" | json-pretty --color=always | less)"
+	--ansi
+	--bind="alt-p:unbind(alt-p)"
+	--bind="ctrl-c:become(true)"
+	--bind="ctrl-j:preview-down"
+	--bind="ctrl-k:preview-up"
+	--bind="ctrl-m:execute(jq {q} \"$input\" | ${prettify[*]} | less)"
+	--bind="ctrl-x:become(echo jq -S \"{q}\" >/dev/stderr; jq -S {q} \"$input\")"
 	--bind="ctrl-y:execute-silent(echo -n {q} | clipcopy)"
+	--bind="end:preview-bottom"
 	--bind="esc:execute-silent(echo -n {q} | clipcopy)+change-query($query)"
+	--bind="home:preview-top"
+	--bind="page-down:preview-page-down"
+	--bind="page-up:preview-page-up"
 	--disabled
-	--preview="jq -r {q} \"$input\" | json-pretty --color=always"
+	--header='C-c:exit C-j:pgdn C-k:pgup C-x:dump C-y:yank Enter:view Esc:reset'
 	--preview-window='up:95%:border-bottom:wrap:nohidden'
+	--preview="jq {q} \"$input\" | ${prettify[*]}"
 	--print-query
 	--query="$query"
 )
 
-"${FZF_CMD[@]}"
+exec "${FZF_CMD[@]}"

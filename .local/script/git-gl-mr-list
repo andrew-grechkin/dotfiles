@@ -9,6 +9,10 @@ set -Eeuo pipefail
 
 eval set -- "$(getopt --options 'th:p:' --longoptions 'table,host:,project:' -- "$@")"
 
+if [[ -t 1 ]]; then
+	table='1'
+fi
+
 # shellcheck disable=SC2078
 while [ : ]; do
 	case "$1" in
@@ -21,7 +25,7 @@ while [ : ]; do
 			shift 2
 			;;
 		-t | --table)
-			table=1
+			table='1'
 			shift
 			;;
 		--) shift;

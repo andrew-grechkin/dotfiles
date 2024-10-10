@@ -2,4 +2,11 @@
 
 set -Eeuo pipefail
 
-column -t -s$'\t' "$@"
+if [[ -t 1 ]]; then
+	LESS="${LESS:-"-x4 -iRSw --mouse"}"
+	pager=(less --header=1)
+else
+	pager=(cat)
+fi
+
+column --table --separator=$'\t' "$@" | "${pager[@]}"

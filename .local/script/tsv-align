@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+# align columns but keep tabs as main separator (useful for further processing with fzf)
+exec column --table --separator=$'\t' --output-separator=$'\u0009' "$@"
