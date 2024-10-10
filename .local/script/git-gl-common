@@ -30,7 +30,7 @@ if [[ -z "${PROJECT:-}" ]]; then
 		PROJECT="${parts[1]%.git}"
 		set -e
 	else
-		>/dev/stderr "undefined project"
+		>/dev/stderr echo "undefined project"
 		exit 1
 	fi
 fi
