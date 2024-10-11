@@ -5,21 +5,21 @@ Number of commands=8
 Regexp=([^"\\s]+youtube.*watch\\?[^"\\s]+)|([^"\\s]+youtu.be[^"\\s]+)
 
 [Action_0/Command_0]
-Commandline[$e]=mpv --quiet --ytdl-raw-options='format="b[height<=1080]/bv*[ext=webm][height<=480]+ba/bv*[ext=mp4][height<=480]+ba/b",sub-langs="en,nl,ru,fr,de,it,pt"' -- '%0'
-Description=Play youtube video with mpv
+Commandline[$e]=mpv --quiet --ytdl-raw-options='format="b[height<=1080]/bv*[height<=480]+ba/b",sub-langs="en,nl,ru,fr,de,it,pt"' -- '%0'
+Description=Play youtube video with mpv (fast)
 Enabled=true
 Icon=mpv
 Output=0
 
 [Action_0/Command_1]
-Commandline[$e]=mpv --quiet --ytdl-raw-options='format="bv*[ext=webm][height<=720]+ba/bv*[ext=mp4][height<=720]+ba/b",sub-langs="en,nl,ru,fr,de,it,pt"' -- '%0'
+Commandline[$e]=mpv --quiet --ytdl-raw-options='format="b[height>480][height<=720]/bv*[height<=720]+ba/b",prefer-free-formats="",sub-langs="en,nl,ru,fr,de,it,pt"' -- '%0'
 Description=Play youtube video with mpv (720p)
 Enabled=true
 Icon=mpv
 Output=0
 
 [Action_0/Command_2]
-Commandline[$e]=mpv --quiet --ytdl-raw-options='format="bv*[ext=webm][height<=1080]+ba/bv*[ext=mp4][height<=1080]+ba/b",sub-langs="en,nl,ru,fr,de,it,pt"' -- '%0'
+Commandline[$e]=mpv --quiet --ytdl-raw-options='format="b[height>720][height<=1080]/bv*[height<=1080]+ba/b",prefer-free-formats="",sub-langs="en,nl,ru,fr,de,it,pt"' -- '%0'
 Description=Play youtube video with mpv (1080p)
 Enabled=true
 Icon=mpv
