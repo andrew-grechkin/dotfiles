@@ -7,11 +7,19 @@ set -Eeuo pipefail
 	exit 1
 }
 
-eval set -- "$(getopt --options 'th:p:' --longoptions 'table,host:,project:' -- "$@")"
+eval set -- "$(getopt --options 'ta:h:p:' --longoptions 'table,author:,host:,project:' -- "$@")"
+
+if [[ -t 1 ]]; then
+	table='1'
+fi
 
 # shellcheck disable=SC2078
 while [ : ]; do
 	case "$1" in
+		-a | --author)
+			state="${state:-author_username=$2}"
+			shift 2
+			;;
 		-h | --host)
 			HOST="$2"
 			shift 2
@@ -21,7 +29,7 @@ while [ : ]; do
 			shift 2
 			;;
 		-t | --table)
-			table=1
+			table='1'
 			shift
 			;;
 		--) shift;
@@ -34,18 +42,20 @@ source "$(dirname "$0")/git-gl-common"
 
 created_after=$(date --rfc-3339=seconds --date="$(date +%Y-%m-01) -1 month")
 
+state="${state:-state=opened&wip=no&created_after=${created_after}}"
+
 # https://docs.gitlab.com/ee/api/merge_requests.html#list-project-merge-requests
 if [[ -x "$(command -v xhs)" ]]; then
 	http_fetch_command=(
 		xhs
-		"${HOST}/api/v4/projects/$(url_encode "$PROJECT")/merge_requests?per_page=100&created_after=${created_after}&state=opened&wip=no"
+		"${HOST}/api/v4/projects/$(url_encode "$PROJECT")/merge_requests?per_page=100&${state}"
 		"${COMMON_XH_OPTIONS[@]}"
 	)
 else
 	http_fetch_command=(
 		curl
 		-s
-		"https://${HOST}/api/v4/projects/$(url_encode "$PROJECT")/merge_requests?per_page=100&created_after=$(url_encode "$created_after")&state=opened&wip=no"
+		"https://${HOST}/api/v4/projects/$(url_encode "$PROJECT")/merge_requests?per_page=100&created_after=$(url_encode "$created_after")&${state}"
 		-H "accept: application/json"
 		-H "private-token: $TOKEN"
 	)
@@ -59,6 +69,7 @@ if [[ "${table:-0}" == "1" ]]; then
 			# 'wip;\(if .work_in_progress then 1 else 0 end)'
 			# 'project_id;\(.project_id)'
 			"author;$(tput setaf 12)\(.author.name)$(tput sgr0)"
+			"name;$(tput setaf 13)\(.author.username)$(tput sgr0)"
 			"project;$(tput setaf 6)$PROJECT$(tput sgr0)"
 			'title;\(.title)'
 			"url;$(tput setaf 14)\(.web_url)$(tput sgr0)"

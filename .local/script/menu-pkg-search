@@ -2,7 +2,25 @@
 
 set -Eo pipefail
 
-# CMD='apt-file search -x "{}"'
-CMD='pacman -F -x "{}"'
+# fetcher=(
+# 	apt-file search -x
+# )
 
-sk --ansi --reverse -i -c "$CMD"
+fetcher=(
+	pacman -F -x
+)
+
+# sk --ansi --reverse -i -c "${fetcher[*]} \"{}\""
+
+fzf_cmd=(
+	fzf
+	--ansi
+	--bind="ctrl-r:reload(${fetcher[*]} {q})"
+	--bind="change:transform-query(echo {q} | sed \"s/^\///\")+reload(${fetcher[*]} {q})"
+	--bind="start:reload(${fetcher[*]} core)"
+	--disabled
+	--no-sort
+	--reverse
+)
+
+"${fzf_cmd[@]}"

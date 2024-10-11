@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+deno check "$@" 2>/dev/stdout | sed -r 's/[[:cntrl:]]\[[0-9]{1,3}m//g'
+deno fmt --indent-width=4 --line-width=120 --prose-wrap=preserve --single-quote=true "$@" &>/dev/null

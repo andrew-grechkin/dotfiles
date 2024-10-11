@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+state="$(bspc query -T -n | jq -r '.client.state')"
+
+if [[ "floating" == "$state" ]]; then
+	bspc node 'focused.!floating.!fullscreen.window#{next,prev}.local.!hidden.!floating.!fullscreen.window' -f \
+		|| bspc node 'last.local.!focused.!hidden.!floating.!fullscreen.window' -f \
+		|| bspc node  'any.local.!focused.!hidden.!floating.!fullscreen.window' -f
+else
+	bspc node 'focused.floating#{next,prev}.local.!hidden.floating' -f \
+		|| bspc node 'last.local.!focused.!hidden.floating' -f \
+		|| bspc node  'any.local.!focused.!hidden.floating' -f
+fi
