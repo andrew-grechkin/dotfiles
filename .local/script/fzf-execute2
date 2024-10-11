@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+FZF_CMD=(
+	fzf
+	--bind='ctrl-y:execute-silent(echo -n {1} {2} | clipcopy)'
+	--bind="enter:become(echo nohup {1} {2} \& disown\; sleep 0.2 | tee -a /tmp/fzf-execute2-cmd.log | bash -x &>>/tmp/fzf-execute2.log)"
+	--delimiter='	'
+	# --delimiter=$'\u0009'
+	--no-multi
+	--preview='echo {1} {2}'
+	--reverse
+	--with-nth=3..
+)
+
+"${FZF_CMD[@]}" "$@"

@@ -1,6 +1,10 @@
-#!/usr/bin/env http-xhs
+#!/usr/bin/env -S http-xhs
 # vim: filetype=sh
 # shellcheck disable=SC2034
 
-URI="/json"
+URI="/json?param=1"
 HOST="httpbin.org"
+
+OPTS=(
+	'accept: application/json'
+)

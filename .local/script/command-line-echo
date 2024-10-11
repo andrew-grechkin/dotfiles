@@ -2,8 +2,9 @@
 
 set -Eeuo pipefail
 
-echo "i'am:   $0"
-echo "params: $*"
+echo "i'am:       '$0'"
+echo -n "params: ($#) "
+echo "${@@Q}"
 
 if [[ -t 0 ]]; then
 	echo "STDIN is tty"

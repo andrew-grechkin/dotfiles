@@ -16,19 +16,18 @@ use utf8;
 
 use experimental qw(declared_refs refaliasing signatures);
 
-use IPC::Open2 qw(open2);
-
 use constant {
     DIR => "$ENV{XDG_STATE_HOME}/mpv",
     TSV => "$ENV{XDG_STATE_HOME}/mpv/play.history.tsv",
 };
 
 sub main {
+    my $header;
     my %merge;
     foreach my $path (TSV()) {
         -r $path or next;
 
-        my \%data = parse_file($path);
+        ($header, my \%data) = parse_file($path);
         @merge{keys %data} = values %data;
     }
 
@@ -36,33 +35,37 @@ sub main {
 
     open(my $fhw, '>', TSV())
         or die sprintf("unable to open file: %s\n", TSV());
-    say {$fhw} "localtime\ttype\ttitle\tcommand\tpath";
+    say {$fhw} "localtime\ttype\ttitle\tmisc\tcommand\tpath";
     say {$fhw} ($_->[2]) foreach @result;
     close($fhw);
 
     if (-t STDOUT) {
+        my $data = `$0`;
+
         my @cmd = (
-            'fzf-execute',
-            "--bind=ctrl-r:reload($0)",
-            q{--bind=ctrl-u:execute-silent(echo -n {3} | perl -pE 'chomp; s/"(.+?)"/$1/g' | clipcopy)},
-            sprintf('--bind=alt-r:execute-silent(grep -vF {3} %s | sponge %s)+reload(%s)', TSV(), TSV(), $0),
+            'fzf-execute2',
+            sprintf('--bind=alt-r:execute-silent(grep -vF {2} %s | sponge %s)+reload(%s)', TSV(), TSV(), $0),
+            qq{--bind=ctrl-r:reload($0)},
+            q{--bind=ctrl-u:execute-silent(echo -n {2} | perl -pE 'chomp; s/"(.+?)"/$1/g' | clipcopy)},
+            q{--header-lines=1},
         );
 
-        my $pid = open2('>&STDOUT', my $chld_in, @cmd);
-        binmode($chld_in, ':encoding(UTF-8)');
+        open(my $pipe => '|-', @cmd)
+            or die $!;
 
-        if (not defined $pid) {
-            say {*STDERR} 'failed to execute fzf';
-            return 1;
-        }
+        print {$pipe} $data;
 
-        say {$chld_in} ($_->[1]) foreach reverse @result;
-        close $chld_in;
-
-        waitpid($pid, 0)
-            or die "unable to wait for child to finish: $!\n";
+        close $pipe
+            or die $!;
     } else {
-        say {*STDOUT} ($_->[1]) foreach reverse @result;
+        open(my $pipe => '|-', q{tsv-align})
+            or die $!;
+
+        say {$pipe} $header;
+        say {$pipe} ($_->[1]) foreach reverse @result;
+
+        close $pipe
+            or die $!;
     }
 
     return 0;
@@ -72,22 +75,27 @@ sub parse_file($path) {
     open(my $fhr, '<', $path)
         or die "unable to open file: $path\n";
 
-    my $result;
+    my @result;
     if ($path =~ m/[.]tsv$/) {
-        $result = parse_tsv($fhr);
+        @result = parse_tsv($fhr);
     }
     close($fhr);
 
-    return $result;
+    return @result;
 }
 
 sub parse_tsv($fh) {
     my %result;
 
-    my $header = <$fh>;
+    chomp(my $header = <$fh>);
     while (my $line = <$fh>) {
         chomp($line);
-        my ($localtime, $type, $title, $cmd, $path) = split m/\t/, $line;
+        my ($misc, $cmd, $path);
+        my ($localtime, $type, $title, @rest) = split m/\t/, $line;
+
+        unshift @rest, '' if (@rest == 2);
+        ($misc, $cmd, $path) = @rest;
+
         unless ($localtime && $cmd && $path) {
             die "unable to parse line: $line";
         }
@@ -96,12 +104,12 @@ sub parse_tsv($fh) {
         my $key = $type . $path;
         $result{$key} = [
             $localtime,
-            sprintf("%s: %s\t%s\t%s",     $type, $title, $cmd, $path),
-            sprintf("%s\t%s\t%s\t%s\t%s", $localtime, $type, $title, $cmd, $path),
+            sprintf("%s\t%s\t%s\t%s\t%s",     $cmd, $path, $type, $title, $misc),
+            sprintf("%s\t%s\t%s\t%s\t%s\t%s", $localtime, $type, $title, $misc, $cmd, $path),
         ];
     }
 
-    return \%result;
+    return ("cmd\tpath\ttype\ttitle\tmisc", \%result);
 }
 
 exit main();

@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+eval set -- "$(getopt --options 'h:p:' --longoptions 'host:,project:' -- "$@")"
+
+# shellcheck disable=SC2078
+while [ : ]; do
+	case "$1" in
+		-h | --host)
+			HOST="$2"
+			shift 2
+			;;
+		-p | --project)
+			PROJECT="$2"
+			shift 2
+			;;
+		--) shift;
+			break
+			;;
+	esac
+done
+
+source "$(dirname "$0")/git-gl-common"
+
+# https://docs.gitlab.com/ee/api/merge_requests.html#get-single-mr
+if [[ -x "$(command -v xhs)" ]]; then
+	http_fetch_command=(
+		xhs
+		"${HOST}/api/v4/projects/$(url_encode "$PROJECT")/merge_requests/$1"
+		"${COMMON_XH_OPTIONS[@]}"
+	)
+else
+	http_fetch_command=(
+		curl
+		-s
+		"https://${HOST}/api/v4/projects/$(url_encode "$PROJECT")/merge_requests/$1"
+		-H "accept: application/json"
+		-H "private-token: $TOKEN"
+	)
+fi
+
+"${http_fetch_command[@]}"

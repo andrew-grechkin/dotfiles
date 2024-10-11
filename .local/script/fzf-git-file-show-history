@@ -24,7 +24,7 @@ if [[ -t 1 ]]; then
 	HEADER=$(
 		cat <<- EOF_HEADER
 		History of a file: '${PTH_REL_ROOT}'
-		Press A-b: browse, A-d: diff, A-p: preview, C-b: blame, C-a: all, C-o: only, C-m/enter: view
+		Press A-b: browse, A-d: diff-head, A-p: preview, C-b: blame, C-a: all, C-o: only, C-m/enter: view
 		EOF_HEADER
 	)
 

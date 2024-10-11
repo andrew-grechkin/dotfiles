@@ -2,6 +2,26 @@
 # shellcheck disable=SC1090
 set -Eeuo pipefail
 
+eval set -- "$(getopt --options 'j:r' --longoptions 'jq:,repl' -- "$@")"
+
+# shellcheck disable=SC2078
+while [ : ]; do
+	case "$1" in
+		-r | --repl)
+			REPL='1'
+			shift
+			;;
+		-j | --jq)
+			JQ="$2"
+			shift 2
+			;;
+		--) shift;
+			break
+			;;
+	esac
+done
+
+
 VERB_URL=()
 if [[ -n "${VERB:-}" ]]; then
 	VERB_URL+=("$VERB")
@@ -51,7 +71,7 @@ else
 	XH=(xhs)
 fi
 
-if [[ -t 1 && -z "$JQ" ]]; then
+if [[ -t 1 && -z "${JQ:-}" && -z "${REPL:-}" ]]; then
 	opts+=(
 		--all
 		--pretty=all
@@ -65,20 +85,21 @@ if [[ -n "${BODY:-}" ]]; then
 	)
 fi
 
->/dev/stderr echo -n "portable: "
-"${XH[@]}" "${VERB_URL[@]}" "$@" "${OPTS[@]}" --curl | tee /dev/stderr | primarycopy
+if [[ -n "${REPL:-}" ]]; then
+	post_process=('|' jq-repl)
+else
+	if [[ -n "${JQ:-}" ]]; then
+		post_process=('|' jq -S "'$JQ'")
+	else
+		post_process=()
+	fi
+fi
+
+>/dev/stderr echo "portable:"
+{ echo -n "$("${XH[@]}" "${VERB_URL[@]}" "$@" "${OPTS[@]}" --curl)"; echo " -s ${post_process[*]}"; } | tee /dev/stderr | primarycopy
 >/dev/stderr echo
 
-cmd=("${XH[@]}" "${VERB_URL[@]}" "$@" "${opts[@]}" "${OPTS[@]}")
-cmd_str="${cmd[0]}$(printf ' %q' "${cmd[@]:1}")"
->/dev/stderr echo -n "executing: "
+cmd=("${XH[@]}" "${VERB_URL[@]}" "$@" --ignore-stdin "${opts[@]}" "${OPTS[@]}")
 
-if [[ -n "$JQ" ]]; then
-	>/dev/stderr echo -e "$cmd_str" " | jq -S '$JQ'"
-	>/dev/stderr echo
-	"${cmd[@]}" | jq -S "$JQ"
-else
-	>/dev/stderr echo -e "$cmd_str"
-	>/dev/stderr echo
-	"${cmd[@]}"
-fi
+>/dev/stderr echo "executing:"
+{ echo "$(printf '%q ' "${cmd[@]}")""${post_process[*]}"; echo; } | tee /dev/stderr | bash

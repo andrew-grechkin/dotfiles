@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+eval set -- "$(getopt --options 'th:p:' --longoptions 'table,host:,project:' -- "$@")"
+
+if [[ -t 1 ]]; then
+	table='1'
+fi
+
+# shellcheck disable=SC2078
+while [ : ]; do
+	case "$1" in
+		-h | --host)
+			HOST="$2"
+			shift 2
+			;;
+		-p | --project)
+			PROJECT="$2"
+			shift 2
+			;;
+		-t | --table)
+			table='1'
+			shift
+			;;
+		--) shift;
+			break
+			;;
+	esac
+done
+
+source "$(dirname "$0")/git-gl-common"
+
+# https://docs.gitlab.com/ee/api/merge_request_approvals.html#merge-request-level-mr-approvals
+if [[ -x "$(command -v xhs)" ]]; then
+	http_fetch_command=(
+		xhs
+		"$HOST/api/v4/projects/$(url_encode "$PROJECT")/merge_requests/$1/approvals" "${COMMON_XH_OPTIONS[@]}"
+	)
+else
+	http_fetch_command=(
+		curl
+		-s
+		-H "accept: application/json"
+		-H "private-token: $TOKEN"
+		"https://${HOST}/api/v4/projects/$(url_encode "$PROJECT")/merge_requests/$1/approvals"
+	)
+fi
+
+if [[ "${table:-0}" == "1" ]]; then
+	"${http_fetch_command[@]}" | {
+		jq_fields=(
+			"id;$(tput setaf 3)\(.user.id)$(tput sgr0)"
+			"uname;\(.user.username)"
+			"name;$(tput setaf 12)\(.user.name)$(tput sgr0)"
+			"url;$(tput setaf 14)\(.user.web_url)$(tput sgr0)"
+		)
+
+		col_names=()
+		jq_filter=()
+		for field in "${jq_fields[@]}"; do
+			IFS=";" read -r -a keyval <<< "$field"
+			col_names+=("${keyval[0]}")
+			jq_filter+=("${keyval[1]}")
+		done
+
+		{
+			echo -e "$(join "${col_names[@]}")"
+			jq -Sr ".approved_by[] | \"$(join "${jq_filter[@]}")\""
+		} | column -ts '	'
+	}
+else
+	"${http_fetch_command[@]}"
+fi
