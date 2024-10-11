@@ -8,6 +8,13 @@ vim.api.nvim_create_autocmd('FileType', {pattern = {'help', 'man'}, command = 'w
 
 local function augroup(name) return vim.api.nvim_create_augroup('lconfig_' .. name, {clear = true}) end
 
+-- [[ open quickfix after make command ]]
+-- vim.api.nvim_create_autocmd('QuickFixCmdPost', {
+--     group = augroup('OpenQuickFix'),
+--     pattern = '*',
+--     command = 'copen',
+-- })
+
 -- [[ change CWD according to the project root ]]
 -- local rooter_notify_rec = nil
 -- vim.api.nvim_create_autocmd({'BufReadPost', 'VimEnter'}, {
