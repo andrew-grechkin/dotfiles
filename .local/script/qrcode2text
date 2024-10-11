@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+# trim is there because zbarimg adds multiple new lines at the end by some reason
+{
+	if [[ -x "$(command -v spectacle)" ]]; then
+		spectacle -b -n -r -o /dev/stdout
+	else
+		magick import -window root bmp:-
+	fi
+} | zbarimg --raw -Stest-inverted - 2>/dev/null | perl -gnE 'say trim($_) if $_' | tee >(clipcopy)

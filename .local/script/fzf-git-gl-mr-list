@@ -7,11 +7,17 @@ set -Eeuo pipefail
 	exit 1
 }
 
-eval set -- "$(getopt --options 'h:p:' --longoptions 'host:,project:' -- "$@")"
+eval set -- "$(getopt --options 'a:h:p:' --longoptions 'author:,host:,project:' -- "$@")"
+
+author=()
 
 # shellcheck disable=SC2078
 while [ : ]; do
 	case "$1" in
+		-a | --author)
+			author=(-a "$2")
+			shift 2
+			;;
 		-h | --host)
 			HOST="$2"
 			shift 2
@@ -31,18 +37,34 @@ source "$(dirname "$0")/git-gl-common"
 current_script="$(basename "$0")"
 fetcher=(
 	"${current_script#fzf-}"
+	"${author[@]}"
+	--host="$HOST"
 	--project="$PROJECT"
 	--table
 )
 
+if [[ -x "$(command -v json-pretty)" ]]; then
+	prettify_json=(json-pretty --no-filename --color=always)
+else
+	prettify_json=(jq -SC '|' less)
+fi
+
+if [[ -x "$(command -v delta)" ]]; then
+	prettify_diff=('|' delta --paging=always)
+else
+	prettify_diff=()
+fi
+
 fzf_cmd=(
 	fzf
 	--ansi
-	--bind="alt-a:execute-silent(git-gl-mr-approve -h \"$HOST\" -p \"$PROJECT\" {+1})+reload-sync(${fetcher[*]})"
-	--bind="alt-b:execute-silent(python3 -mwebbrowser {6})"
+	--bind="alt-a:execute-silent(git-gl-approve -h \"$HOST\" -p \"$PROJECT\" {+1})+reload-sync(${fetcher[*]})"
+	--bind="alt-b:execute-silent(python3 -mwebbrowser {7})"
 	--bind="alt-p:toggle-preview,ctrl-alt-w:toggle-preview-wrap,ctrl-s:toggle-sort"
-	--bind="alt-r:execute-silent(git-gl-mr-approve -h \"$HOST\" -p \"$PROJECT\" {+1} -u)+reload-sync(${fetcher[*]})"
-	--bind="ctrl-m:execute(git-gl-mr-diff {1} | delta --paging=always)"
+	--bind="alt-s:execute(git-gl-mr {1} | ${prettify_json[*]})"
+	--bind="alt-r:execute-silent(git-gl-approve -h \"$HOST\" -p \"$PROJECT\" {+1} -u)+reload-sync(${fetcher[*]})"
+	--bind="alt-q:execute({ echo \"Approved by:\"; echo; git-gl-approve-list -t -h \"$HOST\" -p \"$PROJECT\" {1}; } | less)"
+	--bind="ctrl-m:execute(git-gl-mr-diff {1} ${prettify_diff[*]})"
 	--bind="ctrl-r:reload-sync(${fetcher[*]})"
 	--bind="ctrl-y:execute-silent(echo -n {} | clipcopy)"
 	--bind="esc:cancel"
@@ -50,10 +72,10 @@ fzf_cmd=(
 	--bind="tab:toggle+down,shift-tab:toggle+up"
 	--delimiter=$'\u00a0'
 	--header-lines=1
-	--header='A-a:approve A-b:browse A-p:preview A-r:revoke C-r:reload C-y:yank Enter:diff'
+	--header='A-a:approve A-b:browse A-p:preview A-q:approvals A-s:payload A-r:revoke C-r:reload C-y:yank Enter:diff'
 	--multi
 	--preview-window=right:60%:border-left:wrap:hidden
-	--preview="git-gl-mr-diff {1} | delta"
+	--preview="git-gl-mr-diff {1} ${prettify_diff[*]:0:2}"
 	--reverse
 	--scroll-off=4
 	--tabstop=4

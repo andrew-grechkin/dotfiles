@@ -12,7 +12,8 @@ local add_to_history = function(path)
     if RUN_QUOTE < 1 then return end
     RUN_QUOTE = RUN_QUOTE - 1
 
-    local title = mp.get_property('media-title');
+    local title = mp.get_property('media-title')
+    local misc = ''
     log.debug(('add_to_history: %s %s'):format(utils.to_string(title), path))
 
     local stat = utils.file_info(path)
@@ -28,7 +29,7 @@ local add_to_history = function(path)
             title = basename
         end
 
-        -- title = (title == mp.get_property('filename') and '' or (' (%s)'):format(title));
+        -- title = (title == mp.get_property('filename') and '' or (' (%s)'):format(title))
         -- log.debug(('title: "%s"'):format(title))
 
         if stat.is_dir then
@@ -41,11 +42,12 @@ local add_to_history = function(path)
         -- title = title:match('^%s*(.-)%s*$')
         -- title = title:match('^%(*(.-)%)*$')
 
-        local metadata = mp.get_property_native('metadata');
+        local metadata = mp.get_property_native('metadata')
         if metadata then
             if metadata.uploader then
                 log.debug(('uploader: %s'):format(utils.to_string(metadata.uploader)))
-                title = ('{=%s} %s'):format(metadata.uploader, title)
+                -- title = ('{=%s} %s'):format(metadata.uploader, title)
+                misc = metadata.uploader
             else
                 log.debug(('metadata: %s'):format(utils.to_string(metadata)))
             end
@@ -75,21 +77,21 @@ local add_to_history = function(path)
     title = title:gsub('[\n\r\t]', {['\n'] = '\\n', ['\r'] = '\\r', ['\t'] = '\\t'})
     path = path:gsub('[\n\r\t]', {['\n'] = '\\n', ['\r'] = '\\r', ['\t'] = '\\t'})
 
-    log.info(('%s: %s -> %s'):format(type, title, path))
+    log.info(('%s: %s %s -> %s'):format(type, title, misc, path))
 
     local hist_stat = utils.file_info(MPV_HIST_FILE)
     if not hist_stat then
         local fp = io.open(MPV_HIST_FILE, 'a+')
         if fp then
-            fp:write('localtime\ttype\ttitle\tcommand\tpath\n')
+            fp:write('localtime\ttype\ttitle\tmisc\tcommand\tpath\n')
             fp:close();
         end
     end
 
     local fp = io.open(MPV_HIST_FILE, 'a+');
     if fp then
-        fp:write(('%s\t%s\t%s\tmpv %s --\t"%s"\n'):format(os.date('!%Y-%m-%dT%XZ'), type, title, table.concat(opt, ' '),
-            path));
+        fp:write(('%s\t%s\t%s\t%s\tmpv %s --\t"%s"\n'):format(os.date('!%Y-%m-%dT%XZ'), type, title, misc,
+            table.concat(opt, ' '), path));
         fp:close();
     end
 end
