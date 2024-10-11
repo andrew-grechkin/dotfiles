@@ -57,3 +57,5 @@ vim.o.wildoptions = 'pum,tagfile'
 vim.o.writebackup = false
 
 vim.cmd.colorscheme 'molokai-grand'
+
+-- vim.api.nvim_command('filetype indent off')
