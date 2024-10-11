@@ -385,6 +385,8 @@ filetype *.yaml,*.yml
 
 filetype *.tsv
 	\ {View}
+	\ tsv-show %c | less --header=1,
+	\ {Edit}
 	\ vi -c "set filetype=csv" %c,
 	\ {Repl jq}
 	\ tsv2json %c | jq-repl,
