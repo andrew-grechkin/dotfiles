@@ -1,0 +1,5 @@
+#!/usr/bin/env -S jq -r --from-file
+
+# convert JSON array of hashes to TSV with header based on keys
+
+. | (.[0] | keys_unsorted | @tsv), (.[] | [.[]?] | @tsv)
