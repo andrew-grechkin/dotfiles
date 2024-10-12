@@ -2,20 +2,34 @@
 
 set -Eeuo pipefail
 
-query='.'
+# 🄯 2024 Andrew Grechkin
+# LICENSE:
+#     GPL-2.0-or-later
 
-eval set -- "$(getopt --options 'q:' --longoptions 'query:' -- "$@")"
+# ABSTRACT:
+#     jq REPL. Quickly build filtering request with preview
+
+# SYNOPSIS:
+#     curl -Ls 'https://jsonplaceholder.typicode.com/users' | jq-repl -q 'map({position: .address.geo, email})'
+
+# eval and getopt must be separated to ensure fatal error trowed on invalid parameter passed
+args="$(getopt --name="$0" --options='q:r' --longoptions='query:,raw-output' -- "$@")"
+eval set -- "$args"
+
+query='.'
+raw=''
 
 # shellcheck disable=SC2078
 while [ : ]; do
 	case "$1" in
 		-q | --query) query="$2"; shift 2 ;;
+		-r | --raw-output) raw="r"; shift ;;
 		--) shift; break ;;
 	esac
 done
 
 if [[ -z "${1:-}" ]] || [[ $1 == "-" ]]; then
-	input=$(mktemp)
+	input="$(mktemp --tmpdir="${XDG_RUNTIME_DIR-:/tmp}")"
 	trap 'rm -f "$input"' EXIT
 	cat /dev/stdin > "$input"
 else
@@ -32,23 +46,29 @@ FZF_CMD=(
 	fzf
 	--ansi
 	--bind="alt-p:unbind(alt-p)"
-	--bind="ctrl-c:become(true)"
-	--bind="ctrl-j:preview-down"
-	--bind="ctrl-k:preview-up"
-	--bind="ctrl-m:execute(jq -c {q} \"$input\" | ${prettify[*]} | less)"
-	--bind="ctrl-x:become(echo jq -S \"{q}\" >/dev/stderr; jq -S {q} \"$input\")"
+	--bind="ctrl-c:become(echo -n {q} | clipcopy; true)"
+	--bind="ctrl-d:half-page-down,ctrl-u:half-page-up"
+	--bind="ctrl-j:preview-down,ctrl-k:preview-up"
+	--bind="ctrl-m:execute(jq -c {q} '$input' | ${prettify[*]} | less)"
+	--bind="ctrl-x:become(q={q}; echo -n jq -c$raw \"\${q@Q}\" | tee >(clipcopy) >/dev/stderr; echo >/dev/stderr; jq -c$raw {q} '$input')"
 	--bind="ctrl-y:execute-silent(echo -n {q} | clipcopy)"
 	--bind="end:preview-bottom"
 	--bind="esc:execute-silent(echo -n {q} | clipcopy)+change-query($query)"
 	--bind="home:preview-top"
-	--bind="page-down:preview-page-down"
-	--bind="page-up:preview-page-up"
+	--bind="page-down:preview-page-down,page-up:preview-page-up"
 	--disabled
 	--header='C-c:exit C-j:dn C-k:up C-x:dump C-y:yank Enter:view Esc:reset pgup,pgdn,home,end'
 	--preview-window='up:95%:border-bottom:wrap:nohidden'
-	--preview="{ jq -c {q} \"$input\" || jq -c . \"$input\"; } | ${prettify[*]}"
+	--preview="{ jq -c {q} '$input' || jq -c . '$input'; } | ${prettify[*]}"
 	--print-query
+	--scroll-off=4
+	--tabstop=4
 	--query="$query"
 )
 
-exec "${FZF_CMD[@]}"
+# enforcing BASH is necessary here because of bash specific escaping of quotes used in some operations
+SHELL="$(command -v bash)"
+export SHELL
+
+# exec would prevent trap from execution
+"${FZF_CMD[@]}"
