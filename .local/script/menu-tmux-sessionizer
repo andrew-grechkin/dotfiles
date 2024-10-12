@@ -11,11 +11,11 @@ SELECTED=$(
 	cat                                                                       \
 		<(                                                                    \
 			fd -HuL -E 'bazel-*' -td -tf '\A.git\z' -d 4 "$ROOT1" 2>/dev/null \
-			| perl -plE "s{^$ROOT1/(.*)}{$ROOT1\t\1}x"                      \
+			| perl -plE "s{^$ROOT1/(.*)}{$ROOT1\t\1}x"                        \
 		)                                                                     \
 		<(                                                                    \
 			fd -HuL -E 'bazel-*' -td -tf '\A.git\z' -d 2 "$ROOT2" 2>/dev/null \
-			| perl -plE "s{^$ROOT2/(.*)}{$ROOT2\t\1}x"                      \
+			| perl -plE "s{^$ROOT2/(.*)}{$ROOT2\t\1}x"                        \
 		)                                                                     \
 		| perl -plE "s{\/\.git\/?(?=$|\s)}{}g"                                \
 		| sort -u                                                             \

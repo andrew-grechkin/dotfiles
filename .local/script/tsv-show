@@ -2,11 +2,25 @@
 
 set -Eeuo pipefail
 
-if [[ -t 1 ]]; then
-	LESS="${LESS:-"-x4 -iRSw --mouse"}"
-	pager=(less --header=1)
-else
-	pager=(cat)
-fi
+eval set -- "$(getopt --options 'p:' --longoptions 'paging:' -- "$@")"
 
-column --table --separator=$'\t' "$@" | "${pager[@]}"
+paging='auto'
+
+# shellcheck disable=SC2078,SC2034
+while [ : ]; do
+	case "$1" in
+		-p | --paging) paging="$2"; shift 2 ;;
+		--) shift; break ;;
+	esac
+done
+
+cmd=(
+	column --table --separator=$'\t' "$@"
+)
+
+if [[ "$paging" != 'never' ]] && [[ "$paging" == 'always' ]] || [[ -t 1 ]]; then
+	LESS="${LESS:-"-x4 -iRSw --mouse"}"
+	"${cmd[@]}" | less --header=1
+else
+	exec "${cmd[@]}"
+fi
