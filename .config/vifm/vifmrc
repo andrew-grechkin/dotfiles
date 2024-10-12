@@ -362,10 +362,10 @@ filetype CMakeLists.txt
 	\ build-cmake %d,
 
 filetype *.json
-	\ {Repl jq}
-	\ jq-repl %c,
 	\ {View}
 	\ jq -S --indent 2 < %c | bat -l JSON --paging=always,
+	\ {Repl jq}
+	\ jq-repl %c,
 	\ {Reformat json}
 	\ reformat -a,
 	\ {Convert json -> yaml}
@@ -374,10 +374,10 @@ filetype *.json
 " 	\ 2yaml %f | bat --wrap=never -l yaml --color=always --style=header --file-name=%f
 
 filetype *.yaml,*.yml
-	\ {Repl jq}
-	\ yaml2json %c | jq-repl,
 	\ {View}
 	\ yaml-sanitize %c | bat -l yaml --paging=always,
+	\ {Repl jq}
+	\ yaml2json %c | jq-repl,
 	\ {Sanitize yaml}
 	\ yaml-sanitize -i %c,
 	\ {Convert yaml -> json}
@@ -517,9 +517,9 @@ filetype *.iso
 
 filetype *.qcow2
 	\ {Run with qemu}
-	\ run-qcow %c &,
+	\ qcow-run %c &,
 	\ {Mount qcow2}
-	\ mount-qcow %c,
+	\ qcow-mount %c,
 
 " => File associations: archives ---------------------------------------------------------------------------------- {{{1
 
@@ -624,6 +624,8 @@ filetype !{*/}!{.*/}!/.asc$/!/.sig$/
 	\ gpg-sign,
 
 filetype !{*/}!{.*/}!/.base64$/
+	\ {Encode base64 to clipboard}
+	\ base64 %c | clipcopy &,
 	\ {Encode base64}
 	\ base64 %c > %c.base64 &,
 
@@ -645,9 +647,9 @@ fileviewer {*/},{.*/}
 
 filetype {*},{.*}
 	\ {Compress (background) tar.zstd}
-	\ tsp archive-create %c,
+	\ tsp archive-create %c &,
 	\ {Compress (background) tar.gz}
-	\ tsp archive-create --type="tar.gz",
+	\ tsp archive-create --type="tgz" &,
 
 " => Save state between sessions ---------------------------------------------------------------------------------- {{{1
 

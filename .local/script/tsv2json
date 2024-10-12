@@ -1,1 +1,9 @@
-2yaml
+#!/usr/bin/env -S jq -nR --from-file
+
+# parse TSV file with headers to a JSON array of hashes detecting keys by header
+
+[ inputs | split("\t") ]
+	| .[0] as $keys
+	| .[1:] | map(
+		. as $row | reduce $row[] as $value ({}; . + {($keys[. | length]): $value})
+	)

@@ -1,5 +1,7 @@
 ## Parsing TSV example
 
+- parse TSV file with headers to JSON array of hashes manually providing keys
+
 ```bash
 JQ_SCRIPT=$(cat <<"SCRIPT_END"
 [inputs | split("\t")]
@@ -12,6 +14,19 @@ JQ_SCRIPT=$(cat <<"SCRIPT_END"
 SCRIPT_END
 )
 
+- parse TSV file with headers to a JSON array of hashes detecting keys by header
+
+```bash
+JQ_SCRIPT=$(cat <<"SCRIPT_END"
+[ inputs | split("\t") ]
+	| .[0] as $keys
+	| .[1:] | map(
+		. as $row | reduce $row[] as $value ({}; . + {($keys[. | length]): $value})
+	)
+SCRIPT_END
+```
+
+```bash
 jq -n -R "$JQ_SCRIPT" <<"INPUT_DATA_END"
 name	age	pets
 Tom	12	cats

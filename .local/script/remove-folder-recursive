@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-set -Eeuo pipefail
-
-find . -type d -name "$1" -exec rm -rf "{}" \;

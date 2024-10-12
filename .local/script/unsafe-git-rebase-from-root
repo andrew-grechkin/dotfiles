@@ -3,10 +3,20 @@
 set -Eeuo pipefail
 
 git-in-repo && {
-	MAIN_BRANCH="$(git gmb)"
+	read -p "Creating new root for all commits. Are you sure? (y/n)? " -n 1 -r choice
+	echo
+
+	case "$choice" in
+		y|Y ) ;;
+		n|N ) exit 0 ;;
+		* ) echo "invalid"; exit 1 ;;
+	esac
+
+	main_branch="$(git gmb)"
+
 	git checkout --orphan new-root
 	git rm -rf .
 	git commit --allow-empty -m 'init: empty commit'
-	git rebase --committer-date-is-author-date -i new-root "$MAIN_BRANCH" --no-gpg-sign
+	git rebase --committer-date-is-author-date -i new-root "$main_branch" --no-gpg-sign
 	git branch -d new-root
 }

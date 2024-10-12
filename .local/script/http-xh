@@ -7,17 +7,9 @@ eval set -- "$(getopt --options 'j:r' --longoptions 'jq:,repl' -- "$@")"
 # shellcheck disable=SC2078
 while [ : ]; do
 	case "$1" in
-		-r | --repl)
-			REPL='1'
-			shift
-			;;
-		-j | --jq)
-			JQ="$2"
-			shift 2
-			;;
-		--) shift;
-			break
-			;;
+		-r | --repl) REPL='1'; shift ;;
+		-j | --jq) JQ="$2"; shift 2 ;;
+		--) shift; break ;;
 	esac
 done
 

@@ -14,21 +14,10 @@ author=()
 # shellcheck disable=SC2078
 while [ : ]; do
 	case "$1" in
-		-a | --author)
-			author=(-a "$2")
-			shift 2
-			;;
-		-h | --host)
-			HOST="$2"
-			shift 2
-			;;
-		-p | --project)
-			PROJECT="$2"
-			shift 2
-			;;
-		--) shift;
-			break
-			;;
+		-a | --author) author=(-a "$2"); shift 2 ;;
+		-h | --host) HOST="$2"; shift 2 ;;
+		-p | --project) PROJECT="$2"; shift 2 ;;
+		--) shift; break ;;
 	esac
 done
 

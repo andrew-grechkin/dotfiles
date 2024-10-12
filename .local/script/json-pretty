@@ -16,17 +16,9 @@ eval set -- "$(getopt --options 'nc:' --longoptions 'no-filename,color:' -- "$@"
 # shellcheck disable=SC2078
 while [ : ]; do
 	case "$1" in
-		-c | --color)
-			color="$2"
-			shift 2
-			;;
-		-n | --no-filename)
-			no_filename="1"
-			shift
-			;;
-		--) shift;
-			break
-			;;
+		-c | --color) color="$2"; shift 2 ;;
+		-n | --no-filename) no_filename="1"; shift ;;
+		--) shift; break ;;
 	esac
 done
 

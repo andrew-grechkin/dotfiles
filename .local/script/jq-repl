@@ -9,13 +9,8 @@ eval set -- "$(getopt --options 'q:' --longoptions 'query:' -- "$@")"
 # shellcheck disable=SC2078
 while [ : ]; do
 	case "$1" in
-		-q | --query)
-			query="$2"
-			shift 2
-			;;
-		--) shift;
-			break
-			;;
+		-q | --query) query="$2"; shift 2 ;;
+		--) shift; break ;;
 	esac
 done
 
@@ -40,7 +35,7 @@ FZF_CMD=(
 	--bind="ctrl-c:become(true)"
 	--bind="ctrl-j:preview-down"
 	--bind="ctrl-k:preview-up"
-	--bind="ctrl-m:execute(jq {q} \"$input\" | ${prettify[*]} | less)"
+	--bind="ctrl-m:execute(jq -c {q} \"$input\" | ${prettify[*]} | less)"
 	--bind="ctrl-x:become(echo jq -S \"{q}\" >/dev/stderr; jq -S {q} \"$input\")"
 	--bind="ctrl-y:execute-silent(echo -n {q} | clipcopy)"
 	--bind="end:preview-bottom"
@@ -49,9 +44,9 @@ FZF_CMD=(
 	--bind="page-down:preview-page-down"
 	--bind="page-up:preview-page-up"
 	--disabled
-	--header='C-c:exit C-j:pgdn C-k:pgup C-x:dump C-y:yank Enter:view Esc:reset'
+	--header='C-c:exit C-j:dn C-k:up C-x:dump C-y:yank Enter:view Esc:reset pgup,pgdn,home,end'
 	--preview-window='up:95%:border-bottom:wrap:nohidden'
-	--preview="jq {q} \"$input\" | ${prettify[*]}"
+	--preview="{ jq -c {q} \"$input\" || jq -c . \"$input\"; } | ${prettify[*]}"
 	--print-query
 	--query="$query"
 )
