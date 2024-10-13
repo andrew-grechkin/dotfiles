@@ -2,7 +2,8 @@
 
 set -Eeuo pipefail
 
-eval set -- "$(getopt --options 'p:' --longoptions 'paging:' -- "$@")"
+args="$(getopt --name="$0" --options 'p:' --longoptions 'paging:' -- "$@")"
+eval set -- "$args"
 
 paging='auto'
 

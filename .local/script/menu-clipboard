@@ -16,19 +16,20 @@ sub main {
     my \@history = fetch_history();
 
     my @cmd = (
-        'fzf', '--reverse', "--delimiter=\t", '--no-multi', '--with-nth=2',
+        'fzf', '--ansi', '--reverse', "--delimiter=\t", '--no-multi', '--with-nth=2',
         '--preview=echo {2..}',
         '--bind=ctrl-y:execute-silent()',
-        '--preview-window=right:50%:border-left:wrap:nohidden',
+        '--preview-window=right:50%:border-left:nowrap:nohidden',
     );
 
     my $pid = open2(my $chld_out, my $chld_in, @cmd) // do {
         say {*STDERR} 'failed to execute fzf';
         return 1;
     };
+    binmode($chld_in, ':encoding(UTF-8)');
 
     foreach my ($index, $value) (builtin::indexed(@history)) {
-        say {$chld_in} ($index, "\t", substr($value =~ s{\R}{\\n}grm =~ s{\t}{\\t}grm, 0, 500));
+        say {$chld_in} ($index, "\t", substr($value =~ s{\R}{\\n}grm =~ s{\t}{\\t}grm, 0, 1024));
     }
     close $chld_in;
 
@@ -57,9 +58,12 @@ sub fetch_history() {
 
     my @m = split m/.*?string\s\"/x, $payload;
 
+    # ignore images
+    @m = grep {!m/▨/g} @m;
+
     s{\"\R*\z}{} foreach @m;
 
-    @m = grep {$_} @m;
+    @m = grep {$_ && !m/▨/g} @m;
 
     return \@m;
 }
