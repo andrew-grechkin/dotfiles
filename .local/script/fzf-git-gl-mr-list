@@ -7,7 +7,8 @@ set -Eeuo pipefail
 	exit 1
 }
 
-eval set -- "$(getopt --options 'a:h:p:' --longoptions 'author:,host:,project:' -- "$@")"
+args="$(getopt --name="$0" --options 'a:h:p:' --longoptions 'author:,host:,project:' -- "$@")"
+eval set -- "$args"
 
 author=()
 

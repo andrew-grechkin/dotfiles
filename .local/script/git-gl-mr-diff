@@ -4,7 +4,7 @@ set -Eeuo pipefail
 
 source "$(dirname "$0")/git-gl-common"
 
-# HEAD=$(&>/dev/null git fetch --no-tags --porcelain "$REMOTE" HEAD)
-&>/dev/null git fetch --no-tags --porcelain "$REMOTE" "merge-requests/$1/head"
+HEAD=$(2>/dev/null git fetch --no-tags --porcelain "$REMOTE" HEAD | perl -nal -E'say $F[2]')
+>/dev/null git fetch --no-tags --porcelain "$REMOTE" "merge-requests/$1/head"
 
-git diff "...FETCH_HEAD"
+git diff "$HEAD...FETCH_HEAD"

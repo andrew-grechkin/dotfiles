@@ -4,13 +4,14 @@ set -Eeuo pipefail
 
 FZF_CMD=(
 	fzf
-	--bind='ctrl-y:execute-silent(echo -n {2} | clipcopy)'
-	--bind="enter:execute(echo {2..} | bash)+abort"
-	--delimiter='	'
+	--ansi
+	--bind="enter:become(exec 2>>/tmp/$(basename "$0").log; echo \</dev/null {2..} | tee -a /dev/stderr | bash)"
+	--bind='ctrl-y:execute-silent(echo -n {2..} | clipcopy)'
+	--delimiter=$'\u0009'
 	--no-multi
 	--preview='echo {2..}'
 	--reverse
 	--with-nth=1
 )
 
-"${FZF_CMD[@]}" "$@"
+exec "${FZF_CMD[@]}" "$@"
