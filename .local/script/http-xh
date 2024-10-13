@@ -2,7 +2,8 @@
 # shellcheck disable=SC1090
 set -Eeuo pipefail
 
-eval set -- "$(getopt --options 'j:r' --longoptions 'jq:,repl' -- "$@")"
+args="$(getopt --name="$0" --options 'j:r' --longoptions 'jq:,repl' -- "$@")"
+eval set -- "$args"
 
 # shellcheck disable=SC2078
 while [ : ]; do

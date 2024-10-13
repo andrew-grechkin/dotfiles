@@ -6,12 +6,26 @@ echo "i'am:       '$0'"
 echo -n "params: ($#) "
 echo "${@@Q}"
 
-if [[ -t 0 ]]; then
-	echo "STDIN is tty"
+if [[ /dev/stdout -ef /dev/null ]]; then
+	echo "STDOUT is a /dev/null"
+elif [[ -t 1 ]]; then
+	echo "STDOUT is a tty"
+fi
+
+if [[ /dev/stderr -ef /dev/null ]]; then
+	echo "STDERR is a /dev/null"
+elif [[ -t 2 ]]; then
+	echo "STDERR is a tty"
+fi
+
+if [[ /dev/stdin -ef /dev/null ]]; then
+	echo "STDIN is a /dev/null"
+elif [[ -t 0 ]]; then
+	echo "STDIN is a tty"
 else
 	echo
 	echo -n "$(tput setaf 3)"
-	echo "STDIN is passed:"
+	echo "STDIN data is passed:"
 	echo -n "$(tput sgr0)"
 	cat
 fi

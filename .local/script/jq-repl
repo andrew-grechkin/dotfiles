@@ -13,17 +13,19 @@ set -Eeuo pipefail
 #     curl -Ls 'https://jsonplaceholder.typicode.com/users' | jq-repl -q 'map({position: .address.geo, email})'
 
 # eval and getopt must be separated to ensure fatal error trowed on invalid parameter passed
-args="$(getopt --name="$0" --options='q:r' --longoptions='query:,raw-output' -- "$@")"
+args="$(getopt --name="$0" --options='q:rt' --longoptions='query:,raw-output,type' -- "$@")"
 eval set -- "$args"
 
 query='.'
 raw=''
+type="'empty'"
 
 # shellcheck disable=SC2078
 while [ : ]; do
 	case "$1" in
 		-q | --query) query="$2"; shift 2 ;;
 		-r | --raw-output) raw="r"; shift ;;
+		-t | --type) type="{q}' | type'"; shift ;;
 		--) shift; break ;;
 	esac
 done
@@ -59,7 +61,7 @@ FZF_CMD=(
 	--disabled
 	--header='C-c:exit C-j:dn C-k:up C-x:dump C-y:yank Enter:view Esc:reset pgup,pgdn,home,end'
 	--preview-window='up:95%:border-bottom:wrap:nohidden'
-	--preview="{ jq -c {q} '$input' || jq -c . '$input'; } | ${prettify[*]}"
+	--preview="{ jq -c $type '$input' && jq -c {q} '$input' || jq -c . '$input'; } | ${prettify[*]}"
 	--print-query
 	--scroll-off=4
 	--tabstop=4

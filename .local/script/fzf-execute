@@ -2,15 +2,29 @@
 
 set -Eeuo pipefail
 
+args="$(getopt --name="$0" --options='c:' --longoptions='column:' -- "$@")"
+eval set -- "$args"
+
+column='2'
+
+# shellcheck disable=SC2078
+while [ : ]; do
+	case "$1" in
+		-c | --column) column="$2"; shift 2 ;;
+		--) shift; break ;;
+	esac
+done
+
 FZF_CMD=(
 	fzf
-	--bind='ctrl-y:execute-silent(echo -n {2..} | clipcopy)'
-	--bind="enter:execute(echo 'nohup '{2..}' & disown; sleep 0.2' | tee -a /tmp/fzf-execute-cmd.log | bash -x </dev/null &>>/tmp/fzf-execute.log)+abort"
-	--delimiter='	'
+	--ansi
+	--bind="enter:become(exec 2>>/tmp/$(basename "$0").log; echo \>/dev/null \</dev/null nohup {${column}..} \& disown\; sleep 0.2 | tee -a /dev/stderr | bash)"
+	--bind="ctrl-y:execute-silent(echo -n {${column}..} | clipcopy)"
+	--delimiter=$'\u0009'
 	--no-multi
-	--preview='echo {2..}'
+	--preview="echo {${column}..}"
 	--reverse
-	--with-nth=1
+	--with-nth="..$((column - 1))"
 )
 
-"${FZF_CMD[@]}" "$@"
+exec "${FZF_CMD[@]}" "$@"

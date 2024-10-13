@@ -2,7 +2,8 @@
 
 set -Eeuo pipefail
 
-eval set -- "$(getopt --options 'h:p:' --longoptions 'host:,project:' -- "$@")"
+args="$(getopt --name="$0" --options 'h:p:' --longoptions 'host:,project:' -- "$@")"
+eval set -- "$args"
 
 # shellcheck disable=SC2078
 while [ : ]; do

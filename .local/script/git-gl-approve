@@ -2,7 +2,8 @@
 
 set -Eeuo pipefail
 
-eval set -- "$(getopt --options 'uh:p:' --longoptions 'unapprove,host:,project:' -- "$@")"
+args="$(getopt --name="$0" --options 'uh:p:' --longoptions 'unapprove,host:,project:' -- "$@")"
+eval set -- "$args"
 
 action="approve"
 jobs=4

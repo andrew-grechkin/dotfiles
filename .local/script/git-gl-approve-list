@@ -2,7 +2,8 @@
 
 set -Eeuo pipefail
 
-eval set -- "$(getopt --options 'th:p:' --longoptions 'table,host:,project:' -- "$@")"
+args="$(getopt --name="$0" --options 'th:p:' --longoptions 'table,host:,project:' -- "$@")"
+eval set -- "$args"
 
 if [[ -t 1 ]]; then
 	table='1'

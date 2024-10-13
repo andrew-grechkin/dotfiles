@@ -1,6 +1,7 @@
 # vim: filetype=conf
 # man: zathurarc
 
+set database            sqlite
 set selection-clipboard clipboard
 set adjust-open         'width'
 set first-page-column   1:1

@@ -13,13 +13,13 @@ sub main() {
     @ARGV == 2
         or die "Please provide 2 directories\n";
 
-    my @dirs = map { path($_) } @ARGV;
+    my @dirs = map {path($_)} @ARGV;
 
-    my @absent = grep { !$_->stat } @dirs
+    my @absent = grep {!$_->stat} @dirs
         and die "Directory absent\n";
 
-    my ( \@left_only, \@right_only, \@diff, \@failures ) =
-        _compare( @dirs, map { $_->list_tree( { 'hidden' => 1 } ) } @dirs );
+    my (\@left_only, \@right_only, \@diff, \@failures)
+        = _compare(@dirs, map {$_->list_tree({'hidden' => 1})} @dirs);
 
     my $result = 0;
     if (@left_only) {
@@ -48,31 +48,32 @@ sub main() {
     return $result;
 }
 
-sub _compare ( $lpath, $rpath, $ltree, $rtree ) {
-    my %lhs = $ltree->grep( sub { !m{[.]git[/]|[@]eaDir[/]}x } )
-        ->sort->map( sub { $_->to_rel($lpath)->to_string, $_->lstat // 0 } )->@*;
-    my %rhs = $rtree->grep( sub { !m{[.]git[/]|[@]eaDir[/]}x } )
-        ->sort->map( sub { $_->to_rel($rpath)->to_string, $_->lstat // 0 } )->@*;
+sub _compare ($lpath, $rpath, $ltree, $rtree) {
+    my %lhs = $ltree->grep(sub {!m{[.]git[/]|[@]eaDir[/]}x})
+        ->sort->map(sub {$_->to_rel($lpath)->to_string, $_->lstat // 0})->@*;
+    my %rhs = $rtree->grep(sub {!m{[.]git[/]|[@]eaDir[/]}x})
+        ->sort->map(sub {$_->to_rel($rpath)->to_string, $_->lstat // 0})->@*;
 
-    my ( %left_only, %right_only, %diff, %failures );
-    foreach my $path ( keys %lhs ) {
-        if ( exists $rhs{$path} ) {
-            if ( !$lhs{$path} || !$rhs{$path} ) {
+    my (%left_only, %right_only, %diff, %failures);
+    foreach my $path (keys %lhs) {
+        if (exists $rhs{$path}) {
+            if (!$lhs{$path} || !$rhs{$path}) {
                 warn "Unable to stat: $path\n";
                 $failures{$path} = undef;
-            } elsif ( $lhs{$path}->size != $rhs{$path}->size ) {
-                $diff{ $lpath->child($path)->to_string } = delete $rhs{$path};
+            } elsif ($lhs{$path}->size != $rhs{$path}->size) {
+                $diff{$lpath->child($path)->to_string} = delete $rhs{$path};
             }
             delete $rhs{$path};
         } else {
-            $left_only{ $lpath->child($path)->to_string } = $lhs{$path};
+            $left_only{$lpath->child($path)->to_string} = $lhs{$path};
         }
     }
-    foreach my $path ( keys %rhs ) {
-        $right_only{ $rpath->child($path)->to_string } = $rhs{$path};
+
+    foreach my $path (keys %rhs) {
+        $right_only{$rpath->child($path)->to_string} = $rhs{$path};
     }
 
-    return ( [ keys %left_only ], [ keys %right_only ], [ keys %diff ], [ keys %failures ] );
+    return ([keys %left_only], [keys %right_only], [keys %diff], [keys %failures]);
 }
 
 exit main();

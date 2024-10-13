@@ -502,7 +502,7 @@ equivalent_modules = Moo Moo::Role
 max_chain_length = 8
 
 [ValuesAndExpressions::ProhibitMagicNumbers]
-allowed_values = -1 0 1 2 3 4 5 6 7 8 9 10 20 24 30 32 42 50 60 64 80 90 100 128 180 200 270 303 360 400 401 404 443 500 1000 1900 3600 8080
+allowed_values = -1 0 1 2 3 4 5 6 7 8 9 10 20 24 30 32 42 50 60 64 80 90 100 128 180 200 256 270 303 360 400 401 404 443 500 512 1000 1024 3600 8080
 # Kind of literals to allow.
 # Valid values: Binary, Exp, Float, Hex, Octal.
 # allowed_types = Float
