@@ -605,11 +605,12 @@ filetype !{*/}!{.*/}
 	\ {View in less}
 	\ less %c %n,
 	\ {Show file}
-	\ show-file %c | less %c %n,
+	\ show-file %c | less,
 	\ {Show history}
 	\ git fh -- %c %n || true,
 	\ {Show hardlinks}
 	\ sudo hardlinks-for %f | less,
+
 fileviewer !{*/}!{.*/}
 	\ show-file,
 

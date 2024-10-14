@@ -60,6 +60,8 @@ function body() {
 		bat -l conf "${BAT_OPTIONS[@]}" "$1" && exit 0
 	elif [[ "$EXT" =~ yaml?$ ]]; then
 		yaml-sanitize < "$1" | yamlfix - | bat -l yaml "${BAT_OPTIONS[@]}" && exit 0
+	elif [[ "$EXT" =~ tsv$ ]]; then
+		tsv-align "$1" | bat -l tsv --wrap=never "${BAT_OPTIONS[@]}" --color=always && exit 0
 	else
 		echo
 	fi
