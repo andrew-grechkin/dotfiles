@@ -2,7 +2,7 @@
 
 set -Eo pipefail
 
-is-home-network || {
+is-private-network || {
 	is-work-network || exit 0
 }
 
