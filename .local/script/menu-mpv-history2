@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+file_path="$XDG_STATE_HOME/mpv/play.history.tsv"
+
+if [[ -t 1 ]]; then
+	FZF_CMD=(
+		fzf-execute2
+		--bind="alt-r:execute-silent(grep -vF {2} '$file_path' | sponge '$file_path')+reload($0)"
+		--bind="ctrl-r:reload($0)"
+		--bind="ctrl-u:execute-silent(echo -n {2} | perl -pE 'chomp; s/\"(.+?)\"/\$1/g' | clipcopy)"
+		--header-lines=1
+	)
+
+	"$0" | "${FZF_CMD[@]}"
+else
+	enforce_columns=(jq -c 'map({localtime, type, title, misc: (if .misc then .misc else "" end), command, path})')
+
+	tsv2json "$file_path"                                                                          \
+		| jq -c 'sort_by(.localtime) | reverse | unique_by(.command, .path) | sort_by(.localtime)' \
+		| tee >("${enforce_columns[@]}" | json2tsv | sponge "$file_path")                          \
+		| jq -c 'reverse | map({command, path, type, title, misc})'                                \
+		| json2tsv                                                                                 \
+		| tsv-align
+fi
