@@ -15,10 +15,10 @@ if [[ -t 1 ]]; then
 
 	"$0" | "${FZF_CMD[@]}"
 else
-	enforce_columns=(jq -c 'map({localtime, type, title, misc: (if .misc then .misc else "" end), command, path})')
+	enforce_columns=(jq -c 'map({time: (.time // .localtime), type, title, misc: (.misc // ""), command, path})')
 
 	tsv2json "$file_path"                                                                          \
-		| jq -c 'sort_by(.localtime) | reverse | unique_by(.command, .path) | sort_by(.localtime)' \
+		| jq -c 'sort_by(.time // .localtime) | reverse | unique_by(.command, .path) | sort_by(.time // .localtime)' \
 		| tee >("${enforce_columns[@]}" | json2tsv | sponge "$file_path")                          \
 		| jq -c 'reverse | map({command, path, type, title, misc})'                                \
 		| json2tsv                                                                                 \
