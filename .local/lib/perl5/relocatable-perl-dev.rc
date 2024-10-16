@@ -30,6 +30,10 @@ export PERL5LIB="$REPO_ROOT/lib:$HOME/.local/lib/perl5:./lib"
 function install_perl() {
 	if [[ ! -e "$PERL_ROOT/bin/perl" ]]; then
 		# curl -fsSL https://raw.githubusercontent.com/skaji/relocatable-perl/main/perl-install | bash -s "$PERL_ROOT"
+		[[ -x "$(command -v bsdtar)" ]] || {
+			>/dev/stderr echo "bsdtar is not found, please install it for your system"
+			return 1
+		}
 
 		os=$(uname -s | tr '[:upper:]' '[:lower:]')
 		arch=$(uname -m)
