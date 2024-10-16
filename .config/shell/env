@@ -2,23 +2,22 @@
 
 if ! declare -F 'append_path' > /dev/null; then
 	append_path () {
-		:
-		# case ":$PATH:" in
-		# 	*:"$1":*)
-		# 		;;
-		# 	*)
-		# 		PATH="${PATH:+$PATH:}$1"
-		# ;; esac
+		case ":$PATH:" in
+			*:"$1":*)
+				;;
+			*)
+				PATH="${PATH:+$PATH:}$1"
+		;; esac
 	}
 fi
 
 DIRS=(
-	"$HOME/.local/bin"
-	"$HOME/.local/script"
-	"$HOME/.local/script-private"
-	"$HOME/.local/script-work"
 	"$HOME/.local/script-work-private"
+	"$HOME/.local/script-work"
+	"$HOME/.local/script-private"
+	"$HOME/.local/script"
 	"$HOME/.local/usr/bin"
+	"$HOME/.local/bin"
 	"$HOME/.cache/bin"
 	"$HOME/.cache/fzf/bin"
 	"$XDG_DATA_HOME/nvim/mason/bin"

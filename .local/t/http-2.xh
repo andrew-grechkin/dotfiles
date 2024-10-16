@@ -1,0 +1,11 @@
+#!/usr/bin/env -S http-xhs --repl
+# vim: filetype=sh
+# shellcheck disable=SC2034
+# https://jsonplaceholder.typicode.com/users
+
+URI="/users"
+HOST="jsonplaceholder.typicode.com"
+
+OPTS=(
+	'accept: application/json'
+)
