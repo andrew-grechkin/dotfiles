@@ -13,18 +13,20 @@ set -Eeuo pipefail
 #     curl -Ls 'https://jsonplaceholder.typicode.com/users' | jq-repl -q 'map({position: .address.geo, email})'
 
 # eval and getopt must be separated to ensure fatal error trowed on invalid parameter passed
-args="$(getopt --name="$0" --options='q:rt' --longoptions='query:,raw-output,type' -- "$@")"
+args="$(getopt --name="$0" --options='q:Rrt' --longoptions='query:,raw-input,raw-output,type' -- "$@")"
 eval set -- "$args"
 
 query='.'
-raw=''
+rawi=''
+rawo=''
 type="'empty'"
 
 # shellcheck disable=SC2078
 while [ : ]; do
 	case "$1" in
 		-q | --query) query="$2"; shift 2 ;;
-		-r | --raw-output) raw="r"; shift ;;
+		-R | --raw-input) rawi="Rn"; shift ;;
+		-r | --raw-output) rawo="r"; shift ;;
 		-t | --type) type="{q}' | type'"; shift ;;
 		--) shift; break ;;
 	esac
@@ -51,8 +53,8 @@ FZF_CMD=(
 	--bind="ctrl-c:become(echo -n {q} | clipcopy; true)"
 	--bind="ctrl-d:half-page-down,ctrl-u:half-page-up"
 	--bind="ctrl-j:preview-down,ctrl-k:preview-up"
-	--bind="ctrl-m:execute(jq -c {q} '$input' | ${prettify[*]} | less)"
-	--bind="ctrl-x:become(q={q}; echo -n jq -c$raw \"\${q@Q}\" | tee >(clipcopy) >/dev/stderr; echo >/dev/stderr; jq -c$raw {q} '$input')"
+	--bind="ctrl-m:execute(jq -c$rawi$rawo {q} '$input' | ${prettify[*]} | less)"
+	--bind="ctrl-x:become(q={q}; echo -n jq -c$rawo \"\${q@Q}\" | tee >(clipcopy) >/dev/stderr; echo >/dev/stderr; jq -c$rawo {q} '$input')"
 	--bind="ctrl-y:execute-silent(echo -n {q} | clipcopy)"
 	--bind="end:preview-bottom"
 	--bind="esc:execute-silent(echo -n {q} | clipcopy)+change-query($query)"
@@ -61,7 +63,7 @@ FZF_CMD=(
 	--disabled
 	--header='C-c:exit C-j:dn C-k:up C-x:dump C-y:yank Enter:view Esc:reset pgup,pgdn,home,end'
 	--preview-window='up:95%:border-bottom:wrap:nohidden'
-	--preview="{ jq -c $type '$input' && jq -c {q} '$input' || jq -c . '$input'; } | ${prettify[*]}"
+	--preview="{ jq -c$rawi $type '$input' && jq -c$rawi {q} '$input' || jq -c$rawi . '$input'; } | ${prettify[*]}"
 	--print-query
 	--scroll-off=4
 	--tabstop=4
