@@ -9,9 +9,7 @@ if [[ "$#" -eq "1" ]] && [[ "$1" =~ \.git/?$ ]]; then
 	REPO=$(dirname "$1")
 
 	if [[ -n "$(git -C "$REPO" branch --show-current)" ]]; then
-		echo -n "$(tput setaf 3)"
-		echo "Updating $REPO"
-		echo -n "$(tput sgr0)"
+		echo "${f_olive}Updating ${REPO}${c_reset}"
 
 		git -C "$REPO" -c color.ui=always fetch --force      \
 			&& nice git -C "$REPO" -c color.ui=always bleach \
