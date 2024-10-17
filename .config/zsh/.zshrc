@@ -3,7 +3,6 @@
 
 # => environment -------------------------------------------------------------------------------------------------- {{{1
 
-export HOSTNAME="${HOSTNAME:-$(hostname)}"
 export LESSHISTFILE=-
 
 if [[ -r "$HOME/.config/nvim/init.lua" ]]; then

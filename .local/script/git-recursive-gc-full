@@ -19,9 +19,7 @@ if [[ "$#" -eq "1" ]] && [[ "$1" =~ \.git/?$ ]]; then
 		fi
 	fi
 
-	echo -n "$(tput setaf 3)"
-	echo "Gc $REPO"
-	echo -n "$(tput sgr0)"
+	echo "${f_olive}Gc $REPO$c_reset"
 
 	nice git -C "$REPO" gc --prune=now
 else
