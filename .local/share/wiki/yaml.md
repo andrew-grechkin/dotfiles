@@ -63,6 +63,7 @@ content: doc2
 
 ### Heredoc [multiline strings](https://yaml-multiline.info/)
 
+
 _block notation_: newlines become spaces
 
 ```yaml
@@ -72,17 +73,22 @@ content:
   after the indentation changes...
 ```
 
-_folded style_: replace single newlines with spaces
+_folded style_: replace all single newlines with spaces
 
 ```yaml
 content: >
   Arbitrary free text
   over "multiple lines" stopping after indentation changes...
+  single new lines are replaced with spaces, multiple newlines
+  are squashed into one
 
-  new line here and at the end are preserved
+
+  one new line here and one at the end are preserved
+
+
 ```
 
-_literal style_: all newlines are preserved
+_literal style_: all newlines inside text are preserved
 
 ```yaml
 content: |
@@ -94,7 +100,7 @@ content: |
 _no indicator (clip)_: one new line at the end
 
 ```yaml
-content: >
+content: |
   Arbitrary free text, only one newline will be at the end
 
 
