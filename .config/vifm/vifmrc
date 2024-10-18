@@ -597,6 +597,12 @@ filetype main.yaml
 	\ {Execute ansible role}
 	\ ansible-role  %d:h -K --ask-vault-pass -i localhost,, ,
 
+" => File associations: vpn --------------------------------------------------------------------------------------- {{{1
+
+filetype home-*.conf
+	\ {Import wireguard config}
+	\ nmcli connection import type wireguard file %c
+
 " => File associations: all files --------------------------------------------------------------------------------- {{{1
 
 filetype !{*/}!{.*/}
