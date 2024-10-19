@@ -1,0 +1,49 @@
+#!/usr/bin/env perl
+#
+use v5.40;
+use autodie;
+use open ':locale';
+use utf8;
+use warnings     qw(FATAL utf8);
+use experimental qw(class declared_refs defer refaliasing);
+
+use English      qw(-no_match_vars);
+use Encode       qw(decode);
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+
+use YAML::XS qw();
+
+my $re = '.*';
+
+GetOptions('regex|r=s' => \$re)
+    or die "Unable to process command line options\n";
+
+sub main() {
+    my $regex = qr{$re}p;
+    chomp(my $input = do {local $/ = undef; <<>>});
+
+    $input =~ $regex;
+
+    ## no critic [Variables::ProhibitPunctuationVars]
+    my @result = ({
+            '${^PREMATCH}'                => ${^PREMATCH},
+            '${^MATCH}'                   => ${^MATCH},
+            '${^POSTMATCH}'               => ${^POSTMATCH},
+            '$LAST_PAREN_MATCH'           => $LAST_PAREN_MATCH,
+            '$LAST_SUBMATCH_RESULT'       => $LAST_SUBMATCH_RESULT,
+            '@LAST_MATCH_START'           => \@LAST_MATCH_START,
+            '@LAST_MATCH_END'             => \@LAST_MATCH_END,
+            '%LAST_PAREN_MATCH'           => \%LAST_PAREN_MATCH,
+            '${^LAST_SUCCESSFUL_PATTERN}' => ${^LAST_SUCCESSFUL_PATTERN},
+            '$LAST_REGEXP_CODE_RESULT'    => $LAST_REGEXP_CODE_RESULT,
+            '@{^CAPTURE}'                 => [@{^CAPTURE}],
+        },
+        {input => $input},
+    );
+
+    print decode('UTF-8', YAML::XS::Dump(@result), Encode::FB_CROAK);
+
+    return 0;
+}
+
+exit main();
