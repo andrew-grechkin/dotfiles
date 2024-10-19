@@ -7,8 +7,7 @@ echo 'Executing setup'
 mkdir -p ~/.cache/bin
 mkdir -p ~/.config/fontconfig
 mkdir -p ~/.config/environment.d
-mkdir -p ~/.local/{bin,lib}
-mkdir -p ~/.local/share
+mkdir -p ~/.local/{bin,lib,share,state}
 
 SCRIPT=$(realpath -s "$0")
 WORKDIR=$(dirname "$SCRIPT")
@@ -78,6 +77,7 @@ if [[ "$USER" == "agrechkin" ]]; then
 	ln -srf .config/perlcriticrc                             ~/.perlcriticrc
 	ln -srf .config/perlimports                              ~/.config/
 	ln -srf .config/perltidyrc                               ~/.perltidyrc
+	ln -srf .config/redshift                                 ~/.config/
 	ln -srf .config/sql-formatter.json                       ~/.config/
 	ln -srf .config/sqlfluff                                 ~/.config/
 	ln -srf .config/wireplumber                              ~/.config/

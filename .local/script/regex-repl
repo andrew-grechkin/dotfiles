@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+# 🄯 2024 Andrew Grechkin
+# LICENSE:
+#     GPL-2.0-or-later
+
+# ABSTRACT:
+#     regex REPL. Quickly check regex
+
+# SYNOPSIS:
+#      cat 'some input' | jq-repl -q '.'
+
+args="$(getopt --name="$0" --options='q:' --longoptions='query:' -- "$@")"
+eval set -- "$args"
+
+query='.'
+
+# shellcheck disable=SC2078
+while [ : ]; do
+	case "$1" in
+		-q | --query) query="$2"; shift 2 ;;
+		--) shift; break ;;
+	esac
+done
+
+if [[ -z "${1:-}" ]] || [[ $1 == "-" ]]; then
+	input="$(mktemp --tmpdir="${XDG_RUNTIME_DIR-:/tmp}")"
+	trap 'rm -f "$input"' EXIT
+	cat /dev/stdin > "$input"
+else
+	input="$1"
+fi
+
+script="'use English; if (my @m = m/'{q}'/p) {say \"matched: \", \${^MATCH}; say \"groups:\"; say foreach @m}'"
+
+FZF_CMD=(
+	fzf
+	--ansi
+	--bind="alt-p:unbind(alt-p)"
+	--bind="ctrl-c:become(echo -n {q} | clipcopy; true)"
+	--bind="ctrl-d:half-page-down,ctrl-u:half-page-up"
+	--bind="ctrl-j:preview-down,ctrl-k:preview-up"
+	--bind="ctrl-m:execute(perl -ngE $script '$input' | less)"
+	--bind="ctrl-x:become(echo regex: {q}; perl -ngE $script '$input')"
+	--bind="ctrl-y:execute-silent(echo -n {q} | clipcopy)"
+	--bind="end:preview-bottom"
+	--bind="esc:execute-silent(echo -n {q} | clipcopy)+change-query($query)"
+	--bind="home:preview-top"
+	--bind="page-down:preview-page-down,page-up:preview-page-up"
+	--disabled
+	--header='C-c:exit C-j:dn C-k:up C-x:dump C-y:yank Enter:view Esc:reset pgup,pgdn,home,end'
+	--preview-window='down:95%:border-top:wrap:nohidden'
+	--preview="perl -ngE $script '$input'; echo; cat '$input'"
+	--print-query
+	--reverse
+	--scroll-off=4
+	--tabstop=4
+	--query="$query"
+)
+
+"${FZF_CMD[@]}"
