@@ -653,6 +653,8 @@ fileviewer {*/},{.*/}
 " => File associations: all --------------------------------------------------------------------------------------- {{{1
 
 filetype {*},{.*}
+	\ {Copy to clipboard}
+	\ clipcopy %c &,
 	\ {Compress (background) tar.zstd}
 	\ tsp archive-create %c &,
 	\ {Compress (background) tar.gz}
