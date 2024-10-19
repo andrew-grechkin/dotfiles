@@ -3,11 +3,12 @@
 set -Eeuo pipefail
 
 RECIPIENTS=(
-	27DAEE512BCA39EB
-	CDBA7E3E844B6508
+	53B7256136FC04B09D40D3ABFF125E23B3F82357
+	D72D548F5F32F1D4772DF64E1EF4C939E2510C07
+	BE4FDCEEEE1A528C69FDE20648A3830DA230773C
 )
 
 for FILE in "$@"; do
 	FILENAMEFULL=$(basename "$FILE")
-	command gpg --armor --encrypt "${RECIPIENTS[@]/#/'--recipient='}" --output "./${FILENAMEFULL}.gpg" "$FILE"
+	command gpg --armor --encrypt --default-recipient-self "${RECIPIENTS[@]/#/'--recipient='}" --output "./${FILENAMEFULL}.gpg" "$FILE"
 done
