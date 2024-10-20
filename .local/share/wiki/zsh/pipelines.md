@@ -24,17 +24,13 @@
     ```bash
     clipcopy <<END
     ```
-* Pipe STDIN from a string
+* Pipe STDIN from a string (new line is added at the end)
     ```bash
     clipcopy <<<'arbitrary string'
     ```
-* Pipe STDERR to a file
+* redirect STDERR to a file
     ```bash
     clippaste 2>/dev/null
-    ```
-* Pipe all output to a file
-    ```bash
-    clippaste &>/dev/null
     ```
 * Explicitly write to an output stream
     ```bash
@@ -53,6 +49,11 @@
     ```bash
     var1=$(</dev/stdin)
     var2=`cat`
+    ```
+
+* redirect all output to a file
+    ```bash
+    clippaste &>/dev/null
     ```
 
 * Redirect script output to file (order is important)
@@ -78,7 +79,7 @@
     clippaste | tee >(cat) >(cat) >/dev/null
     ```
 
-* Connect output of the other process with /dev/fd file (when application doesn't support read from STDIN)
+* Connect output of the other process as `/dev/fd` file (when application doesn't support read from STDIN)
     ```bash
     clipcopy <(ping -c 4 localhost)
     ```

@@ -15,7 +15,7 @@ if [[ -t 1 ]]; then
 
 	"$0" | "${FZF_CMD[@]}"
 else
-	enforce_columns=(jq -c 'map({time: (.time // .localtime), type, title, misc: (.misc // ""), command, path})')
+	enforce_columns=(jq -c 'map({time: (.time // .localtime), type, title, misc: (.misc // ""), command, path: (.path | (fromjson? // .))})')
 
 	tsv2json "$file_path"                                                                          \
 		| jq -c 'sort_by(.time // .localtime) | reverse | unique_by(.command, .path) | sort_by(.time // .localtime)' \
