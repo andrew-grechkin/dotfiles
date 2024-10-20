@@ -513,7 +513,7 @@ filetype *.iso
 	\ {Run with qemu UEFI}
 	\ run-iso-uefi %c &,
 	\ {Run with qemu UEFI + USB}
-	\ run-iso-uefi-usb %c &,
+	\ run-iso-uefi-stick %c &,
 
 filetype *.qcow2
 	\ {Run with qemu}
