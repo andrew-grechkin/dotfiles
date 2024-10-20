@@ -121,7 +121,8 @@ alias dir-diff='diff -wBNuar'
 
 # => flatpak ------------------------------------------------------------------------------------------------------ {{{1
 
-alias flatpak-user-setup='flatpak remote-add --if-not-exists --user flathub "https://dl.flathub.org/repo/flathub.flatpakrepo"'
+alias flatpak-user-setup='flatpak remote-add --if-not-exists --user flathub "https://flathub.org/repo/flathub.flatpakrepo"'
+alias flatpak-system-setup='sudo flatpak remote-add --if-not-exists flathub "https://flathub.org/repo/flathub.flatpakrepo"'
 # alias flatpak-user-setup='sudo flatpak --system remote-delete flathub; flatpak remote-add --if-not-exists --user flathub "https://dl.flathub.org/repo/flathub.flatpakrepo"'
 
 # => network ------------------------------------------------------------------------------------------------------ {{{1
