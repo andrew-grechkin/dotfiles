@@ -5,13 +5,16 @@ set -Eeuo pipefail
 FZF_CMD=(
 	fzf
 	--ansi
-	--bind="enter:become(exec 2>>/tmp/$(basename "$0").log; echo \>/dev/null \</dev/null nohup {1} {2} \& disown\; sleep 0.2 | tee -a /dev/stderr | bash)"
-	--bind='ctrl-y:execute-silent(echo -n {1} {2} | clipcopy)'
+	--bind="enter:become(p={2}; exec 2>>/tmp/$(basename "$0").log; echo \>/dev/null \</dev/null nohup {1} \"\${p@Q}\" \& disown\; sleep 0.2 | tee -a /dev/stderr | bash)"
+	--bind="ctrl-y:execute-silent(p={2}; echo -n {1} \"\${p@Q}\" | clipcopy)"
 	--delimiter=$'\u0009'
 	--no-multi
-	--preview='echo {1} {2}'
+	--preview="p={2}; echo {1} \"\${p@Q}\""
 	--reverse
 	--with-nth=3..
 )
+
+SHELL="$(command -v bash)"
+export SHELL
 
 exec "${FZF_CMD[@]}" "$@"
