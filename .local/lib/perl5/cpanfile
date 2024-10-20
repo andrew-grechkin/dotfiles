@@ -23,6 +23,8 @@ requires "Syntax::Operator::Equ";
 requires "Time::Moment";
 requires "YAML::XS";
 
+requires "Chipcard::PCSC::Card"; # for pcsc_scan
+
 requires "Neovim::Ext";
 requires "Text::CSV";
 
