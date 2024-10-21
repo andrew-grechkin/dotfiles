@@ -407,9 +407,6 @@ filetype *.sha512
 	\ {Check SHA512 hash sum}
 	\ sha512sum -c %f %S,
 
-fileviewer *.pub
-	\ gpg-show %c
-
 fileviewer *.pem,*.crt
 	\ openssl x509 -inform PEM -text -in %f
 
@@ -621,6 +618,12 @@ fileviewer !{*/}!{.*/}
 	\ show-file,
 
 " => File associations: all but some files ------------------------------------------------------------------------ {{{1
+
+filetype *.pub
+	\ {Import public key}
+	\ gpg --import,
+fileviewer *.pub
+	\ gpg-show %c
 
 filetype !{*/}!{.*/}!/.gpg$/
 	\ {GPG encrypt}

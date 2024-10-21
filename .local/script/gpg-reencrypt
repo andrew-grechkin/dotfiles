@@ -17,5 +17,5 @@ for FILE in "$@"; do
 	FILENAME=$(basename "$FILE")
 
 	command gpg --quiet --decrypt "$FILE" | command gpg --armor --encrypt --default-recipient-self "${RECIPIENTS[@]/#/'--recipient='}" --output "${FILE}.reencrypt" \
-		&& mv "${FILE}.reencrypt" "${FILE}"
+		&& mv "${FILE}.reencrypt" "$FILE"
 done

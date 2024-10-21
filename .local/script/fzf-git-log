@@ -38,6 +38,7 @@ if [[ -n "$FETCHER" ]]; then
 		--bind="alt-g:execute-silent(git up)+reload(${FETCHER})"
 		--bind="alt-m:execute-silent(ABB=\$(git gmb); git switch \$ABB)+reload(${FETCHER})"
 		--bind="alt-o:execute-silent(C=\$(${COMMAND_EXTRACT_COMMIT}); A=\$(git describe --all --always \$C); git switch --detach \${A/heads\/})+reload(${FETCHER})"
+		--bind="alt-r:execute(2>/dev/null git rebase -i --committer-date-is-author-date --onto \$(${COMMAND_EXTRACT_COMMIT}) \$(${COMMAND_EXTRACT_COMMIT}))+reload(${FETCHER})"
 		--bind="ctrl-r:reload(${FETCHER})"
 		--header='C-j/k:move C-m/enter:view A-p:preview C-n/p:p-move C-y:yank C-r:reload A-f:fetch A-g:pull A-m:co-m A-o:co A-b:browse'
 	)

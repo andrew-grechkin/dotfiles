@@ -102,6 +102,7 @@ END_PRETTIER_CONFIG
 # => main --------------------------------------------------------------------------------------------------------- {{{1
 
 if [[ -x $(command -v fnm) ]]; then
+	export FNM_DIR="$XDG_STATE_HOME/fnm"
 	eval "$(fnm env --use-on-cd --shell zsh)"
 elif [[ -d "$XDG_CONFIG_HOME/nvm" ]]; then
 	export NVM_DIR="$XDG_CONFIG_HOME/nvm"
