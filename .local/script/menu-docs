@@ -4,7 +4,7 @@ set -Eeuo pipefail
 
 cd "${1:-/usr/share/doc}"
 
-FZF_CMD=(
+fzf_cmd=(
 	fzf
 	--bind="enter:execute(glow -p -s dark {})"
 	--no-multi
@@ -14,4 +14,4 @@ FZF_CMD=(
 
 fd -t f -e md | sort -u      \
 	| grep -Pvi '\blicenses?\b' \
-	| "${FZF_CMD[@]}"
+	| "${fzf_cmd[@]}"

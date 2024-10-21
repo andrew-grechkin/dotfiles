@@ -2,4 +2,4 @@
 
 set -Eeuo pipefail
 
-gpg --import --import-options=show-only --with-fingerprint --with-subkey-fingerprint "$@"
+exec gpg --import --import-options=show-only --with-fingerprint --with-subkey-fingerprint "$@"

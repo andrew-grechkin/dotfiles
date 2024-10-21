@@ -6,7 +6,7 @@ ROOT="$HOME/git/boo""king/rest"
 
 cd "$ROOT" || exit
 
-FZF_CMD=(
+fzf_cmd=(
 	fzf
 	--bind="enter:execute(tmux new-window -a -n '{}' vi '{}')+abort"
 	--no-multi
@@ -16,5 +16,5 @@ FZF_CMD=(
 
 if [[ -n "${TMUX:-}" && -n "$(pgrep tmux 2>/dev/null)" ]]; then
 	fd -t f -e http | sort -u \
-		| "${FZF_CMD[@]}"
+		| "${fzf_cmd[@]}"
 fi

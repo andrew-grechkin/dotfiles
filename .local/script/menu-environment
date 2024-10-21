@@ -5,7 +5,7 @@ set -Eeuo pipefail
 # shellcheck disable=SC2016
 PREVIEW='echo -n "\"${}\""'
 
-FZF_CMD=(
+fzf_cmd=(
 	fzf
 	--ansi
 	--bind="ctrl-y:execute(bash -c '{ echo -n \"{}=\"; $PREVIEW; } | clipcopy')+abort"
@@ -17,4 +17,4 @@ FZF_CMD=(
 
 {
 	env | sort | sed 's/=.*//'
-} | "${FZF_CMD[@]}"
+} | "${fzf_cmd[@]}"

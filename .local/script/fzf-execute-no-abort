@@ -2,7 +2,7 @@
 
 set -Eeuo pipefail
 
-FZF_CMD=(
+fzf_cmd=(
 	fzf
 	--ansi
 	--bind="enter:execute-silent(exec 2>>/tmp/$(basename "$0").log; echo \>/dev/null \</dev/null nohup {2..} \& disown\; sleep 0.2 | tee -a /dev/stderr | bash)"
@@ -14,4 +14,4 @@ FZF_CMD=(
 	--with-nth=1
 )
 
-exec "${FZF_CMD[@]}" "$@"
+exec "${fzf_cmd[@]}" "$@"

@@ -3,7 +3,7 @@
 set -Eeuo pipefail
 
 CURRENT_SCRIPT="$(basename "$0")"
-export FETCHER="${CURRENT_SCRIPT#fzf-}"
+export FETCH_CMD="${CURRENT_SCRIPT#fzf-}"
 
 CMD=(
 	fzf-git-log
@@ -12,5 +12,5 @@ CMD=(
 	--bind='tab:toggle+down,shift-tab:toggle+up'
 )
 
-"$FETCHER" "$@" \
+"$FETCH_CMD" "$@" \
 	| "${CMD[@]}"

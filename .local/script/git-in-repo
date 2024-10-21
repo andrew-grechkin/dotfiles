@@ -2,4 +2,4 @@
 
 set -Eeuo pipefail
 
-command git rev-parse HEAD &>/dev/null
+exec git rev-parse HEAD &>/dev/null
