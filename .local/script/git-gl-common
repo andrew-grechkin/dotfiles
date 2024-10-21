@@ -24,7 +24,16 @@ if [[ -z "${PROJECT:-}" ]]; then
 		# current_branch=$(git rev-parse --verify --abbrev-ref HEAD 2>/dev/null)
 		# REMOTE=$(git config --local --get "branch.$current_branch.remote" 2>/dev/null || git show-ref 2>/dev/null | grep -Po '(?<=\\brefs/remotes/)[^\\/]+(?=/HEAD\\b)' | head -1)
 		REMOTE="$(git remote -v | perl -nE 'my ($remote) = m/(\w+)\s+(?:.*?gitlab)/; say $remote if $remote' | head -1)"
+		if [[ -z "$REMOTE" ]]; then
+			>/dev/stderr echo "unable to detect gitlab related remote for this repo among:"
+			>/dev/stderr git remote -v
+			exit 1
+		fi
 		repo_url="$(git config --get "remote.${REMOTE}.url")"
+		if [[ -z "$repo_url" ]]; then
+			>/dev/stderr echo "unable to detect repo url for remote: $REMOTE"
+			exit 1
+		fi
 		IFS=":" read -r -a parts <<< "$repo_url"
 		HOST="${parts[0]#*@}"
 		PROJECT="${parts[1]%.git}"
