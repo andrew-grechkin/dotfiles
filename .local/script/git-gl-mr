@@ -33,4 +33,4 @@ else
 	)
 fi
 
-"${http_fetch_command[@]}"
+exec "${http_fetch_command[@]}"

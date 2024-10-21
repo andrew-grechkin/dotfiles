@@ -2,4 +2,4 @@
 
 set -Eeuo pipefail
 
-git-log-all --merges "$@"
+exec git-log-all --merges "$@"

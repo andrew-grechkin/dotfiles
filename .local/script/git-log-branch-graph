@@ -2,4 +2,4 @@
 
 set -Eeuo pipefail
 
-git-log-branch --graph "$@"
+exec git-log-branch --graph "$@"

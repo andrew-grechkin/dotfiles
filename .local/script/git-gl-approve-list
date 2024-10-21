@@ -60,5 +60,5 @@ if [[ "${table:-0}" == "1" ]]; then
 		} | column -ts '	'
 	}
 else
-	"${http_fetch_command[@]}"
+	exec "${http_fetch_command[@]}"
 fi

@@ -2,7 +2,7 @@
 
 set -Eeuo pipefail
 
-FZF_CMD=(
+fzf_cmd=(
 	fzf
 	--ansi
 	--bind="enter:become(p={2}; exec 2>>/tmp/$(basename "$0").log; echo \>/dev/null \</dev/null nohup {1} \"\${p@Q}\" \& disown\; sleep 0.2 | tee -a /dev/stderr | bash)"
@@ -17,4 +17,4 @@ FZF_CMD=(
 SHELL="$(command -v bash)"
 export SHELL
 
-exec "${FZF_CMD[@]}" "$@"
+exec "${fzf_cmd[@]}" "$@"

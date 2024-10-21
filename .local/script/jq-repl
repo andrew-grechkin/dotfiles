@@ -46,7 +46,7 @@ else
 	prettify=(jq -SC)
 fi
 
-FZF_CMD=(
+fzf_cmd=(
 	fzf
 	--ansi
 	--bind="alt-i:execute(${prettify[*]} '$input' | less)"
@@ -76,4 +76,4 @@ SHELL="$(command -v bash)"
 export SHELL
 
 # exec would prevent trap from execution
-"${prettify[@]}" "$input" | "${FZF_CMD[@]}"
+"${prettify[@]}" "$input" | "${fzf_cmd[@]}"

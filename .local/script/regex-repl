@@ -35,7 +35,7 @@ fi
 
 script="'use English; if (my @m = m/'{q}'/p) {say \"matched: \", \${^MATCH}; say \"groups:\"; say foreach @m}'"
 
-FZF_CMD=(
+fzf_cmd=(
 	fzf
 	--ansi
 	--bind="alt-p:unbind(alt-p)"
@@ -60,4 +60,4 @@ FZF_CMD=(
 	--query="$query"
 )
 
-"${FZF_CMD[@]}"
+"${fzf_cmd[@]}"

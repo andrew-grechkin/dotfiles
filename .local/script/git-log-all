@@ -2,4 +2,4 @@
 
 set -Eeuo pipefail
 
-git-log-wrapper --all --topo-order "$@"
+exec git-log-wrapper --all --topo-order "$@"

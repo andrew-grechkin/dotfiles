@@ -18,7 +18,9 @@ git-in-repo && {
 		--color=always
 		--abbrev-commit
 		--date='format-local:%Y-%m-%d'
-		--format='%C(yellow)%h %C(green)%cd %C(cyan)%G?%C(brightblue)%<(24,trunc)%an%C(auto)%d%C(reset) %s'
+		--format='%C(yellow)%h %C(green)%cd %C(brightblue)%<(24,trunc)%an%C(auto)%d%C(reset) %s'
+		# showing signature is slow
+		# --format='%C(yellow)%h %C(green)%cd %C(cyan)%G?%C(brightblue)%<(24,trunc)%an%C(auto)%d%C(reset) %s'
 		--max-count="$GIT_MAX_COUNT"
 		--topo-order
 		"$@"

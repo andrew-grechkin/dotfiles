@@ -15,7 +15,7 @@ while [ : ]; do
 	esac
 done
 
-FZF_CMD=(
+fzf_cmd=(
 	fzf
 	--ansi
 	--bind="enter:become(exec 2>>/tmp/$(basename "$0").log; echo \>/dev/null \</dev/null nohup {${column}..} \& disown\; sleep 0.2 | tee -a /dev/stderr | bash)"
@@ -27,4 +27,4 @@ FZF_CMD=(
 	--with-nth="..$((column - 1))"
 )
 
-exec "${FZF_CMD[@]}" "$@"
+exec "${fzf_cmd[@]}" "$@"
