@@ -6,7 +6,7 @@ rvm_path="$XDG_STATE_HOME/rvm/${HOSTNAME:-$(hostname)}"
 
 if [[ ! -d "$rvm_path" ]]; then
 	1>/dev/stderr echo "> first run installing rvm to $rvm_path (one time initialization)..."
-	2>/dev/null   git clone --depth=1 git@github.com:rvm/rvm.git "$rvm_path"
+	2>/dev/null   git clone --depth=1 https://github.com/rvm/rvm.git "$rvm_path"
 	1>/dev/null   mkdir -p "$rvm_path"/{archives,rubies,src,user}
 fi
 
