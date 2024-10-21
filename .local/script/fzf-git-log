@@ -14,34 +14,34 @@ fi
 
 COMMAND_EXTRACT_COMMIT='echo {} | grep -o "[[:xdigit:]]\{6,\}" | head -1 | tr -d "\n"'
 
-CMD=(
+fzf_cmd=(
 	fzf
 	--ansi
-	--no-multi
-	--no-sort
-	--reverse
-	--scheme=history
-	--scroll-off=8
-	--track
 	--bind="alt-b:execute-silent(git browse \$(${COMMAND_EXTRACT_COMMIT}))"
 	--bind="ctrl-m:execute(show-commit \$(${COMMAND_EXTRACT_COMMIT}) ${OPTIONS[@]} --show-signature | $LOG_PAGER)"
 	--bind="ctrl-y:execute-silent(${COMMAND_EXTRACT_COMMIT} | clipcopy)"
 	--bind="shift-tab:become(echo -n \$(${COMMAND_EXTRACT_COMMIT}))"
 	--bind="tab:become(echo -n \$(${COMMAND_EXTRACT_COMMIT}))"
-	--header='Press C-v to preview, C-o to checkout, C-m/enter to show fullscreen'
+	--header="C-j/k:move C-m/enter:view A-p:preview A-b:browse"
+	--no-multi
+	--no-sort
 	--preview="show-commit \$(${COMMAND_EXTRACT_COMMIT}) --color=always ${OPTIONS[@]} | $LOG_PAGER"
+	--reverse
+	--scheme=history
+	--scroll-off=4
+	--track
 )
 
-if [[ -n "$FETCHER" ]]; then
-	CMD+=(
-		--bind="alt-f:execute-silent(git fall)+reload(${FETCHER})"
-		--bind="alt-g:execute-silent(git up)+reload(${FETCHER})"
-		--bind="alt-m:execute-silent(ABB=\$(git gmb); git switch \$ABB)+reload(${FETCHER})"
-		--bind="alt-o:execute-silent(C=\$(${COMMAND_EXTRACT_COMMIT}); A=\$(git describe --all --always \$C); git switch --detach \${A/heads\/})+reload(${FETCHER})"
-		--bind="alt-r:execute(2>/dev/null git rebase -i --committer-date-is-author-date --onto \$(${COMMAND_EXTRACT_COMMIT}) \$(${COMMAND_EXTRACT_COMMIT}))+reload(${FETCHER})"
-		--bind="ctrl-r:reload(${FETCHER})"
-		--header='C-j/k:move C-m/enter:view A-p:preview C-n/p:p-move C-y:yank C-r:reload A-f:fetch A-g:pull A-m:co-m A-o:co A-b:browse'
+if [[ -n "$FETCH_CMD" ]]; then
+	fzf_cmd+=(
+		--bind="alt-f:execute-silent(git fall)+reload($FETCH_CMD)"
+		--bind="alt-g:execute-silent(git up)+reload($FETCH_CMD)"
+		--bind="alt-m:execute-silent(ABB=\$(git gmb); git switch \$ABB)+reload($FETCH_CMD)"
+		--bind="alt-o:execute-silent(C=\$(${COMMAND_EXTRACT_COMMIT}); A=\$(git describe --all --always \$C); git switch --detach \${A/heads\/})+reload($FETCH_CMD)"
+		--bind="alt-r:execute(2>/dev/null git rebase -i --committer-date-is-author-date --onto \$(${COMMAND_EXTRACT_COMMIT}) \$(${COMMAND_EXTRACT_COMMIT}))+reload($FETCH_CMD)"
+		--bind="ctrl-r:reload($FETCH_CMD)"
+		--header="C-j/k:move C-m/enter:view A-p:preview C-n/p:p-move C-y:yank C-r:reload A-f:fetch A-g:pull A-m:co-m A-o:co A-r:rebase A-b:browse"
 	)
 fi
 
-exec "${CMD[@]}" "$@"
+exec "${fzf_cmd[@]}" "$@"

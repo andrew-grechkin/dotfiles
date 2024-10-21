@@ -5,7 +5,7 @@ set -Eeuo pipefail
 file_path="$XDG_STATE_HOME/mpv/play.history.tsv"
 
 if [[ -t 1 ]]; then
-	FZF_CMD=(
+	fzf_cmd=(
 		fzf-execute2
 		--bind="alt-r:execute-silent(grep -vF {2} '$file_path' | sponge '$file_path')+reload($0)"
 		--bind="ctrl-r:reload($0)"
@@ -13,7 +13,7 @@ if [[ -t 1 ]]; then
 		--header-lines=1
 	)
 
-	"$0" | "${FZF_CMD[@]}"
+	"$0" | "${fzf_cmd[@]}"
 else
 	enforce_columns=(jq -c 'map({time: (.time // .localtime), type, title, misc: (.misc // ""), command, path: (.path | (fromjson? // .))})')
 
