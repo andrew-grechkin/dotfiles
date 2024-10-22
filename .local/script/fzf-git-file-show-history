@@ -4,21 +4,27 @@ set -Eeuo pipefail
 
 git-in-repo || exit 95
 
+PTH="${*: -1}"
+
+if [[ -z "$PTH" || "$PTH" == '--' || "$PTH" == "$0" ]]; then
+	echo "Provide relative path to file" > /dev/stderr
+	exit 1
+fi
+
+# if [[ ! -e "$PTH" ]]; then
+# 	echo "Path not found: $PTH" > /dev/stderr
+# 	exit 2
+# fi
+
+GIT_ROOT="$(git root)"
+PTH_REL_ROOT=$(realpath -s --relative-to="$GIT_ROOT" "$(realpath "$PTH")")
+
+ARGV=("$@")
+ARGV[-1]="$PTH_REL_ROOT"
+
+cd -- "$GIT_ROOT" || exit 1
+
 if [[ -t 1 ]]; then
-	PTH="${*: -1}"
-
-	if [[ -z "$PTH" || "$PTH" == '--' || "$PTH" == "$0" ]]; then
-		echo "Provide relative path to file" > /dev/stderr
-		exit 1
-	fi
-
-	# if [[ ! -e "$PTH" ]]; then
-	# 	echo "Path not found: $PTH" > /dev/stderr
-	# 	exit 2
-	# fi
-
-	PTH_REL_ROOT=$(realpath -s --relative-to="$(git root)" "$(realpath "$PTH")")
-
 	COMMAND_EXTRACT_COMMIT="echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | tr -d '\n'"
 
 	HEADER=$(
@@ -52,7 +58,7 @@ if [[ -t 1 ]]; then
 		--preview="git show \"\$(${COMMAND_EXTRACT_COMMIT}):$PTH_REL_ROOT\" | bat --color=always --paging=never --file-name=$PTH_REL_ROOT"
 	)
 
-	"$0" "$@" | "${CMD[@]}"
+	"$0" "${ARGV[@]}" | "${CMD[@]}"
 else
-	git-log-branch --follow "$@"
+	git-log-branch --follow "${ARGV[@]}"
 fi
