@@ -13,9 +13,9 @@ if [[ ! -r "$XDG_STATE_HOME/colors@$HOSTNAME" ]]; then
 		if tput sgr0 &> /dev/null; then
 			echo c_blink="$(tput blink)"
 			echo c_bold="$(tput bold)"
-			echo c_normal="$(tput sgr0)"
+			echo c_normal="'$(tput sgr0)'"
 			echo c_reverse="$(tput smso)"
-			echo c_reset="$(tput sgr0)"
+			echo c_reset="'$(tput sgr0)'"
 			echo c_underline="$(tput smul)"
 
 			echo f_black="$(tput setaf 0)"
