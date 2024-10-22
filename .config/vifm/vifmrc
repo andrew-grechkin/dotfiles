@@ -437,6 +437,8 @@ fileviewer *.torrent
 filetype !{*/}!{.*/}/.gpg$/
 	\ {GPG decrypt}
 	\ gpg-decrypt,
+	\ {GPG enarmor}
+	\ gpg --enarmor,
 fileviewer !{*/}!{.*/}/.gpg$/
 	\ gpg --decrypt,
 

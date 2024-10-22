@@ -2,19 +2,45 @@
 
 set -Eeuo pipefail
 
-RECIPIENTS=(
-	53B7256136FC04B09D40D3ABFF125E23B3F82357
-	69A8D5FCB78203FAD961787CAD855A6D0DD0751A
-	D72D548F5F32F1D4772DF64E1EF4C939E2510C07
-)
+args="$(getopt --name="$0" --options='d' --longoptions='detect-recipients' -- "$@")"
+eval set -- "$args"
+
+# shellcheck disable=SC2078
+while [ : ]; do
+	case "$1" in
+		-d | --detect-recipients) detect='1'; shift ;;
+		--) shift; break ;;
+	esac
+done
 
 CTR=0
-
 for FILE in "$@"; do
+	RECIPIENTS=(
+		53B7256136FC04B09D40D3ABFF125E23B3F82357
+		69A8D5FCB78203FAD961787CAD855A6D0DD0751A
+		D72D548F5F32F1D4772DF64E1EF4C939E2510C07
+	)
+
 	CTR=$((CTR + 1))
 
 	echo "Processing ($CTR/$#): $FILE"
-	FILENAME=$(basename "$FILE")
+
+	FILE_DIR=$(dirname "$FILE")
+	if [[ -r "$FILE_DIR/.gpg-id" ]]; then
+		mapfile -t FILE_RECIPIENTS < "$FILE_DIR/.gpg-id"
+		if [[ -n "${FILE_RECIPIENTS[*]}" ]]; then
+			RECIPIENTS=("${FILE_RECIPIENTS[@]}")
+		fi
+	else
+		if [[ -n "${detect:-}" ]]; then
+			if FILE_RECIPIENTS="$(gpg-recipients "$FILE")"; then
+				mapfile -t FILE_RECIPIENTS <<< "$FILE_RECIPIENTS"
+				if [[ -n "${FILE_RECIPIENTS[*]}" ]]; then
+					RECIPIENTS=("${FILE_RECIPIENTS[@]}")
+				fi
+			fi
+		fi
+	fi
 
 	command gpg --quiet --decrypt "$FILE" | command gpg --armor --encrypt --default-recipient-self "${RECIPIENTS[@]/#/'--recipient='}" --output "${FILE}.reencrypt" \
 		&& mv "${FILE}.reencrypt" "$FILE"
