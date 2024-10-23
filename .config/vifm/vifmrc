@@ -507,12 +507,12 @@ filetype *.iso,*.mdf,*.nrg
 	\ FUSE_MOUNT|fuseiso %SOURCE_FILE %DESTINATION_DIR,
 
 filetype *.iso
-	\ {Run with qemu BIOS}
-	\ run-iso-bios %c &,
 	\ {Run with qemu UEFI}
-	\ run-iso-uefi %c &,
+	\ iso-run %c &,
+	\ {Run with qemu BIOS}
+	\ iso-run -b %c &,
 	\ {Run with qemu UEFI + USB}
-	\ run-iso-uefi-stick %c &,
+	\ iso-run-usb-stick %c &,
 
 filetype *.qcow2
 	\ {Run with qemu}

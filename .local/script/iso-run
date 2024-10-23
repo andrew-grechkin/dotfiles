@@ -4,14 +4,36 @@
 
 set -Eeuo pipefail
 
+type='uefi'
+usb='0'
+
+args="$(getopt --name="$0" --options='bu' --longoptions='bios,usb' -- "$@")"
+eval set -- "$args"
+
+# shellcheck disable=SC2078
+while [ : ]; do
+	case "$1" in
+		-b | --bios) type='bios'; shift ;;
+		-u | --usb) usb='1'; shift ;;
+		--) shift; break ;;
+	esac
+done
+
+# must be first
 OPTIONS=(
 	-drive "file=$1,if=virtio,index=1,media=cdrom"
 )
 
+if [[ "$type" == "uefi" ]]; then
+	OPTIONS+=(
+		-bios /usr/share/ovmf/x64/OVMF.fd
+	)
+fi
+
 ISO_NAME=$(basename "$1")
 ISO_DIR=$(dirname "$1")
 
-QCOW_NAME="${ISO_NAME/.iso/}.uefi.qcow2"
+QCOW_NAME="${ISO_NAME/.iso/}.$type.qcow2"
 QCOW_PATH="$ISO_DIR/$QCOW_NAME"
 [[ -f "$QCOW_PATH" ]] || {
 	qemu-img create -f qcow2 "$QCOW_PATH" 128G
@@ -20,20 +42,23 @@ OPTIONS+=(
 	-drive "file=$QCOW_PATH,if=virtio,index=0,media=disk,format=qcow2"
 )
 
-USB_NAME="${ISO_NAME/.iso/}.uefi.usb.qcow2"
-USB_PATH="$ISO_DIR/$USB_NAME"
-[[ -f "$USB_PATH" ]] || {
-	qemu-img create -f qcow2 "$USB_PATH" 8G
-}
-OPTIONS+=(
-	-device "qemu-xhci,id=xhci"
-	-device "usb-storage,bus=xhci.0,drive=stick"
-	-drive "file=$USB_PATH,if=none,id=stick,format=qcow2"
-)
+if [[ "$usb" == '1' ]]; then
+	USB_NAME="${ISO_NAME/.iso/}.$type.usb.qcow2"
+	USB_PATH="$ISO_DIR/$USB_NAME"
+
+	[[ -f "$USB_PATH" ]] || {
+		qemu-img create -f qcow2 "$USB_PATH" 8G
+	}
+
+	OPTIONS+=(
+		-device "qemu-xhci,id=xhci"
+		-device "usb-storage,bus=xhci.0,drive=stick"
+		-drive "file=$USB_PATH,if=none,id=stick,format=qcow2"
+	)
+fi
 
 CMD=(
 	-audiodev "pa,id=snd0"
-	-bios /usr/share/ovmf/x64/OVMF.fd
 	# -cdrom "$1"
 	-cpu host
 	-device ich9-intel-hda

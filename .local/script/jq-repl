@@ -49,7 +49,7 @@ fi
 fzf_cmd=(
 	fzf
 	--ansi
-	--bind="alt-i:execute(${prettify[*]} '$input' | less)"
+	--bind="alt-i:execute(${prettify[*]} <'$input' | less)"
 	--bind="alt-p:unbind(alt-p)"
 	--bind="ctrl-c:become(echo -n {q} | clipcopy; true)"
 	--bind="ctrl-d:half-page-down,ctrl-u:half-page-up"
@@ -76,4 +76,4 @@ SHELL="$(command -v bash)"
 export SHELL
 
 # exec would prevent trap from execution
-"${prettify[@]}" "$input" | "${fzf_cmd[@]}"
+"${fzf_cmd[@]}"
