@@ -35,6 +35,23 @@ if [[ ! -r "$XDG_STATE_HOME/colors@$HOSTNAME" ]]; then
 			echo f_aqua="$(tput setaf 14)"
 			echo f_white="$(tput setaf 15)"
 
+			echo f_Black="$(tput setaf 0)"
+			echo f_Red="$(tput setaf 1)"
+			echo f_Green="$(tput setaf 2)"
+			echo f_Yellow="$(tput setaf 3)"
+			echo f_Blue="$(tput setaf 4)"
+			echo f_Magenta="$(tput setaf 5)"
+			echo f_Cyan="$(tput setaf 6)"
+			echo f_White="$(tput setaf 7)"
+			echo fB_Black="$(tput setaf 8)"; echo f_Gray="$(tput setaf 8)"
+			echo fB_Red="$(tput setaf 9)"
+			echo fB_Green="$(tput setaf 10)"
+			echo fB_Yellow="$(tput setaf 11)"
+			echo fB_Blue="$(tput setaf 12)"
+			echo fB_Magenta="$(tput setaf 13)"
+			echo fB_Cyan="$(tput setaf 14)"
+			echo fB_White="$(tput setaf 15)"
+
 			echo b_black="$(tput setab 0)"
 			echo b_maroon="$(tput setab 1)"
 			echo b_green="$(tput setab 2)"
@@ -51,6 +68,23 @@ if [[ ! -r "$XDG_STATE_HOME/colors@$HOSTNAME" ]]; then
 			echo b_magenta="$(tput setab 13)"
 			echo b_aqua="$(tput setab 14)"
 			echo b_white="$(tput setab 15)"
+
+			echo b_Black="$(tput setab 0)"
+			echo b_Red="$(tput setab 1)"
+			echo b_Green="$(tput setab 2)"
+			echo b_Yellow="$(tput setab 3)"
+			echo b_Blue="$(tput setab 4)"
+			echo b_Magenta="$(tput setab 5)"
+			echo b_Cyan="$(tput setab 6)"
+			echo b_White="$(tput setab 7)"
+			echo bB_Black="$(tput setab 8)"; echo b_Gray="$(tput setab 8)"
+			echo bB_Red="$(tput setab 9)"
+			echo bB_Green="$(tput setab 10)"
+			echo bB_Yellow="$(tput setab 11)"
+			echo bB_Blue="$(tput setab 12)"
+			echo bB_Magenta="$(tput setab 13)"
+			echo bB_Cyan="$(tput setab 14)"
+			echo bB_White="$(tput setab 15)"
 		else
 			echo c_blink='\033[5m'
 			echo c_bold='\033[1m'
@@ -76,6 +110,23 @@ if [[ ! -r "$XDG_STATE_HOME/colors@$HOSTNAME" ]]; then
 			echo f_aqua='\033[96m'
 			echo f_white='\033[97m'
 
+			echo f_Black='\033[30m'
+			echo f_Red='\033[31m'
+			echo f_Green='\033[32m'
+			echo f_Yellow='\033[33m'
+			echo f_Blue='\033[34m'
+			echo f_Magenta='\033[35m'
+			echo f_Cyan='\033[36m'
+			echo f_White='\033[37m'
+			echo fb_Black='\033[90m'; echo f_Gray='\033[90m'
+			echo fb_Red='\033[91m'
+			echo fb_Green='\033[92m'
+			echo fb_Yellow='\033[93m'
+			echo fb_Blue='\033[94m'
+			echo fb_Magenta='\033[95m'
+			echo fb_Cyan='\033[96m'
+			echo fb_White='\033[97m'
+
 			echo b_black='\033[40m'
 			echo b_maroon='\033[41m'
 			echo b_green='\033[42m'
@@ -92,6 +143,23 @@ if [[ ! -r "$XDG_STATE_HOME/colors@$HOSTNAME" ]]; then
 			echo b_magenta='\033[105m'
 			echo b_aqua='\033[106m'
 			echo b_white='\033[107m'
+
+			echo b_Black='\033[40m'
+			echo b_Red='\033[41m'
+			echo b_Green='\033[42m'
+			echo b_Yellow='\033[43m'
+			echo b_Blue='\033[44m'
+			echo b_Magenta='\033[45m'
+			echo b_Cyan='\033[46m'
+			echo b_White='\033[47m'
+			echo bB_Black='\033[100m'; echo b_Gray='\033[100m'
+			echo bB_Red='\033[101m'
+			echo bB_Green='\033[102m'
+			echo bB_Yellow='\033[103m'
+			echo bB_Blue='\033[104m'
+			echo bB_Magenta='\033[105m'
+			echo bB_Cyan='\033[106m'
+			echo bB_White='\033[107m'
 		fi
 	} >"$XDG_STATE_HOME/colors@$HOSTNAME"
 fi
