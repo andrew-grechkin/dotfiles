@@ -46,7 +46,7 @@ if [[ "${table:-0}" == "1" ]]; then
 		# so there are 2 ways of solving this issue:
 		# * process all ouptut with `sed 's/\x0f//g'` before passing it to less
 		# * use terminal which doesn't add ^O as a part of reset sequence (xterm)
-		TERM=xterm-256color
+		TERM=xterm
 		jq_fields=(
 			"id;$(tput setaf 3)\(.user.id)$(tput sgr0)"
 			"uname;\(.user.username)"
