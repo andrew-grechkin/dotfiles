@@ -29,27 +29,27 @@ if [[ -t 1 ]]; then
 
 	HEADER=$(
 		cat <<- EOF_HEADER
-		History of a file: '${PTH_REL_ROOT}'
 		Press A-b: browse, A-d: diff-head, A-p: preview, C-b: blame, C-a: all, C-o: only, C-m/enter: view
 		EOF_HEADER
 	)
 
-	CMD=(
+	fzf_cmd=(
 		fzf
 		--ansi
+		--bind="ctrl-y:execute-silent(${COMMAND_EXTRACT_COMMIT} | clipcopy)"
+		--header-first
+		--header="$HEADER"
 		--no-multi
 		--no-sort
+		--prompt="$PTH_REL_ROOT > "
 		--reverse
 		--scheme=history
 		--scroll-off=8
 		--track
-		--bind="ctrl-y:execute-silent(${COMMAND_EXTRACT_COMMIT} | clipcopy)"
-		--header-first
-		--header="$HEADER"
 	)
 
-	CMD+=(
-		--bind="alt-b:execute-silent(git browse \"\$($COMMAND_EXTRACT_COMMIT)\" -- \"$PTH\")"
+	fzf_cmd+=(
+		--bind="alt-b:execute-silent(git browse \"\$($COMMAND_EXTRACT_COMMIT)\" -- \"$PTH_REL_ROOT\")"
 		--bind="alt-d:execute(git diff \"\$($COMMAND_EXTRACT_COMMIT)\" HEAD -- \"$PTH_REL_ROOT\" | delta --paging=always)"
 		--bind="ctrl-a:execute(show-commit \$(${COMMAND_EXTRACT_COMMIT}) --show-signature | delta --paging=always)"
 		--bind="ctrl-o:execute(show-commit \$(${COMMAND_EXTRACT_COMMIT}) --show-signature -- \"$PTH_REL_ROOT\" | delta --paging=always)"
@@ -58,7 +58,7 @@ if [[ -t 1 ]]; then
 		--preview="git show \"\$(${COMMAND_EXTRACT_COMMIT}):$PTH_REL_ROOT\" | bat --color=always --paging=never --file-name=$PTH_REL_ROOT"
 	)
 
-	"$0" "${ARGV[@]}" | "${CMD[@]}"
+	"$0" "${ARGV[@]}" | "${fzf_cmd[@]}"
 else
 	git-log-branch --follow "${ARGV[@]}"
 fi

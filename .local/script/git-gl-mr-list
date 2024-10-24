@@ -82,7 +82,7 @@ if [[ -t 1 ]]; then
 		--bind="esc:cancel"
 		--bind="home:top"
 		--bind="tab:toggle+down,shift-tab:toggle+up"
-		--delimiter=$'\u00a0'
+		--delimiter="\t"
 		--header-lines=1
 		--header='A-a:approve A-b:browse A-p:preview A-q:approvals A-s:payload A-r:revoke C-r:reload C-y:yank Enter:diff'
 		--multi
@@ -155,7 +155,7 @@ else
 			{
 				echo -e "$(join "${col_names[@]}")"
 				jq -Sr "sort_by(.iid) | reverse | .[] | \"$(join "${jq_filter[@]}")\""
-			} | column -ts '	' -o $'\u00a0'
+			} | tsv-align
 		}
 	else
 		"${http_fetch_command[@]}"

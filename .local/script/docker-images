@@ -3,18 +3,39 @@
 set -Eeuo pipefail
 
 if [[ -t 1 ]]; then
-	OPTIONS=(
-		# --format='table {{.Repository}}:{{.Tag}}\t{{.ID}}\t{{.Size}}\t{{.CreatedSince}}'
+	fzf_cmd=(
+		fzf
+		--ansi
+		--bind="alt-c:reload(docker-clean &>/dev/null; $0 | json2tsv | tsv-align)"
+		--bind="alt-g:reload(docker pull {2}:{3} &>/dev/null; $0 | json2tsv | tsv-align)"
+		--bind="alt-i:execute(docker inspect {2}:{3} | json-pretty)"
+		--bind="alt-p:toggle-preview,ctrl-alt-w:toggle-preview-wrap,ctrl-s:toggle-sort"
+		--bind="alt-r:execute-silent(docker rmi {+1})+reload($0 | json2tsv | tsv-align)"
+		--bind="ctrl-m:execute(docker inspect {2}:{3} | jq-repl)"
+		--bind="ctrl-r:reload($0 | json2tsv | tsv-align)"
+		--bind="ctrl-y:execute-silent(echo -n {2}:{3} | clipcopy)"
+		--bind="home:top"
+		--delimiter="\t"
+		--header-lines=1
+		--header='C-j/k:move C-m/Enter:jq-repl C-r:reload C-y:yank A-c:clear A-g:pull A-i:inspect A-p:preview A-r:remove'
+		--preview-window=right:60%:border-left:wrap:hidden
+		--preview="docker inspect {2}:{3} | json-pretty -Cn"
+		--prompt="docker images > "
+		--reverse
+		--scroll-off=4
+		--tabstop=4
 	)
-else
-	OPTIONS=(
-		--no-trunc
-		--filter='readonly=false'
-		--format='table {{.Repository}}:{{.Tag}}'
-	)
-fi
 
-command docker images \
-	--noheading       \
-	--sort=repository \
-	"${OPTIONS[@]}" "$@" 2>/dev/null
+	"$0" | json2tsv | tsv-align | "${fzf_cmd[@]}"
+else
+	command docker images -a --format "{{json . }}" \
+		"${OPTIONS[@]}" "$@" 2>/dev/null \
+		| jq -nRc '[inputs | fromjson] | sort_by(.repository // .Repository) | map({
+			id: (.Id // .ID) | .[0:10],
+			# created: (.Created // (.CreatedAt | strptime("%Y-%m-%d %T") | mktime)) | todateiso8601,
+			repository: (.repository // .Repository),
+			tag: (.tag // .Tag),
+			size: .Size,
+			use: .Containers
+	})'
+fi
