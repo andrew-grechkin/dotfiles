@@ -70,14 +70,14 @@ if [[ -t 1 ]]; then
 	fzf_cmd=(
 		fzf
 		--ansi
-		--bind="alt-a:execute-silent(set -x; exec &>/tmp/git-approve.log; git-gl-approve -h \"$HOST\" -p \"$PROJECT\" {+1})+reload-sync(${fetcher[*]})"
+		--bind="alt-a:execute-silent(set -x; exec &>/tmp/git-approve.log; git-gl-approve -h \"$HOST\" -p \"$PROJECT\" {+1})+reload-sync(${fetcher[*]@Q})"
 		--bind="alt-b:execute-silent(python3 -mwebbrowser {7})"
 		--bind="alt-p:toggle-preview,ctrl-alt-w:toggle-preview-wrap,ctrl-s:toggle-sort"
 		--bind="alt-s:execute(git-gl-mr {1} | ${prettify_json[*]})"
-		--bind="alt-r:execute-silent(git-gl-approve -h \"$HOST\" -p \"$PROJECT\" {+1} -u)+reload-sync(${fetcher[*]})"
+		--bind="alt-r:execute-silent(git-gl-approve -h \"$HOST\" -p \"$PROJECT\" {+1} -u)+reload-sync(${fetcher[*]@Q})"
 		--bind="alt-q:execute({ echo \"Approved by:\"; echo; git-gl-approve-list -t -h \"$HOST\" -p \"$PROJECT\" {1}; } | less)"
 		--bind="ctrl-m:execute(git-gl-mr-diff {1} ${prettify_diff[*]})"
-		--bind="ctrl-r:reload-sync(${fetcher[*]})"
+		--bind="ctrl-r:reload-sync(${fetcher[*]@Q})"
 		--bind="ctrl-y:execute-silent(echo -n {} | clipcopy)"
 		--bind="esc:cancel"
 		--bind="home:top"
@@ -111,7 +111,7 @@ else
 	fi
 
 	# https://docs.gitlab.com/ee/api/merge_requests.html#list-project-merge-requests
-	if [[ -x "$(command -v xhs1)" ]]; then
+	if [[ -x "$(command -v xhs)" ]]; then
 		http_fetch_command=(
 			xhs
 			"${HOST}/api/v4/projects/$(url_encode "$PROJECT")/merge_requests${query}"
