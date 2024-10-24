@@ -11,7 +11,7 @@ formatter='| jq --indent 2 -S'
 colorizer=''
 color='auto'
 
-args="$(getopt --name="$0" --options 'nc:' --longoptions 'no-filename,color:' -- "$@")"
+args="$(getopt --name="$0" --options 'nc:C' --longoptions 'no-filename,color:' -- "$@")"
 eval set -- "$args"
 
 # shellcheck disable=SC2078
@@ -19,6 +19,7 @@ while [ : ]; do
 	case "$1" in
 		-c | --color) color="$2"; shift 2 ;;
 		-n | --no-filename) no_filename="1"; shift ;;
+		-C) color="always"; shift ;;
 		--) shift; break ;;
 	esac
 done
