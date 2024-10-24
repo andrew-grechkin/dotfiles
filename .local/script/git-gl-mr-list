@@ -71,7 +71,7 @@ if [[ -t 1 ]]; then
 		fzf
 		--ansi
 		--bind="alt-a:execute-silent(set -x; exec &>/tmp/git-approve.log; git-gl-approve -h \"$HOST\" -p \"$PROJECT\" {+1})+reload-sync(${fetcher[*]@Q})"
-		--bind="alt-b:execute-silent(python3 -mwebbrowser {7})"
+		--bind="alt-b:execute-silent(python3 -mwebbrowser {-1})"
 		--bind="alt-p:toggle-preview,ctrl-alt-w:toggle-preview-wrap,ctrl-s:toggle-sort"
 		--bind="alt-s:execute(git-gl-mr {1} | ${prettify_json[*]})"
 		--bind="alt-r:execute-silent(git-gl-approve -h \"$HOST\" -p \"$PROJECT\" {+1} -u)+reload-sync(${fetcher[*]@Q})"
@@ -89,6 +89,7 @@ if [[ -t 1 ]]; then
 		# --no-sort
 		--preview-window=right:60%:border-left:wrap:hidden
 		--preview="git-gl-mr-diff {1} ${prettify_diff[*]:0:2}"
+		--prompt="$PROJECT > "
 		--reverse
 		# --scheme=history
 		--scroll-off=4
@@ -132,11 +133,13 @@ else
 			jq_fields=(
 				"id;$(tput setaf 3)\(.iid)$(tput sgr0)"
 				"created;$(tput setaf 2)\(.updated_at[0:10])$(tput sgr0)"
-				# 'wip;\(if .work_in_progress then 1 else 0 end)'
+				'wip;\(if .work_in_progress then 1 else 0 end)'
+				'state;\(.state)'
 				# 'project_id;\(.project_id)'
-				"author;$(tput setaf 12)\(.author.name)$(tput sgr0)"
-				"name;$(tput setaf 13)\(.author.username)$(tput sgr0)"
-				"project;$(tput setaf 6)$PROJECT$(tput sgr0)"
+				"name;$(tput setaf 12)\(.author.name)$(tput sgr0)"
+				"author;$(tput setaf 13)\(.author.username)$(tput sgr0)"
+				# "project;$(tput setaf 6)$PROJECT$(tput sgr0)"
+				"branch;$(tput setaf 7)\(.source_branch)$(tput sgr0)"
 				'title;\(.title)'
 				"url;$(tput setaf 14)\(.web_url)$(tput sgr0)"
 			)
