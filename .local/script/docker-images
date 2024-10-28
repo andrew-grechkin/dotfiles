@@ -6,11 +6,12 @@ if [[ -t 1 ]]; then
 	fzf_cmd=(
 		fzf
 		--ansi
+		--bind="tab:toggle-out,shift-tab:toggle-in"
 		--bind="alt-c:reload(docker-clean &>/dev/null; $0 | json2tsv | tsv-align)"
 		--bind="alt-g:reload(docker pull {2}:{3} &>/dev/null; $0 | json2tsv | tsv-align)"
 		--bind="alt-i:execute(docker inspect {2}:{3} | json-pretty)"
 		--bind="alt-p:toggle-preview,ctrl-alt-w:toggle-preview-wrap,ctrl-s:toggle-sort"
-		--bind="alt-r:execute-silent(docker rmi {+1})+reload($0 | json2tsv | tsv-align)"
+		--bind="alt-r:reload(docker rmi {+1} &>/dev/null; $0 | json2tsv | tsv-align)"
 		--bind="ctrl-m:execute(docker inspect {2}:{3} | jq-repl)"
 		--bind="ctrl-r:reload($0 | json2tsv | tsv-align)"
 		--bind="ctrl-y:execute-silent(echo -n {2}:{3} | clipcopy)"
@@ -18,6 +19,7 @@ if [[ -t 1 ]]; then
 		--delimiter="\t"
 		--header-lines=1
 		--header='C-j/k:move C-m/Enter:jq-repl C-r:reload C-y:yank A-c:clear A-g:pull A-i:inspect A-p:preview A-r:remove'
+		--multi
 		--preview-window=right:60%:border-left:wrap:hidden
 		--preview="docker inspect {2}:{3} | json-pretty -Cn"
 		--prompt="docker images > "
