@@ -39,6 +39,7 @@ return {
                 },
             },
         },
+        enabled = not IS_KVM,
         init = function() require('which-key').register({['<leader>a'] = {name = 'Test'}}) end,
         keys = {
             {
