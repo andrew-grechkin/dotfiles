@@ -17,7 +17,7 @@ highlight Win            cterm=none              ctermfg=White        ctermbg=no
 highlight SuggestBox     cterm=none              ctermfg=White        ctermbg=none
 
 highlight CurrLine       cterm=bold              ctermfg=none         ctermbg=23
-highlight OtherLine      cterm=bold              ctermfg=none         ctermbg=235
+highlight OtherLine      cterm=bold              ctermfg=none         ctermbg=234
 highlight Selected       cterm=bold              ctermfg=LightYellow  ctermbg=none
 highlight JobLine        cterm=none,reverse      ctermfg=Black        ctermbg=White
 

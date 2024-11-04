@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+descriptor="$(bspc query -T -n 2>/dev/null)"
+state="$(echo "$descriptor" | jq -r '.client.state')"
+
+if [[ "floating" == "$state" ]]; then
+	bspc node -t "tiled"
+else
+	bspc node -t "floating"
+fi
