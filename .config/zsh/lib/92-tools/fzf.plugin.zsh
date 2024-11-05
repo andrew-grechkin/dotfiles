@@ -2,7 +2,7 @@
 
 # => Load fzf (key bindings, completion) -------------------------------------------------------------------------- {{{1
 
-for F in '/usr/share/fzf/key-bindings.zsh' "$XDG_CONFIG_HOME/fzf/key-bindings.zsh" "$XDG_DATA_HOME/nvim/lazy/fzf/shell/key-bindings.zsh"; do
+for F in '/usr/share/fzf/key-bindings.zsh' '/usr/share/fzf/shell/key-bindings.zsh' "$XDG_CONFIG_HOME/fzf/key-bindings.zsh" "$XDG_DATA_HOME/nvim/lazy/fzf/shell/key-bindings.zsh"; do
 	[[ -r "$F" ]] || continue
 	source-file "$F" && break
 done
