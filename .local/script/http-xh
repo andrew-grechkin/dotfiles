@@ -55,7 +55,7 @@ fi
 if [[ "$0" =~ xh$ ]]; then
 	XH=(xh)
 
-	if [[ "${VERB_URL[*]}" =~ 'prod' ]]; then
+	if [[ "${VERB_URL[*]}" =~ 'prod' || "${VERB_URL[*]}" =~ 'dqs' ]]; then
 		opts+=(
 			--https
 		)
