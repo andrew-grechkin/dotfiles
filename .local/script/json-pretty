@@ -10,14 +10,16 @@ set -Eeuo pipefail
 formatter='| jq --indent 2 -S'
 colorizer=''
 color='auto'
+filename=''
 
-args="$(getopt --name="$0" --options 'nc:C' --longoptions 'no-filename,color:' -- "$@")"
+args="$(getopt --name="$0" --options 'nc:f:C' --longoptions 'no-filename,color:,file-name:' -- "$@")"
 eval set -- "$args"
 
 # shellcheck disable=SC2078
 while [ : ]; do
 	case "$1" in
 		-c | --color) color="$2"; shift 2 ;;
+		-f | --file-name) filename="$2"; shift 2 ;;
 		-n | --no-filename) no_filename="1"; shift ;;
 		-C) color="always"; shift ;;
 		--) shift; break ;;
@@ -35,16 +37,16 @@ if [[ -t 1 || "$color" == 'always' ]]; then
 
 	[[ -x "$(command -v bat)" ]] && {
 		if [[ "${no_filename:-}" == "1" ]]; then
-			FILENAME=(--style=plain)
+			BAT_OPTIONS=(--style=plain)
 		else
-			if [[ -n "$*" ]]; then
-				FILENAME=(--style=header "--file-name=\"$*\"")
+			if [[ -n "$filename" ]]; then
+				BAT_OPTIONS=(--style=header "--file-name=$filename")
 			else
-				FILENAME=(--style=header "--file-name=\"STDIN.${LANGUAGE:-json}\"")
+				BAT_OPTIONS=(--style=header "--file-name=STDIN.${LANGUAGE:-json}")
 			fi
 		fi
 
-		colorizer="| bat --wrap=never -l ${LANGUAGE:-json} --color="$color" ${FILENAME[*]}"
+		colorizer="| bat --wrap=never -l ${LANGUAGE:-json} --color='$color' ${BAT_OPTIONS[*]@Q}"
 	}
 fi
 

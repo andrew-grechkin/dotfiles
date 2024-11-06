@@ -25,9 +25,9 @@ perms:
   group_write: {foreground: Red}
   group_execute: {foreground: Green}
   ###
-  other_read: {foreground: LightYellow}
+  other_read: {foreground: LightYellow, is_bold: true}
   other_write: {foreground: LightRed, is_bold: true}
-  other_execute: {foreground: LightGreen}
+  other_execute: {foreground: LightGreen, is_bold: true}
   # special_user_file
   # special_other
   # attribute
@@ -47,14 +47,14 @@ size:
   unit_huge: {foreground: LightYellow}
 
 users:
-  user_you: {foreground: Green}
-  user_other: {foreground: Yellow}
+  user_you: {foreground: White}
+  user_other: {foreground: LightBlue}
   user_root: {foreground: Red}
-  group_yours: {foreground: Green}
-  group_other: {foreground: Yellow}
+  group_yours: {foreground: White}
+  group_other: {foreground: LightBlue}
   group_root: {foreground: Red}
 
-date: {foreground: 31}
+date: {foreground: Green}
 
 # links:
 #   normal
