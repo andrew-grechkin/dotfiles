@@ -126,9 +126,9 @@ WHERE
 
 return {
     { -- https://github.com/kristijanhusak/vim-dadbod-ui
-        'kristijanhusak/vim-dadbod-ui',
-        commit = (vim.version().major < 1 and vim.version().minor < 10) and 'b1675d1f56c12b0abac2ef74b94670fe27adcf93' or
-            nil,
+        'andrew-grechkin/vim-dadbod-ui',
+        -- commit = (vim.version().major < 1 and vim.version().minor < 10) and 'b1675d1f56c12b0abac2ef74b94670fe27adcf93' or
+        --     nil,
         dependencies = {
             { -- https://github.com/tpope/vim-dadbod
                 'tpope/vim-dadbod',
@@ -139,9 +139,10 @@ return {
         cmd = {'DBUI', 'DBUIToggle', 'DBUIAddConnection', 'DBUIFindBuffer'},
         init = function()
             vim.g.db_ui_auto_execute_table_helpers = true
+            vim.g.db_ui_force_echo_notifications = true
             vim.g.db_ui_hide_schemas = {'pg_toast'}
             vim.g.db_ui_show_database_icon = true
-            vim.g.db_ui_table_helpers = {postgresql = postgresql, mysql = mysql}
+            vim.g.db_ui_table_helpers = {postgresql = postgresql, mysql = mysql, mysqltsv = mysql}
             vim.g.db_ui_use_nerd_fonts = true
             vim.g.db_ui_use_nvim_notify = true
             vim.g.db_ui_win_position = 'right'

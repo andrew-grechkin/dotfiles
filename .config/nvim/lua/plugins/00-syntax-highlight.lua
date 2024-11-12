@@ -30,7 +30,7 @@ return {
                     'comment',
                     'cpp',
                     'css',
-                    'csv',
+                    -- 'csv',
                     'doxygen',
                     'elixir',
                     'git_config',
