@@ -2,4 +2,12 @@
 
 # convert JSON array of hashes to TSV with header based on keys
 
-. | (.[0] | keys_unsorted | @tsv), (.[] | [.[]?] | @tsv)
+. | (
+    .[0]
+    | keys_unsorted
+    | @tsv
+), (
+    .[] | [.[]?]
+    | map_values(if type == "object" or type == "array" then @json else . end)
+    | @tsv
+)
