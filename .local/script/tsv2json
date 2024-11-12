@@ -5,5 +5,5 @@
 [ inputs | split("\t") ]
 	| .[0] as $keys
 	| .[1:] | map(
-		. as $row | reduce $row[] as $value ({}; .[($keys[. | length])] = $value)
+		. as $row | reduce $row[] as $value ({}; .[($keys[. | length])] = try ($value | gsub("\\\\\\\\\\\""; "\\\"") | fromjson) catch $value)
 	)
