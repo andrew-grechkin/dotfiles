@@ -76,6 +76,10 @@ fi
 [[ -d "$HOME/.local/script-work"                        ]] && path=("$HOME/.local/script-work"         "${path[@]}")
 [[ -d "$HOME/.local/script-work-private"                ]] && path=("$HOME/.local/script-work-private" "${path[@]}")
 
+if [[ -n "$HOSTNAME" && "$HOSTNAME" =~ king\.com$ ]]; then
+	[[ -d "$HOME/.local/nvim/bin"                       ]] && path=("$HOME/.local/nvim/bin" "${path[@]}")
+fi
+
 export PATH
 
 WORDCHARS=${WORDCHARS/\/}
