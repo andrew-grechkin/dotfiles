@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+NVIM_VERSION_REQUIRED="${NVIM_VERSION_REQUIRED:-nightly}"
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+if [[ ! -d ~/git/public/neovim ]]; then
+	mkdir -p ~/git/public
+	cd ~/git/public
+	git clone --depth 1 --branch "$NVIM_VERSION_REQUIRED" git@github.com:neovim/neovim.git
+fi
+
+cd ~/git/public/neovim
+# git fetch --tags
+git checkout "$NVIM_VERSION_REQUIRED"
+
+make CMAKE_BUILD_TYPE=Release CMAKE_INSTALL_PREFIX="$HOME"/.local/nvim install
