@@ -99,6 +99,19 @@ END_PRETTIER_CONFIG
 
 # export NPM_CONFIG_PREFIX="$XDG_DATA_HOME/npm"
 
+# => install (if necessary) --------------------------------------------------------------------------------------- {{{1
+
+if [[ ! -x "$HOME/.cache/bin/fnm" ]]; then
+	1>/dev/stderr echo "> first run installing fnm to $HOME/.cache/bin (one time initialization)..."
+	url="https://github.com/Schniz/fnm/releases/latest/download/fnm-linux.zip"
+
+	curl -Lsf "$url"                        \
+		| zcat      >"$HOME/.cache/bin/fnm" \
+		&& chmod a+x "$HOME/.cache/bin/fnm"
+
+	rehash
+fi
+
 # => main --------------------------------------------------------------------------------------------------------- {{{1
 
 if [[ -x $(command -v fnm) ]]; then

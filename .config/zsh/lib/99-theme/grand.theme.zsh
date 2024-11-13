@@ -43,8 +43,12 @@ function precmd() {
 	# Check if we are on SSH or not
 	[[ -n "$SSH_CLIENT" || -n "$SSH2_CLIENT" ]] && ZSH_THEME['HOST']='%F{red}%M%f' || ZSH_THEME['HOST']='%F{green}%M%f'
 
-	PROMPT="${ZSH_THEME['CLOCK']}${ZSH_THEME['RETURN']} "'${vcs_info_msg_0_}'"%b%k%f%{$reset_color%}
-${ZSH_THEME['USER']}%F{cyan}@%f${ZSH_THEME['HOST']}${ZSH_THEME['CWD']} %(!.#.$) ${RPS1}%b%k%f% "
+    nl=$'\n'
+    left11="${nl}%F{0}#${ZSH_THEME['CLOCK']}${ZSH_THEME['RETURN']}"
+    left12="${ZSH_THEME['USER']}%F{cyan}@%f${ZSH_THEME['HOST']}${ZSH_THEME['CWD']}"'${vcs_info_msg_0_}'"%b%k%f%{$reset_color%}"
+    left2="%F{0}:%{$reset_color%}%(!.#.$)${RPS1}%b%k%F{0};%f%{$reset_color%}"
+
+	PROMPT="$left11 $left12 ${nl}$left2"
 	RPROMPT=''
 }
 
@@ -62,5 +66,5 @@ fi
 zstyle    ':vcs_info:*'                 get-revision             true
 zstyle    ':vcs_info:*'                 stagedstr                '%B%F{green}+'
 zstyle    ':vcs_info:*'                 unstagedstr              '%B%F{11}*'
-zstyle    ':vcs_info:*'                 formats                  '%K{23}%F{231}%b%K{29}%F{23} %F{233}%i%k%F{29} %u%c%m '
-zstyle    ':vcs_info:*'                 actionformats            '%K{23}%F{231}%b%K{29}%F{23} %F{233}%i%k%F{29} %a %m '
+zstyle    ':vcs_info:*'                 formats                  ' %K{23}%F{231}%b%K{29}%F{23} %F{233}%i%k%F{29} %u%c%m'
+zstyle    ':vcs_info:*'                 actionformats            ' %K{23}%F{231}%b%K{29}%F{23} %F{233}%i%k%F{29} %a %m'
