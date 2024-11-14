@@ -1,7 +1,6 @@
 return {
     { -- https://github.com/nvim-telescope/telescope.nvim
         'nvim-telescope/telescope.nvim',
-        version = (vim.version().major < 1 and vim.version().minor < 9) and 'v0.1.1' or nil,
         config = function()
             local ok, plugin = pcall(require, 'telescope')
             if not ok then return end

@@ -1,9 +1,9 @@
 return {
     { -- https://github.com/stevearc/conform.nvim
         'stevearc/conform.nvim',
-        version = (vim.version().major < 1 and vim.version().minor < 10) and 'v6.1.0' or nil,
         event = {'BufReadPre', 'BufNewFile'},
         opts = {
+            default_format_opts = {lsp_format = 'fallback'},
             formatters_by_ft = {
                 -- ['_'] = {'trim_newlines', 'trim_whitespace'},
                 ['*'] = {'trim_newlines', 'trim_whitespace'},
@@ -14,11 +14,11 @@ return {
                 javascript = {'prettier'},
                 json = {'fixjson', 'jq'},
                 jsonc = {'fixjson', 'jq-sort-one-line'},
-                lua = {{'lua-format', 'stylua'}},
+                lua = {'lua-format'},
                 markdown = {'prettierd'},
                 mysql = {'sql-formatter', 'mysql_sqlfluff'},
                 perl = {'perltidy'},
-                python = {{'darker', 'black'}},
+                python = {'darker'},
                 pgsql = {'sql-formatter', 'sqlfluff'},
                 sh = {'shellharden', 'beautysh'},
                 sql = {'sql-formatter', 'sqlfluff'},
@@ -34,6 +34,7 @@ return {
                 yaml = {'yaml-sanitize'},
             },
             log_level = vim.log.levels.DEBUG,
+            notify_no_formatters = true,
             notify_on_error = true,
             formatters = {
                 ['beautysh'] = {command = 'beautysh', args = {'--indent-size', '4', '--tab', '-'}},
