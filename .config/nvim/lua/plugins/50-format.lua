@@ -22,7 +22,7 @@ return {
                 pgsql = {'sql-formatter', 'sqlfluff'},
                 sh = {'shellharden', 'beautysh'},
                 sql = {'sql-formatter', 'sqlfluff'},
-                typescript = {'prettier'},
+                typescript = {'deno_fmt'},
                 xml = {'xmllint'},
                 yaml = {'yamlfix'},
             },

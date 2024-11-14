@@ -11,7 +11,7 @@ if [[ -t 1 ]]; then
 		--bind="alt-g:reload(docker pull {2}:{3} &>/dev/null; $0 | json2tsv | tsv-align)"
 		--bind="alt-i:execute(docker inspect {2}:{3} | json-pretty)"
 		--bind="alt-p:toggle-preview,ctrl-alt-w:toggle-preview-wrap,ctrl-s:toggle-sort"
-		--bind="alt-r:reload(docker rmi {+1} &>/dev/null; $0 | json2tsv | tsv-align)"
+		--bind="alt-r:reload(docker rmi -f {+1} &>/dev/null; $0 | json2tsv | tsv-align)"
 		--bind="ctrl-m:execute(docker inspect {2}:{3} | jq-repl)"
 		--bind="ctrl-r:reload($0 | json2tsv | tsv-align)"
 		--bind="ctrl-y:execute-silent(echo -n {2}:{3} | clipcopy)"

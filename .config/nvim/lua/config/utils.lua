@@ -46,6 +46,8 @@ GET_PROJECT_DIR = function(path)
         '.eslintrc.json',
         '.vscode',
         'Makefile',
+        'deno.json',
+        'deno.jsonc',
         'package.json',
         'pyproject.toml',
         'setup.py',
