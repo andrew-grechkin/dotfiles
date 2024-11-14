@@ -8,28 +8,21 @@ return {
 
             local wk_ok, which_key = pcall(require, 'which-key')
             if wk_ok then
-                local normal_mappings = {
-                    ['<leader>'] = {
-                        s = {
-                            W = {
-                                name = ': workspaces',
-                                c = {
-                                    function()
-                                        require('telescope').extensions.git_worktree.create_git_worktree()
-                                    end,
-                                    ': worktree create',
-                                },
-                                W = {
-                                    function()
-                                        require('telescope').extensions.git_worktree.git_worktrees()
-                                    end,
-                                    ': worktree list',
-                                },
-                            },
-                        },
+                which_key.add({
+                    {'<leader>sW', group = ': workspaces'},
+                    {
+                        '<leader>sWW',
+                        function() require('telescope').extensions.git_worktree.git_worktrees() end,
+                        desc = ': worktree list',
                     },
-                }
-                which_key.register(normal_mappings, {mode = 'n', nowait = true, noremap = true})
+                    {
+                        '<leader>sWc',
+                        function()
+                            require('telescope').extensions.git_worktree.create_git_worktree()
+                        end,
+                        desc = ': worktree create',
+                    },
+                })
             end
         end,
     },
@@ -105,34 +98,35 @@ return {
                 local ok, which_key = pcall(require, 'which-key')
                 if not ok then return end
 
-                local normal_mappings = {
-                    ['['] = {name = 'Prev', ['h'] = {plugin.prev_hunk, 'GIT: previous hunk'}},
-                    [']'] = {name = 'Next', ['h'] = {plugin.next_hunk, 'GIT: next hunk'}},
-                    ['<leader>'] = {
-                        ['h'] = {
-                            name = 'GIT',
-                            D = {function() plugin.diffthis('~') end, 'GIT: diff with HEAD'},
-                            S = {plugin.stage_buffer, 'GIT: stage buffer'},
-                            b = {function() plugin.blame_line {full = true} end, 'GIT: blame line'},
-                            c = {
-                                name = 'GIT: checkout',
-                                O = {plugin.reset_buffer, 'GIT: checkout buffer'},
-                                o = {plugin.reset_hunk, 'GIT: checkout hunk'},
-                            },
-                            d = {plugin.diffthis, 'GIT: diff with index'},
-                            p = {plugin.preview_hunk, 'GIT: preview hunk'},
-                            s = {plugin.stage_hunk, 'GIT: stage hunk'},
-                            t = {
-                                b = {plugin.toggle_current_line_blame, 'GIT: toggle blame'},
-                                d = {plugin.toggle_deleted, 'GIT: toggle deleted'},
-                            },
-                            u = {plugin.undo_stage_hunk, 'GIT: unstage hunk'},
-                            v = {plugin.select_hunk, 'GIT: select hunk'},
-                        },
-                    },
-                }
+                which_key.add({
+                    {'[h', plugin.prev_hunk, desc = 'GIT: previous hunk'},
+                    {']h', plugin.next_hunk, desc = 'GIT: next hunk'},
 
-                which_key.register(normal_mappings, {bufer = bufnr, noremap = true})
+                    {'<leader>h', group = 'GIT'},
+                    {
+                        '<leader>hD',
+                        function() plugin.diffthis('~') end,
+                        desc = 'GIT: diff with HEAD',
+                    },
+                    {'<leader>hS', plugin.stage_buffer, desc = 'GIT: stage buffer'},
+                    {
+                        '<leader>hb',
+                        function() plugin.blame_line {full = true} end,
+                        desc = 'GIT: blame line',
+                    },
+                    {'<leader>hd', plugin.diffthis, desc = 'GIT: diff with index'},
+                    {'<leader>hp', plugin.preview_hunk, desc = 'GIT: preview hunk'},
+                    {'<leader>hs', plugin.stage_hunk, desc = 'GIT: stage hunk'},
+                    {'<leader>ht', group = 'GIT: toggle'},
+                    {'<leader>htb', plugin.toggle_current_line_blame, desc = 'GIT: toggle blame'},
+                    {'<leader>htd', plugin.toggle_deleted, desc = 'GIT: toggle deleted'},
+                    {'<leader>hu', plugin.undo_stage_hunk, desc = 'GIT: unstage hunk'},
+                    {'<leader>hv', plugin.select_hunk, desc = 'GIT: select hunk'},
+
+                    {'<leader>hc', group = 'GIT: checkout'},
+                    {'<leader>hcO', plugin.reset_buffer, desc = 'GIT: checkout buffer'},
+                    {'<leader>hco', plugin.reset_hunk, desc = 'GIT: checkout hunk'},
+                })
             end,
         },
     },

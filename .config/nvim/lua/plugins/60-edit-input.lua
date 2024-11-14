@@ -18,7 +18,7 @@ return {
         'junegunn/vim-easy-align',
         keys = {
             {
-                '<leader>a',
+                '<leader>A',
                 '<Plug>(EasyAlign)',
                 mode = {'n', 'x'},
                 desc = 'easy-align',

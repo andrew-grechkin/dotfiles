@@ -105,34 +105,37 @@ return {
 
             local wk_ok, which_key = pcall(require, 'which-key')
             if wk_ok then
-                local normal_mappings = {
-                    ['<leader>'] = {
-                        -- Search for the current word
-                        ['*'] = {'<Esc>:Grepper -dir file -cword -noprompt<CR>', 'grep: file'},
-                        ['8'] = {'<Esc>:Grepper -dir repo -cword -noprompt<CR>', 'grep: repo'},
-                        -- Start Grepper prompt
-                        ['G'] = {'<Esc>:Grepper -dir file<CR>', 'grep: file'},
-                        ['g'] = {'<Esc>:Grepper -dir repo<CR>', 'grep: repo'},
+                which_key.add({
+                    mode = {'n'},
+                    nowait = true,
+                    remap = false,
+                    -- Search for the current word
+                    {
+                        '<leader>*',
+                        '<Esc>:Grepper -dir file -cword -noprompt<CR>',
+                        desc = 'grep: file',
                     },
-                    ['g'] = {
-                        -- Search for the current selection or {motion} (see text-objects)
-                        ['S'] = {'<Plug>(GrepperOperatorFile)', 'grep: file'},
-                        ['s'] = {'<Plug>(GrepperOperatorRepo)', 'grep: repo'},
+                    {
+                        '<leader>8',
+                        '<Esc>:Grepper -dir repo -cword -noprompt<CR>',
+                        desc = 'grep: repo',
                     },
-                }
-                local visual_mappings = {
-                    ['<leader>'] = {
-                        -- Search current selection (alias for gs in visual mode)
-                        ['G'] = {'<Plug>(GrepperOperatorFile)', 'grep: file'},
-                        ['g'] = {'<Plug>(GrepperOperatorRepo)', 'grep: repo'},
-                    },
-                    ['g'] = {
-                        ['S'] = {'<Plug>(GrepperOperatorFile)', 'grep: file'},
-                        ['s'] = {'<Plug>(GrepperOperatorRepo)', 'grep: repo'},
-                    },
-                }
-                which_key.register(normal_mappings, {mode = 'n', nowait = true, noremap = true})
-                which_key.register(visual_mappings, {mode = 'v', nowait = true, noremap = true})
+                    -- Start Grepper prompt
+                    {'<leader>G', '<Esc>:Grepper -dir file<CR>', desc = 'grep: file'},
+                    {'<leader>g', '<Esc>:Grepper -dir repo<CR>', desc = 'grep: repo'},
+                    -- Search for the current selection or {motion} (see text-objects)
+                    {'gS', '<Plug>(GrepperOperatorFile)', desc = 'grep: file'},
+                    {'gs', '<Plug>(GrepperOperatorRepo)', desc = 'grep: repo'},
+                })
+
+                which_key.add({
+                    mode = {'v'},
+                    -- Search current selection (alias for gs in visual mode)
+                    {'<leader>G', '<Plug>(GrepperOperatorFile)', desc = 'grep: file'},
+                    {'<leader>g', '<Plug>(GrepperOperatorRepo)', desc = 'grep: repo'},
+                    {'gS', '<Plug>(GrepperOperatorFile)', desc = 'grep: file'},
+                    {'gs', '<Plug>(GrepperOperatorRepo)', desc = 'grep: repo'},
+                })
             end
         end,
     },

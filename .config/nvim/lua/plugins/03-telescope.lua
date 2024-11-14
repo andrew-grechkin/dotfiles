@@ -131,56 +131,51 @@ return {
 
             local wk_ok, which_key = pcall(require, 'which-key')
             if wk_ok then
-                local normal_mappings = {
-                    ['<leader>'] = {
-                        -- r = {
-                        --     name = 'Repo (git)',
-                        --     b = {'<cmd>Telescope git_branches<CR>', ': branches'},
-                        --     c = {'<cmd>Telescope git_bcommits<CR>', ': commits for buffer'},
-                        --     f = {'<cmd>Telescope git_files<CR>', ': files'},
-                        --     l = {'<cmd>Telescope git_bcommits_range<CR>', ': commits curline'},
-                        --     r = {'<cmd>Telescope git_commits<CR>', ': commits'},
-                        --     s = {'<cmd>Telescope git_status<CR>', ': status'},
-                        --     t = {'<cmd>Telescope git_stash<CR>', ': stashes'},
-                        -- },
-                        s = {
-                            name = 'Search ',
-                            ['/'] = {'<cmd>Telescope current_buffer_fuzzy_find<CR>', ': search'},
-                            B = {'<cmd>Telescope builtin<CR>', ': builtin'},
-                            C = {'<cmd>Telescope colorscheme<CR>', ': colorschemes'},
-                            H = {'<cmd>Telescope highlights<CR>', ': highlights'},
-                            M = {'<cmd>Telescope marks<CR>', ': marks'},
-                            R = {'<cmd>Telescope registers<CR>', ': registers'},
-                            a = {'<cmd>Telescope autocommands<CR>', ': autocommands'},
-                            b = {'<cmd>Telescope buffers<CR>', ': buffers'},
-                            c = {'<cmd>Telescope commands<CR>', ': commands'},
-                            d = {'<cmd>Telescope diagnostics<CR>', ': diagnostics'},
-                            f = {'<cmd>Telescope oldfiles<CR>', ': recent files'},
-                            g = {'<cmd>Telescope live_grep<CR>', ': live grep'},
-                            h = {'<cmd>Telescope help_tags<CR>', ': help'},
-                            j = {'<cmd>Telescope jumplist<CR>', ': jumplist'},
-                            k = {'<cmd>Telescope keymaps<CR>', ': keymaps'},
-                            m = {'<cmd>Telescope man_pages<CR>', ': man pages'},
-                            n = {'<cmd>Telescope notify<CR>', ': notifications'},
-                            p = {'<cmd>Telescope find_files<CR>', ': files'},
-                            r = {'<cmd>Telescope resume<CR>', ': resume previous'},
-                            s = {'<cmd>Telescope search_history<CR>', ': search history'},
-                            v = {'<cmd>Telescope vim_options<CR>', ': vim options'},
-                            w = {'<cmd>Telescope grep_string<CR>', ': grep word'},
-                        },
-                    },
-                }
-                local visual_mappings = {
-                    ['<leader>'] = {
-                        r = {l = {'<cmd>Telescope git_bcommits_range<CR>', 'commits for sel lines'}},
-                        s = {
-                            name = 'Search ',
-                            g = {'<cmd>Telescope grep_string<CR>', ': grep string'},
-                        },
-                    },
-                }
-                which_key.register(normal_mappings, {mode = 'n', nowait = true, noremap = true})
-                which_key.register(visual_mappings, {mode = 'v', nowait = true, noremap = true})
+                which_key.add({
+                    mode = {'n'},
+                    nowait = true,
+                    remap = false,
+                    {'<leader>s', group = 'Search '},
+                    {'<leader>s/', '<cmd>Telescope current_buffer_fuzzy_find<CR>', desc = ': sr'},
+                    {'<leader>sB', '<cmd>Telescope builtin<CR>', desc = ': builtin'},
+                    {'<leader>sC', '<cmd>Telescope colorscheme<CR>', desc = ': colorschemes'},
+                    {'<leader>sH', '<cmd>Telescope highlights<CR>', desc = ': highlights'},
+                    {'<leader>sM', '<cmd>Telescope marks<CR>', desc = ': marks'},
+                    {'<leader>sR', '<cmd>Telescope registers<CR>', desc = ': registers'},
+                    {'<leader>sa', '<cmd>Telescope autocommands<CR>', desc = ': autocommands'},
+                    {'<leader>sb', '<cmd>Telescope buffers<CR>', desc = ': buffers'},
+                    {'<leader>sc', '<cmd>Telescope commands<CR>', desc = ': commands'},
+                    {'<leader>sd', '<cmd>Telescope diagnostics<CR>', desc = ': diagnostics'},
+                    {'<leader>sf', '<cmd>Telescope oldfiles<CR>', desc = ': recent files'},
+                    {'<leader>sg', '<cmd>Telescope live_grep<CR>', desc = ': live grep'},
+                    {'<leader>sh', '<cmd>Telescope help_tags<CR>', desc = ': help'},
+                    {'<leader>sj', '<cmd>Telescope jumplist<CR>', desc = ': jumplist'},
+                    {'<leader>sk', '<cmd>Telescope keymaps<CR>', desc = ': keymaps'},
+                    {'<leader>sm', '<cmd>Telescope man_pages<CR>', desc = ': man pages'},
+                    {'<leader>sn', '<cmd>Telescope notify<CR>', desc = ': notifications'},
+                    {'<leader>sp', '<cmd>Telescope find_files<CR>', desc = ': files'},
+                    {'<leader>sr', '<cmd>Telescope resume<CR>', desc = ': resume previous'},
+                    {'<leader>ss', '<cmd>Telescope search_history<CR>', desc = ': search hist'},
+                    {'<leader>sv', '<cmd>Telescope vim_options<CR>', desc = ': vim options'},
+                    {'<leader>sw', '<cmd>Telescope grep_string<CR>', desc = ': grep word'},
+                    -- r = {
+                    --     name = 'Repo (git)',
+                    --     b = {'<cmd>Telescope git_branches<CR>', ': branches'},
+                    --     c = {'<cmd>Telescope git_bcommits<CR>', ': commits for buffer'},
+                    --     f = {'<cmd>Telescope git_files<CR>', ': files'},
+                    --     l = {'<cmd>Telescope git_bcommits_range<CR>', ': commits curline'},
+                    --     r = {'<cmd>Telescope git_commits<CR>', ': commits'},
+                    --     s = {'<cmd>Telescope git_status<CR>', ': status'},
+                    --     t = {'<cmd>Telescope git_stash<CR>', ': stashes'},
+                    -- },
+                })
+                which_key.add({
+                    mode = {'v'},
+                    {'<leader>rl', '<cmd>Telescope git_bcommits_range<CR>', desc = 'cmt for lines'},
+
+                    {'<leader>s', group = 'Search '},
+                    {'<leader>sg', '<cmd>Telescope grep_string<CR>', desc = ': grep string'},
+                })
             end
         end,
         dependencies = {

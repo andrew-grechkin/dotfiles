@@ -14,39 +14,6 @@ return {
             if not wk_ok then return end
 
             -- h: lsp-buf
-            local au_normal_mappings = {
-                ['<leader>'] = {
-                    ['l'] = {
-                        name = 'LSP',
-                        c = {
-                            name = 'calls',
-                            i = {'<cmd>Telescope lsp_incoming_calls<CR>', 'incoming'},
-                            o = {'<cmd>Telescope lsp_outgoing_calls<CR>', 'outgoing'},
-                        },
-                        l = {'<cmd>LspInfo<CR>', 'Info'},
-                        s = {
-                            name = 'symbols',
-                            d = {'<cmd>Telescope lsp_document_symbols<CR>', 'document'},
-                            w = {'<cmd>Telescope lsp_workspace_symbols<CR>', 'workspace'},
-                            y = {
-                                '<cmd>Telescope lsp_dynamic_workspace_symbols<CR>',
-                                'dynamic workspace',
-                            },
-                        },
-                    },
-                },
-                ['g'] = {
-                    D = {'<cmd>FzfLua lsp_declarations<CR>', 'goto: declaration'},
-                    -- I = {vim.lsp.buf.implementation, 'goto: implementation'},
-                    I = {'<cmd>FzfLua lsp_implementations<CR>', 'goto: implementation'},
-                    -- d = {vim.lsp.buf.definition, 'goto: definition'},
-                    d = {'<cmd>FzfLua lsp_definitions<CR>', 'goto: definition'},
-                    -- r = {vim.lsp.buf.references, 'goto: references'},
-                    r = {'<cmd>FzfLua lsp_references<CR>', 'goto: references'},
-                    -- y = {vim.lsp.buf.type_definition, 'goto: type definition'},
-                    y = {'<cmd>FzfLua lsp_typedefs<CR>', 'goto: type definition'},
-                },
-            }
 
             vim.api.nvim_create_autocmd('LspAttach', {
                 group = vim.api.nvim_create_augroup('UserLspConfig', {clear = true}),
@@ -55,7 +22,42 @@ return {
                     vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
 
                     -- See `:help vim.lsp.*` for documentation on any of the below functions
-                    which_key.register(au_normal_mappings, {bufer = ev.buf, noremap = true})
+                    which_key.add({
+                        noremap = true,
+                        {'<leader>l', group = 'LSP'},
+                        {'<leader>ll', '<cmd>LspInfo<CR>', desc = 'Info'},
+
+                        {'<leader>lc', group = 'calls'},
+                        {'<leader>lci', '<cmd>Telescope lsp_incoming_calls<CR>', desc = 'incoming'},
+                        {'<leader>lco', '<cmd>Telescope lsp_outgoing_calls<CR>', desc = 'outgoing'},
+
+                        {'<leader>ls', group = 'symbols'},
+                        {
+                            '<leader>lsd',
+                            '<cmd>Telescope lsp_document_symbols<CR>',
+                            desc = 'document',
+                        },
+                        {
+                            '<leader>lsw',
+                            '<cmd>Telescope lsp_workspace_symbols<CR>',
+                            desc = 'workspace',
+                        },
+                        {
+                            '<leader>lsy',
+                            '<cmd>Telescope lsp_dynamic_workspace_symbols<CR>',
+                            desc = 'dynamic workspace',
+                        },
+
+                        {'gD', '<cmd>FzfLua lsp_declarations<CR>', desc = 'goto: declaration'},
+                        -- I = {vim.lsp.buf.implementation, 'goto: implementation'},
+                        {'gI', '<cmd>FzfLua lsp_implementations<CR>', desc = 'goto: implementation'},
+                        -- d = {vim.lsp.buf.definition, 'goto: definition'},
+                        {'gd', '<cmd>FzfLua lsp_definitions<CR>', desc = 'goto: definition'},
+                        -- r = {vim.lsp.buf.references, 'goto: references'},
+                        {'gr', '<cmd>FzfLua lsp_references<CR>', desc = 'goto: references'},
+                        -- y = {vim.lsp.buf.type_definition, 'goto: type definition'},
+                        {'gy', '<cmd>FzfLua lsp_typedefs<CR>', desc = 'goto: type definition'},
+                    }, {bufer = ev.buf})
                 end,
             })
         end,

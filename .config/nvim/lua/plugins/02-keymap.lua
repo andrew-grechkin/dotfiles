@@ -1,13 +1,15 @@
 return {
     { -- https://github.com/folke/which-key.nvim
         'folke/which-key.nvim',
-        version = (vim.version().major < 1 and vim.version().minor < 9) and 'v1.6.1' or 'v2.1.0',
+        keys = {
+            {
+                '<leader>?',
+                function() require('which-key').show({global = false}) end,
+                desc = 'Buffer local keymaps',
+            },
+        },
         config = function(_, _)
-            local ok, which_key = pcall(require, 'which-key')
-            if not ok then return end
-
-            which_key.register({['<leader>u'] = {name = 'UI'}})
-            which_key.register({['<leader>t'] = {name = ''}})
+            local which_key = require('which-key')
 
             local config = {
                 plugins = {
@@ -33,28 +35,19 @@ return {
                 -- to enable all native operators, set the preset / operators plugin above
                 -- operators = {gc = 'Comments'},
                 -- operators = {},
-                key_labels = {
-                    -- override the label used to display some keys. It doesn't effect WK in any other way.
-                    -- For example:
-                    -- ["<space>"] = "SPC",
-                    -- ["<cr>"] = "RET",
-                    -- ["<tab>"] = "TAB",
-                },
                 icons = {
                     breadcrumb = '>', -- symbol used in the command line area that shows your active key combo
                     group = '+', -- symbol prepended to a group
+                    mappings = false,
                     separator = ':', -- symbol used between a key and it's label
                 },
-                popup_mappings = {
+                keys = {
                     scroll_down = '<C-d>', -- binding to scroll down inside the popup
                     scroll_up = '<C-u>', -- binding to scroll up inside the popup
                 },
-                window = {
+                win = {
                     border = 'none', -- none, single, double, shadow
-                    margin = {1, 0, 1, 0}, -- extra window margin [top, right, bottom, left]
-                    padding = {1, 1, 1, 1}, -- extra window padding [top, right, bottom, left]
-                    position = 'bottom', -- bottom, top
-                    winblend = 0,
+                    padding = {1, 1}, -- extra window padding [top, right, bottom, left]
                 },
                 layout = {
                     align = 'center', -- align columns left, center or right
@@ -62,98 +55,87 @@ return {
                     spacing = 3, -- spacing between columns
                     width = {min = 20, max = 50}, -- min and max width of the columns
                 },
-                ignore_missing = false, -- enable this to hide mappings for which you didn't specify a label
                 -- hidden = {'<silent>', '<cmd>', '<Cmd>', '<CR>', 'call', 'lua', '^:', '^ '}, -- hide mapping boilerplate
                 -- hidden = {'<cmd>', '<Cmd>', '<CR>', 'call', 'lua', '^:', '^ '}, -- hide mapping boilerplate
                 show_help = true, -- show help message on the command line when the popup is visible
-                triggers = 'auto', -- automatically setup triggers
-                -- triggers = {"<leader>"} -- or specify a list manually
-                triggers_blacklist = {
-                    -- list of mode / prefixes that should never be hooked by WhichKey
-                    -- this is mostly relevant for key maps that start with a native binding
-                    -- most people should not need to change this
-                    i = {'j', 'k'},
-                    v = {'j', 'k'},
-                },
             }
 
-            local normal_mappings = {
-                ['<leader>'] = {
-                    -- ['c'] = {'<cmd>Bdelete!<CR>', 'Close Buffer'},
-                    -- ['h'] = {'<cmd>nohlsearch<CR>', 'No Highlight'},
-                    ['<CR>'] = {'!!bash<CR>', 'execute line in shell'},
-                    ['<leader>'] = {
-                        name = 'Setup',
-                        ['.'] = {':execute "lcd" dir#git_root()<CR>', 'cd to git-root'},
-                        ['h'] = {'<cmd>checkhealth<CR>', 'healthcheck: open'},
-                        ['m'] = {':belowright 10split term://zsh<CR>', 'terminal: open'},
-                        ['t'] = {':tab split<CR>', 'tab: split'},
-                        ['u'] = {':Lazy install<CR>', 'plugins: open'},
-                        ['v'] = {':tabedit $MYVIMRC<CR>', 'init.vim'},
-                    },
-                    b = {
-                        name = 'Buffer',
-                        ['b'] = {':bp|bd #<CR>', 'close, keep split'},
-                        ['c'] = {':bd<CR>', 'close'},
-                        ['o'] = {BUF_ONLY, 'only'},
-                    },
-                    -- p = {'`[ . strpart(getregtype(), 0, 1) . `]', 'Select latest pasted'},
-                    x = {':!xdg-open %<CR><CR>', 'Open in the default program'},
-                    S = {name = 'Search'},
-                    P = {'"+P', 'paste from clipboard'},
-                    p = {'"+p', 'paste from clipboard'},
-                },
-                ['['] = {
-                    name = 'Prev',
-                    ['B'] = {':bfirst<CR>', 'Buffer: first'},
-                    ['T'] = {':tabfirst<CR>', 'Tab: first'},
-                    ['b'] = {':bprevious<CR>', 'Buffer: prev'},
-                    ['t'] = {':tabprevious<CR>', 'Tab: prev'},
-                },
-                [']'] = {
-                    name = 'Next',
-                    ['B'] = {':blast<CR>', 'Buffer: last'},
-                    ['T'] = {':tablast<CR>', 'Tab: last'},
-                    ['b'] = {':bnext<CR>', 'Buffer: next'},
-                    ['t'] = {':tabnext<CR>', 'Tab: next'},
-                },
+            which_key.add({{'<leader>u', group = 'UI'}, {'<leader>t', group = ''}})
+
+            which_key.add({
+                mode = {'n'},
+                nowait = true,
+                remap = false,
                 -- ['/'] = {'/\\v', 'search very magically'},
-                ['<C-a>'] = {'gg<S-v>G', 'select all'},
-                ['<C-d>'] = {'<C-d>zz', 'scroll down and centralize'},
-                ['<C-u>'] = {'<C-u>zz', 'scroll up and centralize'},
-                ['<F12>'] = {':Inspect<CR>', 'show highlight info'},
-                g = {
-                    name = 'GoTo',
-                    J = {'mzgJ`z', 'join keep cursor'},
-                    Q = {'<nop>', 'no ex mode'},
-                    h = {':bprevious<CR>', 'buffer: previous'},
-                    l = {':bnext<CR>', 'buffer: next'},
-                },
-                J = {'mzJ`z', 'join keep cursor'},
-                N = {'Nzzzv', 'N and centralize'},
-                Q = {'<nop>', 'no ex mode'},
-                n = {'nzzzv', 'n and centralize'},
+                {'<C-a>', 'gg<S-v>G', desc = 'select all'},
+                {'<C-d>', '<C-d>zz', desc = 'scroll down and centralize'},
+                {'<C-u>', '<C-u>zz', desc = 'scroll up and centralize'},
+                {'<F12>', ':Inspect<CR>', desc = 'show highlight info'},
 
-                ['<S-ScrollWheelUp>'] = {'<C-u>', 'scroll up'},
-                ['<S-ScrollWheelDown>'] = {'<C-d>', 'scroll down'},
-            }
+                {'<S-ScrollWheelDown>', '<C-d>', desc = 'scroll down'},
+                {'<S-ScrollWheelUp>', '<C-u>', desc = 'scroll up'},
 
-            local visual_mappings = {
-                ['<leader>'] = {
-                    ['<CR>'] = {':!bash<CR>', 'execute lines in shell'},
-                    Y = {'my"+Ygv"*Y`y', 'yank without jank to clipboard'},
-                    y = {'my"+ygv"*y`y', 'yank without jank to clipboard'},
-                    P = {
-                        '"+P:let @"=@0<CR>',
-                        'paste from clipboard, replace visual selection without copying it',
-                    },
-                    p = {
-                        '"+p:let @"=@0<CR>',
-                        'paste from clipboard, replace visual selection without copying it',
-                    },
-                },
-                ['<'] = {'<gv', 'don\'t loose selection when changing indentation'},
-                ['>'] = {'>gv', 'don\'t loose selection when changing indentation'},
+                {'<leader><leader>', group = 'Setup'},
+                {'<leader><leader>.', ':execute "lcd" dir#git_root()<CR>', desc = 'cd to git-root'},
+                {'<leader><leader>h', '<cmd>checkhealth<CR>', desc = 'healthcheck: open'},
+                {'<leader><leader>m', ':belowright 10split term://zsh<CR>', desc = 'terminal: open'},
+                {'<leader><leader>t', ':tab split<CR>', desc = 'tab: split'},
+                {'<leader><leader>u', ':Lazy install<CR>', desc = 'plugins: open'},
+                {'<leader><leader>v', ':tabedit $MYVIMRC<CR>', desc = 'init.vim'},
+
+                {'<leader><CR>', '!!bash<CR>', desc = 'execute line in shell'},
+                -- ['<leader>c'] = {'<cmd>Bdelete!<CR>', 'Close Buffer'},
+                -- ['<leader>h'] = {'<cmd>nohlsearch<CR>', 'No Highlight'},
+                {'<leader>P', '"+P', desc = 'paste from clipboard'},
+                -- <leader>p = {'`[ . strpart(getregtype(), 0, 1) . `]', 'Select latest pasted'},
+                {'<leader>p', '"+p', desc = 'paste from clipboard'},
+                {'<leader>x', ':!xdg-open %<CR><CR>', desc = 'Open in the default program'},
+
+                {'<leader>S', group = 'Search'},
+
+                {'<leader>b', group = 'Buffer'},
+                {'<leader>bb', ':bp|bd #<CR>', desc = 'close, keep split'},
+                {'<leader>bc', ':bd<CR>', desc = 'close'},
+                {'<leader>bo', BUF_ONLY, desc = 'only'},
+
+                {'J', 'mzJ`z', desc = 'join keep cursor'},
+                {'N', 'Nzzzv', desc = 'N and centralize'},
+                {'Q', '<nop>', desc = 'no ex mode'},
+                {'n', 'nzzzv', desc = 'n and centralize'},
+
+                {'[', group = 'Prev'},
+                {'[B', ':bfirst<CR>', desc = 'Buffer: first'},
+                {'[T', ':tabfirst<CR>', desc = 'Tab: first'},
+                {'[b', ':bprevious<CR>', desc = 'Buffer: prev'},
+                {'[t', ':tabprevious<CR>', desc = 'Tab: prev'},
+
+                {']', group = 'Next'},
+                {']B', ':blast<CR>', desc = 'Buffer: last'},
+                {']T', ':tablast<CR>', desc = 'Tab: last'},
+                {']b', ':bnext<CR>', desc = 'Buffer: next'},
+                {']t', ':tabnext<CR>', desc = 'Tab: next'},
+
+                {'g', group = 'GoTo'},
+                {'gJ', 'mzgJ`z', desc = 'join keep cursor'},
+                {'gQ', '<nop>', desc = 'no ex mode'},
+                {'gh', ':bprevious<CR>', desc = 'buffer: previous'},
+                {'gl', ':bnext<CR>', desc = 'buffer: next'},
+            })
+
+            which_key.add({
+                mode = {'v'},
+                {'<leader><CR>', ':!bash<CR>', desc = 'execute lines in shell'},
+                {'<leader>P', '"+P:let @"=@0<CR>', desc = 'paste clip, replace without copying it'},
+                {'<leader>p', '"+p:let @"=@0<CR>', desc = 'paste clip, replace without copying it'},
+                {'<leader>Y', 'my"+Ygv"*Y`y', desc = 'yank without jank to clipboard'},
+                {'<leader>y', 'my"+ygv"*y`y', desc = 'yank without jank to clipboard'},
+
+                {'<', '<gv', desc = 'don\'t loose selection when changing indentation'},
+                {'>', '>gv', desc = 'don\'t loose selection when changing indentation'},
+                {'P', 'P:let @"=@0<CR>', desc = 'paste, replace without copying it'},
+                {'p', 'p:let @"=@0<CR>', desc = 'paste, replace without copying it'},
+                {'Y', 'myY`y', desc = 'yank without jank'},
+                {'y', 'myy`y', desc = 'yank without jank'},
                 -- P = {'"zdP', 'paste replace visual without without copying it'},
                 -- p = {'"zdp', 'paste replace visual selection without copying it'},
                 -- P = {'"pc<C-r>0<C-\\><C-n>', 'paste replace visual selection without copying it'},
@@ -161,44 +143,40 @@ return {
                 --     '<C-\\><C-n>:set paste<CR>gv"pc<C-r>0<C-\\><C-n>:set nopaste<CR>',
                 --     'paste replace visual selection without copying it',
                 -- },
-                P = {'P:let @"=@0<CR>', 'paste, replace visual selection without copying it'},
-                p = {'p:let @"=@0<CR>', 'paste, replace visual selection without copying it'},
-                Y = {'myY`y', 'yank without jank'}, -- http://ddrscott.github.io/blog/2016/yank-without-jank
-                y = {'myy`y', 'yank without jank'},
-            }
+            })
 
-            local insert_mappings = {
-                ['<C-a>'] = {'<Esc>I', 'edit beginning of the line'},
+            which_key.add({
+                mode = {'i'},
+                {'<C-a>', '<Esc>I', desc = 'edit beginning of the line'},
                 -- ['<C-d>'] = {'<C-o>x', 'delete char forward'},
-                ['<C-e>'] = {'<Esc>A', 'edit end of the line'},
-                ['<M-d>'] = {'<C-o>de', 'delete word forward'},
-            }
-            local command_mappings = {
-                ['<C-a>'] = {'<Home>', 'edit beginning of the line'},
-                ['<C-e>'] = {'<End>', 'edit end of the line'},
-            }
+                {'<C-e>', '<Esc>A', desc = 'edit end of the line'},
+                {'<M-d>', '<C-o>de', desc = 'delete word forward'},
+            })
 
-            local normal_mappings_expr = {
+            which_key.add({
+                mode = {'c'},
+                {'<C-a>', '<Home>', desc = 'edit beginning of the line'},
+                {'<C-e>', '<End>', desc = 'edit end of the line'},
+            })
+
+            which_key.add({
                 -- When text is wrapped, move by terminal rows, not lines, unless a count is provided
-                ['j'] = {'(v:count == 0 ? \'gj\' : \'j\')', 'next line'},
-                ['k'] = {'(v:count == 0 ? \'gk\' : \'k\')', 'prev line'},
-            }
+                expr = true,
+                nowait = true,
+                remap = false,
+                replace_keycodes = false,
+                {'j', '(v:count == 0 ? \'gj\' : \'j\')', desc = 'next line'},
+                {'k', '(v:count == 0 ? \'gk\' : \'k\')', desc = 'prev line'},
+            })
 
-            local norm_term_mappings = {
-                ['<leader>'] = {
-                    ['""'] = {':belowright vsplit<CR>', 'vsplit right'},
-                    ['\''] = {':belowright split<CR>', 'split below'},
-                },
-            }
+            which_key.add({
+                nowait = true,
+                remap = false,
+                {'<leader>""', ':belowright vsplit<CR>', desc = 'vsplit right'},
+                {'<leader>\'', ':belowright split<CR>', desc = 'split below'},
+            })
 
             which_key.setup(config)
-            which_key.register(normal_mappings, {mode = 'n', nowait = true, noremap = true})
-            which_key.register(normal_mappings_expr,
-                {mode = 'n', nowait = true, noremap = true, silent = true, expr = true})
-            which_key.register(visual_mappings, {mode = 'v', nowait = true, noremap = true})
-            which_key.register(insert_mappings, {mode = 'i', nowait = true, noremap = true})
-            which_key.register(command_mappings, {mode = 'c', nowait = true, noremap = true})
-            which_key.register(norm_term_mappings, {mode = 'n', nowait = true, noremap = true})
 
             -- when added with whichkey the command is not redrawn
             vim.keymap.set('n', '<leader>Sr', [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/g<Left><Left>]],
