@@ -23,7 +23,7 @@ return {
             'nvim-tree/nvim-web-devicons',
             'folke/which-key.nvim',
         },
-        init = function() require('which-key').register({['<leader>r'] = {name = 'Repo (git+fzf)'}}) end,
+        init = function() require('which-key').add({{'<leader>r', group = 'Repo (git+fzf)'}}) end,
         keys = {
             {'<C-b>', '<cmd>FzfLua buffers<CR>', mode = {'n'}, desc = 'fzf: buffers'},
             {'<C-h>', '<cmd>FzfLua oldfiles<CR>', mode = {'n'}, desc = 'fzf: history'},
@@ -167,17 +167,16 @@ return {
         config = function()
             local wk_ok, which_key = pcall(require, 'which-key')
             if wk_ok then
-                local mappings = {
-                    ['<M-\\>'] = {'<C-\\><C-n>:TmuxNavigatePrevious<CR>', 'tmux: navigate previous'},
-                    ['<M-h>'] = {'<C-\\><C-n>:TmuxNavigateLeft<CR>', 'tmux: navigate left'},
-                    ['<M-j>'] = {'<C-\\><C-n>:TmuxNavigateDown<CR>', 'tmux: navigate down'},
-                    ['<M-k>'] = {'<C-\\><C-n>:TmuxNavigateUp<CR>', 'tmux: navigate up'},
-                    ['<M-l>'] = {'<C-\\><C-n>:TmuxNavigateRight<CR>', 'tmux: navigate right'},
-                }
-
-                which_key.register(mappings, {mode = 'n', nowait = true, noremap = true})
-                which_key.register(mappings, {mode = 'i', nowait = true, noremap = true})
-                which_key.register(mappings, {mode = 't', nowait = true, noremap = true})
+                which_key.add({
+                    mode = {'n', 'i', 't'},
+                    nowait = true,
+                    remap = false,
+                    {'<M-\\>', '<C-\\><C-n>:TmuxNavigatePrevious<CR>', desc = 'tmux: navigate prev'},
+                    {'<M-h>', '<C-\\><C-n>:TmuxNavigateLeft<CR>', desc = 'tmux: navigate left'},
+                    {'<M-j>', '<C-\\><C-n>:TmuxNavigateDown<CR>', desc = 'tmux: navigate down'},
+                    {'<M-k>', '<C-\\><C-n>:TmuxNavigateUp<CR>', desc = 'tmux: navigate up'},
+                    {'<M-l>', '<C-\\><C-n>:TmuxNavigateRight<CR>', desc = 'tmux: navigate right'},
+                })
             end
         end,
         dependencies = {'folke/which-key.nvim'},

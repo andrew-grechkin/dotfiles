@@ -167,25 +167,17 @@ return {
 
                     local wk_ok, which_key = pcall(require, 'which-key')
                     if wk_ok then
-                        local normal_mappings = {
-                            ['['] = {
-                                ['r'] = {
-                                    function() plugin.goto_prev_reference(false) end,
-                                    'TreeSitter: prev reference',
-                                },
+                        which_key.add({
+                            {
+                                '[r',
+                                function() plugin.goto_prev_reference(false) end,
+                                desc = 'TreeSitter: prev reference',
                             },
-                            [']'] = {
-                                ['r'] = {
-                                    function() plugin.goto_next_reference(false) end,
-                                    'TreeSitter: next reference',
-                                },
+                            {
+                                ']r',
+                                function() plugin.goto_next_reference(false) end,
+                                desc = 'TreeSitter: next reference',
                             },
-                        }
-
-                        which_key.register(normal_mappings, {
-                            mode = 'n',
-                            nowait = true,
-                            noremap = true,
                         })
                     end
                 end,

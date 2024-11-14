@@ -92,11 +92,7 @@ return {
             }
 
             local wk_ok, which_key = pcall(require, 'which-key')
-            if wk_ok then
-                local normal_mappings = {['<F5>'] = {plugin.run, 'rest: run'}}
-
-                which_key.register(normal_mappings, {mode = 'n', nowait = true, noremap = true})
-            end
+            if wk_ok then which_key.add({{'<F5>', plugin.run, desc = 'rest: run'}}) end
         end,
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1

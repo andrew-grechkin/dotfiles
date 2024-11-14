@@ -40,8 +40,9 @@ return {
             },
         },
         enabled = not IS_KVM,
-        init = function() require('which-key').register({['<leader>a'] = {name = 'Test'}}) end,
+        -- init = function() require('which-key').add({{'<leader>a', group = 'Test'}}) end,
         keys = {
+            group = 'Test',
             {
                 '<leader>am',
                 function() require('neotest').run.run() end,
