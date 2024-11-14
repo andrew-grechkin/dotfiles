@@ -23,7 +23,9 @@ vim.api.nvim_create_autocmd('BufReadPost', {
     callback = function(ev)
         -- local notify_ok, notify = pcall(require, 'notify')
         local cwd = vim.loop.cwd()
+        -- vim.notify(cwd)
         local dir = GET_PROJECT_DIR(ev.match)
+        -- vim.notify(dir)
         if cwd ~= dir then
             vim.cmd('lcd ' .. dir)
             -- if notify_ok then

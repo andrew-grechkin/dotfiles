@@ -44,10 +44,10 @@ f + super + ctrl + shift
 {h,j,k,l} + super
 	bspc node -f {west,south,north,east}
 # preselect the direction
-{h,j,k,l} + super + ctrl
+{h,j,k,l} + super + shift
 	bspc node -p {west,south,north,east}
 # move the node in the given direction
-{h,j,k,l} + super + shift
+{h,j,k,l} + super + ctrl
 	bspc node -s {west,south,north,east}
 k + super + ctrl + shift
 	xkill
