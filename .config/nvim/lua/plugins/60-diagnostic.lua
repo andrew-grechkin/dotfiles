@@ -24,6 +24,5 @@ return {
         'folke/trouble.nvim',
         config = true,
         cmd = {'Trouble'},
-        version = (vim.version().major < 1 and vim.version().minor < 9) and 'v2.10.0' or nil,
     },
 }

@@ -6,7 +6,7 @@
 export LESSHISTFILE=-
 
 if [[ -r "$HOME/.config/nvim/init.lua" ]]; then
-	export VIMINIT='let $MYVIMRC = has("nvim-0.8") ? "$HOME/.config/nvim/init.lua" : "$HOME/.config/vim/init.vim" | so $MYVIMRC'
+	export VIMINIT='let $MYVIMRC = has("nvim-0.10") ? "$HOME/.config/nvim/init.lua" : "$HOME/.config/vim/init.vim" | so $MYVIMRC'
 else
 	export VIMINIT='let $MYVIMRC = "$HOME/.config/vim/init.vim" | so $MYVIMRC'
 fi

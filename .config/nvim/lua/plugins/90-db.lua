@@ -127,8 +127,6 @@ WHERE
 return {
     { -- https://github.com/kristijanhusak/vim-dadbod-ui
         'andrew-grechkin/vim-dadbod-ui',
-        -- commit = (vim.version().major < 1 and vim.version().minor < 10) and 'b1675d1f56c12b0abac2ef74b94670fe27adcf93' or
-        --     nil,
         dependencies = {
             { -- https://github.com/tpope/vim-dadbod
                 'tpope/vim-dadbod',
