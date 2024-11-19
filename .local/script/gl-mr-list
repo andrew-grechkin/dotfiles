@@ -2,6 +2,11 @@
 
 set -Eeuo pipefail
 
+[[ -x "$(command -v jq)" ]] || {
+	echo "jq is not installed. Please install from 'https://jqlang.github.io/jq/download/'"
+	exit 1
+}
+
 if [[ -t 1 ]]; then
 	[[ -x "$(command -v fzf)" ]] || {
 		echo "fzf is not installed. Please install from 'https://github.com/junegunn/fzf#installation'"
@@ -14,11 +19,6 @@ if [[ -t 1 ]]; then
 	table='1'
 	wip='0'
 else
-	[[ -x "$(command -v jq)" ]] || {
-		echo "jq is not installed. Please install from 'https://jqlang.github.io/jq/download/'"
-		exit 1
-	}
-
 	query='?per_page=100'
 	since='3 month ago'
 	state='all'
@@ -44,7 +44,7 @@ while [ : ]; do
 	esac
 done
 
-source "$(dirname "$0")/git-gl-common"
+source "$(dirname "$0")/_gl-common"
 
 if [[ -t 1 ]]; then
 	if [[ -x "$(command -v json-pretty)" ]]; then
@@ -70,25 +70,27 @@ if [[ -t 1 ]]; then
 	fzf_cmd=(
 		fzf
 		--ansi
-		--bind="alt-a:execute-silent(set -x; exec &>/tmp/git-approve.log; git-gl-approve -h \"$HOST\" -p \"$PROJECT\" {+1})+reload-sync(${fetcher[*]@Q})"
+		--bind="alt-a:reload-sync(gl-mr-approve -h '$HOST' -p '$PROJECT' {+1} &>/dev/null; ${fetcher[*]@Q})"
 		--bind="alt-b:execute-silent(python3 -mwebbrowser {-1})"
+		--bind="alt-m:reload-sync(gl-mr-merge -h '$HOST' -p '$PROJECT' {+1} &>/dev/null; ${fetcher[*]@Q})"
 		--bind="alt-p:toggle-preview,ctrl-alt-w:toggle-preview-wrap,ctrl-s:toggle-sort"
-		--bind="alt-s:execute(git-gl-mr {1} | ${prettify_json[*]})"
-		--bind="alt-r:execute-silent(git-gl-approve -h \"$HOST\" -p \"$PROJECT\" {+1} -u)+reload-sync(${fetcher[*]@Q})"
-		--bind="alt-q:execute({ echo \"Approved by:\"; echo; git-gl-approve-list -t -h \"$HOST\" -p \"$PROJECT\" {1}; } | less)"
-		--bind="ctrl-m:execute(git-gl-mr-diff {1} ${prettify_diff[*]})"
+		--bind="alt-s:execute(gl-mr {1} | ${prettify_json[*]})"
+		--bind="alt-r:execute-silent(gl-mr-approve -h '$HOST' -p '$PROJECT' {+1} -u)+reload-sync(${fetcher[*]@Q})"
+		--bind="alt-q:execute({ echo \"Approved by:\"; echo; gl-approve-list -t -h '$HOST' -p '$PROJECT' {1}; } | less)"
+		--bind="ctrl-m:execute(gl-mr-diff {1} ${prettify_diff[*]})"
 		--bind="ctrl-r:reload-sync(${fetcher[*]@Q})"
+		--bind="ctrl-x:become(echo -n {+1} | tee >(clipcopy); echo)"
 		--bind="ctrl-y:execute-silent(echo -n {} | clipcopy)"
 		--bind="esc:cancel"
 		--bind="home:top"
 		--bind="tab:toggle+down,shift-tab:toggle+up"
 		--delimiter="\t"
 		--header-lines=1
-		--header='A-a:approve A-b:browse A-p:preview A-q:approvals A-s:payload A-r:revoke C-r:reload C-y:yank Enter:diff'
+		--header="A-a:approve A-b:browse A-p:preview A-q:approvals A-m:merge A-s:payload A-r:revoke C-r:reload C-x:dump C-y:yank Enter:diff"
 		--multi
 		# --no-sort
 		--preview-window=right:60%:border-left:wrap:hidden
-		--preview="git-gl-mr-diff {1} ${prettify_diff[*]:0:2}"
+		--preview="gl-mr-diff {1} ${prettify_diff[*]:0:2}"
 		--prompt="$PROJECT > "
 		--reverse
 		# --scheme=history
@@ -99,12 +101,8 @@ if [[ -t 1 ]]; then
 
 	"${fetcher[@]}" | "${fzf_cmd[@]}"
 else
-	if [[ "$wip" == '0' ]]; then
-		query+='&wip=no'
-	fi
-	if [[ -n "$state" ]]; then
-		query+="&state=$state"
-	fi
+	[[ "$wip" == '0' ]] && query+='&wip=no'
+	[[ -n "$state" ]]   && query+="&state=$state"
 	if [[ -n "${since:-}" ]]; then
 		# created_after=$(date --rfc-3339=seconds --date="$(date +%Y-%m-01) -1 month")
 		created_after=$(date --rfc-3339=seconds --date="$since")
@@ -112,51 +110,37 @@ else
 	fi
 
 	# https://docs.gitlab.com/ee/api/merge_requests.html#list-project-merge-requests
+
 	if [[ -x "$(command -v xhs)" ]]; then
 		http_fetch_command=(
 			xhs
-			"${HOST}/api/v4/projects/$(url_encode "$PROJECT")/merge_requests${query}"
+			"${HOST}/$API/projects/$(url_encode "$PROJECT")/merge_requests${query}"
 			"${COMMON_XH_OPTIONS[@]}"
 		)
 	else
 		http_fetch_command=(
 			curl
-			-s
-			"https://${HOST}/api/v4/projects/$(url_encode "$PROJECT")/merge_requests${query}"
-			-H "accept: application/json"
-			-H "private-token: $TOKEN"
+			"https://${HOST}/$API/projects/$(url_encode "$PROJECT")/merge_requests${query}"
+			"${COMMON_CURL_OPTIONS[@]}"
 		)
 	fi
 
 	if [[ "$table" == "1" ]]; then
-		"${http_fetch_command[@]}" | {
-			jq_fields=(
-				"id;$(tput setaf 3)\(.iid)$(tput sgr0)"
-				"created;$(tput setaf 2)\(.updated_at[0:10])$(tput sgr0)"
-				'wip;\(if .work_in_progress then 1 else 0 end)'
-				'state;\(.state)'
-				# 'project_id;\(.project_id)'
-				"name;$(tput setaf 12)\(.author.name)$(tput sgr0)"
-				"author;$(tput setaf 13)\(.author.username)$(tput sgr0)"
-				# "project;$(tput setaf 6)$PROJECT$(tput sgr0)"
-				"branch;$(tput setaf 7)\(.source_branch)$(tput sgr0)"
-				'title;\(.title)'
-				"url;$(tput setaf 14)\(.web_url)$(tput sgr0)"
-			)
+		jq_fields=(
+			"id;$(tput setaf 3)\(.iid)$(tput sgr0)"
+			"created;$(tput setaf 2)\(.updated_at[0:10])$(tput sgr0)"
+			'wip;\(if .work_in_progress then 1 else 0 end)'
+			'state;\(.state)'
+			# 'project_id;\(.project_id)'
+			"name;$(tput setaf 12)\(.author.name)$(tput sgr0)"
+			"author;$(tput setaf 13)\(.author.username)$(tput sgr0)"
+			# "project;$(tput setaf 6)$PROJECT$(tput sgr0)"
+			"branch;$(tput setaf 7)\(.source_branch)$(tput sgr0)"
+			'title;\(.title)'
+			"url;$(tput setaf 14)\(.web_url)$(tput sgr0)"
+		)
 
-			col_names=()
-			jq_filter=()
-			for field in "${jq_fields[@]}"; do
-				IFS=";" read -r -a keyval <<< "$field"
-				col_names+=("${keyval[0]}")
-				jq_filter+=("${keyval[1]}")
-			done
-
-			{
-				echo -e "$(join "${col_names[@]}")"
-				jq -Sr "sort_by(.iid) | reverse | .[] | \"$(join "${jq_filter[@]}")\""
-			} | tsv-align
-		}
+		"${http_fetch_command[@]}" | json-array-to-tsv ".iid" "${jq_fields[@]}"
 	else
 		"${http_fetch_command[@]}"
 	fi

@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+args="$(getopt --name="$0" --options 'h:p:m:s:t:' --longoptions 'host:,project:,message:,source:,target:' -- "$@")"
+eval set -- "$args"
+
+# shellcheck disable=SC2078
+while [ : ]; do
+	case "$1" in
+		-h | --host) HOST="$2"; shift 2 ;;
+		-p | --project) PROJECT="$2"; shift 2 ;;
+		-m | --message) message="$2"; shift 2 ;;
+		-s | --source) source="$2"; shift 2 ;;
+		-t | --target) target="$2"; shift 2 ;;
+		--) shift; break ;;
+	esac
+done
+
+source "$(dirname "$0")/_gl-common"
+
+[[ -z "${target:-}" ]]  && { echo "target is required"; exit 1; }
+[[ -z "${message:-}" ]] && { echo "message is required"; exit 1; }
+[[ -z "${source:-}" ]]  && { echo "source is required"; exit 1; }
+
+# https://docs.gitlab.com/ee/api/merge_requests.html#create-mr
+
+http_post_command=(
+	xhs
+	"${HOST}/$API/projects/$(url_encode "$PROJECT")/merge_requests"
+	"${COMMON_XH_OPTIONS[@]}"
+	"source_branch=$source"
+	"target_branch=$target"
+	"title=$message"
+	"remove_source_branch=true"
+)
+
+exec "${http_post_command[@]}"

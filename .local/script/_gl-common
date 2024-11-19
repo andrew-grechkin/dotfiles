@@ -2,12 +2,31 @@
 # shellcheck disable=SC2034
 
 function url_encode() {
-	printf %s "$1" | jq -sRr @uri
+	printf %s "$1" | jq -Rr @uri
 }
 
 function join() {
 	local IFS=$'\t';
 	echo -e "$*"
+}
+
+function json-array-to-tsv() {
+	sort_by="$1"
+	shift
+	jq_fields=("$@")
+
+	col_names=()
+	jq_filter=()
+	for field in "${jq_fields[@]}"; do
+		IFS=";" read -r -a keyval <<< "$field"
+		col_names+=("${keyval[0]}")
+		jq_filter+=("${keyval[1]}")
+	done
+
+	{
+		echo -e "$(join "${col_names[@]}")"
+		jq -r "sort_by($sort_by) | reverse | .[] | \"$(join "${jq_filter[@]}")\""
+	} | tsv-align
 }
 
 if [[ -t 1 ]]; then
@@ -18,10 +37,21 @@ else
 	PRINT_HEADER=0
 fi
 
+if [[ -z "${JOBS:-}" ]]; then
+	JOBS=4
+
+	[[ -x "$(command -v nproc)" ]] && {
+		JOBS="$(nproc)"
+	}
+fi
+
+API='api/v4'
+
+[[ -z "${BRANCH:-}" ]] && BRANCH=$(git rev-parse --verify --abbrev-ref HEAD 2>/dev/null)
+
 if [[ -z "${PROJECT:-}" ]]; then
 	if git-in-repo; then
 		set +e
-		# current_branch=$(git rev-parse --verify --abbrev-ref HEAD 2>/dev/null)
 		# REMOTE=$(git config --local --get "branch.$current_branch.remote" 2>/dev/null || git show-ref 2>/dev/null | grep -Po '(?<=\\brefs/remotes/)[^\\/]+(?=/HEAD\\b)' | head -1)
 		REMOTE="$(git remote -v | perl -nE 'my ($remote) = m/(\w+)\s+(?:.*?gitlab)/; say $remote if $remote' | head -1)"
 		if [[ -z "$REMOTE" ]]; then
@@ -45,11 +75,10 @@ if [[ -z "${PROJECT:-}" ]]; then
 fi
 
 HOST="${HOST:-gitlab.com}"
-TOKEN="${GITLAB_PERSONAL_TOKEN:-}"
-if [[ -z "$TOKEN" ]]; then
+if [[ -z "${GITLAB_PERSONAL_TOKEN:-}" ]]; then
 	token_file="${XDG_CONFIG_HOME:-~/.config}/gitlab/${HOST}.token"
 	if [[ -r "$token_file" ]]; then
-		TOKEN="$(cat "$token_file")"
+		GITLAB_PERSONAL_TOKEN="$(cat "$token_file")"
 	else
 		>/dev/stderr echo "Please provide gitlab token with 'api' permission as one of:"
 		>/dev/stderr echo "  - GITLAB_PERSONAL_TOKEN env variable"
@@ -60,8 +89,14 @@ fi
 
 COMMON_XH_OPTIONS=(
 	"accept: application/json"
-	"private-token: $TOKEN"
+	"private-token: $GITLAB_PERSONAL_TOKEN"
 	--check-status
 	--ignore-stdin
 	--no-follow
+)
+
+COMMON_CURL_OPTIONS=(
+	-s
+	-H "accept: application/json"
+	-H "private-token: $GITLAB_PERSONAL_TOKEN"
 )

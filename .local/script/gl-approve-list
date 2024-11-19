@@ -19,21 +19,21 @@ while [ : ]; do
 	esac
 done
 
-source "$(dirname "$0")/git-gl-common"
+source "$(dirname "$0")/_gl-common"
 
 # https://docs.gitlab.com/ee/api/merge_request_approvals.html#merge-request-level-mr-approvals
+
 if [[ -x "$(command -v xhs)" ]]; then
 	http_fetch_command=(
 		xhs
-		"$HOST/api/v4/projects/$(url_encode "$PROJECT")/merge_requests/$1/approvals" "${COMMON_XH_OPTIONS[@]}"
+		"$HOST/$API/projects/$(url_encode "$PROJECT")/merge_requests/$1/approvals"
+		"${COMMON_XH_OPTIONS[@]}"
 	)
 else
 	http_fetch_command=(
 		curl
-		-s
-		-H "accept: application/json"
-		-H "private-token: $TOKEN"
-		"https://${HOST}/api/v4/projects/$(url_encode "$PROJECT")/merge_requests/$1/approvals"
+		"https://${HOST}/$API/projects/$(url_encode "$PROJECT")/merge_requests/$1/approvals"
+		"${COMMON_CURL_OPTIONS[@]}"
 	)
 fi
 
@@ -64,7 +64,7 @@ if [[ "${table:-0}" == "1" ]]; then
 
 		{
 			echo -e "$(join "${col_names[@]}")"
-			jq -Sr ".approved_by[] | \"$(join "${jq_filter[@]}")\""
+			jq -r ".approved_by[] | \"$(join "${jq_filter[@]}")\""
 		} | column -ts '	'
 	}
 else

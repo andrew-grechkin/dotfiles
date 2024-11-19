@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+# => getopt ------------------------------------------------------------------------------------------------------- {{{1
+
+args="$(getopt --name="$0" --options 'h:p:b:m:' --longoptions 'host:,project:,branch:,message:' -- "$@")"
+eval set -- "$args"
+
+# shellcheck disable=SC2078
+while [ : ]; do
+	case "$1" in
+		-h | --host) HOST="$2"; shift 2 ;;
+		-p | --project) PROJECT="$2"; shift 2 ;;
+		-b | --branch) BRANCH="$2"; shift 2 ;;
+		-m | --message) message="$2"; shift 2 ;;
+		--) shift; break ;;
+	esac
+done
+
+# => defaults ----------------------------------------------------------------------------------------------------- {{{1
+
+source "$(dirname "$0")/_gl-common"
+
+# => requirements ------------------------------------------------------------------------------------------------- {{{1
+
+[[ -z "${BRANCH:-}" ]]  && { echo "error: branch is required" >/dev/stderr; exit 1; }
+[[ -z "${message:-}" ]] && { echo "error: message is required" >/dev/stderr; exit 1; }
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+if [[ -t 1 ]]; then
+	"$0" -b "$BRANCH" -m "$message" | gl-commit-create -h "$HOST" -p "$PROJECT"
+else
+	changes=$(git status --porcelain | grep -P '^A|^D|^M')
+
+	[[ -z "$changes" ]] && exit 0
+
+	jq_convert=$(cat <<- 'EO_ACTION'
+		{
+			"action": (if $a == "A" then "create" elif $a == "D" then "delete" elif $a == "M" then "update" else "undef" end),
+			"file_path": $file,
+			"content": $content
+		}
+		EO_ACTION
+	)
+
+	echo "$changes" \
+		| xargs -n 2 bash -c "jq -nc --arg a \"\$0\" --rawfile content \"\$1\" --arg file \"\$1\" '$jq_convert'" \
+		| jq -cnR --arg branch "$BRANCH" --arg message "$message" '{
+			branch: $branch,
+			commit_message: $message,
+			actions: [inputs | fromjson]
+	}'
+fi

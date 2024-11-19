@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+set -xEeuo pipefail
+
+args="$(getopt --name="$0" --options 'h:p:' --longoptions 'host:,project:' -- "$@")"
+eval set -- "$args"
+
+# shellcheck disable=SC2078
+while [ : ]; do
+	case "$1" in
+		-h | --host) HOST="$2"; shift 2 ;;
+		-p | --project) PROJECT="$2"; shift 2 ;;
+		--) shift; break ;;
+	esac
+done
+
+source "$(dirname "$0")/_gl-common"
+
+# https://docs.gitlab.com/ee/api/merge_requests.html#merge-a-merge-request
+
+if [[ -x "$(command -v xhs)" ]]; then
+	http_fetch_command=(
+		xhs
+		PUT
+		"$HOST/$API/projects/$(url_encode "$PROJECT")/merge_requests/{}/merge"
+		"${COMMON_XH_OPTIONS[@]}"
+	)
+else
+	http_fetch_command=(
+		curl
+		-X PUT
+		"https://${HOST}/$API/projects/$(url_encode "$PROJECT")/merge_requests/{}/merge"
+		"${COMMON_CURL_OPTIONS[@]}"
+	)
+fi
+
+echo -n "$@" | xargs --no-run-if-empty -d ' ' -I{} -P "$JOBS" "${http_fetch_command[@]}"

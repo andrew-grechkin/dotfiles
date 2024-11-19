@@ -6,11 +6,6 @@ args="$(getopt --name="$0" --options 'uh:p:' --longoptions 'unapprove,host:,proj
 eval set -- "$args"
 
 action="approve"
-jobs=4
-
-[[ -x "$(command -v nproc)" ]] && {
-	jobs="$(nproc)"
-}
 
 # shellcheck disable=SC2078
 while [ : ]; do
@@ -22,24 +17,24 @@ while [ : ]; do
 	esac
 done
 
-source "$(dirname "$0")/git-gl-common"
+source "$(dirname "$0")/_gl-common"
 
 # https://docs.gitlab.com/ee/api/merge_request_approvals.html#approve-merge-request
+
 if [[ -x "$(command -v xhs)" ]]; then
 	http_fetch_command=(
 		xhs
 		POST
-		"$HOST/api/v4/projects/$(url_encode "$PROJECT")/merge_requests/{}/$action" "${COMMON_XH_OPTIONS[@]}"
+		"$HOST/$API/projects/$(url_encode "$PROJECT")/merge_requests/{}/$action"
+		"${COMMON_XH_OPTIONS[@]}"
 	)
 else
 	http_fetch_command=(
 		curl
-		-s
 		-X POST
-		-H "accept: application/json"
-		-H "private-token: $TOKEN"
-		"https://${HOST}/api/v4/projects/$(url_encode "$PROJECT")/merge_requests/{}/$action"
+		"https://${HOST}/$API/projects/$(url_encode "$PROJECT")/merge_requests/{}/$action"
+		"${COMMON_CURL_OPTIONS[@]}"
 	)
 fi
 
-echo -n "$@" | xargs --no-run-if-empty -I{} -P "$jobs" "${http_fetch_command[@]}"
+printf '%s\n' "$@" | jq -Rr @uri | xargs --no-run-if-empty -I{} -P "$JOBS" "${http_fetch_command[@]}"
