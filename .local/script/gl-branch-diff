@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+source "$(dirname "$0")/_gl-common"
+
+HEAD=$(2>/dev/null git fetch --no-tags --porcelain "$REMOTE" HEAD | perl -nal -E'say $F[2]')
+>/dev/null git fetch --no-tags --porcelain "$REMOTE" "$1"
+
+exec git diff "$HEAD...FETCH_HEAD"

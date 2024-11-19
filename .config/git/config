@@ -1,6 +1,6 @@
 [alias]
 	aa           = add --all
-	amend        = commit --amend
+	amend        = commit --amend --reset-author
 	b            = branch -vv
 	behind       = !"MUB=\"$(git gmu)\"; echo \"Behind $MUB:\" &>/dev/stderr; git log --oneline HEAD..$MUB | wc -l"
 	bleach       = !"f(){ git fall; git b | perl -alE 'm/: gone]/ && $F[0] ne q(*) && system(qq(git branch -D $F[0]))'; }; f"
@@ -9,6 +9,7 @@
 	branches     = !"git branch --list --no-column --format='%(refname:lstrip=2)' \"$@\""
 	brewrite     = "rebase -i --keep-base --exec 'git commit --amend --reset-author --no-edit --no-gpg-sign'"
 	browse       = !"git-browse \"$@\""
+	brs          = !"gl-branch-list"
 	bush         = !"f(){ while true; do git push && break; git pull --no-tags --rebase || break; done }; f"
 	cl           = clone --filter=blob:none
 	co           = !"f(){ echo 'Learn to use switch/restore commands instead'; }; f"
@@ -48,7 +49,7 @@
 	m-dt         = !"f(){ git difftool --ignore-space-change -t vimdiff     `git m-span .. $@`; }; f"
 	m-log        = !"f(){ git log                            --color=always `git m-span .. $@`; }; f"
 	m-span       = !"git-merge-span"
-	mrs          = !"git-gl-mr-list"
+	mrs          = !"gl-mr-list"
 	mt           = mergetool
 	mt4          = mergetool --tool=nvimdiff4
 	mtg          = mergetool --gui
@@ -71,12 +72,14 @@
 
 	### helper ---------------------------------------------------------------------------------------------------------
 
+	# detect current remote name by .git/config branch
+	gcr          = !"f(){ git config --local --get \"branch.$(git pbranch \"${@:-HEAD}\").remote\" 2>/dev/null; }; f"
 	# detect main remote branch
 	gmb          = !"f(){ R=\"$(git gmr \"${@:-HEAD}\")\"; [[ -n \"$R\" ]] && { git gmu \"${@:-HEAD}\" | grep -Po \"(?<=\\b$R/)\\w+$\"; } || git rev-parse --abbrev-ref --symbolic-full-name HEAD; }; f"
-	# detect main remote name by .git/config branch or refs/remotes/.../HEAD
-	gmr          = !"f(){ git config --local --get \"branch.$(git pbranch \"${@:-HEAD}\").remote\" 2>/dev/null || git show-ref 2>/dev/null | grep -Po '(?<=\\brefs/remotes/)[^\\/]+(?=/HEAD\\b)' | head -1; }; f"
+	# detect main remote name by refs/remotes/.../HEAD
+	gmr          = !"f(){ git show-ref 2>/dev/null | grep -Po '(?<=\\brefs/remotes/)[^\\/]+(?=/HEAD\\b)' | sort -r | head -1; }; f"
 	# detect main <remote>/HEAD ref name by refs/remotes/.../HEAD
-	gmrh         = !"f(){ git show-ref  2>/dev/null | grep -Po '(?<=\\brefs/remotes/)[^\\/]+/HEAD\\b' | head -1; }; f"
+	gmrh         = !"f(){ git show-ref 2>/dev/null | grep -Po '(?<=\\brefs/remotes/)[^\\/]+/HEAD\\b'     | sort -r | head -1; }; f"
 	# detect main upstream branch
 	gmu          = !"f(){ git pbranch $(git gmrh); }; f"
 	# print upstream
@@ -88,8 +91,8 @@
 
 	### care taking ----------------------------------------------------------------------------------------------------
 	# restore-origin-head = symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/master
-	remove-origin-head = !"f(){ git remote set-head -d \"${@:-origin}\"; }; f"
-	restore-origin-head = !"f(){ git remote set-head --auto \"${@:-origin}\"; }; f"
+	remove-remote-head  = !"f(){ git remote set-head -d     \"${@:-$(git gcr)}\"; }; f"
+	restore-remote-head = !"f(){ git remote set-head --auto \"${@:-$(git gcr)}\"; }; f"
 
 	### experimental ---------------------------------------------------------------------------------------------------
 
