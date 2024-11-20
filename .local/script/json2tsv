@@ -7,7 +7,9 @@
     | keys_unsorted
     | @tsv
 ), (
-    .[] | [.[]?]
-    | map_values(if type == "object" or type == "array" then @json else . end)
+    {"array": 1, "object": 1} as $to_encode
+    | .[]
+    | [.[]]
+    | map(if type | in($to_encode) then @json else . end)
     | @tsv
 )

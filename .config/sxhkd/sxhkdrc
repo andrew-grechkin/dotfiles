@@ -148,6 +148,8 @@ l + alt + super
 semicolon + alt + super
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "/media/nfs/home/doc/@study"
 
+x + alt + super
+    screen2text
 c + super
 	qalculate-gtk
 c + alt + super

@@ -1,8 +1,5 @@
 local mysql = {
-    Columns = [[DESCRIBE `{table}`;
-SHOW CREATE TABLE `{table}` \G;
-SHOW TABLE STATUS LIKE '{table}';
-]],
+    Columns = [[DESCRIBE `{table}`]],
     Count = [[SELECT
     COUNT(*)
 FROM
@@ -36,6 +33,14 @@ WHERE
     TABLE_SCHEMA = '{dbname}'
     AND TABLE_NAME = '{table}'
     AND CONSTRAINT_TYPE = 'FOREIGN KEY'
+]],
+    ['Table create'] = [[SHOW CREATE
+TABLE
+    `{table}`
+\G]],
+    ['Table show'] = [[SHOW TABLE STATUS
+LIKE
+    '{table}'
 ]],
 }
 

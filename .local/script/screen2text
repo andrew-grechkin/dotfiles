@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+{
+	if [[ -x "$(command -v spectacle)" ]]; then
+		spectacle -b -n -r -o /dev/stdout
+	else
+		magick import -window root bmp:-
+	fi
+} | tesseract - - 2>/dev/null | tee >(clipcopy)

@@ -17,15 +17,15 @@ case "$OSTYPE" in
 		;;
 	*)
 		if [[ -n "$(command -v xsel)" ]]; then
+			# xsel fails to put big payloads into clipboard
+			cat "$@" | xsel --input --clipboard &>/dev/null
+		elif [[ -n "$(command -v xclip)" ]]; then
 			# unlike xsel it [xclip] works better on printing raw bitstream that doesn't fit the current locale.
 			# Nevertheless, it is neater to use xsel instead of xclip, because xclip does not close STDOUT after
 			# it has read from tmux's buffer. As such, tmux doesn't know that the copy task has completed, and
 			# continues to wait for xclip's termination, thereby rendering tmux unresponsive.
 			# A workaround is to redirect STDOUT of xclip to /dev/null
 			cat "$@" | xclip -sel c &>/dev/null
-		elif [[ -n "$(command -v xclip)" ]]; then
-			# xsel fails to put big payloads into clipboard
-			cat "$@" | tee | xsel --input --clipboard &>/dev/null
 		else
 			echo "clipcopy: Platform $OSTYPE not supported or xclip/xsel not installed" >&2
 			exit 1

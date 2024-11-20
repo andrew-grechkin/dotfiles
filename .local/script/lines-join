@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+while read -r LINE; do
+	[[ -n "$LINE" ]] && echo -n " ${LINE@Q}"
+done
+
+# mapfile -t DATA
+# echo "${DATA[@]@Q}"
