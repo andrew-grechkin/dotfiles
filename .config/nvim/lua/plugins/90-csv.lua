@@ -14,7 +14,7 @@ return {
             -- vim.g.csv_no_conceal = 1
 
             vim.g.csv_arrange_use_all_rows = 1
-            vim.g.csv_autocmd_arrange = 1
+            -- vim.g.csv_autocmd_arrange = 1
             vim.g.csv_no_progress = 1
             vim.g.csv_strict_columns = 1
 

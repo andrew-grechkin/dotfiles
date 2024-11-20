@@ -9,7 +9,7 @@ NVIM_VERSION_REQUIRED="${NVIM_VERSION_REQUIRED:-nightly}"
 if [[ ! -d ~/git/public/neovim ]]; then
 	mkdir -p ~/git/public
 	cd ~/git/public
-	git clone --depth 1 --branch "$NVIM_VERSION_REQUIRED" git@github.com:neovim/neovim.git
+	git clone --depth 1 --branch "$NVIM_VERSION_REQUIRED" https://github.com/neovim/neovim.git
 fi
 
 cd ~/git/public/neovim

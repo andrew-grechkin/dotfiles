@@ -7,47 +7,50 @@ set -Eeuo pipefail
 	exit 1
 }
 
-formatter='| jq --indent 2 -S'
-colorizer=''
 color='auto'
 filename=''
 
-args="$(getopt --name="$0" --options 'nc:f:C' --longoptions 'no-filename,color:,file-name:' -- "$@")"
+args="$(getopt --name="$0" --options 'nc:f:C' --longoptions 'no-filename,color:,filename:' -- "$@")"
 eval set -- "$args"
 
 # shellcheck disable=SC2078
 while [ : ]; do
 	case "$1" in
 		-c | --color) color="$2"; shift 2 ;;
-		-f | --file-name) filename="$2"; shift 2 ;;
+		-f | --filename) filename="$2"; shift 2 ;;
 		-n | --no-filename) no_filename="1"; shift ;;
 		-C) color="always"; shift ;;
 		--) shift; break ;;
 	esac
 done
 
-if [[ -t 1 || "$color" == 'always' ]]; then
-	if [[ -x "$(command -v json2yaml)" ]]; then
-		formatter="| json2yaml"
-		LANGUAGE="yaml"
-	elif [[ -x "$(command -v yq)" ]]; then
-		formatter="| yq -P -o yaml"
-		LANGUAGE="yaml"
-	fi
+if [[ -x "$(command -v json2yaml)" && -x "$(command -v perl)" && -n "$(perl -e 'print $] >= 5.04')" ]]; then
+	formatter="| json2yaml"
+	lang="yaml"
+elif [[ -x "$(command -v yq)" ]]; then
+	formatter="| yq -P -p=json -o yaml 'sort_keys(..)'"
+	lang="yaml"
+else
+	formatter='| jq --indent 2 -S'
+	lang="json"
+fi
 
-	[[ -x "$(command -v bat)" ]] && {
+if [[ "$color" != 'never' ]] && [[ -t 1 || "$color" == 'always' ]]; then
+	if [[ -x "$(command -v bat)" ]]; then
 		if [[ "${no_filename:-}" == "1" ]]; then
-			BAT_OPTIONS=(--style=plain)
+			bat_options=(--style=plain)
 		else
 			if [[ -n "$filename" ]]; then
-				BAT_OPTIONS=(--style=header "--file-name=$filename")
+				bat_options=(--style=header "--file-name=$filename")
 			else
-				BAT_OPTIONS=(--style=header "--file-name=STDIN.${LANGUAGE:-json}")
+				bat_options=(--style=header "--file-name=STDIN.${lang:-json}")
 			fi
 		fi
 
-		colorizer="| bat --wrap=never -l ${LANGUAGE:-json} --color='$color' ${BAT_OPTIONS[*]@Q}"
-	}
+		colorizer="| bat --wrap=never -l '$lang' --color='$color' ${bat_options[*]@Q}"
+	else
+		colorizer="-C"
+	fi
 fi
 
-bash -c "cat $* $formatter ${colorizer:-}"
+bash -c "cat ${*@Q} ${formatter:-| cat} ${colorizer:-}"

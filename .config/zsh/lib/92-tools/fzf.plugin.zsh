@@ -137,13 +137,13 @@ function _fzf_complete_kubectl_post() {
 
 # => git completion ----------------------------------------------------------------------------------------------- {{{1
 
-function fzf-git-branches-widget()       LBUFFER+=$(fzf-git-branches --all | stdin-join-lines)
-function fzf-git-files-changed-widget()  LBUFFER+=$(fzf-git-files-changed  | stdin-join-lines)
-function fzf-git-files-widget()          LBUFFER+=$(fzf-git-files          | stdin-join-lines)
-function fzf-git-hashes-all-widget()     LBUFFER+=$(fzf-git-hashes-all     | stdin-join-lines)
-function fzf-git-hashes-widget()         LBUFFER+=$(fzf-git-hashes         | stdin-join-lines)
-function fzf-git-remotes-widget()        LBUFFER+=$(fzf-git-remotes        | stdin-join-lines)
-function fzf-git-tags-widget()           LBUFFER+=$(fzf-git-tags           | stdin-join-lines)
+function fzf-git-branches-widget()       LBUFFER+=$(fzf-git-branches --all | lines-join)
+function fzf-git-files-changed-widget()  LBUFFER+=$(fzf-git-files-changed  | lines-join)
+function fzf-git-files-widget()          LBUFFER+=$(fzf-git-files          | lines-join)
+function fzf-git-hashes-all-widget()     LBUFFER+=$(fzf-git-hashes-all     | lines-join)
+function fzf-git-hashes-widget()         LBUFFER+=$(fzf-git-hashes         | lines-join)
+function fzf-git-remotes-widget()        LBUFFER+=$(fzf-git-remotes        | lines-join)
+function fzf-git-tags-widget()           LBUFFER+=$(fzf-git-tags           | lines-join)
 
 zle -N fzf-git-branches-widget
 zle -N fzf-git-files-changed-widget
@@ -167,22 +167,22 @@ function fzf-detect-widget() {
 	setopt local_options ksh_glob
 	case "$LBUFFER" in
 		git+( )@(show)*( ))
-			RESULT=$(fzf-git-log-all | stdin-join-lines)
+			RESULT=$(fzf-git-log-all | lines-join)
 			;;
 		git+( )@(remote)+( )@(remove|rename|show)*( ))
-			RESULT=$(fzf-git-remotes | stdin-join-lines)
+			RESULT=$(fzf-git-remotes | lines-join)
 			;;
 		git+( )@(co|checkout|l|log|diff)*( ))
-			RESULT=$(fzf-git-branches --all | stdin-join-lines)
+			RESULT=$(fzf-git-branches --all | lines-join)
 			;;
 		git+( )@(br*|br*-D)*( ))
-			RESULT=$(fzf-git-branches | stdin-join-lines)
+			RESULT=$(fzf-git-branches | lines-join)
 			;;
 		git+( )*@(--|rm)*( ))
-			RESULT=$(fzf-git-files | stdin-join-lines)
+			RESULT=$(fzf-git-files | lines-join)
 			;;
 		git+( )@(add)*( ))
-			RESULT=$(fzf-git-files | stdin-join-lines)
+			RESULT=$(fzf-git-files | lines-join)
 			;;
 		docker+( )rmi* | docker*-f* | docker*\ run*)
 			RESULT=$(docker-images | fzf --reverse "${FZF_MULTI_OPTIONS[@]}" | _fzf_complete_docker_post)
@@ -209,10 +209,10 @@ function fzf-detect-widget() {
 			RESULT=$(ssh-hosts | fzf --reverse -n 1 | _fzf_complete_docker_post)
 			;;
 		*( )cd+( )*)
-			RESULT=$(_fzf_compgen_dir "$(pwd)" | fzf | stdin-join-lines)
+			RESULT=$(_fzf_compgen_dir "$(pwd)" | fzf | lines-join)
 			;;
 		**( ))
-			RESULT=$(_fzf_command_helper | fzf "${FZF_MULTI_OPTIONS[@]}" | stdin-join-lines)
+			RESULT=$(_fzf_command_helper | fzf "${FZF_MULTI_OPTIONS[@]}" | lines-join)
 			;;
 	esac
 	if [[ -n $RESULT ]]; then

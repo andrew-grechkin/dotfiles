@@ -2,6 +2,7 @@ return {
     { -- https://github.com/sourcegraph/sg.nvim
         'sourcegraph/sg.nvim',
         dependencies = {'nvim-lua/plenary.nvim'},
+        enabled = not IS_KVM,
         keys = {
             'n',
             {
@@ -23,7 +24,7 @@ return {
                 desc = 'cody: toggle',
             },
         },
-        -- lazy = false,
+        lazy = false,
         opts = {accept_tos = true},
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1

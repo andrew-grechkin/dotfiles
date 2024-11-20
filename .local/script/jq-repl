@@ -43,7 +43,7 @@ fi
 if [[ -x "$(command -v json-pretty)" ]]; then
 	prettify=(json-pretty --no-filename --color=always)
 else
-	prettify=(jq -SC)
+	prettify=(jq --indent 2 -SC)
 fi
 
 fzf_cmd=(
