@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+args="$(getopt --name="$0" --options 't:uz' --longoptions 'table:,update,gzip' -- "$@")"
+eval set -- "$args"
+
+# shellcheck disable=SC2078
+while [ : ]; do
+	case "$1" in
+		-t | --table) table="$2"; shift 2 ;;
+		-u | --update) update="1"; shift ;;
+		-z | --gzip) gzip="1"; shift 1 ;;
+		--) shift; break ;;
+	esac
+done
+
+[[ -z "${table:-}" ]] && { echo "error: table is required" >/dev/stderr; exit 1; }
+
+cat "$@" \
+	| jq --null-input --raw-input --raw-output --unbuffered --arg table "$table" --arg update "${update:-}" '
+    def columns2header:
+        "INSERT INTO `\($table)` (\( map("`\(.)`") | join(",") )) VALUES";
+
+    def columns2footer(update):
+        if update != "" then
+            "AS new\nON DUPLICATE KEY UPDATE \( map("`\(.)`=new.`\(.)`") | join(",") )"
+        else
+            empty
+        end;
+
+    def tsv2sql:
+        split("\t")
+        | map(
+            (fromjson? // .)
+            | if (type == "array" or type == "object") then @json else . end
+            | if . == "NULL" then null end | @json
+        )
+        | "(\( join(",") ))";
+
+    input | split("\t") | . as $columns | columns2header
+    , (
+        input | tsv2sql
+    ), (
+        inputs | ",\( tsv2sql )"
+    ), (
+        $columns | columns2footer($update)
+    )
+' | if [[ "${gzip:-0}" == "1" && ! -t 1 ]]; then
+	gzip
+else
+	cat
+fi

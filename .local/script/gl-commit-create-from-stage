@@ -32,9 +32,10 @@ source "$(dirname "$0")/_gl-common"
 if [[ -t 1 ]]; then
 	"$0" -b "$BRANCH" -m "$message" | gl-commit-create -h "$HOST" -p "$PROJECT"
 else
-	changes=$(git status --porcelain | grep -P '^A|^D|^M')
-
-	[[ -z "$changes" ]] && exit 0
+	if ! changes="$(git status --porcelain | grep -P '^A|^D|^M')"; then
+		echo 'nothing to do' >/dev/stderr
+		exit 0
+	fi
 
 	jq_convert=$(cat <<- 'EO_ACTION'
 		{
@@ -45,11 +46,13 @@ else
 		EO_ACTION
 	)
 
-	echo "$changes" \
-		| xargs -n 2 bash -c "jq -nc --arg a \"\$0\" --rawfile content \"\$1\" --arg file \"\$1\" '$jq_convert'" \
-		| jq -cnR --arg branch "$BRANCH" --arg message "$message" '{
+	if actions="$(echo "$changes" \
+        | xargs -n 2 bash -c "set -e; [[ -r \"\$1\" ]] || { echo file not found: \"\$1\" >/dev/stderr; exit 2; }; jq -nc --arg a \"\$0\" --rawfile content \"\$1\" --arg file \"\$1\" '$jq_convert'")"; then
+		echo "$actions" \
+            | jq -cnR --arg branch "$BRANCH" --arg message "$message" '{
 			branch: $branch,
 			commit_message: $message,
 			actions: [inputs | fromjson]
-	}'
+		}'
+	fi
 fi
