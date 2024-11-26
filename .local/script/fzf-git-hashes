@@ -8,7 +8,7 @@ export FETCH_CMD="${CURRENT_SCRIPT#fzf-}"
 CMD=(
 	fzf-git-log
 	--multi
-	--bind="ctrl-m:become(echo -n {+1})"
+	--bind="ctrl-m:become(printf '%s\n' {+1})"
 	--bind='tab:toggle+down,shift-tab:toggle+up'
 )
 

@@ -2,7 +2,9 @@
 
 # convert JSON array of hashes to TSV with header based on keys
 
-. | (
+if length == 0 then halt end
+
+| (
     .[0]
     | keys_unsorted
     | @tsv

@@ -107,7 +107,7 @@ if &termguicolors ==# 1
 	hi Visual                                 guibg=#403D3D
 	hi VisualNOS                              guibg=#403D3D
 	hi WarningMsg               guifg=#FFFFFF guibg=#333333               gui=standout
-	hi WildMenu                 guifg=#66D9EF guibg=#000000
+	hi WildMenu                 guifg=#66D9EF
 
 	hi GitSignsCurrentLineBlame guifg=#605E66
 	hi NotifyBackground                       guibg=#000000

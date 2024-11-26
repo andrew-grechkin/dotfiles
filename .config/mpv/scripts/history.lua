@@ -33,7 +33,7 @@ local add_to_history = function(path)
         -- log.debug(('title: "%s"'):format(title))
 
         if stat.is_dir then
-            type = 'directory'
+            type = 'dir'
         else
             type = 'file'
         end
@@ -55,7 +55,7 @@ local add_to_history = function(path)
 
         if title == nil or title == '' then title = path end
 
-        type = 'youtube'
+        type = 'yt'
     end
 
     local opt = {'--quiet'}
@@ -68,7 +68,7 @@ local add_to_history = function(path)
     if ytdl then
         local params = {}
         for k, v in pairs(ytdl) do
-            if type == 'youtube' and k == 'format' and v == 'ba/b' then type = 'youtube-music' end
+            if type == 'yt' and k == 'format' and v == 'ba/b' then type = 'yt-m' end
             table.insert(params, ([[%s="%s"]]):format(k, v))
         end
         if #params > 0 then table.insert(opt, ([[--ytdl-raw-options='%s']]):format(table.concat(params, ','))) end

@@ -55,7 +55,7 @@ return {
                     -- 'ansible-lint',
                     -- 'cmakelang',
                     -- 'cmakelint',
-                    'eslint_d',
+                    -- 'eslint_d',
                     'luacheck',
                     -- 'markdownlint',
                     -- 'markuplint',
@@ -77,7 +77,7 @@ return {
 
             local ensure_installed = T {}
             ensure_installed:append(lsps)
-            ensure_installed:append(daps)
+            -- ensure_installed:append(daps)
             ensure_installed:append(linters)
             ensure_installed:append(formatters)
             ensure_installed:sort()

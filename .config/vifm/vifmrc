@@ -325,7 +325,7 @@ fileviewer *.mht,*.mhtml
 
 filextype *.bmp,*.dng,*.gif,.*.ico,*.icon,*.jp2,*.jpg,*.jpeg,*.png,*.xpm,*.svg,*.tif,*.thm,*.webp
 	\ {View in sxiv}
-	\ sxiv %f %c:h %i &,
+	\ sxiv %f %i &,
 	\ {Open with xdg-open}
 	\ xdg-open %c %i &,
 	\ {View in vimiv}
@@ -526,7 +526,7 @@ filetype *.qcow2
 filetype *.tar,
 	\*.tar.bz2,*.tbz2,*.tbz,*.tz2,*.tar.gz,*.tgz,*.taz,*.tar.lz,*.tlzip,*.tar.lzma,*.tlzma,*.tlz,
 	\*.tar.lzop,*.tlzo,*.tlzop,*.tar.xz,*.txz,*.tar.zst,*.tzst,*.tar.Z,*.taZ,
-	\*.bz2,*.gz,*.lz,*.lzma,*.lzop,*.xz,*.zst,*.Z,
+	\*.bz2,*.lz,*.lzma,*.lzop,*.xz,*.zst,*.Z,
 	\*.jar,*.war,*.ear,*.oxt,*.apkg,*.lha,*.ar,*.cpio,*.rpm,*.deb,*.udeb,*.mtree,*.xar,
 	\*.eu4
 	\ {Mount with archivemount}
@@ -534,7 +534,7 @@ filetype *.tar,
 fileviewer *.tar,
 	\*.tar.bz2,*.tbz2,*.tbz,*.tz2,*.tar.gz,*.tgz,*.taz,*.tar.lz,*.tlzip,*.tar.lzma,*.tlzma,*.tlz,
 	\*.tar.lzop,*.tlzo,*.tlzop,*.tar.xz,*.txz,*.tar.zst,*.tzst,*.tar.Z,*.taZ,
-	\*.bz2,*.gz,*.lz,*.lzma,*.lzop,*.xz,*.zst,*.Z,
+	\*.bz2,*.lz,*.lzma,*.lzop,*.xz,*.zst,*.Z,
 	\*.jar,*.war,*.ear,*.oxt,*.apkg,*.lha,*.ar,*.cpio,*.rpm,*.deb,*.udeb,*.mtree,*.xar
 	\ tar taf %c &,
 
@@ -546,7 +546,7 @@ filetype *.7z,*.epub,*.whl,
 	\*.qcow,*.qcow2,*.qcow2c,*.r00,*.rar,*.raw,*.rpm,*.squashfs,*.swf,*.swm,*.sys,*.vdi,*.vhd,*.vmdk,*.wim,*.xar,*.xls,
 	\*.tar.bz2,*.tbz2,*.tbz,*.tz2,*.tar.gz,*.tgz,*.taz,*.tar.lz,*.tlzip,*.tar.lzma,*.tlzma,*.tlz,
 	\*.tar.lzop,*.tlzo,*.tlzop,*.tar.xz,*.txz,*.tar.zst,*.tzst,*.tar.Z,*.taZ,
-	\*.bz2,*.gz,*.lz,*.lzma,*.lzop,*.xz,*.zst,*.Z
+	\*.bz2,*.lz,*.lzma,*.lzop,*.xz,*.zst,*.Z
 	\ {Mount with fuse3-p7zip}
 	\ FUSE_MOUNT|fuse3-p7zip %SOURCE_FILE %DESTINATION_DIR,
 	\ {Extract to subdir...}
@@ -561,6 +561,10 @@ fileviewer *.7z,*.whl,
 	\*.flv,*.hxs,*.img,*.iso,*.iso,*.jar,*.lib,*.macho,*.msi,*.msp,*.nsis,*.pkg,*.pmd,*.ppt,
 	\*.qcow,*.qcow2,*.qcow2c,*.r00,*.rar,*.raw,*.rpm,*.squashfs,*.swf,*.swm,*.sys,*.vdi,*.vhd,*.vmdk,*.wim,*.xar,*.xls
 	\ 7z l %c &,
+
+filetype *.gz
+	\ {Decompress gzip}
+	\ gunzip %c &,
 
 " => File associations: S3 mount ---------------------------------------------------------------------------------- {{{1
 
@@ -640,6 +644,10 @@ filetype !{*/}!{.*/}!/.base64$/
 	\ base64 %c | clipcopy &,
 	\ {Encode base64}
 	\ base64 %c > %c.base64 &,
+
+filetype !{*/}!{.*/}!/.gz$/
+	\ {Compress gzip}
+	\ gzip %f,
 
 " => File associations: all dirs ---------------------------------------------------------------------------------- {{{1
 
