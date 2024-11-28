@@ -14,7 +14,10 @@ while [ : ]; do
 	esac
 done
 
-source "$(dirname "$0")/_gl-common"
+# shellcheck disable=SC1090
+source "$(realpath -Ls "$(dirname "$0")/../lib/shell/data-processing.bash")"
+# shellcheck disable=SC1090
+source "$(realpath -Ls "$(dirname "$0")/../lib/shell/gitlab.bash")"
 
 # https://docs.gitlab.com/ee/api/merge_requests.html#get-single-mr
 

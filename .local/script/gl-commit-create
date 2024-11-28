@@ -22,7 +22,10 @@ if [[ -t 0 ]]; then
 		esac
 	done
 
-	source "$(dirname "$0")/_gl-common"
+	# shellcheck disable=SC1090
+	source "$(realpath -Ls "$(dirname "$0")/../lib/shell/data-processing.bash")"
+	# shellcheck disable=SC1090
+	source "$(realpath -Ls "$(dirname "$0")/../lib/shell/gitlab.bash")"
 
 	[[ -z "${BRANCH:-}" ]]  && { echo "branch is required"; exit 1; }
 	[[ -z "${message:-}" ]] && { echo "message is required"; exit 1; }
@@ -31,7 +34,7 @@ if [[ -t 0 ]]; then
 
 	# https://docs.gitlab.com/ee/api/commits.html#create-a-commit-with-multiple-files-and-actions
 
-	payload="$(mktemp --tmpdir="${XDG_RUNTIME_DIR-:/tmp}")"
+	payload="$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
 	trap 'rm -f "$payload"' EXIT
 	>"$payload" jq -n --arg action "$action" --arg branch "$BRANCH" --rawfile content "$content" --arg file "$file" --arg message "$message" '{
 		"branch": $branch,
@@ -57,9 +60,12 @@ else
 		esac
 	done
 
-	source "$(dirname "$0")/_gl-common"
+	# shellcheck disable=SC1090
+	source "$(realpath -Ls "$(dirname "$0")/../lib/shell/data-processing.bash")"
+	# shellcheck disable=SC1090
+	source "$(realpath -Ls "$(dirname "$0")/../lib/shell/gitlab.bash")"
 
-	payload="$(mktemp --tmpdir="${XDG_RUNTIME_DIR-:/tmp}")"
+	payload="$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
 	trap 'rm -f "$payload"' EXIT
 	>"$payload" cat
 fi

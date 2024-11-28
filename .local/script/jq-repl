@@ -33,7 +33,7 @@ while [ : ]; do
 done
 
 if [[ -z "${1:-}" ]] || [[ $1 == "-" ]]; then
-	input="$(mktemp --tmpdir="${XDG_RUNTIME_DIR-:/tmp}")"
+	input="$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
 	trap 'rm -f "$input"' EXIT
 	cat /dev/stdin > "$input"
 else
