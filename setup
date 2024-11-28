@@ -59,6 +59,7 @@ ln -srf .config/yt-dlp                                       ~/.config/
 ln -srf .config/zsh                                          ~/.config/
 
 ln -srf .local/lib/perl5                                     ~/.local/lib/
+ln -srf .local/lib/shell                                     ~/.local/lib/
 ln -srf .local/script                                        ~/.local/
 ln -srf .local/share/3rdparty                                ~/.local/share/
 ln -srf .local/share/distrobox                               ~/.local/share/

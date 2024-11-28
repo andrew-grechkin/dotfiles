@@ -53,7 +53,7 @@ sub main {
 
     $log->{'adapter'}{'log_level'} += $options{'VERBOSE'};
 
-    foreach my $path (map {path($_)->absolute} @ARGV) {
+    foreach my $path (map {path(decode('UTF-8', $_, Encode::FB_CROAK))->absolute} @ARGV) {
         $log->debugf('Processing: %s', $path);
 
         try {
@@ -99,22 +99,14 @@ sub detect_time ($path) {
 
 ## no critic [RegularExpressions::ProhibitComplexRegexes]
 sub detect_from_name ($path) {
-    state $regex = qr{
-        \A
-            (?:[[:alnum:]]{3,4})
-            _ (?<date>[[:digit:]]{8})
-            _ (?<time>[[:digit:]]{6})
-            .+
-        \z
-    }x;
 
     my $result;
 
     my $filename = $path->basename;
+    $log->tracef('Checking filename: %s', $filename);
     foreach my $parser (@tm_parsers) {
         my ($name) = $filename =~ m/(.*)[.]\w+$/x;
         try {
-            $log->tracef('Checking filename: %s', $name);
             my $tm = $parser->($name);
             $log->debugf('Detected "%s" from filename: %s', $tm, $name);
             return $tm;
@@ -122,10 +114,34 @@ sub detect_from_name ($path) {
         };
     }
 
-    if ($filename =~ $regex) {
-        my $tm = $tm_parsers[0]->($LAST_PAREN_MATCH{'date'} . 'T' . $LAST_PAREN_MATCH{'time'} . 'Z');
-        $log->debugf('Detected "%s" from filename: %s', $tm, $filename);
-        return $tm;
+    {
+        my $regex = qr{
+            \A
+                (?:[[:alnum:]]{3,4})
+                _ (?<date>[[:digit:]]{8})
+                _ (?<time>[[:digit:]]{6})
+                .+
+            \z
+        }x;
+        if ($filename =~ $regex) {
+            my $tm = $tm_parsers[0]->($LAST_PAREN_MATCH{'date'} . 'T' . $LAST_PAREN_MATCH{'time'} . 'Z');
+            $log->debugf('Detected "%s" from filename: %s', $tm, $filename);
+            return $tm;
+        }
+    }
+    {
+        my $regex = qr{
+            \A
+                (?:[[:alnum:]]{3,})\s-\s
+                \[
+                    (?<date>[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2})
+                \]
+        }x;
+        if ($filename =~ $regex) {
+            my $tm = $tm_parsers[0]->($LAST_PAREN_MATCH{'date'} . 'T00:00:00Z');
+            $log->debugf('Detected "%s" from filename: %s', $tm, $filename);
+            return $tm;
+        }
     }
 
     return $result;

@@ -44,7 +44,10 @@ while [ : ]; do
 	esac
 done
 
-source "$(dirname "$0")/_gl-common"
+# shellcheck disable=SC1090
+source "$(realpath -Ls "$(dirname "$0")/../lib/shell/data-processing.bash")"
+# shellcheck disable=SC1090
+source "$(realpath -Ls "$(dirname "$0")/../lib/shell/gitlab.bash")"
 
 if [[ -t 1 ]]; then
 	if [[ -x "$(command -v json-pretty)" ]]; then
@@ -140,7 +143,7 @@ else
 			"url;$(tput setaf 14)\(.web_url)$(tput sgr0)"
 		)
 
-		"${http_fetch_command[@]}" | json-array-to-tsv ".iid" "${jq_fields[@]}"
+		"${http_fetch_command[@]}" | json-array-to-tsv "sort_by(.iid) | reverse" "${jq_fields[@]}"
 	else
 		"${http_fetch_command[@]}"
 	fi
