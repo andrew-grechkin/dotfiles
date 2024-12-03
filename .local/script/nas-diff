@@ -5,26 +5,19 @@ set -Euo pipefail
 SRC=${SRC:-"home.ams::"}
 DST=${DST:-"./"}
 
+# shellcheck disable=SC1090
+source "$(realpath -Ls "$(dirname "$0")/../lib/shell/rsync.bash")"
+
 if [[ $# -eq 0 ]]; then
 	mapfile -t DIRS < <(fd --no-hidden -t d -d 1)
 else
 	DIRS=("$@")
 fi
 
-RSYNC_PARAMS=(
-	--sparse
-	--exclude="#recycle"
-	--exclude="#snapshot"
-	--exclude=".Trash-*"
-	--exclude="@eaDir"
+rsync_params=(
+	"${RSYNC_DEFAULT_PARAMS[@]}"
+	"${RSYNC_DIFF_PARAMS[@]}"
 	--rsh=ssh
-	--delete
-	--dry-run
-	-i
-	-HhrtlDXx
-	--no-owner
-	--no-group
-	--omit-dir-times
 )
 
 for DIR in "${DIRS[@]}"; do
@@ -32,5 +25,5 @@ for DIR in "${DIRS[@]}"; do
 	echo "Comparing ${DST}${DIR} with ${SRC}..."
 	echo -n "$(tput sgr0)"
 
-	rsync "${RSYNC_PARAMS[@]}" "${SRC}${DIR}/" "${DST}${DIR}/"
+	rsync "${rsync_params[@]}" "${SRC}${DIR}/" "${DST}${DIR}/"
 done

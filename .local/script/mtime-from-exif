@@ -23,6 +23,7 @@ our $VERSION = 1.00;
 
 my %options = (
     'APPLY'         => 0,
+    'RECURSE'       => 0,
     'SKIP_ON_ERROR' => 0,
     'VERBOSE'       => 0,
 );
@@ -47,13 +48,38 @@ sub main {
     GetOptions(
         'apply|a'    => \$options{'APPLY'},
         'help|h'     => sub {pod2usage('-verbose' => 99, 'exitval' => 0)},
+        'recurse|r'  => \$options{'RECURSE'},
         'skip|s'     => \$options{'SKIP_ON_ERROR'},
         'verbose|v+' => \$options{'VERBOSE'},
     ) or die "Unable to process command line options\n";
 
     $log->{'adapter'}{'log_level'} += $options{'VERBOSE'};
 
-    foreach my $path (map {path(decode('UTF-8', $_, Encode::FB_CROAK))->absolute} @ARGV) {
+    my @found = map {decode('UTF-8', $_, Encode::FB_CROAK)} grep {-r && !-d} @ARGV;
+
+    push @ARGV, '.' if !@found && !@ARGV;
+
+    foreach my $dir (grep {-d} @ARGV) {
+        path($dir)->visit(
+            sub ($path, @) {
+                _is_valid_path($path)
+                    or return;
+
+                my $decoded_path = decode('UTF-8', $path->stringify, Encode::FB_CROAK);
+
+                _is_ignored_path($decoded_path)
+                    and return;
+
+                push @found, $decoded_path;
+            },
+            {
+                'follow_symlinks' => 1,
+                'recurse'         => $options{'RECURSE'},
+            },
+        );
+    }
+
+    foreach my $path (map {path($_)->absolute} sort @found) {
         $log->debugf('Processing: %s', $path);
 
         try {
@@ -66,6 +92,20 @@ sub main {
     }
 
     return 0;
+}
+
+sub _is_valid_path ($path) {
+    return $path->is_file
+        && !-l $path;
+}
+
+sub _is_ignored_path ($decoded_path) {
+    my $result = $decoded_path =~ m/\@eaDir/
+        || $decoded_path =~ m/\#snapshot/;
+
+    $log->tracef('ignored: %s', $decoded_path) if $result;
+
+    return $result;
 }
 
 sub detect_time ($path) {
@@ -106,6 +146,7 @@ sub detect_from_name ($path) {
     $log->tracef('Checking filename: %s', $filename);
     foreach my $parser (@tm_parsers) {
         my ($name) = $filename =~ m/(.*)[.]\w+$/x;
+        next unless $name;
         try {
             my $tm = $parser->($name);
             $log->debugf('Detected "%s" from filename: %s', $tm, $name);
@@ -189,11 +230,14 @@ sub fetch_exif_times ($path) {
 }
 
 sub change_file_mtime ($file, $tm) {
-    if ($options{'APPLY'}) {
-        utime $tm->epoch, $tm->epoch, $file
-            or $log->error('Unable to set file time');
+    my $mtime = $file->stat->mtime;
+    if ($tm->epoch < $mtime) {
+        if ($options{'APPLY'}) {
+            utime $tm->epoch, $tm->epoch, $file
+                or $log->error('Unable to set file time');
+        }
+        $log->infof('Applied "%s" to: %s', $tm, $file);
     }
-    $log->infof('Applied "%s" to: %s', $tm, $file);
 
     return;
 }

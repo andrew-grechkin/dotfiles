@@ -210,7 +210,7 @@ snippet qrr{ "Regex: complex"
 # => Helpers ------------------------------------------------------------------------------------------------------ {{{1
 
 snippet #! "Helper: shebang" b
-	#!/usr/bin/env perl
+	#!/usr/bin/env -S perl -CALS
 
 	${0}
 
@@ -253,6 +253,12 @@ snippet pvisit "Helper: path visit" b
 
 snippet head "Header: pragmas" b
 	use v5.40;
+	use experimental qw(class declared_refs defer refaliasing);
+
+	${0}
+
+snippet headf "Header: pragmas full" b
+	use v5.40;
 	use autodie;
 	use open ':locale';
 	use utf8;
@@ -261,12 +267,8 @@ snippet head "Header: pragmas" b
 
 	${0}
 
-snippet head38 "Header: pragmas" b
+snippet head38 "Header: pragmas v5.38" b
 	use v5.38;
-	use autodie;
-	use open ':locale';
-	use utf8;
-	use warnings     qw(FATAL utf8);
 	use experimental qw(builtin class declared_refs defer for_list refaliasing try);
 
 	${0}

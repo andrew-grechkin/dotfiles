@@ -1,0 +1,23 @@
+#!/usr/bin/env -S jq -c --null-input --raw-input --from-file
+
+# parse TSV file with headers to a JSON objects stream of hashes detecting keys by header
+
+def ingest_field:
+    . as $it |
+    if $it == "" or $it == "NULL" or $it == "null" then
+        null
+    else
+        $it | try (fromjson) # detect numbers, enumerables and properly quoted json strings
+        catch (
+            try ("\"\($it)\"" | fromjson) # detect json-like strings (encoded but without quotes)
+            catch (
+                try ($it | gsub("\\\\\\\\\\\""; "\\\"") | fromjson) # detect mysql dump output
+                catch $it
+        ))
+    end;
+
+input | split("\t") as $keys |
+inputs | split("\t") | map(ingest_field) |
+reduce .[] as $value ({};
+    .[($keys[. | length])] = $value
+)

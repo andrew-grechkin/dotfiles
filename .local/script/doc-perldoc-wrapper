@@ -4,10 +4,12 @@ set -Eeuo pipefail
 
 exec 2>/dev/null
 
-perldoc -T -X "$@"        \
-	|| perldoc -T -f "$@" \
-	|| perldoc -T -v "$@" \
-	|| perldoc -T -a "$@" \
-	|| perldoc -T -q "$@" \
-	|| man "$@"           \
-	|| echo "Nothing found for: $*"
+{
+	perldoc -T -X "$@"        \
+		|| perldoc -T -f "$@" \
+		|| perldoc -T -v "$@" \
+		|| perldoc -T -a "$@" \
+		|| perldoc -T -q "$@" \
+		|| man "$@"           \
+		|| echo "Nothing found for: $*"
+} | if [[ -t 1 ]]; then "${PAGER:-less}"; else cat; fi

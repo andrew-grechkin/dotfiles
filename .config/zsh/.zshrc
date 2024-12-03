@@ -25,7 +25,9 @@ fi
 
 # man: zshmodules
 if [[ "$IS_NAS" != "0" ]]; then
-	[[ $COLORTERM = *(24bit|truecolor)* ]] || zmodload zsh/nearcolor
+	if [[ "$IS_NAS" != "1" ]]; then
+		[[ $COLORTERM = *(24bit|truecolor)* ]] || zmodload zsh/nearcolor
+	fi
 fi
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1

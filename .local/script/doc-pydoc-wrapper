@@ -2,5 +2,7 @@
 
 set -Eeuo pipefail
 
-python -m pydoc "$@" \
-	|| echo "Nothing found for: $*"
+{
+	python -m pydoc "$@" \
+		|| echo "Nothing found for: $*"
+} | if [[ -t 1 ]]; then "${PAGER:-less}"; else cat; fi

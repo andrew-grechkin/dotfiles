@@ -1,17 +1,21 @@
 #!/usr/bin/env -S jq -r --from-file
 
-# convert JSON array of hashes to TSV with header based on keys
+# convert JSON array or stream of hashes to TSV with the header based on the keys of the first hash
 
-if length == 0 then halt end
+.
 
+# gracefully handle empty input
+| if length == 0 then halt end
+# convert stream of hashes to array
+| if type != "array" then [., inputs] end
+| (.[0] | keys_unsorted) as $keys
 | (
-    .[0]
-    | keys_unsorted
-    | @tsv
+    $keys | @tsv
 ), (
     {"array": 1, "object": 1} as $to_encode
     | .[]
-    | [.[]]
+    | . as $it
+    | reduce $keys[] as $key ([]; [.[], $it[$key]])
     | map(if type | in($to_encode) then @json else . end)
     | @tsv
 )

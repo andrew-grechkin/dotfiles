@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+file="$XDG_STATE_HOME/zsh/history@$HOSTNAME"
+
+temp_file=$(mktemp -u)
+
+function finish {
+	rm -f "$temp_file"
+}
+trap finish EXIT
+
+filter=(
+	sk
+	--print-query
+	--regex
+	--reverse
+	--multi
+	# --bind="tab:toggle-out,shift-tab:toggle-in"
+	# --bind='esc:cancel'
+)
+
+output="$(sort -u < "$file" | "${filter[@]}" | tee /tmp/blah)"
+regex="$(echo "$output" | head -n 1)"
+lines="$(echo "$output" | tail -n +2)"
+
+if [[ -n "$regex" ]]; then
+	echo "Pruning history for regex: '$regex'"
+	cp -f "$file" "$file.prune.bak"
+
+	echo "Lines before: $(wc -l < "$file")"
+	grep -av -P "$regex" "$file" > "$temp_file"
+	echo "Lines after: $(wc -l < "$temp_file")"
+	mv -f "$temp_file" "$file"
+elif [[ -n "$lines" ]]; then
+	echo "Pruning history for whole lines: $(echo "$lines" | wc -l)"
+	cp -f "$file" "$file.prune.bak"
+
+	cp -f "$file" "$temp_file"
+	echo "Lines before: $(wc -l < "$temp_file")"
+	echo "$lines" | perl -i -nlE 'INIT {%r = map {chomp; $_ => undef} <STDIN>} print unless exists $r{$_}' "$temp_file"
+	echo "Lines after: $(wc -l < "$temp_file")"
+	mv -f "$temp_file" "$file"
+fi
