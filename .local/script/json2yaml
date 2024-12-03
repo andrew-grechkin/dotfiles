@@ -1,1 +1,25 @@
-2yaml
+#!/usr/bin/env -S perl -CALI
+
+use v5.36;
+
+use YAML::XS         qw();
+use Cpanel::JSON::XS qw();
+use experimental     qw(try);
+
+use constant {'JSON' => Cpanel::JSON::XS->new->canonical->utf8(0)->unblessed_bool([1])->pretty->space_before(0)};
+
+my $line = <<>>;
+
+try {
+    while (defined $line) {
+        my $data = JSON()->decode($line);
+        print YAML::XS::Dump($data);
+        $line = <<>>;
+    }
+} catch ($err) {
+    my $input = join($/, $line, do {local $/ = undef; <<>>});
+    my $data  = JSON()->decode($input);
+    print YAML::XS::Dump($data);
+}
+
+__END__

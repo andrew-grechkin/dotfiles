@@ -80,7 +80,7 @@ class ParserJSON {
     method decode($str)   {return JSON()->decode($str)}
 
     method dump($data_aref) {
-        if ($data_aref->@* > 1) {
+        if (!-t 1 || $data_aref->@* > 1) {
             print JSON_ONE_LINE()->encode($_) . "\n" foreach $data_aref->@*;
         } else {
             print JSON()->encode($data_aref->[0]);

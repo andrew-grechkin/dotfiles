@@ -117,7 +117,11 @@ set sizefmt=units:iec,precision:2,nospace
 " man: https://vifm.info/manual.shtml#Command%20macros
 " help: vifm-macros
 
-command! reload :write | restart
+" not clear is how to escape or quote possible new lines in files
+command! flat    :!fd -H0t f %a | perl -plE 'INIT { $/ = "\0"}; s/\R/\\n/g' | sort %%U
+command! flat!   :!fd -H0t d %a | perl -plE 'INIT { $/ = "\0"}; s/\R/\\n/g' | sort %%U
+
+command! reload  :write | restart
 
 " create
 command! take    :mkdir %a | cd %a
@@ -371,7 +375,7 @@ filetype *.json
 	\ {Convert json -> yaml}
 	\ json2yaml %c > %c:r.yaml &,
 " fileviewer *.json
-" 	\ 2yaml %f | bat --wrap=never -l yaml --color=always --style=header --file-name=%f
+" 	\ json2yaml %f | bat --wrap=never -l yaml --color=always --style=header --file-name=%f
 
 filetype *.yaml,*.yml
 	\ {View}
@@ -621,7 +625,7 @@ filetype !{*/}!{.*/}
 	\ sudo hardlinks-for %f | less,
 
 fileviewer !{*/}!{.*/}
-	\ show-file,
+	\ show-file %c,
 
 " => File associations: all but some files ------------------------------------------------------------------------ {{{1
 
@@ -661,7 +665,7 @@ filetype {*/},{.*/}
 	\ {Compress (foreground) tar.zstd}
 	\ tar -c %f | pv | zstd > %f.tzst,
 fileviewer {*/},{.*/}
-	\ show-dir,
+	\ show-dir %c,
 
 " => File associations: all --------------------------------------------------------------------------------------- {{{1
 
@@ -739,7 +743,7 @@ nnoremap ,w :set wrap!<CR>
 " Example of standard two-panel file managers mappings
 nnoremap <f2>  :file<CR>
 nnoremap <f3>  :!{ show-dir %c || show-file %c } | less<CR>
-nnoremap <f4>  :edit %c %n<CR>
+nnoremap <f4>  :edit %"c %n<CR>
 nnoremap <f5>  :copy<CR>
 nnoremap <f6>  :move<CR>
 nnoremap <f7>  :mkdir<SPACE>
@@ -759,6 +763,7 @@ vnoremap <silent> rs :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle
 nnoremap <silent> rP :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -Hah    --partial --info=name1 --remove-source-files %f:p %D/ && tsp -d find %f -type d -empty -exec rmdir --ignore-fail-on-non-empty -p {} \+<CR>
 vnoremap <silent> rP :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -Hah    --partial --info=name1 --remove-source-files %f:p %D/ && tsp -d find %f -type d -empty -exec rmdir --ignore-fail-on-non-empty -p {} \+<CR>
 
+nnoremap Rd :!rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" --delete --dry-run -i -HhrtlDXx --no-owner --no-group --omit-dir-times --checksum %f:p %D/<CR>
 nnoremap Rp :!rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -Hah    --partial --info=progress2 %f:p %D/<CR>
 vnoremap Rp :!rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -Hah    --partial --info=progress2 %f:p %D/<CR>
 nnoremap Ru :!rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -Hahu   --partial --info=progress2 %f:p %D/<CR>
@@ -780,10 +785,10 @@ nnoremap <C-t> :FZFlocate<CR>
 
 " Use ag (the silver searcher) instead of grep
 " set grepprg='ag --hidden --line-numbers %i %a %s'
-set grepprg='rg --hidden --column -- %i %A %s'
+set grepprg='rg %i %a %s %u'
 
 " set findprg="find %s %a -print , -type d \( ! -readable -o ! -executable \) -prune"
-set findprg='fd --hidden -- %A'
+set findprg='fd -H %A %u'
 
 " Add additional place to look for executables
 "
@@ -819,20 +824,20 @@ mark u ~/.local/usr
 
 " => file icons --------------------------------------------------------------------------------------------------- {{{1
 
-set classify=' ::../::, :dir:/, :exe:, :reg:, :link:'
-set classify+=' ::.editorconfig,,.eslintrc.js,,.eslintrc.json,,.npmrc,,.nvmrc,,.prettierrc.js,,.prettierrc.yaml,,package.json,,project.json,,tsconfig*.json::'
-set classify+=' ::package-lock.json::'
-set classify+=' ::*.sh::, ::*.cpp::, ::*.c::, ::*.hpp::, ::*.js::, ::*.pl,,*.pm::, ::*.py::, ::*.rb::, ::*.go::, ::*.json::, ::*.ts::,󰢱 ::*.lua::'
-set classify+='© ::/^copying|license$/::, ::.git/,,*.git/::'
-set classify+=' ::*.fb2,,*.epub,,*.djvu,,*.pdf::'
-set classify+=' ::*.doc,,*.docx::, ::*.xls,,*.xls[mx]::, ::*.ppt,,*.pptx::'
-set classify+=' ::*.7z,,*.ace,,*.arj,,*.bz2,,*.cpio,,*.dz,,*.gz,,*.jar,,*.lzh,,*.lzma,,*.rar,,*.rz,,*.tar,,*.taz,,*.tb2,,*.tbz,,*.tbz2,,*.tgz,,*.tlz,,*.trz,,*.txz,,*.tz,,*.tz2,,*.zst,,*.tzst,,*.xz,,*.z,,*.zip,,*.zoo::, ::*.deb::, ::*.rpm::, ::*.whl::'
-set classify+=' ::*.bmp,,*.gif,,*.jp2,,*.jpeg,,*.jpg,,*.ico,,*.png,,*.ppm,,*.tga,,*.tif,,*.tiff,,*.xbm,,*.xcf,,*.xpm,,*.xspf,,*.xwd,,*.svg,,*.svgz::'
-set classify+=' ::*.aac,,*.anx,,*.asf,,*.au,,*.axa,,*.flac,,*.m2a,,*.m4a,,*.mid,,*.midi,,*.mp3,,*.mpc,,*.oga,,*.ogg,,*.ogx,,*.ra,,*.ram,,*.rm,,*.spx,,*.wav,,*.wma,,*.ac3::'
-set classify+=' ::*.avi,,*.axv,,*.divx,,*.m2v,,*.m4p,,*.m4v,,.mka,,*.mkv,,*.mov,,*.mp4,,*.lrv,,*.flv::'
-set classify+=' ::*.mp4v,,*.mpeg,,*.mpg,,*.nuv,,*.ogv,,*.pbm,,*.pgm,,*.qt,,*.vob,,*.wmv,,*.xvid::'
-set classify+=' ::*.htm,,*.html,,*.[msx]html,,*.mht,,*.xml::'
-set classify+=' ::*.diff,,*.patch::'
-set classify+=' ::*.img,,*.iso::'
-set classify+=' ::*.torrent::'
-set classify+=' ::.gitignore,,.npmignore,,.eslintignore::'
+" set classify=' ::../::, :dir:/, :exe:, :reg:, :link:'
+" set classify+=' ::.editorconfig,,.eslintrc.js,,.eslintrc.json,,.npmrc,,.nvmrc,,.prettierrc.js,,.prettierrc.yaml,,package.json,,project.json,,tsconfig*.json::'
+" set classify+=' ::package-lock.json::'
+" set classify+=' ::*.sh::, ::*.cpp::, ::*.c::, ::*.hpp::, ::*.js::, ::*.pl,,*.pm::, ::*.py::, ::*.rb::, ::*.go::, ::*.json::, ::*.ts::,󰢱 ::*.lua::'
+" set classify+='© ::/^copying|license$/::, ::.git/,,*.git/::'
+" set classify+=' ::*.fb2,,*.epub,,*.djvu,,*.pdf::'
+" set classify+=' ::*.doc,,*.docx::, ::*.xls,,*.xls[mx]::, ::*.ppt,,*.pptx::'
+" set classify+=' ::*.7z,,*.ace,,*.arj,,*.bz2,,*.cpio,,*.dz,,*.gz,,*.jar,,*.lzh,,*.lzma,,*.rar,,*.rz,,*.tar,,*.taz,,*.tb2,,*.tbz,,*.tbz2,,*.tgz,,*.tlz,,*.trz,,*.txz,,*.tz,,*.tz2,,*.zst,,*.tzst,,*.xz,,*.z,,*.zip,,*.zoo::, ::*.deb::, ::*.rpm::, ::*.whl::'
+" set classify+=' ::*.bmp,,*.gif,,*.jp2,,*.jpeg,,*.jpg,,*.ico,,*.png,,*.ppm,,*.tga,,*.tif,,*.tiff,,*.xbm,,*.xcf,,*.xpm,,*.xspf,,*.xwd,,*.svg,,*.svgz::'
+" set classify+=' ::*.aac,,*.anx,,*.asf,,*.au,,*.axa,,*.flac,,*.m2a,,*.m4a,,*.mid,,*.midi,,*.mp3,,*.mpc,,*.oga,,*.ogg,,*.ogx,,*.ra,,*.ram,,*.rm,,*.spx,,*.wav,,*.wma,,*.ac3::'
+" set classify+=' ::*.avi,,*.axv,,*.divx,,*.m2v,,*.m4p,,*.m4v,,.mka,,*.mkv,,*.mov,,*.mp4,,*.lrv,,*.flv::'
+" set classify+=' ::*.mp4v,,*.mpeg,,*.mpg,,*.nuv,,*.ogv,,*.pbm,,*.pgm,,*.qt,,*.vob,,*.wmv,,*.xvid::'
+" set classify+=' ::*.htm,,*.html,,*.[msx]html,,*.mht,,*.xml::'
+" set classify+=' ::*.diff,,*.patch::'
+" set classify+=' ::*.img,,*.iso::'
+" set classify+=' ::*.torrent::'
+" set classify+=' ::.gitignore,,.npmignore,,.eslintignore::'

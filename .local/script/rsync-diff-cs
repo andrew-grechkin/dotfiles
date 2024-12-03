@@ -8,7 +8,6 @@ source "$(realpath -Ls "$(dirname "$0")/../lib/shell/rsync.bash")"
 rsync_params=(
 	"${RSYNC_DEFAULT_PARAMS[@]}"
 	"${RSYNC_DIFF_PARAMS[@]}"
-	--checksum
 )
 
 rsync "${rsync_params[@]}" "$@"

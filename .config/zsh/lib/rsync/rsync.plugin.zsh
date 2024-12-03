@@ -12,9 +12,9 @@ alias         rsync-update="rsync ${COMMON_PARAMS} ${COMMON_OPTS} --info=progres
 alias    rsync-synchronize="rsync ${COMMON_PARAMS} ${COMMON_OPTS} --info=progress2 -uXx --delete"
 alias rsync-synchronize-cs="rsync ${COMMON_PARAMS} ${COMMON_OPTS} --info=progress2 -uXx --delete --checksum"
 
-alias           rsync-diff="rsync --dry-run -i --delete ${COMMON_PARAMS} -HhrltD"
-alias      rsync-diff-perm="rsync --dry-run -i --delete ${COMMON_PARAMS} ${COMMON_OPTS} -Xx"
-alias        rsync-diff-cs="rsync --dry-run -i --delete ${COMMON_PARAMS} ${COMMON_OPTS} -Xx --checksum"
+# alias           rsync-diff="rsync --dry-run -i --delete ${COMMON_PARAMS} -HhrltD"
+# alias      rsync-diff-perm="rsync --dry-run -i --delete ${COMMON_PARAMS} ${COMMON_OPTS} -Xx"
+# alias        rsync-diff-cs="rsync --dry-run -i --delete ${COMMON_PARAMS} ${COMMON_OPTS} -Xx --checksum"
 
 alias     rsync-sudo-copy="sudo -E -s rsync ${COMMON_PARAMS} ${COMMON_OPTS} --info=progress2 -e 'ssh -l $USER'"
 alias     rsync-sudo-sync="sudo -E -s rsync ${COMMON_PARAMS} ${COMMON_OPTS} --info=progress2 -e 'ssh -l $USER' -uXx --delete"
