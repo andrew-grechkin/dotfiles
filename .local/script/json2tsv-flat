@@ -1,9 +1,13 @@
 #!/usr/bin/env -S jq -r --null-input --from-file
 
-# convert JSON array or stream of hashes to TSV with the header based on the keys of the first hash
+# convert JSON array or stream of hashes to TSV with the header based on the pathes of the first hash
 
-def to_paths:
-    keys_unsorted | map([.]);
+# get all paths to all leafs but not array elements (not sure if there is a better way)
+def to_paths:    . as $hash
+    | [paths(true)]
+    | map(. as $p | {p: $p, t: $hash | getpath($p) | type})
+    | map(select((.t == "array" or .t == "null" or .t == "boolean" or.t == "number" or.t == "string") and (.p | map(select(numbers)) | length == 0)))
+    | map(.p);
 
 {"array": 1, "object": 1} as $need_encode
 | def to_tsv($keys; $paths):

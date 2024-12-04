@@ -20,10 +20,9 @@ def ingest_field:
         ))
     end;
 
-input | split("\t") as $keys
+input | split("\t") | map(split(".")) as $paths
 | [
     inputs | split("\t") | map(ingest_field)
-    | reduce .[] as $value ({};
-        .[($keys[. | length])] = $value
-    )
+    | [foreach .[] as $value (-1; . + 1; [$paths[.], $value])]
+    | reduce .[] as $pv ({}; setpath($pv[0]; $pv[1]))
 ]
