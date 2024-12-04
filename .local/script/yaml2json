@@ -11,11 +11,15 @@ use constant {
     'JSON_ONE_LINE' => Cpanel::JSON::XS->new->canonical->utf8(0)->unblessed_bool([1])->pretty(0)->indent(0),
 };
 
-my $input = do {local $/ = undef; <<>>};
-my @data  = YAML::XS::Load($input);
+my @lines;
+while (defined(my $line = <<>>)) {
+    push @lines, $line;
+}
 
+my $input = join('', @lines);
+my @data  = YAML::XS::Load($input);
 if (-t 1 && @data == 1) {
-    say JSON()->encode($data[0]);
+    print JSON()->encode($data[0]);
 } else {
     say JSON_ONE_LINE()->encode($_) foreach @data;
 }

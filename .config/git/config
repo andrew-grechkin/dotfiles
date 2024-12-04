@@ -2,20 +2,14 @@
 	aa           = add --all
 	amend        = commit --amend --reset-author
 	b            = branch -vv
-	behind       = !"MUB=\"$(git gmu)\"; echo \"Behind $MUB:\" &>/dev/stderr; git log --oneline HEAD..$MUB | wc -l"
-	bleach       = !"f(){ git fall; git b | perl -alE 'm/: gone]/ && $F[0] ne q(*) && system(qq(git branch -D $F[0]))'; }; f"
-	bname        = branch --show-current
-	brname       = !"f(){ git name-rev --name-only --no-undefined --refs=\"refs/remotes/*\" --exclude=HEAD \"${@:-HEAD}\" 2>/dev/null | grep -Po \"(?<=\\bremotes/).+$\"; }; f"
-	branches     = !"git branch --list --no-column --format='%(refname:lstrip=2)' \"$@\""
+	behind       = !"MUB=\"$(git gmu)\"; echo \"Behind $MUB:\" &>/dev/stderr; git log --oneline \"HEAD..$MUB\" | wc -l"
+	branches     = !"git branch --list --no-column --format='%(refname:lstrip=2)'"
 	brewrite     = "rebase -i --keep-base --exec 'git commit --amend --reset-author --no-edit --no-gpg-sign'"
-	browse       = !"git-browse \"$@\""
+	browse       = !"git-browse"
 	brs          = !"gl-branch-list"
 	bush         = !"f(){ while true; do git push && break; git pull --no-tags --rebase || break; done }; f"
 	cl           = clone --filter=blob:none
-	co           = !"f(){ echo 'Learn to use switch/restore commands instead'; }; f"
-	commit-again = !"git commit -eF \"$(git root)/.git/COMMIT_EDITMSG\" \"$@\""
-	compress     = !"git-compress"
-	compress-a   = !"git-compress-aggressive"
+	commit-again = !"git commit -eF \"$(git root)/.git/COMMIT_EDITMSG\""
 	d            = -c delta.side-by-side=true diff --ignore-space-change
 	dc           = -c delta.side-by-side=true diff --ignore-space-change --cached
 	dd           = -c delta.side-by-side=true diff
@@ -24,17 +18,17 @@
 	ds           = diff --ignore-space-change --submodule=diff
 	dt           = difftool
 	dtg          = difftool --gui
-	dtw          = !"git difftool --ignore-space-change -t vimdiff $(git gmb)..HEAD"
-	dw           = !"git diff --ignore-space-change --color=always $(git gmb)..HEAD"
+	dtw          = !"git difftool --ignore-space-change -t vimdiff     \"$(git gmb)..HEAD\""
+	dw           = !"git diff     --ignore-space-change --color=always \"$(git gmb)..HEAD\""
 	f            = !"fzf-git-log-branch"
 	fa           = !"fzf-git-log-all"
 	fag          = !"fzf-git-log-all-graph"
 	fam          = !"fzf-git-log-all-merges"
 	fall         = fetch --all --force
 	fg           = !"fzf-git-log-branch-graph"
-	fh           = !"f(){ cd -- \"${GIT_PREFIX:-.}\" && GIT_PREFIX="" fzf-git-file-show-history \"$@\"; }; f"
+	fh           = !"cd -- \"${GIT_PREFIX:-.}\" && GIT_PREFIX="" fzf-git-file-show-history"
 	fr           = !"fzf-git-log-reflog"
-	fw           = !"fzf-git-log-branch $(git gmu)..HEAD"
+	fw           = !"fzf-git-log-branch \"$(git gmu)..HEAD\""
 	ha           = !"git --no-pager log --abbrev-commit --all --color=always --graph --pretty=oneline --topo-order"
 	l            = !"git-log-branch"
 	la           = !"git-log-all"
@@ -42,9 +36,9 @@
 	lam          = !"git-log-all-merges"
 	lg           = !"git-log-branch-graph"
 	lr           = !"git-log-reflog"
-	lw           = !"git-log-branch $(git gmrh)..HEAD"
-	m            = !"git checkout $(git gmb)"
-	m-base       = !"f(){ git merge-base ${1:-$(git gmb)} HEAD; }; f"
+	lw           = !"git-log-branch \"$(git gmrh)..HEAD\""
+	m            = !"git checkout \"$(git gmb)\""
+	m-base       = !"f(){ git merge-base \"${1:-$(git gmb)}\" HEAD; }; f"
 	m-diff       = !"f(){ git diff     --ignore-space-change --color=always `git m-span .. $@`; }; f"
 	m-dt         = !"f(){ git difftool --ignore-space-change -t vimdiff     `git m-span .. $@`; }; f"
 	m-log        = !"f(){ git log                            --color=always `git m-span .. $@`; }; f"
@@ -56,40 +50,52 @@
 	p            = push --force-with-lease
 	pall         = !"git-push-all"
 	pdesc        = !"f(){ git describe --always \"${@:-HEAD}\"; }; f"
-	pub          = !"git push -u origin $(git bname) -o merge_request.create -o merge_request.remove_source_branch"
-	puba         = !"git push -u origin $(git bname) -o merge_request.create -o merge_request.remove_source_branch -o merge_request.merge_when_pipeline_succeeds"
-	redow        = !"f(){ git rebase -i --autosquash --keep-base --committer-date-is-author-date --update-refs `git gmb` \"$@\"; }; f"
-	root         = !"f(){ git rev-parse --show-superproject-working-tree --show-toplevel | head -1; }; f"
+	pub          = !"git push -u origin \"$(git bname)\" -o merge_request.create -o merge_request.remove_source_branch"
+	puba         = !"git push -u origin \"$(git bname)\" -o merge_request.create -o merge_request.remove_source_branch -o merge_request.merge_when_pipeline_succeeds"
+	redow        = !"git rebase -i --autosquash --keep-base --committer-date-is-author-date --update-refs `git gmb`"
 	s            = !"menu-git-search"
 	sh           =                            show --show-signature --color=always --ignore-space-change --stat --pretty=fuller --dd --minimal --patch
 	shd          = -c delta.side-by-side=true show --show-signature --color=always --ignore-space-change --stat --pretty=fuller --dd --minimal --patch
 	sm           = !"menu-git-search-message"
 	st           = status -b
-	unpub        = !"f(){ git push origin :$(git bname); }; f"
-	untag        = !"f(){ git push origin :$(git describe --exact-match --tags); }; f"
+	unpub        = !"git push origin \":$(git bname)\""
+	untag        = !"git push origin \":$(git describe --exact-match --tags)\""
 	up           = pull
 	what         = whatchanged --show-signature
 
-	### helper ---------------------------------------------------------------------------------------------------------
+	### helper (almost never used directly) ----------------------------------------------------------------------------
 
+    # print current branch
+	bname        = branch --show-current
+	brname       = !"f(){ git name-rev --name-only --no-undefined --refs=\"refs/remotes/*\" --exclude=HEAD \"${@:-HEAD}\" 2>/dev/null | grep -Po \"(?<=\\bremotes/).+$\"; }; f"
+    # make me stop using this alias
+	co           = !"f(){ echo 'Learn to use switch/restore commands instead'; }; f"
 	# detect current remote name by .git/config branch
 	gcr          = !"f(){ git config --local --get \"branch.$(git pbranch \"${@:-HEAD}\").remote\" 2>/dev/null; }; f"
 	# detect main remote branch
-	gmb          = !"f(){ R=\"$(git gmr \"${@:-HEAD}\")\"; [[ -n \"$R\" ]] && { git gmu \"${@:-HEAD}\" | grep -Po \"(?<=\\b$R/)\\w+$\"; } || git rev-parse --abbrev-ref --symbolic-full-name HEAD; }; f"
+	gmb          = !"f(){ R=\"$(git gmr \"$@\")\"; [[ -n \"$R\" ]] && { git gmu \"$@\" | grep -Po \"(?<=\\b$R/)\\w+$\"; } || git rev-parse --abbrev-ref --symbolic-full-name HEAD; }; f"
 	# detect main remote name by refs/remotes/.../HEAD
-	gmr          = !"f(){ git show-ref 2>/dev/null | grep -Po '(?<=\\brefs/remotes/)[^\\/]+(?=/HEAD\\b)' | sort -r | head -1; }; f"
+	gmr          = !"git show-ref 2>/dev/null | grep -Po '(?<=\\brefs/remotes/)[^\\/]+(?=/HEAD\\b)' | sort -r | head -1"
 	# detect main <remote>/HEAD ref name by refs/remotes/.../HEAD
-	gmrh         = !"f(){ git show-ref 2>/dev/null | grep -Po '(?<=\\brefs/remotes/)[^\\/]+/HEAD\\b'     | sort -r | head -1; }; f"
+	gmrh         = !"git show-ref 2>/dev/null | grep -Po '(?<=\\brefs/remotes/)[^\\/]+/HEAD\\b'     | sort -r | head -1"
 	# detect main upstream branch
-	gmu          = !"f(){ git pbranch $(git gmrh); }; f"
+	gmu          = !"git pbranch \"$(git gmrh)\""
 	# print upstream
 	gu           = rev-parse --abbrev-ref --symbolic-full-name @{upstream}
 	# print branch name
 	pbranch      = !"f(){ git rev-parse --verify --abbrev-ref \"${@:-HEAD}\" 2>/dev/null; }; f"
 	# print commit
 	pcommit      = !"f(){ git rev-parse --verify              \"${@:-HEAD}\" 2>/dev/null; }; f"
+    # print root of the repo
+	root         = !"git rev-parse --show-superproject-working-tree --show-toplevel | head -1"
 
 	### care taking ----------------------------------------------------------------------------------------------------
+
+    # remove all local brances which are removed upstream
+	bleach       = !"git fall; git b | perl -alE 'm/: gone]/ && $F[0] ne q(*) && system(qq(git branch -D $F[0]))'"
+    # vacuum repo, clean reflog, compress packs
+	compress     = !"git-compress"
+	compress-a   = !"git-compress-aggressive"
 	# restore-origin-head = symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/master
 	remove-remote-head  = !"f(){ git remote set-head -d     \"${@:-$(git gcr)}\"; }; f"
 	restore-remote-head = !"f(){ git remote set-head --auto \"${@:-$(git gcr)}\"; }; f"
@@ -97,7 +103,7 @@
 	### experimental ---------------------------------------------------------------------------------------------------
 
 	add-mr-refs  = config --local --add remote.origin.fetch '+refs/merge-requests/*/head:refs/remotes/origin/merge-requests/*/head'
-	make-shallow = !"f(){ git fetch --prune-tags --prune; git tag -d $(git tag -l); git reflog expire --expire=all --all; git gc --prune=all; }; f"
+	make-shallow = !"git fetch --prune-tags --prune; git tag -d \"$(git tag -l)\"; git reflog expire --expire=all --all; git gc --prune=all"
 
 [apply]
 	whitespace = fix
@@ -229,7 +235,7 @@
 	showStash = true
 
 [tag]
-	sort               = version:refname
+	sort = version:refname
 
 [include]
 	path = ~/.config/gitconfig.overrides
