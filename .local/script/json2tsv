@@ -3,10 +3,13 @@
 # convert JSON array or stream of hashes to TSV with the header based on the pathes of the first hash
 
 # get all paths to all leafs but not array elements (not sure if there is a better way)
-def to_paths:    . as $hash
+($ARGS.named.depth // $ENV.depth // $ENV.JSON2TSV_DEPTH // 3) | tonumber as $depth
+| def to_paths:    . as $hash
     | [paths(true)]
     | map(. as $p | {p: $p, t: $hash | getpath($p) | type})
-    | map(select((.t == "array" or .t == "null" or .t == "boolean" or.t == "number" or.t == "string") and (.p | map(select(numbers)) | length == 0)))
+    | map(select(.p | length <= $depth))                                                    # limit to depth
+    | map(select((.p | length == $depth) or ((.p | length < $depth) and (.t != "object")))) # prevent any objects with low depth
+    | map(select(.p | map(select(numbers)) | length == 0))                                  # prevent any paths inside array
     | map(.p);
 
 {"array": 1, "object": 1} as $need_encode
