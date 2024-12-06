@@ -5,10 +5,10 @@
 
 export LESSHISTFILE=-
 
-if [[ -r "$HOME/.config/nvim/init.lua" ]]; then
-	export VIMINIT='let $MYVIMRC = has("nvim-0.10") ? "$HOME/.config/nvim/init.lua" : "$HOME/.config/vim/init.vim" | so $MYVIMRC'
+if [[ -r "$XDG_CONFIG_HOME/nvim/init.lua" ]]; then
+	export VIMINIT='let $MYVIMRC = has("nvim-0.10") ? "$XDG_CONFIG_HOME/nvim/init.lua" : "$XDG_CONFIG_HOME/vim/init.vim" | so $MYVIMRC'
 else
-	export VIMINIT='let $MYVIMRC = "$HOME/.config/vim/init.vim" | so $MYVIMRC'
+	export VIMINIT='let $MYVIMRC = "$XDG_CONFIG_HOME/vim/init.vim" | so $MYVIMRC'
 fi
 
 if [[ "$IS_NAS" == "1" ]]; then
@@ -73,10 +73,9 @@ fi
 [[ -n "$HOMEBREW_PREFIX" ]] && [[ -d "$HOMEBREW_PREFIX" ]] && path=("$HOMEBREW_PREFIX/sbin"            "${path[@]}")
 [[ -n "$PERLBREW_PATH"                                  ]] && path=("${(ps/:/)PERLBREW_PATH[@]}"       "${path[@]}")
 [[ -d "$HOME/.local/bin"                                ]] && path=("$HOME/.local/bin"                 "${path[@]}")
-[[ -d "$HOME/.local/script"                             ]] && path=("$HOME/.local/script"              "${path[@]}")
-[[ -d "$HOME/.local/script-private"                     ]] && path=("$HOME/.local/script-private"      "${path[@]}")
-[[ -d "$HOME/.local/script-work"                        ]] && path=("$HOME/.local/script-work"         "${path[@]}")
-[[ -d "$HOME/.local/script-work-private"                ]] && path=("$HOME/.local/script-work-private" "${path[@]}")
+[[ -d "$HOME/.local/script"                             ]] && path=("$HOME/.local/script"             "${path[@]}")
+
+path=("$HOME/.local/scripts-ext"/*(-FN) "${path[@]}")
 
 if [[ -n "$HOSTNAME" && "$HOSTNAME" =~ king\.com$ ]]; then
 	[[ -d "$HOME/.local/nvim/bin"                       ]] && path=("$HOME/.local/nvim/bin" "${path[@]}")

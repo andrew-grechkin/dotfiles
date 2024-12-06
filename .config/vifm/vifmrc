@@ -13,9 +13,9 @@ set vicmd=vi
 
 set iooptions=fastfilecloning
 set dirsize=nitems
-if $HAS_MOUSE == '1'
-	set mouse='a'
-endif
+" if $HAS_MOUSE == '1'
+" 	set mouse='a'
+" endif
 set slowfs+=/media/nfs
 
 " This makes vifm perform file operations on its own instead of relying on
@@ -343,6 +343,17 @@ fileviewer *.bmp,*.dng,*.gif,.*.ico,*.icon,*.jp2,*.jpg,*.jpeg,*.png,*.xpm,*.svg,
     \ viu -t -w %pw -h %ph %c,
 	\ mediainfo,
 	\ identify -verbose,
+
+" => File associations: sqlite ------------------------------------------------------------------------------------ {{{1
+
+filetype <application/vnd.sqlite3>
+	\ {View}
+	\ sqlite-utils rows %c %c:r --nl | json2tsv | tsv-show,
+	\ {Browse}
+	\ datasette %c
+
+fileviewer <application/vnd.sqlite3>
+	\ sqlite-utils tables %c --schema --table; echo; sqlite-utils indexes %c --table; echo; sqlite-utils analyze-tables %c
 
 " => File associations: misc -------------------------------------------------------------------------------------- {{{1
 

@@ -7,7 +7,7 @@ echo 'Executing setup'
 mkdir -p ~/.cache/bin
 mkdir -p ~/.config/fontconfig
 mkdir -p ~/.config/environment.d
-mkdir -p ~/.local/{bin,lib,share,state}
+mkdir -p ~/.local/{bin,lib,scripts-ext,share,state}
 
 SCRIPT=$(realpath -s "$0")
 WORKDIR=$(dirname "$SCRIPT")
