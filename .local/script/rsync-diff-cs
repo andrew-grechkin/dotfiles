@@ -10,4 +10,4 @@ rsync_params=(
 	"${RSYNC_DIFF_PARAMS[@]}"
 )
 
-rsync "${rsync_params[@]}" "$@"
+exec rsync "${rsync_params[@]}" "$@"

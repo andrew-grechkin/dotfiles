@@ -353,7 +353,7 @@ filetype <application/vnd.sqlite3>
 	\ datasette %c
 
 fileviewer <application/vnd.sqlite3>
-	\ sqlite-utils tables %c --schema --table; echo; sqlite-utils indexes %c --table; echo; sqlite-utils analyze-tables %c
+	\ sqlite-utils tables %c --schema --table; sqlite-utils views %c --schema --table; echo; sqlite-utils indexes %c --table; echo; sqlite-utils analyze-tables %c
 
 " => File associations: misc -------------------------------------------------------------------------------------- {{{1
 
@@ -765,22 +765,25 @@ nnoremap <c-@> :sync<CR>
 nnoremap [t    :tabprev<CR>
 nnoremap ]t    :tabnext<CR>
 
-nnoremap <silent> rp :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -Hah    --partial --info=name1 %f:p %D/<CR>
-vnoremap <silent> rp :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -Hah    --partial --info=name1 %f:p %D/<CR>
-nnoremap <silent> ru :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -Hahu   --partial --info=name1 %f:p %D/<CR>
-vnoremap <silent> ru :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -Hahu   --partial --info=name1 %f:p %D/<CR>
-nnoremap <silent> rs :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -HahuXx --partial --info=name1 --delete %f:p %D/<CR>
-vnoremap <silent> rs :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -HahuXx --partial --info=name1 --delete %f:p %D/<CR>
-nnoremap <silent> rP :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -Hah    --partial --info=name1 --remove-source-files %f:p %D/ && tsp -d find %f -type d -empty -exec rmdir --ignore-fail-on-non-empty -p {} \+<CR>
-vnoremap <silent> rP :!tsp rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -Hah    --partial --info=name1 --remove-source-files %f:p %D/ && tsp -d find %f -type d -empty -exec rmdir --ignore-fail-on-non-empty -p {} \+<CR>
+nnoremap <silent> rp :!tsp rsync-copy --info=name1               %f:p %D/<CR>
+vnoremap <silent> rp :!tsp rsync-copy --info=name1               %f:p %D/<CR>
+nnoremap <silent> ru :!tsp rsync-copy --info=name1 -u            %f:p %D/<CR>
+vnoremap <silent> ru :!tsp rsync-copy --info=name1 -u            %f:p %D/<CR>
+nnoremap <silent> rs :!tsp rsync-copy --info=name1 -uXx --delete %f:p %D/<CR>
+vnoremap <silent> rs :!tsp rsync-copy --info=name1 -uXx --delete %f:p %D/<CR>
+nnoremap <silent> rP :!tsp rsync-move --info=name1 %f:p %D/ && tsp -d rmdir-recursive %f<CR>
+vnoremap <silent> rP :!tsp rsync-move --info=name1 %f:p %D/ && tsp -d rmdir-recursive %f<CR>
 
-nnoremap Rd :!rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" --delete --dry-run -i -HhrtlDXx --no-owner --no-group --omit-dir-times --checksum %f:p %D/<CR>
-nnoremap Rp :!rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -Hah    --partial --info=progress2 %f:p %D/<CR>
-vnoremap Rp :!rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -Hah    --partial --info=progress2 %f:p %D/<CR>
-nnoremap Ru :!rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -Hahu   --partial --info=progress2 %f:p %D/<CR>
-vnoremap Ru :!rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -Hahu   --partial --info=progress2 %f:p %D/<CR>
-nnoremap Rs :!rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -HahuXx --partial --info=progress2 --delete %f:p %D/<CR>
-vnoremap Rs :!rsync --sparse --exclude="@eaDir" --exclude="#recycle" --exclude="#snapshot" --exclude=".Trash-*" -HahuXx --partial --info=progress2 --delete %f:p %D/<CR>
+nnoremap RD :!rsync-diff --checksum                     %f:p %D/<CR>
+vnoremap RD :!rsync-diff --checksum                     %f:p %D/<CR>
+nnoremap Rd :!rsync-diff                                %f:p %D/<CR>
+vnoremap Rd :!rsync-diff                                %f:p %D/<CR>
+nnoremap Rp :!rsync-copy --info=progress2               %f:p %D/<CR>
+vnoremap Rp :!rsync-copy --info=progress2               %f:p %D/<CR>
+nnoremap Ru :!rsync-copy --info=progress2 -u            %f:p %D/<CR>
+vnoremap Ru :!rsync-copy --info=progress2 -u            %f:p %D/<CR>
+nnoremap Rs :!rsync-copy --info=progress2 -uXx --delete %f:p %D/<CR>
+vnoremap Rs :!rsync-copy --info=progress2 -uXx --delete %f:p %D/<CR>
 
 " => fzf integration (ctrl-t, ctrl-p) ----------------------------------------------------------------------------- {{{1
 

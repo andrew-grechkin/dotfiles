@@ -9,6 +9,17 @@ RSYNC_DEFAULT_PARAMS=(
 	--sparse
 )
 
+RSYNC_COPY_PARAMS=(
+	--partial
+	-Hah
+)
+
+RSYNC_MOVE_PARAMS=(
+	--partial
+	--remove-source-files
+	-Hah
+)
+
 RSYNC_DIFF_PARAMS=(
 	--delete
 	--dry-run

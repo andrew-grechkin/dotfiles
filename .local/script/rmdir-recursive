@@ -2,4 +2,4 @@
 
 set -Eeuo pipefail
 
-find "$1" -type d -empty -exec rmdir --ignore-fail-on-non-empty -p {} \+
+find "$@" -type d -empty -exec rmdir --ignore-fail-on-non-empty -p {} \+
