@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-set -Eeo pipefail
+set -Eeuo pipefail
 
-[[ -n "$1" ]] || exit 1
+[[ -n "${1:-}" ]] || exit 1
 
-command rsync -rthvu --info=progress2 --delete "$@"
+exec rsync -rthvu --info=progress2 --delete "$@"
