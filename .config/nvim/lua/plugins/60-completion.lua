@@ -41,8 +41,8 @@ return {
             },
             { -- https://github.com/kristijanhusak/vim-dadbod-completion
                 'kristijanhusak/vim-dadbod-completion',
-                ft = {'sql', 'mysql', 'plsql'},
-                lazy = true,
+                -- ft = {'sql', 'mysql', 'plsql', 'sqlite'},
+                -- lazy = true,
             },
         },
         event = {'BufReadPost', 'BufNewFile'},

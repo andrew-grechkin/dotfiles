@@ -12,8 +12,8 @@ use JSON::PP qw();
 use Mojo::Util qw(url_escape);
 
 use constant {
-    'JSON'          => JSON::PP->new->pretty->space_before(0)->canonical->utf8(1),
-    'JSON_ONE_LINE' => JSON::PP->new->pretty->space_before(0)->canonical->utf8(1)->indent(0),
+    'JSON'          => JSON::PP->new->canonical->utf8(1)->pretty->space_before(0),
+    'JSON_ONE_LINE' => JSON::PP->new->canonical->utf8(1)->pretty(0)->indent(0),
 };
 
 use Exporter qw(import);

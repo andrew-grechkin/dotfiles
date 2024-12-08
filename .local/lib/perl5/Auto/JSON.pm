@@ -10,7 +10,7 @@ use experimental qw(class declared_refs defer refaliasing);
 use Carp     qw(croak);
 use JSON::PP qw();
 
-my $json = JSON::PP->new->convert_blessed;
+my $json = JSON::PP->new->canonical->utf8(0)->boolean_values(false, true)->pretty->space_before(0)->convert_blessed;
 
 use overload
     '%{}'      => sub ($self, @) {${$self}},

@@ -129,6 +129,25 @@ WHERE
 ]],
 }
 
+local sqlite = {
+    Columns = [[SELECT * FROM pragma_table_info('{table}')]],
+    Count = [[SELECT
+    COUNT(*)
+FROM
+    '{table}'
+]],
+    Indexes = [[SELECT * FROM pragma_index_list('{table}')]],
+    List = [[SELECT
+    *
+FROM
+    '{table}'
+LIMIT
+    200
+]],
+    ['Primary Keys'] = [[SELECT * FROM pragma_index_list('{table}') WHERE origin = 'pk']],
+    ['Foreign Keys'] = [[SELECT * FROM pragma_foreign_key_list('{table}')]],
+}
+
 return {
     { -- https://github.com/kristijanhusak/vim-dadbod-ui
         'andrew-grechkin/vim-dadbod-ui',
@@ -145,7 +164,13 @@ return {
             vim.g.db_ui_force_echo_notifications = true
             vim.g.db_ui_hide_schemas = {'pg_toast'}
             vim.g.db_ui_show_database_icon = true
-            vim.g.db_ui_table_helpers = {postgresql = postgresql, mysql = mysql, mysqltsv = mysql}
+            vim.g.db_ui_table_helpers = {
+                mysql = mysql,
+                mysqltsv = mysql,
+                postgresql = postgresql,
+                sqlite = sqlite,
+                sqlitetsv = sqlite,
+            }
             vim.g.db_ui_use_nerd_fonts = true
             vim.g.db_ui_use_nvim_notify = true
             vim.g.db_ui_win_position = 'right'
