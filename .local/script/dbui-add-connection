@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+file="$XDG_DATA_HOME/db_ui/connections.json"
+
+jq --arg name "$1" --arg url "$2" 'map(select(.url != $url)) | [.[], {name: $name, url: $url, scheme: {filetype: "sqlite"}}]' "$file" | sponge "$file"

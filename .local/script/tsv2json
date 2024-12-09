@@ -20,7 +20,7 @@ def ingest_field:
         ))
     end;
 
-input | split("\t") | map(split(".")) as $paths
+input | split("\t") | map(gsub("^\\s+|\\s+$"; "") | split(".")) as $paths
 | [
     inputs | split("\t") | map(ingest_field)
     | [foreach .[] as $value (-1; . + 1; [$paths[.], $value])]

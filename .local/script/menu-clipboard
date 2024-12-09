@@ -1,25 +1,30 @@
 #!/usr/bin/env perl
 
-use v5.38;
+use v5.40;
 use autodie;
 use open ':locale';
 use utf8;
 use warnings     qw(FATAL utf8);
-use experimental qw(builtin declared_refs refaliasing);
+use experimental qw(declared_refs refaliasing);
 
 use English    qw(-no_match_vars);
 use IPC::Open2 qw(open2);
+use JSON::PP   qw();
 
-use constant {'ABORTED' => 130};
+use constant {
+    'JSON_ONE_LINE' => JSON::PP->new->canonical->utf8(0)->boolean_values(false, true)->pretty(0)->indent(0),
+    'ABORTED'       => 130,
+};
 
 sub main {
     my \@history = fetch_history();
 
     my @cmd = (
-        'fzf', '--ansi', '--reverse', "--delimiter=\t", '--no-multi', '--with-nth=2',
-        '--preview=echo {2..}',
-        '--bind=ctrl-y:execute-silent()',
-        '--preview-window=right:50%:border-left:nowrap:nohidden',
+        'fzf',                                                  '--ansi',
+        '--reverse',                                            "--delimiter=\t",
+        '--no-multi',                                           '--with-nth=2',
+        q(--preview=jq -Rrn 'inputs | fromjson' <<< '"'{2}'"'), '--bind=ctrl-y:execute-silent()',
+        '--preview-window=right:50%:border-left:wrap:nohidden', '--prompt=clipboard history >',
     );
 
     my $pid = open2(my $chld_out, my $chld_in, @cmd) // do {
@@ -29,7 +34,7 @@ sub main {
     binmode($chld_in, ':encoding(UTF-8)');
 
     foreach my ($index, $value) (builtin::indexed(@history)) {
-        say {$chld_in} ($index, "\t", substr($value =~ s{\R}{\\n}grm =~ s{\t}{\\t}grm, 0, 1024));
+        say {$chld_in} ($index, "\t", JSON_ONE_LINE()->encode($value) =~ s{^"|"$}{}rg);
     }
     close $chld_in;
 
@@ -50,20 +55,12 @@ sub main {
 }
 
 sub fetch_history() {
-    my $payload
-        = `dbus-send --print-reply --dest=org.kde.klipper /klipper org.kde.klipper.klipper.getClipboardHistoryMenu`;
+    my \%payload = JSON_ONE_LINE()
+        ->decode(
+        `busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper getClipboardHistoryMenu`);
 
-    $payload =~ s{.*?array\s\[\R}{}xms;
-    $payload =~ s{\R?\s+\]\R\z}{}xms;
-
-    my @m = split m/.*?string\s\"/x, $payload;
-
-    # ignore images
-    @m = grep {!m/▨/g} @m;
-
-    s{\"\R*\z}{} foreach @m;
-
-    @m = grep {$_ && !m/▨/g} @m;
+    # ignore images and empty lines
+    my @m = grep {$_ && !m/▨/g} ($payload{data}[0] // [])->@*;
 
     return \@m;
 }

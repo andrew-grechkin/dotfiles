@@ -35,7 +35,7 @@ my $c_to_sev = {
 	7 => "38;5;2",
 };
 
-my $json = JSON::PP->new->utf8(0);
+my $json = JSON::PP->new->canonical->utf8(0)->pretty->space_before(0);
 
 while (defined (my $j = <<>>)) {
 	chomp($j);

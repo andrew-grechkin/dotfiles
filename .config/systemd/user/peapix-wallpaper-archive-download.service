@@ -3,7 +3,7 @@ Description=Fetch archive
 
 [Service]
 Type=oneshot
-WorkingDirectory=/media/nfs/home/local/photo/world/bing-peapix/#by-date/2024
+WorkingDirectory=/media/nfs/home/public/photo/.stage/peapix
 ExecStart=/usr/bin/bash -c 'source "%h/.local/lib/perl5/perlbrew-dev.rc"; "%h/.local/scripts-ext/private/peapix-wallpaper-archive-download"'
 
 [Install]

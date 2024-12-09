@@ -13,9 +13,7 @@ use JSON::PP     qw();
 
 use Web::Search qw(request_to_location_nt);
 
-use constant {
-    'JSON_ONE_LINE' => JSON::PP->new->canonical->utf8(0)->boolean_values(false, true)->pretty(false)->indent(0),
-};
+use constant {'JSON_ONE_LINE' => JSON::PP->new->canonical->utf8(0)->boolean_values(false, true)->pretty(0)->indent(0),};
 
 my %options = ('lang' => 'en');
 

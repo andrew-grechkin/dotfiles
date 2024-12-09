@@ -2,11 +2,38 @@
 
 set -Eeuo pipefail
 
-cat << "EOF" | fzf-execute-no-abort
-Play/Pause		xdotool key XF86AudioPlay
-Next			xdotool key XF86AudioNext
-Prev			xdotool key XF86AudioPrev
-Volume Raise	xdotool key XF86AudioRaiseVolume
-Volume Lower	xdotool key XF86AudioLowerVolume
-Mute			xdotool key XF86AudioMute
-EOF
+mpris_if='org.mpris.MediaPlayer2.Player'
+mpris_obj='/org/mpris/MediaPlayer2'
+
+cat << EO_MPRIS_RAISE > "$XDG_RUNTIME_DIR/mpris-raise"
+mpris_svc=\$(busctl --user -j list \
+	| jq -r '.[] | select(.name | test("mpv")) | .name' \
+    | perl -CAL -lnE 'print \$_ if \`busctl --user get-property \$_ $mpris_obj $mpris_if PlaybackStatus\` =~ m/Playing/')
+
+busctl --user -j get-property \$mpris_svc $mpris_obj $mpris_if Volume | jq -r .data \
+    | perl -M List::Util=min -lnE 'say; say min(1.0, \$_ + 0.05)' \
+    | tee >(echo "current volume: \$(cat)" >/dev/stderr) \
+    | xargs --no-run-if-empty -I% busctl --user -j set-property \$mpris_svc $mpris_obj $mpris_if Volume d %
+EO_MPRIS_RAISE
+
+cat << EO_MPRIS_LOWER > "$XDG_RUNTIME_DIR/mpris-lower"
+mpris_svc=\$(busctl --user -j list \
+	| jq -r '.[] | select(.name | test("mpv")) | .name' \
+    | perl -CAL -lnE 'print \$_ if \`busctl --user get-property \$_ $mpris_obj $mpris_if PlaybackStatus\` =~ m/Playing/')
+
+busctl --user -j get-property \$mpris_svc $mpris_obj $mpris_if Volume | jq -r .data \
+    | perl -M List::Util=max -lnE 'say; say max(0.0, \$_ - 0.05)' \
+    | tee >(echo "current volume: \$(cat)" >/dev/stderr) \
+    | xargs --no-run-if-empty -I% busctl --user -j set-property \$mpris_svc $mpris_obj $mpris_if Volume d %
+EO_MPRIS_LOWER
+
+cat << EO_LIST | fzf-execute-no-abort
+Play/Pause			xdotool key XF86AudioPlay
+Next				xdotool key XF86AudioNext
+Prev				xdotool key XF86AudioPrev
+Mpris Volume Raise	bash < "$XDG_RUNTIME_DIR/mpris-raise"
+Mpris Volume Lower	bash < "$XDG_RUNTIME_DIR/mpris-lower"
+Volume Raise		xdotool key XF86AudioRaiseVolume
+Volume Lower		xdotool key XF86AudioLowerVolume
+Mute				xdotool key XF86AudioMute
+EO_LIST

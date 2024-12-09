@@ -41,7 +41,7 @@ return {
             },
             { -- https://github.com/kristijanhusak/vim-dadbod-completion
                 'kristijanhusak/vim-dadbod-completion',
-                ft = {'sql', 'mysql', 'plsql'},
+                ft = {'sql', 'mysql', 'plsql', 'sqlite'},
                 lazy = true,
             },
         },
@@ -81,6 +81,11 @@ return {
                 Variable = ' (var)',
             }
 
+            local buffer_conf = {
+                name = 'buffer',
+                keyword_length = 3,
+                option = {get_bufnrs = function() return vim.api.nvim_list_bufs() end},
+            }
             local rg_conf = {
                 name = 'rg',
                 keyword_length = 5,
@@ -153,13 +158,13 @@ return {
                     end,
                 },
                 sources = {
-                    {name = 'luasnip', keyword_length = 2},
                     {name = 'vim-dadbod-completion'},
+                    buffer_conf,
                     {name = 'cody'},
+                    {name = 'luasnip', keyword_length = 2},
                     {name = 'nvim_lsp'},
                     {name = 'nvim_lua'},
                     {name = 'path'},
-                    {name = 'buffer', keyword_length = 3},
                     {name = 'dictionary', keyword_length = 4},
                     {name = 'tags', keyword_length = 4},
                     {name = 'spell', keyword_length = 5},

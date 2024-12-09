@@ -22,7 +22,7 @@ cmd=(
 if [[ "$paging" != 'never' ]] && [[ "$paging" == 'always' || -t 1 ]]; then
 	LESS="${LESS:-"-x4 -iRSw --mouse"}"
 	LESS+=' -F --header=1'
-	"${cmd[@]}" | less
+	"${cmd[@]}" | less || true
 else
 	exec "${cmd[@]}"
 fi
