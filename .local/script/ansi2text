@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+sed -E 's/[[:cntrl:]]\[([0-9]{,3};)*[0-9]{,3}m//g'

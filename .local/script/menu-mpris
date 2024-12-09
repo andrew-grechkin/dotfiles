@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+args="$(getopt --name="$0" --options 't' --longoptions 'table' -- "$@")"
+eval set -- "$args"
+args=("$@")
+
+# shellcheck disable=SC2078
+while [ : ]; do
+	case "$1" in
+		-t | --table) table='1'; shift ;;
+		--) shift; break ;;
+	esac
+done
+
+# shellcheck disable=SC1090
+source "$(realpath -Ls "$(dirname "$0")/../lib/shell/data-processing.bash")"
+
+export MPRIS='org.mpris.MediaPlayer2'
+export MPRIS_IF="$MPRIS.Player"
+export MPRIS_OBJ='/org/mpris/MediaPlayer2'
+
+if [[ -t 1 ]]; then
+	fetcher=(
+		"$0"
+		--table
+		"${args[@]}"
+	)
+
+	fzf_cmd=(
+		fzf
+		--ansi
+		--bind="alt-a:execute-silent(busctl --user --json=short get-property {1} $MPRIS_OBJ $MPRIS_IF LoopStatus | jq -r 'if (.data == \"None\") then \"Track\" elif (.data == \"Track\") then \"Playlist\" else \"None\" end' | xargs busctl --user set-property {1} $MPRIS_OBJ $MPRIS_IF -- LoopStatus s)+reload-sync(${fetcher[*]@Q})"
+		--bind="alt-b:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Seek x -9999999999999)+reload-sync(${fetcher[*]@Q})"
+		--bind="alt-h:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Seek x -60000000)+reload-sync(${fetcher[*]@Q})"
+		--bind="alt-j:execute-silent(busctl --user --json=short get-property {1} $MPRIS_OBJ $MPRIS_IF Volume | jq -r '.data - 0.05' | xargs busctl --user set-property {1} $MPRIS_OBJ $MPRIS_IF -- Volume d)+reload-sync(${fetcher[*]@Q})"
+		--bind="alt-k:execute-silent(busctl --user --json=short get-property {1} $MPRIS_OBJ $MPRIS_IF Volume | jq -r '.data + 0.05' | xargs busctl --user set-property {1} $MPRIS_OBJ $MPRIS_IF -- Volume d)+reload-sync(${fetcher[*]@Q})"
+		--bind="alt-l:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Seek x  60000000)+reload-sync(${fetcher[*]@Q})"
+		--bind="alt-r:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS Quit)+reload-sync(${fetcher[*]@Q})"
+		--bind="ctrl-h:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Seek x -10000000)+reload-sync(${fetcher[*]@Q})"
+		--bind="ctrl-l:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Seek x  10000000)+reload-sync(${fetcher[*]@Q})"
+		--bind="ctrl-m:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF PlayPause)+reload-sync(${fetcher[*]@Q})"
+		--bind="ctrl-n:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF Next)+reload-sync(${fetcher[*]@Q})"
+		--bind="ctrl-p:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF Previous)+reload-sync(${fetcher[*]@Q})"
+		--bind="ctrl-r:reload-sync(${fetcher[*]@Q})"
+		--bind="esc:cancel"
+		--bind="home:top"
+		--delimiter="\t"
+		--header-lines=1
+		--header="A-a:loop A-b:begin A-j:lower A-k:higher A-h:-60s A-l:+60s C-h:-10s C-l:+10s C-m:play/pause C-n:next C-p:previous C-r:reload"
+		--prompt="mpris > "
+		--reverse
+		--scroll-off=4
+		--tabstop=4
+		--track
+		--with-nth=2..
+	)
+
+	"${fetcher[@]}" | "${fzf_cmd[@]}"
+else
+	map_name=$(cat <<'EO_MAP_NAME'
+    use constant {JSON_ONE_LINE => Cpanel::JSON::XS->new->canonical->utf8(0)->unblessed_bool([1])->pretty(0)->indent(0)};
+
+    chomp;
+    my $cmd = "busctl --user --json=short call $_ $ENV{MPRIS_OBJ} org.freedesktop.DBus.Properties GetAll s $ENV{MPRIS_IF}";
+    my $payload = qx($cmd) or next;
+    my \%d = JSON_ONE_LINE()->decode($payload);
+    my %p = map {my \%it=$_; map {$_ => $it{$_}{data}} keys %it} $d{data}->@*;
+    $p{name} = $_;
+    my \%m = $p{Metadata};
+    %m = map {$_ => $m{$_}{data}} grep {!m/artUrl/} keys %m;
+
+    for (keys %m) {
+       $m{$_} = url_unescape($m{$_} =~ s'^file://''r) if $m{$_} && $m{$_} =~ m'^file://';
+    }
+
+    say JSON_ONE_LINE()->encode(\%p);
+EO_MAP_NAME
+	)
+
+	reset="\033[m"
+	busctl --user --json=short list \
+		| jq -r '.[] | select(.name | test("'"$MPRIS"'")) | .name' \
+		| perl -CAL -MCpanel::JSON::XS -MMojo::Util=url_unescape -Mexperimental=declared_refs,refaliasing -nE "$map_name" 2>/dev/null \
+		| if [[ "${table:-}" == "1" ]]; then
+
+		jq_fields=(
+			"name;\(.name)"
+			"state;$(tput setaf 7)\(.PlaybackStatus)$reset"
+			"title;$(tput setaf 14)\(.Metadata.\"xesam:title\")$reset"
+			"artist;$(tput setaf 12)\(.Metadata.\"xesam:artist\"[0]?)$reset"
+			"position;$(tput setaf 10)\(.Position / 1000000 | round)s (\(.Position / .Metadata.\"mpris:length\" * 100 | round)%)$reset"
+			"volume;\(.Volume)"
+			"loop;$(tput setaf 7)\(.LoopStatus)$reset"
+			"created;$(tput setaf 2)\(.Metadata.\"xesam:contentCreated\"[0:10]?)$reset"
+			"url;$(tput setaf 6)\(.Metadata.\"xesam:url\")$reset"
+		)
+
+		jq -c '[., inputs]' | json-array-to-tsv 'sort_by(.Metadata."xesam:title") | reverse | sort_by(.PlaybackStatus) | reverse' "${jq_fields[@]}"
+	else
+		cat
+	fi
+fi

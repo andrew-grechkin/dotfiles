@@ -28,7 +28,7 @@ use constant {
         ->tap(sub {$_->proxy->detect})
         ->tap(sub {$_->transactor->name(USER_AGENT())}),
     'URL'  => Mojo::URL->new('https://www.google.com/search?tbm=map&tch=1'),
-    'JSON' => JSON::PP->new->utf8(0),
+    'JSON' => JSON::PP->new->canonical->utf8(0)->boolean_values(false, true)->pretty->space_before(0),
 };
 
 sub request_to_location($query, $lang = 'en') {

@@ -34,4 +34,5 @@ OPTIONS=(
 	--write-thumbnail
 )
 
+umask 0002
 exec yt-dlp "${OPTIONS[@]}" "$@"

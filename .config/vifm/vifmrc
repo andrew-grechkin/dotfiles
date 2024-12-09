@@ -344,13 +344,29 @@ fileviewer *.bmp,*.dng,*.gif,.*.ico,*.icon,*.jp2,*.jpg,*.jpeg,*.png,*.xpm,*.svg,
 	\ mediainfo,
 	\ identify -verbose,
 
+filetype <image/jpeg>
+	\ {Exif}
+	\ exiftool %c | $PAGER,
+	\ {Metadata}
+	\ identify -verbose %c | $PAGER,
+
 " => File associations: sqlite ------------------------------------------------------------------------------------ {{{1
 
+filetype *.sqlar,.*.sqlar
+	\ {Extract (foreground) sqlar}
+	\ sqlite3 %c -Ax &,
 filetype <application/vnd.sqlite3>
 	\ {View}
 	\ sqlite-utils rows %c %c:r --nl | json2tsv | tsv-show,
 	\ {Browse}
-	\ datasette %c
+	\ datasette %c -c,
+	\ {Dump}
+	\ sqlite-utils rows %c %c:r --nl > %c.jsonl %i,
+	\ {Repl}
+	\ dbui-add-connection %c:r sqlitetsv:%c:p; nvim -c 'DBUIToggle' -c '/%c:r' -c 'execute "normal \<CR>"' -c '/Tables' -c 'execute "normal \<CR>"',
+
+fileviewer *.sqlar,.*.sqlar
+	\ sqlite3 %c -Atv,
 
 fileviewer <application/vnd.sqlite3>
 	\ sqlite-utils tables %c --schema --table; sqlite-utils views %c --schema --table; echo; sqlite-utils indexes %c --table; echo; sqlite-utils analyze-tables %c
@@ -376,7 +392,13 @@ filetype CMakeLists.txt
 	\ {Build...}
 	\ build-cmake %d,
 
-filetype *.json
+filetype <application/x-ndjson>,*.jsonl
+	\ {View}
+	\ json2tsv %c | tsv-show,
+fileviewer <application/x-ndjson>,*.jsonl
+	\ head -30 %c | json2tsv,
+
+filetype <application/json>,*.json,*.jsonc
 	\ {View}
 	\ jq -S --indent 2 < %c | bat -l JSON --paging=always,
 	\ {Repl jq}
@@ -405,6 +427,8 @@ filetype *.tsv
 	\ vi -c "set filetype=csv" %c,
 	\ {Repl jq}
 	\ tsv2json %c | jq-repl,
+	\ {Convert -> sqlite}
+	\ sqlite-utils insert %c:r.db %c:r %c --tsv,
 
 filetype *.md5
 	\ {Check MD5 hash sum}
@@ -675,6 +699,8 @@ filetype {*/},{.*/}
 	\ mpv --no-osc --term-osd=force --no-audio-display --vid=no -- %c:p %s,
 	\ {Compress (foreground) tar.zstd}
 	\ tar -c %f | pv | zstd > %f.tzst,
+	\ {Compress (foreground) sqlar}
+	\ sqlite3 %c:r.sqlar -Acv %f,
 fileviewer {*/},{.*/}
 	\ show-dir %c,
 
@@ -706,6 +732,8 @@ set vifminfo=bmarks,bookmarks,chistory,dhistory,dirstack,fhistory,phistory,regis
 " filter! /^.*\.(lo|o|d|class|py[co])$|.*~$/
 
 " => mappings ----------------------------------------------------------------------------------------------------- {{{1
+
+nnoremap L :edit %"c %n<CR>
 
 nnoremap <Esc> :hideui<CR>
 

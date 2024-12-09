@@ -6,6 +6,7 @@
 --format="bv*[ext=webm][height<=1080]+ba/bv*[ext=mp4][height<=1080]+ba/b"
 --prefer-free-formats
 --sub-langs='en,nl,ru,de,it,fr'
+# --download-archive
 # --write-auto-subs
 # --write-subs
--o '%(fulltitle)s {id=%(id)s,up=%(uploader)s}.%(ext)s'
+-o '%(fulltitle)s {id=%(id)s,up=%(uploader_id)s,d=%(timestamp)s}.%(ext)s'

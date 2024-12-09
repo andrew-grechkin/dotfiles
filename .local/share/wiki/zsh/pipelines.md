@@ -10,7 +10,7 @@
     ```
 * Pass data as STDIN from a process (space is required between < < in bash), as a temp file from process and as an ordinary file
     ```bash
-    command-line-echo < <(cat README.md) <(cat README.md) README.md
+    cli-echo < <(cat README.md) <(cat README.md) README.md
     ```
 * Pipe STDIN from heredoc (type end-word for stop reading)
     ```bash

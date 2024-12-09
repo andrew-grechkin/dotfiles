@@ -110,7 +110,7 @@ r + super
 t + super
 	wezterm start --always-new-process --class 'Main-Tmux' tmux
 t + alt + super
-    dbus-send --print-reply --dest=org.kde.CrowTranslate /org/kde/CrowTranslate/MainWindow org.kde.CrowTranslate.MainWindow.translateSelection
+	busctl --user -j call org.kde.CrowTranslate /org/kde/CrowTranslate/MainWindow org.kde.CrowTranslate.MainWindow translateSelection
 y + super
 #	wezterm start --always-new-process zellij
 	wezterm start --always-new-process bash
@@ -137,6 +137,8 @@ d + super
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-app"
 f + alt + super
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-film"
+g + alt + super
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-mpris"
 h + alt + super
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-mpv-history"
 j + alt + super
@@ -211,10 +213,10 @@ XF86Calculator
 # => mouse -------------------------------------------------------------------------------------------------------- {{{1
 
 button8
-    dbus-send --print-reply --dest=org.kde.CrowTranslate /org/kde/CrowTranslate/MainWindow org.kde.CrowTranslate.MainWindow.translateSelection
+	busctl --user -j call org.kde.CrowTranslate /org/kde/CrowTranslate/MainWindow org.kde.CrowTranslate.MainWindow translateSelection
 
 button9
-    dbus-send --print-reply --dest=org.kde.klipper /klipper org.kde.klipper.klipper.showKlipperPopupMenu
+	busctl --user -j call org.kde.klipper /klipper org.kde.klipper.klipper showKlipperPopupMenu
 
 #button8
 #	cmus-remote --prev
