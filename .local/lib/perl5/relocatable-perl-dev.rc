@@ -3,33 +3,40 @@
 
 # usage:
 #   source "$(git rev-parse --show-toplevel)/dev.rc"
+#   source dev.rc
 
 # => environment -------------------------------------------------------------------------------------------------- {{{1
 
-REQUIRED_PERL_VERSION="${REQUIRED_PERL_VERSION:-5.40.0}"
+PERL_VERSION_REQUIRED="${PERL_VERSION_REQUIRED:-5.40.0}"
 
 if command git rev-parse HEAD &>/dev/null; then
-	REPO_ROOT="$(git rev-parse --show-toplevel)"
+	workdir="$(git rev-parse --show-toplevel)"
 else
-	SCRIPT=$(realpath -s "$0")
-	REPO_ROOT=$(dirname "$SCRIPT")
+	script=$(realpath -s "$0")
+	workdir=$(dirname "$script")
+fi
+workdir=$(realpath -m --relative-base="$PWD" "$workdir")
+
+perlcritic_path="$workdir/.perlcriticrc"
+if [[ -r "$perlcritic_path" ]]; then
+	export PERLCRITIC="$perlcritic_path"
 fi
 
-PERLCRITIC_PATH="$REPO_ROOT/.perlcriticrc"
-if [[ -r "$PERLCRITIC_PATH" ]]; then
-	export PERLCRITIC="$PERLCRITIC_PATH"
-fi
+export perl_root="$workdir/.perlenv-$PERL_VERSION_REQUIRED"
 
-export PERL_ROOT="$REPO_ROOT/.perlenv-$REQUIRED_PERL_VERSION"
+export PATH="$workdir/bin:$workdir/script:$perl_root/bin:$PATH"
+export PERL5LIB="$workdir/lib:$HOME/.local/lib/perl5:./lib"
 
-export PATH="$REPO_ROOT/bin:$REPO_ROOT/script:$PERL_ROOT/bin:$PATH"
-export PERL5LIB="$REPO_ROOT/lib:$HOME/.local/lib/perl5:./lib"
+# disable current Perl environment if it's activated
+unset PERL_LOCAL_LIB_ROOT
+unset PERL_MB_OPT
+unset PERL_MM_OPT
 
 # => install default perl and library ----------------------------------------------------------------------------- {{{1
 
-function install_perl() {
-	if [[ ! -e "$PERL_ROOT/bin/perl" ]]; then
-		# curl -fsSL https://raw.githubusercontent.com/skaji/relocatable-perl/main/perl-install | bash -s "$PERL_ROOT"
+function maybe_install_perl() {
+	if [[ ! -e "$perl_root/bin/perl" ]]; then
+		# curl -fsSL https://raw.githubusercontent.com/skaji/relocatable-perl/main/perl-install | bash -s "$perl_root"
 		[[ -x "$(command -v bsdtar)" ]] || {
 			>/dev/stderr echo "bsdtar is not found, please install it for your system"
 			return 1
@@ -45,21 +52,22 @@ function install_perl() {
 		fi
 
 		first_match=$(curl -fsSL 'https://raw.githubusercontent.com/skaji/relocatable-perl/main/releases.csv' 2>/dev/null \
-			| command grep -m 1 -P "^$REQUIRED_PERL_VERSION.*?,$os,$arch,")
+			| command grep -m 1 -P "^$PERL_VERSION_REQUIRED.*?,$os,$arch,")
 
 		if [[ -z "$first_match" ]]; then
-			>/dev/stderr echo "Failed to match required perl version: $REQUIRED_PERL_VERSION"
+			>/dev/stderr echo "Failed to match required perl version: $PERL_VERSION_REQUIRED"
 			return 1
 		fi
 
-		perl_version=$(echo "$first_match" | \cut -d, -f1)
-		perl_url=$(echo "$first_match" | \cut -d, -f5)
+		perl_version=$(echo "$first_match" | cut -d, -f1)
+		perl_url=$(echo "$first_match" | cut -d, -f5)
 
-		echo "Installing perl $perl_version to $PERL_ROOT, this may take a while..."
+		echo "First time local perl environment initialization..."
+		echo "Installing perl $perl_version to '$perl_root'..."
 
-		>/dev/null mkdir -p "$PERL_ROOT"
-		curl -fsSL "$perl_url" | bsdtar -xf - --strip-components 1 -C "$PERL_ROOT"
-		if [[ ! -f $PERL_ROOT/bin/perl ]]; then
+		>/dev/null mkdir -p "$perl_root"
+		curl -fsSL "$perl_url" | bsdtar -xf - --strip-components 1 -C "$perl_root"
+		if [[ ! -f $perl_root/bin/perl ]]; then
 			>/dev/stderr "Failed to install perl"
 			return 1
 		fi
@@ -71,22 +79,17 @@ function install_perl() {
 	return 0
 }
 
-function install_modules() {
-	if [ ! -f "$PERL_ROOT/finished" ]; then
-		[[ -r "$REPO_ROOT/cpanfile" ]] && {
-			echo
-			echo "Installing required modules from '$REPO_ROOT/cpanfile'"
-			nice cpanm -nq --installdeps "$REPO_ROOT" 2>&1 | grep -vF 'LIBARCHIVE.xattr.com.apple.provenance'
-			touch "$PERL_ROOT/finished"
-		}
+function maybe_install_modules() {
+	if [ ! -f "$perl_root/finished" ]; then
+		if [[ -r "$workdir/cpanfile" ]]; then
+			echo "Installing required modules from '$workdir/cpanfile', this may take a while..."
+			nice cpanm -nq --installdeps "$workdir" 2>&1 | grep -vF 'LIBARCHIVE.xattr.com.apple.provenance'
+			touch "$perl_root/finished"
+		fi
 	fi
 	return 0
 }
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1
 
-unset PERL_LOCAL_LIB_ROOT
-unset PERL_MB_OPT
-unset PERL_MM_OPT
-
-install_perl && install_modules
+maybe_install_perl && maybe_install_modules
