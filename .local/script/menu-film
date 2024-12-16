@@ -1,16 +1,14 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 
 set -Eeuo pipefail
 
-DIR="${1:-/media/nfs/home/video}"
+dir="${1:-/media/nfs/home/video}"
 
 function list_files() {
-	(
-		cd "$DIR"
-		while read -r LINE; do
-			echo "$LINE	mpv --quiet -- \"${DIR}/$LINE\""
-		done < <(fd --no-ignore -t file -e webm -e mkv -e avi -e mp4 -e ts --relative-path)
-	) | sort
+	cd "$dir"
+	while read -r line; do
+		echo "$line	mpv --quiet -- \"${dir}/$line\""
+	done < <(fd -t file -e webm -e mkv -e avi -e mp4 -e ts --relative-path)
 }
 
-list_files | fzf-execute
+list_files | sort | fzf-execute
