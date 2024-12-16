@@ -363,7 +363,7 @@ filetype <application/vnd.sqlite3>
 	\ {Dump}
 	\ sqlite-utils rows %c %c:r --nl > %c.jsonl %i,
 	\ {Repl}
-	\ dbui-add-connection %c:r sqlitetsv:%c:p; nvim -c 'DBUIToggle' -c '/%c:r' -c 'execute "normal \<CR>"' -c '/Tables' -c 'execute "normal \<CR>"',
+	\ dbui-add-connection %c:r sqlite:%c:p; nvim -c 'DBUIToggle' -c '/%c:r' -c 'execute "normal \<CR>"' -c '/Tables' -c 'execute "normal \<CR>"',
 
 fileviewer *.sqlar,.*.sqlar
 	\ sqlite3 %c -Atv,
