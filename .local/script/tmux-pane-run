@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+args="$(getopt --name="$0" --options 't:' --longoptions 'timeout:' -- "$@")"
+eval set -- "$args"
+
+timeout=0
+
+# shellcheck disable=SC2078
+while [ : ]; do
+	case "$1" in
+		-t | --timeout) timeout="$1"; shift 2 ;;
+		--) shift; break ;;
+	esac
+done
+
+if [[ -z "${TMUX:-}" ]]; then
+	"$@"
+else
+	header=$(cat <<-EO_HEADER
+		function footer() {
+			if [[ "\$1" == "0" ]]; then
+				if [[ -n "${FZF_PORT:-}" && -n "${FZF_RELOAD_CMD:-}" ]]; then
+					sleep 1
+					curl -s -X POST localhost:${FZF_PORT:-} -d 'reload(${FZF_RELOAD_CMD:-})'
+				fi
+				sleep $timeout
+			else
+				echo "script exitcode: \$1"
+				printf "%s " "Press enter to continue"
+				read -n 1 -s -r -p
+			fi
+		}
+		trap 'footer \$?' EXIT
+		EO_HEADER
+	)
+
+	if [[ -n "$*" ]]; then
+		cmd=$(
+			echo "$header";
+			echo "${@@Q}"
+		)
+	else
+		cmd=$(
+			echo "$header";
+			cat < /dev/stdin
+		)
+	fi
+	tmux split-window -vd "$cmd"
+fi

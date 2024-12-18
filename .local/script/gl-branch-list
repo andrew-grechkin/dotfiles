@@ -49,17 +49,18 @@ if [[ -t 1 ]]; then
 		--table
 		"${args[@]}"
 	)
+	export FZF_RELOAD_CMD="${fetcher[*]@Q}"
 
 	fzf_cmd=(
 		fzf
 		--ansi
-		# --bind="alt-a:reload-sync( (set -x; exec &>/tmp/git-approve.log; gl-mr-approve -h '$HOST' -p '$PROJECT' {+1}); ${fetcher[*]@Q})"
+		# --bind="alt-a:reload-sync( (set -x; exec &>/tmp/git-approve.log; gl-mr-approve -h '$HOST' -p '$PROJECT' {+1}); $FZF_RELOAD_CMD)"
 		--bind="alt-b:execute-silent(python3 -mwebbrowser {-1})"
-		# --bind="alt-m:reload-sync( (set -x; exec &>/tmp/git-merge.log; gl-mr-merge -h '$HOST' -p '$PROJECT' {+1}); ${fetcher[*]@Q})"
+		# --bind="alt-m:reload-sync( (set -x; exec &>/tmp/git-merge.log; gl-mr-merge -h '$HOST' -p '$PROJECT' {+1}); $FZF_RELOAD_CMD)"
 		--bind="alt-p:toggle-preview,ctrl-alt-w:toggle-preview-wrap,ctrl-s:toggle-sort"
-		--bind="alt-r:reload-sync(gl-branch-delete -h '$HOST' -p '$PROJECT' {+1} &>/dev/null; ${fetcher[*]@Q})"
+		--bind="alt-r:execute-silent(tmux-pane-run -- gl-branch-delete -h '$HOST' -p '$PROJECT' {+1})"
 		--bind="ctrl-m:execute(gl-branch-diff {1} ${prettify_diff[*]})"
-		--bind="ctrl-r:reload-sync(${fetcher[*]@Q})"
+		--bind="ctrl-r:reload-sync($FZF_RELOAD_CMD)"
 		--bind="ctrl-x:become(echo -n {+1} | tee >(clipcopy); echo)"
 		--bind="ctrl-y:execute-silent(echo -n {} | clipcopy)"
 		--bind="esc:cancel"
@@ -69,8 +70,9 @@ if [[ -t 1 ]]; then
 		--header-lines=1
 		--header="A-b:browse A-p:preview A-r:remove C-r:reload C-y:yank Enter:diff"
 		--multi
+		--listen
 		# --no-sort
-		--preview-window=right:60%:border-left:wrap:hidden
+		--preview-window="right:60%:border-left:wrap:hidden"
 		--preview="gl-branch-diff {1} ${prettify_diff[*]:0:2}"
 		--prompt="$PROJECT > "
 		--reverse
@@ -78,6 +80,7 @@ if [[ -t 1 ]]; then
 		--scroll-off=4
 		--tabstop=4
 		--track
+		--with-nth="..-2"
 	)
 
 	"${fetcher[@]}" | "${fzf_cmd[@]}"
