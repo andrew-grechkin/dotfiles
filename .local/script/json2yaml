@@ -6,7 +6,9 @@ use YAML::XS         qw();
 use Cpanel::JSON::XS qw();
 use experimental     qw(try);
 
-use constant {'JSON' => Cpanel::JSON::XS->new->canonical->utf8(0)->unblessed_bool([1])->pretty->space_before(0)};
+use constant {
+    'JSON' => Cpanel::JSON::XS->new->canonical->utf8(0)->unblessed_bool([1])->pretty->space_before(0)->allow_nonref(1)
+};
 
 my $line = <<>>;
 

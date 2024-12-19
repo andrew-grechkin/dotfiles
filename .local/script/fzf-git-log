@@ -12,18 +12,23 @@ else
 	LOG_PAGER="$PAGER"
 fi
 
+# this is necessary because in graph mode some lines are not having commit hash
 COMMAND_EXTRACT_COMMIT='echo {} | grep -o "[[:xdigit:]]\{6,\}" | head -1 | tr -d "\n"'
 
 fzf_cmd=(
 	fzf
 	--ansi
 	--bind="alt-b:execute-silent(git browse \$(${COMMAND_EXTRACT_COMMIT}))"
-	--bind="ctrl-m:execute(show-commit \$(${COMMAND_EXTRACT_COMMIT}) ${OPTIONS[@]} --show-signature | $LOG_PAGER)"
+	--bind="alt-i:execute(show-commit \$(${COMMAND_EXTRACT_COMMIT}) ${OPTIONS[@]} --show-signature | $LOG_PAGER)"
+	--bind="ctrl-m:become(echo {+1} | tee >(clipcopy))"
+	--bind="ctrl-x:become(echo {q} | tee >(clipcopy) &>/dev/stderr; cat {+f})"
 	--bind="ctrl-y:execute-silent(${COMMAND_EXTRACT_COMMIT} | clipcopy)"
-	--bind="shift-tab:become(echo -n \$(${COMMAND_EXTRACT_COMMIT}))"
-	--bind="tab:become(echo -n \$(${COMMAND_EXTRACT_COMMIT}))"
-	--header="C-j/k:move C-m/enter:view A-p:preview A-b:browse"
-	--no-multi
+	--bind="home:top,tab:toggle-out,shift-tab:toggle-in,ctrl-a:toggle-all"
+	# --bind="shift-tab:become(echo -n \$(${COMMAND_EXTRACT_COMMIT}))"
+	# --bind="tab:become(echo -n \$(${COMMAND_EXTRACT_COMMIT}))"
+	--header="C-j/k:move C-m/enter:take A-i:view A-p:preview A-b:browse C-x:dump"
+	--listen
+	--multi
 	--no-sort
 	--preview="show-commit \$(${COMMAND_EXTRACT_COMMIT}) --color=always ${OPTIONS[@]} | $LOG_PAGER"
 	--reverse
@@ -32,14 +37,15 @@ fzf_cmd=(
 	--track
 )
 
-if [[ -n "$FETCH_CMD" ]]; then
+if [[ -n "$FZF_RELOAD_CMD" ]]; then
+	export FZF_RELOAD_CMD
 	fzf_cmd+=(
-		--bind="alt-f:execute-silent(git fall)+reload($FETCH_CMD)"
-		--bind="alt-g:execute-silent(git up)+reload($FETCH_CMD)"
-		--bind="alt-m:execute-silent(ABB=\$(git gmb); git switch \$ABB)+reload($FETCH_CMD)"
-		--bind="alt-o:execute-silent(C=\$(${COMMAND_EXTRACT_COMMIT}); A=\$(git describe --all --always \$C); git switch --detach \${A/heads\/})+reload($FETCH_CMD)"
-		--bind="alt-r:execute(2>/dev/null git rebase -i --committer-date-is-author-date --onto \$(${COMMAND_EXTRACT_COMMIT}) \$(${COMMAND_EXTRACT_COMMIT}))+reload($FETCH_CMD)"
-		--bind="ctrl-r:reload($FETCH_CMD)"
+		--bind="alt-f:execute-silent(tmux-pane-run -- git fall)"
+		--bind="alt-g:execute-silent(tmux-pane-run -- git up)"
+		--bind="alt-m:execute-silent(ABB=\$(git gmb); git switch \$ABB)+reload($FZF_RELOAD_CMD)"
+		--bind="alt-o:execute-silent(C=\$(${COMMAND_EXTRACT_COMMIT}); A=\$(git describe --all --always \$C); git switch --detach \${A/heads\/})+reload($FZF_RELOAD_CMD)"
+		--bind="alt-r:execute(2>/dev/null git rebase -i --committer-date-is-author-date --onto \$(${COMMAND_EXTRACT_COMMIT}) \$(${COMMAND_EXTRACT_COMMIT}))+reload($FZF_RELOAD_CMD)"
+		--bind="ctrl-r:reload($FZF_RELOAD_CMD)"
 		--header="C-j/k:move C-m/enter:view A-p:preview C-n/p:p-move C-y:yank C-r:reload A-f:fetch A-g:pull A-m:co-m A-o:co A-r:rebase A-b:browse"
 	)
 fi

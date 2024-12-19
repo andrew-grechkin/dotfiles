@@ -3,34 +3,36 @@
 set -Eeuo pipefail
 
 if [[ -t 1 ]]; then
+	export FZF_RELOAD_CMD="$0 | json2tsv | tsv-align"
 	fzf_cmd=(
 		fzf
 		--ansi
-		--bind="tab:toggle-out,shift-tab:toggle-in"
-		--bind="alt-c:reload(docker-clean &>/dev/null; $0 | json2tsv | tsv-align)"
-		--bind="alt-g:reload(docker pull {2}:{3} &>/dev/null; $0 | json2tsv | tsv-align)"
-		--bind="alt-i:execute(docker inspect {2}:{3} | json-pretty)"
+		--bind="alt-c:execute-silent(tmux-pane-run -- docker-clean)"
+		--bind="alt-g:execute-silent(tmux-pane-run -- docker pull {+-1})"
+		--bind="alt-i:execute(docker inspect {-1} | json-pretty -f {-1})"
 		--bind="alt-p:toggle-preview,ctrl-alt-w:toggle-preview-wrap,ctrl-s:toggle-sort"
-		--bind="alt-r:reload(docker rmi -f {+1} &>/dev/null; $0 | json2tsv | tsv-align)"
-		--bind="ctrl-m:execute(docker inspect {2}:{3} | jq-repl)"
-		--bind="ctrl-r:reload($0 | json2tsv | tsv-align)"
-		--bind="ctrl-y:execute-silent(echo -n {2}:{3} | clipcopy)"
+		--bind="alt-r:execute-silent(tmux-pane-run -- docker rmi -f {+1})"
+		--bind="alt-s:execute-silent(tmux-pane-run -- docker push {+-1})"
+		--bind="ctrl-m:execute(docker inspect {-1} | jq-repl)"
+		--bind="ctrl-r:reload($FZF_RELOAD_CMD)"
+		--bind="ctrl-y:execute-silent(echo -n {+-1} | clipcopy)"
 		--bind="home:top"
+		--bind="tab:toggle-out,shift-tab:toggle-in"
 		--delimiter="\t"
 		--header-lines=1
-		--header='C-j/k:move C-m/Enter:jq-repl C-r:reload C-y:yank A-c:clear A-g:pull A-i:inspect A-p:preview A-r:remove'
+		--header="C-j/k:move C-m/Enter:jq-repl C-r:reload C-y:yank A-c:clear A-g:pull A-i:inspect A-p:preview A-r:remove A-s:push"
 		--multi
-		--preview-window=right:60%:border-left:wrap:hidden
-		--preview="docker inspect {2}:{3} | json-pretty -Cn"
+		--preview-window="right:60%:border-left:wrap:hidden"
+		--preview="docker inspect {-1} | json-pretty -C -f {-1}"
 		--prompt="docker images > "
 		--reverse
 		--scroll-off=4
 		--tabstop=4
+		--with-nth="..-2"
 	)
-
-	"$0" | json2tsv | tsv-align | "${fzf_cmd[@]}"
+	eval "$FZF_RELOAD_CMD" | "${fzf_cmd[@]}"
 else
-	command docker images -a --format "{{json . }}" \
+	docker images -a --format "{{json . }}" \
 		"${OPTIONS[@]}" "$@" 2>/dev/null \
 		| jq -nRc '[inputs | fromjson] | sort_by(.repository // .Repository) | map({
 			id: (.Id // .ID) | .[0:10],
@@ -38,6 +40,7 @@ else
 			repository: (.repository // .Repository),
 			tag: (.tag // .Tag),
 			size: .Size,
-			use: .Containers
+			use: .Containers,
+            path: "\(.repository // .Repository):\(.tag // .Tag)"
 	})'
 fi
