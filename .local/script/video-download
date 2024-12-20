@@ -2,30 +2,24 @@
 
 set -Eeuo pipefail
 
+args="$(getopt --name="$0" --options 'h:' --longoptions 'height:' -- "$@")"
+eval set -- "$args"
+
 HEIGHT="${HEIGHT:-1440}"
 
-while getopts 'h:' opt; do
-	case ${opt} in
-		h)
-			HEIGHT="$OPTARG"
-			;;
-		:)
-			echo "Option -${OPTARG} requires an argument."
-			exit 1
-			;;
-		?)
-			exit 1
-			;;
+# shellcheck disable=SC2078
+while [ : ]; do
+	case "$1" in
+		-h | --height) HEIGHT="$2"; shift 2 ;;
+		--) shift; break ;;
 	esac
 done
-
-shift $((OPTIND - 1))
 
 # [[ "${#URL}" -lt 16 ]] && {
 # 	URL="https://www.youtube.com/watch?v=$URL"
 # }
 
-OPTIONS=(
+yt_dlp_args=(
 	--format="bv*[ext=webm][height<=${HEIGHT}]+ba/bv*[ext=mp4][height<=${HEIGHT}]+ba/b"
 	--list-formats
 	--no-simulate
@@ -35,4 +29,4 @@ OPTIONS=(
 )
 
 umask 0002
-exec yt-dlp "${OPTIONS[@]}" "$@"
+exec yt-dlp "${yt_dlp_args[@]}" "$@"

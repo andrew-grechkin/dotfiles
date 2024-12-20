@@ -75,8 +75,8 @@ sub preview_command ($os_name) {
 sub fzf_options ($os_name) {
     state %commands = (
         'Arch Linux' => [
-            '--bind', 'alt-a:execute(sudo pacman -S {+1} </dev/tty >/dev/tty)+abort',
-            '--bind', 'alt-r:execute(sudo pacman -Rcs {+1} </dev/tty >/dev/tty)+abort',
+            '--bind', 'alt-a:execute(tmux-pane-run -f -- sudo pacman -S {+1})',
+            '--bind', 'alt-r:execute(tmux-pane-run -f -- sudo pacman -Rcs {+1})',
         ],
         'CentOS Stream' => [
             '--bind', 'alt-a:execute(sudo dnf install --disableplugin=puppet {+1} </dev/tty >/dev/tty)+abort',
@@ -135,11 +135,11 @@ sub _start_fzf ($os_name) {
 
         # tidy
         fzf_options($os_name),
-        '--bind',           "ctrl-m:execute( ( $preview ) | $ENV{PAGER} >/dev/tty)",
-        '--bind',           'ctrl-y:execute-silent(echo -n {+1} | $HOME/.local/script/clipcopy)',
-        '--bind',           'tab:toggle-out,shift-tab:toggle-in,`:clear-selection',
-        '--preview',        $preview,
-        '--preview-window', 'right:50%:wrap:nohidden',
+        '--bind',    "ctrl-m:execute( ( $preview ) | $ENV{PAGER} >/dev/tty)",
+        '--bind',    'ctrl-y:execute-silent(echo -n {+1} | $HOME/.local/script/clipcopy)',
+        '--bind',    'tab:toggle-out,shift-tab:toggle-in,`:clear-selection',
+        '--preview', $preview,
+        '--listen',  '--preview-window', 'right:50%:wrap:nohidden',
     );
 
     my $pid = open2(my $chld_out, my $chld_in, @cmd);

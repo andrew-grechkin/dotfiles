@@ -75,10 +75,7 @@ function parse_git_dirty() {
 	if [[ -n $ZSH_THEME_GIT_PROMPT_DIRTY ]] && [[ "$(command git config --get oh-my-zsh.hide-dirty)" != "1" ]]; then
 		local -a FLAGS
 		FLAGS=('--porcelain')
-
-		if [[ $POST_1_7_2_GIT -gt 0 ]]; then
-			FLAGS+='--ignore-submodules=dirty'
-		fi
+		FLAGS+='--ignore-submodules=dirty'
 		if [[ "$DISABLE_UNTRACKED_FILES_DIRTY" == "true" ]]; then
 			FLAGS+='--untracked-files=no'
 		fi
@@ -243,9 +240,6 @@ function git_current_user_name() {
 function git_current_user_email() {
 	command git config user.email 2>/dev/null
 }
-
-# This is unlikely to change so make it all statically assigned
-POST_1_7_2_GIT=$(git_compare_version "1.7.2")
 
 # Clean up the namespace slightly by removing the checker function
 unfunction git_compare_version

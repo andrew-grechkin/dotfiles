@@ -3,6 +3,7 @@
 use v5.36;
 
 my %index;
+
 while (defined(my $line = <<>>)) {
     chomp $line;
     my $md5 = md5_hex($line);

@@ -1,0 +1,17 @@
+#!/usr/bin/env -S perl -CALS
+
+use v5.36;
+
+-t 0 and die "STDIN must be provided (lines which are compared)\n";
+@ARGV or die "File(s) must be provided (lines which are compared to)\n";
+
+my %comp = map {chomp; $_ => undef} <<>>;
+
+while (defined(my $line = <STDIN>)) {
+    chomp $line;
+    exists $comp{$line}
+        ? say {*STDOUT} $line
+        : say {*STDERR} $line;
+}
+
+__END__

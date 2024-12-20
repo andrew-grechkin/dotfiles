@@ -5,7 +5,8 @@ set -Eeuo pipefail
 fzf_cmd=(
 	fzf
 	--ansi
-	--bind="enter:execute-silent(set -x; exec 2>>/tmp/$(basename "$0").log; echo \>/dev/null \</dev/null nohup {2..} \& disown\; sleep 0.2 | tee -a /dev/stderr | bash)"
+	--bind="enter:execute-silent(set -x; exec 2>>/tmp/$(basename "$0").log; </dev/null &>/dev/null setsid -f -- {2..})"
+	--bind="alt-enter:become(set -x; exec 2>>/tmp/$(basename "$0").log; </dev/null &>/dev/null setsid -f -- {2..})"
 	--bind='ctrl-y:execute-silent(echo -n {2..} | clipcopy)'
 	--delimiter=$'\u0009'
 	--no-multi

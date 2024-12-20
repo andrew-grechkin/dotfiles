@@ -4,33 +4,37 @@
 # P.C. Shyamshankar <sykora@lucentbeing.com>
 # Copied from https://github.com/sykora/etc/blob/master/zsh/functions/spectrum/
 
-typeset -AHg FX FG BG
+function _term-spectrum() {
+	ZSH_SPECTRUM_TEXT=${ZSH_SPECTRUM_TEXT:-Arma virumque cano Troiae qui primus ab oris}
 
-FX=(
-	reset     "%{[00m%}"
-	bold      "%{[01m%}" no-bold      "%{[22m%}"
-	italic    "%{[03m%}" no-italic    "%{[23m%}"
-	underline "%{[04m%}" no-underline "%{[24m%}"
-	blink     "%{[05m%}" no-blink     "%{[25m%}"
-	reverse   "%{[07m%}" no-reverse   "%{[27m%}"
-)
+	typeset -AHg FX FG BG
 
-for color in {000..255}; do
-	FG[$color]="%{[38;5;${color}m%}"
-	BG[$color]="%{[48;5;${color}m%}"
-done
+	FX=(
+		reset     "%{[00m%}"
+		bold      "%{[01m%}" no-bold      "%{[22m%}"
+		italic    "%{[03m%}" no-italic    "%{[23m%}"
+		underline "%{[04m%}" no-underline "%{[24m%}"
+		blink     "%{[05m%}" no-blink     "%{[25m%}"
+		reverse   "%{[07m%}" no-reverse   "%{[27m%}"
+	)
 
-ZSH_SPECTRUM_TEXT=${ZSH_SPECTRUM_TEXT:-Arma virumque cano Troiae qui primus ab oris}
+	for color in {000..255}; do
+		FG[$color]="%{[38;5;${color}m%}"
+		BG[$color]="%{[48;5;${color}m%}"
+	done
+}
 
 # Show all 256 colors with color number
-function spectrum_ls() {
+function term-spectrum-ls() {
+    _term-spectrum
 	for code in {000..255}; do
 		print -P -- "$code: %{$FG[$code]%}$ZSH_SPECTRUM_TEXT%{$reset_color%}"
 	done
 }
 
 # Show all 256 colors where the background is set to specific color
-function spectrum_bls() {
+function term-spectrum-bls() {
+    _term-spectrum
 	for code in {000..255}; do
 		print -P -- "$code: %{$BG[$code]%}$ZSH_SPECTRUM_TEXT%{$reset_color%}"
 	done

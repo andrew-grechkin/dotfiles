@@ -5,6 +5,8 @@
 
 set -Euo pipefail
 
+source "$HOME/.local/lib/shell/color.bash"
+
 if [[ "$#" -eq "1" ]] && [[ "$1" =~ \.git/?$ ]]; then
 	if [[ "$1" =~ /\.git/?$ ]]; then
 		REPO=$(dirname "$1")
@@ -19,7 +21,7 @@ if [[ "$#" -eq "1" ]] && [[ "$1" =~ \.git/?$ ]]; then
 		fi
 	fi
 
-	echo "${f_olive}Gc $REPO$c_reset"
+	echo "$FG[olive]Gc $REPO$FX[reset]"
 
 	nice git -C "$REPO" gc --keep-largest-pack --prune=now
 else

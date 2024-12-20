@@ -5,11 +5,13 @@
 
 set -Euo pipefail
 
+source "$HOME/.local/lib/shell/color.bash"
+
 if [[ "$#" -eq "1" ]] && [[ "$1" =~ \.git/?$ ]]; then
 	REPO=$(dirname "$1")
 
 	if [[ -n "$(git -C "$REPO" branch --show-current)" ]]; then
-		echo "${f_olive}Updating ${REPO}${c_reset}"
+		echo "$FG[olive]Updating ${REPO}$FX[reset]"
 
 		git -C "$REPO" -c color.ui=always fetch --force      \
 			&& nice git -C "$REPO" -c color.ui=always bleach \

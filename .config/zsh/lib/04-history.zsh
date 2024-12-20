@@ -22,36 +22,40 @@ setopt HIST_SAVE_BY_COPY
 setopt HIST_VERIFY                                                             # show command with history expansion to user before running it
 setopt INC_APPEND_HISTORY
 
-if [[ -n "$HOSTNAME" ]] && [[ -n "$XDG_STATE_HOME" ]]; then
-	HISTFILE_DIR="$XDG_STATE_HOME/zsh"
-	mkdir -p "$HISTFILE_DIR" &>/dev/null
+function define_histfile() {
+	if [[ -n "$HOSTNAME" ]] && [[ -n "$XDG_STATE_HOME" ]]; then
+		local histfile_dir="$XDG_STATE_HOME/zsh"
+		mkdir -p "$histfile_dir" &>/dev/null
 
-	HISTFILE="$HISTFILE_DIR/history@${HOSTNAME}"
-	HISTFILE_BAK="${HISTFILE}.bak"
+		HISTFILE="$histfile_dir/history@${HOSTNAME}"
+		local histfile_bak="${HISTFILE}.bak"
 
-	if [[ -r "$HISTFILE" ]]; then
-		HF_SIZE=$(stat -c%s "$HISTFILE")
+		if [[ -r "$HISTFILE" ]]; then
+			local hf_size=$(stat -c%s "$HISTFILE")
+		else
+			local hf_size=0
+		fi
+
+		if [[ -r "$histfile_bak" ]]; then
+			local bf_size=$(stat -c%s "$histfile_bak")
+		else
+			local bf_size=0
+		fi
+
+		if (( hf_size < 20000 && 30000 < bf_size)); then
+			echo 'History file is lower than 20 kbytes, restoring backup...'
+			cp -f "$histfile_bak" "$HISTFILE"
+		elif (( hf_size > 10000 && hf_size > bf_size)); then
+			cp -f "$HISTFILE" "$histfile_bak"
+		fi
+
+		export HISTFILE
 	else
-		HF_SIZE=0
+		echo 'HOSTNAME is undefined, HISTFILE is a default value' &>/dev/stderr
 	fi
-
-	if [[ -r "$HISTFILE_BAK" ]]; then
-		BF_SIZE=$(stat -c%s "$HISTFILE_BAK")
-	else
-		BF_SIZE=0
-	fi
-
-	if (( HF_SIZE < 20000 && 30000 < BF_SIZE)); then
-		echo 'History file is lower than 20 kbytes, restoring backup...'
-		cp -f "$HISTFILE_BAK" "$HISTFILE"
-	elif (( HF_SIZE > 10000 && HF_SIZE > BF_SIZE)); then
-		cp -f "$HISTFILE" "$HISTFILE_BAK"
-	fi
-
-	export HISTFILE
-else
-	echo 'HOSTNAME is undefined, HISTFILE is a default value' &>/dev/stderr
-fi
+}
+define_histfile
+unset define_histfile
 
 # => alias -------------------------------------------------------------------------------------------------------- {{{1
 
@@ -66,27 +70,31 @@ function zshaddhistory() {
 	# EXECUTABLE="${${(z)1}[1]}"
 	# whence "$EXECUTABLE" >| /dev/null || return 2
 	[[ "$1" =~ "^ " ]] && return 2
-	TRIMMED=$(perl -XE 'print (<> =~ s/(\s | \R | (\\n))+$ | ^(\\n)+//rgnxms)' <<< "$1")
-	print -Sr -- "$TRIMMED"
+	local trimmed=$(perl -XE 'print (<> =~ s/(\s | \R | (\\n))+$ | ^(\\n)+//rgnxms)' <<< "$1")
+	print -Sr -- "$trimmed"
 	return 1
 }
 
 function h-disable() {
-	HF="$HISTFILE"
+	local hf="$HISTFILE"
 	fc -p "${XDG_RUNTIME_DIR}/temp-hist" "${HISTSIZE}" "${SAVEHIST}"
-	fc -R "$HF"
+	fc -R "$hf"
 
 	add-zsh-hook -d precmd _atuin_precmd
 	add-zsh-hook -d preexec _atuin_preexec
 }
 
 function h-reduce() {
-	HF="$HISTFILE"
+	local hf="$HISTFILE"
 	fc -pa "${XDG_RUNTIME_DIR}/temp-hist" "${HISTSIZE}" "${SAVEHIST}"
-	fc -R "$HF"
+	fc -R "$hf"
 	h-filter-and-delete
 }
 
 function h-trimmed() {
 	fc -l -n 0 | perl -lpXE 's/(\s | (\\n))+$ | ^(\s | (\\n))+//gnx'
+}
+
+function h-stats() {
+	fc -l 1 | awk '{CMD[$2]++;count++;}END { for (a in CMD)print CMD[a] " " CMD[a]/count*100 "% " a;}' | grep -v "./" | column -c3 -s " " -t | sort -nr | nl |  head -n20
 }
