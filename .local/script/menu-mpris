@@ -59,27 +59,27 @@ if [[ -t 1 ]]; then
 
 	"${fetcher[@]}" | "${fzf_cmd[@]}"
 else
-	map_name=$(cat <<'EO_MAP_NAME'
-    use constant {JSON_ONE_LINE => Cpanel::JSON::XS->new->canonical->utf8(0)->unblessed_bool([1])->pretty(0)->indent(0)};
+	map_name=$(cat <<-'EO_MAP_NAME'
+		use constant {JSON_ONE_LINE => Cpanel::JSON::XS->new->canonical->utf8(0)->unblessed_bool([1])->pretty(0)->indent(0)};
 
-    chomp;
-    my $cmd = "busctl --user --json=short call $_ $ENV{MPRIS_OBJ} org.freedesktop.DBus.Properties GetAll s $ENV{MPRIS_IF}";
-    my $payload = qx($cmd) or next;
-    my \%d = JSON_ONE_LINE()->decode($payload);
-    my %p = map {my \%it=$_; map {$_ => $it{$_}{data}} keys %it} $d{data}->@*;
-    $p{name} = $_;
-    my \%m = $p{Metadata};
-    %m = map {$_ => $m{$_}{data}} grep {!m/artUrl/} keys %m;
+		chomp;
+		my $cmd = "busctl --user --json=short call $_ $ENV{MPRIS_OBJ} org.freedesktop.DBus.Properties GetAll s $ENV{MPRIS_IF}";
+		my $payload = qx($cmd) or next;
+		my \%d = JSON_ONE_LINE()->decode($payload);
+		my %p = map {my \%it=$_; map {$_ => $it{$_}{data}} keys %it} $d{data}->@*;
+		$p{name} = $_;
+		my \%m = $p{Metadata};
+		%m = map {$_ => $m{$_}{data}} grep {!m/artUrl/} keys %m;
 
-    for (keys %m) {
-       $m{$_} = url_unescape($m{$_} =~ s'^file://''r) if $m{$_} && $m{$_} =~ m'^file://';
-    }
+		for (keys %m) {
+			$m{$_} = url_unescape($m{$_} =~ s'^file://''r) if $m{$_} && $m{$_} =~ m'^file://';
+		}
 
-    say JSON_ONE_LINE()->encode(\%p);
-EO_MAP_NAME
+		say JSON_ONE_LINE()->encode(\%p);
+		EO_MAP_NAME
 	)
 
-	reset="\033[m"
+	ansi_reset="\033[m"
 	busctl --user --json=short list \
 		| jq -r '.[] | select(.name | test("'"$MPRIS"'")) | .name' \
 		| perl -CAL -MCpanel::JSON::XS -MMojo::Util=url_unescape -Mexperimental=declared_refs,refaliasing -nE "$map_name" 2>/dev/null \
@@ -87,14 +87,14 @@ EO_MAP_NAME
 
 		jq_fields=(
 			"name;\(.name)"
-			"state;$(tput setaf 7)\(.PlaybackStatus)$reset"
-			"title;$(tput setaf 14)\(.Metadata.\"xesam:title\")$reset"
-			"artist;$(tput setaf 12)\(.Metadata.\"xesam:artist\"[0]?)$reset"
-			"position;$(tput setaf 10)\(.Position / 1000000 | round)s (\(.Position / .Metadata.\"mpris:length\" * 100 | round)%)$reset"
+			"state;$(tput setaf 7)\(.PlaybackStatus)$ansi_reset"
+			"title;$(tput setaf 14)\(.Metadata.\"xesam:title\")$ansi_reset"
+			"artist;$(tput setaf 12)\(.Metadata.\"xesam:artist\"[0]?)$ansi_reset"
+			"position;$(tput setaf 10)\(.Position / 1000000 | round)s (\(.Position / .Metadata.\"mpris:length\" * 100 | round)%)$ansi_reset"
 			"volume;\(.Volume)"
-			"loop;$(tput setaf 7)\(.LoopStatus)$reset"
-			"created;$(tput setaf 2)\(.Metadata.\"xesam:contentCreated\"[0:10]?)$reset"
-			"url;$(tput setaf 6)\(.Metadata.\"xesam:url\")$reset"
+			"loop;$(tput setaf 7)\(.LoopStatus)$ansi_reset"
+			"created;$(tput setaf 2)\(.Metadata.\"xesam:contentCreated\"[0:10]?)$ansi_reset"
+			"url;$(tput setaf 6)\(.Metadata.\"xesam:url\")$ansi_reset"
 		)
 
 		jq -c '[., inputs]' | json-array-to-tsv 'sort_by(.Metadata."xesam:title") | reverse | sort_by(.PlaybackStatus) | reverse' "${jq_fields[@]}"

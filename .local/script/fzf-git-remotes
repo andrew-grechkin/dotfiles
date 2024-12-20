@@ -3,7 +3,7 @@
 set -Eeuo pipefail
 
 CURRENT_SCRIPT="$(basename "$0")"
-FETCH_CMD="${CURRENT_SCRIPT#fzf-}"
+export FZF_RELOAD_CMD="${CURRENT_SCRIPT#fzf-}"
 
-"$FETCH_CMD" \
+"$FZF_RELOAD_CMD" \
 	| fzf --multi --bind 'tab:toggle-out,shift-tab:toggle-in' --preview ''

@@ -22,4 +22,4 @@ CMD=(
 	-vga virtio
 )
 
-nohup qemu-system-x86_64 "${CMD[@]}" </dev/null &>/dev/null & disown
+qemu-system-x86_64 "${CMD[@]}"

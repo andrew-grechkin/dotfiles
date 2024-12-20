@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 
 &>/dev/null </dev/null nohup "$@" & disown
+# &>/dev/null </dev/null setsid -f "$@"

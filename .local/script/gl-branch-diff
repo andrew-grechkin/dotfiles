@@ -2,10 +2,7 @@
 
 set -Eeuo pipefail
 
-# shellcheck disable=SC1090
-source "$(realpath -Ls "$(dirname "$0")/../lib/shell/data-processing.bash")"
-# shellcheck disable=SC1090
-source "$(realpath -Ls "$(dirname "$0")/../lib/shell/gitlab.bash")"
+source "$HOME/.local/lib/shell/gitlab.bash"
 
 HEAD=$(2>/dev/null git fetch --no-tags --porcelain "$REMOTE" HEAD | perl -nal -E'say $F[2]')
 >/dev/null git fetch --no-tags --porcelain "$REMOTE" "$1"
