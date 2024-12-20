@@ -19,29 +19,29 @@ function try-source-dev-rc() {
 function activate() {
 	if [[ "${1:-}" == 'silent' ]]; then
 		shift
-		SILENT=1
+		local silent=1
 	else
-		SILENT=0
+		local silent=0
 	fi
 
-	venv_path='.venv/bin/activate'
-	FILES=('dev.rc' "$venv_path" 'venv/bin/activate')
+	local venv_path='.venv/bin/activate'
+	local files=('dev.rc' "$venv_path" 'venv/bin/activate')
 
 	if command git rev-parse HEAD &>/dev/null; then
-		REPO_ROOT="$(git rev-parse --show-toplevel)"
+		local repo_root="$(git rev-parse --show-toplevel)"
 
-		FILES+=("${FILES[@]/#/$REPO_ROOT/}")
-		FILES+=("$REPO_ROOT/projects/deployments/dev.rc")
+		files+=("${files[@]/#/$repo_root/}")
+		files+=("$repo_root/projects/deployments/dev.rc")
 	fi
 
-	for FILE in "${FILES[@]}"; do
-		if [[ -r "$FILE" ]]; then
-			if [[ "$FILE" =~ dev.rc$ ]]; then
-				try-source-dev-rc "$FILE"
+	for local file in "${files[@]}"; do
+		if [[ -r "$file" ]]; then
+			if [[ "$file" =~ dev.rc$ ]]; then
+				try-source-dev-rc "$file"
 				umask 0002
 				return
-			elif [[ "$FILE" =~ venv/bin/activate$ ]]; then
-				source "$FILE"
+			elif [[ "$file" =~ venv/bin/activate$ ]]; then
+				source "$file"
 				umask 0002
 				return
 			fi
@@ -52,8 +52,7 @@ function activate() {
 	if [[ -r 'poetry.lock' ]]; then
 		# Python repo managed by poetry
 		if command -v poetry &>/dev/null; then
-			PYTHON_LOCAL="$(poetry env info -p)"
-			source "$PYTHON_LOCAL/bin/activate"
+			source-file "$(poetry env info -p)/bin/activate"
 			umask 0002
 			return
 		fi
@@ -71,7 +70,7 @@ function activate() {
 		return
 	fi
 
-	if [[ "$SILENT" != '1' ]]; then
+	if [[ "$silent" != '1' ]]; then
 		tput bold && tput setaf 1
 		echo 'Unable to find any activation scripts'
 		tput sgr0

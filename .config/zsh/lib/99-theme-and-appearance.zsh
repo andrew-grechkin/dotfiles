@@ -1,11 +1,6 @@
 # vim: filetype=zsh foldmethod=marker
 # Based on https://github.com/robbyrussell/oh-my-zsh
 
-# => Colors configuration ----------------------------------------------------------------------------------------- {{{1
-
-setopt MULTIOS
-setopt PROMPT_SUBST
-
 # => ls colors ---------------------------------------------------------------------------------------------------- {{{1
 
 autoload -U colors && colors
@@ -37,7 +32,7 @@ fi
 # ue      rmul      stop underline
 # us      smul      start underline
 # vb      flash     emit visual bell
-#
+
 # export LESS_TERMCAP_ZN=$(tput ssubm)
 # export LESS_TERMCAP_ZO=$(tput ssupm)
 # export LESS_TERMCAP_ZV=$(tput rsubm)

@@ -43,10 +43,10 @@ function precmd() {
 	# Check if we are on SSH or not
 	[[ -n "$SSH_CLIENT" || -n "$SSH2_CLIENT" ]] && ZSH_THEME['HOST']='%F{red}%M%f' || ZSH_THEME['HOST']='%F{green}%M%f'
 
-    nl=$'\n'
-    left11="${nl}%F{0}#${ZSH_THEME['CLOCK']}${ZSH_THEME['RETURN']}"
-    left12="${ZSH_THEME['USER']}%F{cyan}@%f${ZSH_THEME['HOST']}${ZSH_THEME['CWD']}"'${vcs_info_msg_0_}'"%b%k%f%{$reset_color%}"
-    left2="%F{0}:%{$reset_color%}%(!.#.$)${RPS1}%b%k%F{0};%f%{$reset_color%}"
+    local nl=$'\n'
+    local left11="${nl}%F{0}#${ZSH_THEME['CLOCK']}${ZSH_THEME['RETURN']}"
+    local left12="${ZSH_THEME['USER']}%F{cyan}@%f${ZSH_THEME['HOST']}${ZSH_THEME['CWD']}"'${vcs_info_msg_0_}'"%b%k%f%{$reset_color%}"
+    local left2="%F{0}:%{$reset_color%}%(!.#.$)${RPS1}%b%k%F{0};%f%{$reset_color%}"
 
 	PROMPT="$left11 $left12 ${nl}$left2"
 	RPROMPT=''

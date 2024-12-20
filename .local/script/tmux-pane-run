@@ -2,7 +2,7 @@
 
 set -Eeuo pipefail
 
-args="$(getopt --name="$0" --options 't:' --longoptions 'timeout:' -- "$@")"
+args="$(getopt --name="$0" --options 'ft:' --longoptions 'focus,timeout:' -- "$@")"
 eval set -- "$args"
 
 timeout='0'
@@ -10,6 +10,7 @@ timeout='0'
 # shellcheck disable=SC2078
 while [ : ]; do
 	case "$1" in
+		-f | --focus) focus='1'; shift ;;
 		-t | --timeout) timeout="$2"; shift 2 ;;
 		--) shift; break ;;
 	esac
@@ -64,5 +65,9 @@ else
 			cat < /dev/stdin
 		)
 	fi
-	tmux split-window -vd "$cmd"
+
+	tmux_args=(-v)
+	[[ -z "$focus" ]] && tmux_args+=(-d)
+
+	tmux split-window "${tmux_args[@]}" "$cmd"
 fi

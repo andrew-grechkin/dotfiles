@@ -12,7 +12,7 @@ function list_files() {
 	password_files=("${password_files[@]#*"$DIR/"}")
 	password_files=("${password_files[@]%".gpg"*}")
 	for FILE in "${password_files[@]}"; do
-		printf "%s	pass-to-clipboard \"$DIR/%s\" &>/dev/null\n" "$FILE" "$FILE"
+		printf "%s	pass2clipboard \"$DIR/%s\" &>/dev/null\n" "$FILE" "$FILE"
 	done
 }
 
