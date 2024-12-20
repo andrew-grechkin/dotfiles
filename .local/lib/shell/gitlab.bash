@@ -1,6 +1,10 @@
 # vim: filetype=sh
 # shellcheck disable=SC2034
 
+function url_encode() {
+	printf %s "$1" | jq -Rr @uri
+}
+
 if [[ -t 1 ]]; then
 	INTERACTIVE=1
 	PRINT_HEADER=1
@@ -48,11 +52,19 @@ fi
 
 HOST="${HOST:-gitlab.com}"
 if [[ -z "${GITLAB_PERSONAL_TOKEN:-}" ]]; then
+	if [[ -x "$(command -v pass)" ]]; then
+		if res=$(pass show "personal/${HOST}" 2>/dev/null); then
+			GITLAB_PERSONAL_TOKEN="$res"
+		fi
+	fi
+fi
+if [[ -z "${GITLAB_PERSONAL_TOKEN:-}" ]]; then
 	token_file="${XDG_CONFIG_HOME:-~/.config}/gitlab/${HOST}.token"
 	if [[ -r "$token_file" ]]; then
 		GITLAB_PERSONAL_TOKEN="$(cat "$token_file")"
 	else
 		>/dev/stderr echo "Please provide gitlab token with 'api' permission as one of:"
+		>/dev/stderr echo "  - pass personal/${HOST}"
 		>/dev/stderr echo "  - GITLAB_PERSONAL_TOKEN env variable"
 		>/dev/stderr echo "  - $token_file file"
 		exit 1

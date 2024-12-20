@@ -1,9 +1,7 @@
 # vim: filetype=sh
 # shellcheck disable=SC2034
 
-function url_encode() {
-	printf %s "$1" | jq -Rr @uri
-}
+ansi_reset="\033[m"
 
 function join() {
 	local IFS=$'\t';

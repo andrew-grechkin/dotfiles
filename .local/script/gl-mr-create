@@ -17,10 +17,7 @@ while [ : ]; do
 	esac
 done
 
-# shellcheck disable=SC1090
-source "$(realpath -Ls "$(dirname "$0")/../lib/shell/data-processing.bash")"
-# shellcheck disable=SC1090
-source "$(realpath -Ls "$(dirname "$0")/../lib/shell/gitlab.bash")"
+source "$HOME/.local/lib/shell/gitlab.bash"
 
 [[ -z "${target:-}" ]]  && { echo "target is required"; exit 1; }
 [[ -z "${message:-}" ]] && { echo "message is required"; exit 1; }

@@ -14,25 +14,14 @@ while [ : ]; do
 	esac
 done
 
-# shellcheck disable=SC1090
-source "$(realpath -Ls "$(dirname "$0")/../lib/shell/data-processing.bash")"
-# shellcheck disable=SC1090
-source "$(realpath -Ls "$(dirname "$0")/../lib/shell/gitlab.bash")"
+source "$HOME/.local/lib/shell/gitlab.bash"
 
 # https://docs.gitlab.com/ee/api/merge_requests.html#get-single-mr
 
-if [[ -x "$(command -v xhs)" ]]; then
-	http_fetch_command=(
-		xhs
-		"${HOST}/$API/projects/$(url_encode "$PROJECT")/merge_requests/$1"
-		"${COMMON_XH_OPTIONS[@]}"
-	)
-else
-	http_fetch_command=(
-		curl
-		"https://${HOST}/$API/projects/$(url_encode "$PROJECT")/merge_requests/$1"
-		"${COMMON_CURL_OPTIONS[@]}"
-	)
-fi
+http_fetch_command=(
+	xhs
+	"${HOST}/$API/projects/$(url_encode "$PROJECT")/merge_requests/$1"
+	"${COMMON_XH_OPTIONS[@]}"
+)
 
 exec "${http_fetch_command[@]}"

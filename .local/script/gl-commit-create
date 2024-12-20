@@ -22,10 +22,7 @@ if [[ -t 0 ]]; then
 		esac
 	done
 
-	# shellcheck disable=SC1090
-	source "$(realpath -Ls "$(dirname "$0")/../lib/shell/data-processing.bash")"
-	# shellcheck disable=SC1090
-	source "$(realpath -Ls "$(dirname "$0")/../lib/shell/gitlab.bash")"
+	source "$HOME/.local/lib/shell/gitlab.bash"
 
 	[[ -z "${BRANCH:-}" ]]  && { echo "branch is required"; exit 1; }
 	[[ -z "${message:-}" ]] && { echo "message is required"; exit 1; }
@@ -60,10 +57,7 @@ else
 		esac
 	done
 
-	# shellcheck disable=SC1090
-	source "$(realpath -Ls "$(dirname "$0")/../lib/shell/data-processing.bash")"
-	# shellcheck disable=SC1090
-	source "$(realpath -Ls "$(dirname "$0")/../lib/shell/gitlab.bash")"
+	source "$HOME/.local/lib/shell/gitlab.bash"
 
 	payload="$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
 	trap 'rm -f "$payload"' EXIT
@@ -77,4 +71,4 @@ http_post_command=(
 	@"$payload"
 )
 
-"${http_post_command[@]}"
+exec "${http_post_command[@]}"

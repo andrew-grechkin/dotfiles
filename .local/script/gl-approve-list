@@ -2,74 +2,51 @@
 
 set -Eeuo pipefail
 
-args="$(getopt --name="$0" --options 'th:p:' --longoptions 'table,host:,project:' -- "$@")"
+args="$(getopt --name="$0" --options 'jh:p:' --longoptions 'json,host:,project:' -- "$@")"
 eval set -- "$args"
-
-if [[ -t 1 ]]; then
-	table='1'
-fi
 
 # shellcheck disable=SC2078
 while [ : ]; do
 	case "$1" in
 		-h | --host) HOST="$2"; shift 2 ;;
+		-j | --json) json='1'; shift ;;
 		-p | --project) PROJECT="$2"; shift 2 ;;
-		-t | --table) table='1'; shift ;;
 		--) shift; break ;;
 	esac
 done
 
-# shellcheck disable=SC1090
-source "$(realpath -Ls "$(dirname "$0")/../lib/shell/data-processing.bash")"
-# shellcheck disable=SC1090
-source "$(realpath -Ls "$(dirname "$0")/../lib/shell/gitlab.bash")"
+source "$HOME/.local/lib/shell/data-processing.bash"
+source "$HOME/.local/lib/shell/gitlab.bash"
 
-# https://docs.gitlab.com/ee/api/merge_request_approvals.html#merge-request-level-mr-approvals
+fetcher=("$0" "${pt_args[@]}")
+export FZF_RELOAD_CMD="${fetcher[*]@Q}"
 
-if [[ -x "$(command -v xhs)" ]]; then
+if [[ -n "${json:-}" ]]; then
+	# https://docs.gitlab.com/ee/api/merge_request_approvals.html#merge-request-level-mr-approvals
 	http_fetch_command=(
 		xhs
 		"$HOST/$API/projects/$(url_encode "$PROJECT")/merge_requests/$1/approvals"
 		"${COMMON_XH_OPTIONS[@]}"
 	)
+	exec "${http_fetch_command[@]}"
 else
-	http_fetch_command=(
-		curl
-		"https://${HOST}/$API/projects/$(url_encode "$PROJECT")/merge_requests/$1/approvals"
-		"${COMMON_CURL_OPTIONS[@]}"
-	)
-fi
-
-if [[ "${table:-0}" == "1" ]]; then
-	"${http_fetch_command[@]}" | {
+	"${fetcher[@]}" "$@" -j | {
 		# reset sequence sgr0 for tmux-256color adds ^O at the end (^O is shift-in, switch to non-graphic character set)
 		# less prints ^O by default even when -R arg is passed and this makes output ugly
 		# this is most probably a bug in less itself because with -r flag less is not printing ^O symbols,
 		# but unfortunatelly -r flag is unusable because it breaks text formatting (colums)
-		# so there are 2 ways of solving this issue:
+		# so there are 3 ways of solving this issue:
 		# * process all ouptut with `sed 's/\x0f//g'` before passing it to less
 		# * use terminal which doesn't add ^O as a part of reset sequence (xterm)
-		TERM=xterm
+		# * use hardcoded ansi_reset (might be not portable but who cares)
+		# TERM=xterm
 		jq_fields=(
-			"id;$(tput setaf 3)\(.user.id)$(tput sgr0)"
+			"id;$(tput setaf 3)\(.user.id)$ansi_reset"
 			"uname;\(.user.username)"
-			"name;$(tput setaf 12)\(.user.name)$(tput sgr0)"
-			"url;$(tput setaf 14)\(.user.web_url)$(tput sgr0)"
+			"name;$(tput setaf 12)\(.user.name)$ansi_reset"
+			"url;$(tput setaf 14)\(.user.web_url)$ansi_reset"
 		)
 
-		col_names=()
-		jq_filter=()
-		for field in "${jq_fields[@]}"; do
-			IFS=";" read -r -a keyval <<< "$field"
-			col_names+=("${keyval[0]}")
-			jq_filter+=("${keyval[1]}")
-		done
-
-		{
-			echo -e "$(join "${col_names[@]}")"
-			jq -r ".approved_by[] | \"$(join "${jq_filter[@]}")\""
-		} | column -ts '	'
+		jq '.approved_by' | json-array-to-tsv "sort_by(.iid) | reverse" "${jq_fields[@]}"
 	}
-else
-	exec "${http_fetch_command[@]}"
 fi

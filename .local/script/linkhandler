@@ -2,7 +2,7 @@
 
 set -Eeuo pipefail
 
-[ -z "$1" ] && {
+[ "$1" = "" ] && {
 	"$BROWSER"
 	exit
 }
@@ -12,11 +12,11 @@ case "$1" in
 		setsid -f mpv -quiet "$1" &>/dev/null
 		;;
 	*png | *jpg | *jpe | *jpeg | *gif)
-		curl -sL "$1" >"/tmp/$(echo "$1" | sed "s/.*\///")" \
+		cget "$1" >"/tmp/$(echo "$1" | sed "s/.*\///")" \
 			&& sxiv -a "/tmp/$(echo "$1" | sed "s/.*\///")" &>/dev/null &
 		;;
 	*mp3 | *flac | *opus | *mp3?source*)
-		setsid -f tsp curl -LO "$1" &>/dev/null
+		setsid -f tsp cget "$1" &>/dev/null
 		;;
 	*)
 		if [ -f "$1" ]; then

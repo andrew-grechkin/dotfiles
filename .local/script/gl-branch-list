@@ -2,75 +2,65 @@
 
 set -Eeuo pipefail
 
-[[ -x "$(command -v jq)" ]] || {
-	echo "jq is not installed. Please install from 'https://jqlang.github.io/jq/download/'"
-	exit 1
-}
-
-if [[ -t 1 ]]; then
-	[[ -x "$(command -v fzf)" ]] || {
-		echo "fzf is not installed. Please install from 'https://github.com/junegunn/fzf#installation'"
-		exit 1
-	}
-
-	table='1'
-else
-	table='0'
-fi
-
-args="$(getopt --name="$0" --options 'th:p:' --longoptions 'table,host:,project:' -- "$@")"
+args="$(getopt --name="$0" --options 'jh:p:' --longoptions 'json,host:,project:' -- "$@")"
 eval set -- "$args"
-args=("$@")
+pt_args=()
 
 # shellcheck disable=SC2078
 while [ : ]; do
 	case "$1" in
-		-h | --host) HOST="$2"; shift 2 ;;
-		-p | --project) PROJECT="$2"; shift 2 ;;
-		-t | --table) table='1'; shift ;;
+		-h | --host) HOST="$2"; pt_args+=(-h "$2"); shift 2 ;;
+		-j | --json) json='1'; shift ;;
+		-p | --project) PROJECT="$2"; pt_args+=(-p "$2"); shift 2 ;;
 		--) shift; break ;;
 	esac
 done
 
-# shellcheck disable=SC1090
-source "$(realpath -Ls "$(dirname "$0")/../lib/shell/data-processing.bash")"
-# shellcheck disable=SC1090
-source "$(realpath -Ls "$(dirname "$0")/../lib/shell/gitlab.bash")"
+source "$HOME/.local/lib/shell/data-processing.bash"
+source "$HOME/.local/lib/shell/gitlab.bash"
 
-if [[ -t 1 ]]; then
+fetcher=("$0" "${pt_args[@]}")
+export FZF_RELOAD_CMD="${fetcher[*]@Q}"
+
+if [[ -n "${json:-}" ]]; then
+	# https://docs.gitlab.com/ee/api/branches.html#list-repository-branches
+
+	http_fetch_command=(
+		xhs
+		"${HOST}/$API/projects/$(url_encode "$PROJECT")/repository/branches?per_page=100"
+		"${COMMON_XH_OPTIONS[@]}"
+	)
+
+	exec "${http_fetch_command[@]}"
+elif [[ -t 1 ]]; then
 	if [[ -x "$(command -v delta)" ]]; then
 		prettify_diff=('|' delta --paging=always)
 	else
 		prettify_diff=()
 	fi
 
-	fetcher=(
-		"$0"
-		--table
-		"${args[@]}"
-	)
-
 	fzf_cmd=(
 		fzf
 		--ansi
-		# --bind="alt-a:reload-sync( (set -x; exec &>/tmp/git-approve.log; gl-mr-approve -h '$HOST' -p '$PROJECT' {+1}); ${fetcher[*]@Q})"
+		# --bind="alt-a:reload-sync( (set -x; exec &>/tmp/git-approve.log; gl-mr-approve -h '$HOST' -p '$PROJECT' {+1}); $FZF_RELOAD_CMD)"
 		--bind="alt-b:execute-silent(python3 -mwebbrowser {-1})"
-		# --bind="alt-m:reload-sync( (set -x; exec &>/tmp/git-merge.log; gl-mr-merge -h '$HOST' -p '$PROJECT' {+1}); ${fetcher[*]@Q})"
+		# --bind="alt-m:reload-sync( (set -x; exec &>/tmp/git-merge.log; gl-mr-merge -h '$HOST' -p '$PROJECT' {+1}); $FZF_RELOAD_CMD)"
+		--bind="alt-i:execute(gl-branch-diff {1} ${prettify_diff[*]})"
 		--bind="alt-p:toggle-preview,ctrl-alt-w:toggle-preview-wrap,ctrl-s:toggle-sort"
-		--bind="alt-r:reload-sync(gl-branch-delete -h '$HOST' -p '$PROJECT' {+1} &>/dev/null; ${fetcher[*]@Q})"
-		--bind="ctrl-m:execute(gl-branch-diff {1} ${prettify_diff[*]})"
-		--bind="ctrl-r:reload-sync(${fetcher[*]@Q})"
-		--bind="ctrl-x:become(echo -n {+1} | tee >(clipcopy); echo)"
+		--bind="alt-r:execute-silent(tmux-pane-run -- gl-branch-delete -h '$HOST' -p '$PROJECT' {+1})"
+		--bind="ctrl-r:reload-sync($FZF_RELOAD_CMD)"
+		--bind="ctrl-m:become(echo -n {+1} | tee >(clipcopy); echo)"
+		--bind="ctrl-x:become(echo {q} | tee >(clipcopy) &>/dev/stderr; cat {+f})"
 		--bind="ctrl-y:execute-silent(echo -n {} | clipcopy)"
 		--bind="esc:cancel"
-		--bind="home:top"
-		--bind="tab:toggle+down,shift-tab:toggle+up"
+		--bind="home:top,tab:toggle-out,shift-tab:toggle-in,ctrl-a:toggle-all"
 		--delimiter="\t"
 		--header-lines=1
-		--header="A-b:browse A-p:preview A-r:remove C-r:reload C-y:yank Enter:diff"
+		--header="A-b:browse A-p:preview A-i:diff A-r:remove C-r:reload C-x:dump C-y:yank"
+		--listen
 		--multi
 		# --no-sort
-		--preview-window=right:60%:border-left:wrap:hidden
+		--preview-window="right:60%:border-left:wrap:hidden"
 		--preview="gl-branch-diff {1} ${prettify_diff[*]:0:2}"
 		--prompt="$PROJECT > "
 		--reverse
@@ -78,40 +68,21 @@ if [[ -t 1 ]]; then
 		--scroll-off=4
 		--tabstop=4
 		--track
+		--with-nth="..-2"
 	)
 
 	"${fetcher[@]}" | "${fzf_cmd[@]}"
 else
-	# https://docs.gitlab.com/ee/api/branches.html#list-repository-branches
+	jq_fields=(
+		"name;$(tput setaf 3)\(.name)$(tput sgr0)"
+		"updated;$(tput setaf 2)\(.commit.committed_date[0:10])$(tput sgr0)"
+		'merged;\(if .merged then 1 else 0 end)'
+		'default;\(if .default then 1 else 0 end)'
+		'protected;\(if .protected then 1 else 0 end)'
+		"author;$(tput setaf 13)\(.commit.author_name)$(tput sgr0)"
+		"title;$(tput setaf 7)\(.commit.title)$(tput sgr0)"
+		"url;$(tput setaf 14)\(.web_url)$(tput sgr0)"
+	)
 
-	if [[ -x "$(command -v xhs)" ]]; then
-		http_fetch_command=(
-			xhs
-			"${HOST}/$API/projects/$(url_encode "$PROJECT")/repository/branches"
-			"${COMMON_XH_OPTIONS[@]}"
-		)
-	else
-		http_fetch_command=(
-			curl
-			"https://${HOST}/$API/projects/$(url_encode "$PROJECT")/repository/branches"
-			"${COMMON_CURL_OPTIONS[@]}"
-		)
-	fi
-
-	if [[ "$table" == "1" ]]; then
-		jq_fields=(
-			"name;$(tput setaf 3)\(.name)$(tput sgr0)"
-			"updated;$(tput setaf 2)\(.commit.committed_date[0:10])$(tput sgr0)"
-			'merged;\(if .merged then 1 else 0 end)'
-			'default;\(if .default then 1 else 0 end)'
-			'protected;\(if .protected then 1 else 0 end)'
-			"author;$(tput setaf 13)\(.commit.author_name)$(tput sgr0)"
-			"title;$(tput setaf 7)\(.commit.title)$(tput sgr0)"
-			"url;$(tput setaf 14)\(.web_url)$(tput sgr0)"
-		)
-
-		"${http_fetch_command[@]}" | json-array-to-tsv "sort_by(.commit.committed_date) | reverse" "${jq_fields[@]}"
-	else
-		"${http_fetch_command[@]}"
-	fi
+	"${fetcher[@]}" -j | json-array-to-tsv "sort_by(.commit.committed_date) | reverse" "${jq_fields[@]}"
 fi

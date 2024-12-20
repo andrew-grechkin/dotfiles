@@ -5,4 +5,4 @@ set -Eeuo pipefail
 CURRENT_SCRIPT="$(basename "$0")"
 fetch_data=("${CURRENT_SCRIPT#fzf-}" "$@")
 
-"${fetch_data[@]}" | FETCH_CMD="${fetch_data[*]@Q}" fzf-git-log
+"${fetch_data[@]}" | FZF_RELOAD_CMD="${fetch_data[*]@Q}" fzf-git-log

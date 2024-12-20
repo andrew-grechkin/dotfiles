@@ -20,10 +20,7 @@ done
 
 # => defaults ----------------------------------------------------------------------------------------------------- {{{1
 
-# shellcheck disable=SC1090
-source "$(realpath -Ls "$(dirname "$0")/../lib/shell/data-processing.bash")"
-# shellcheck disable=SC1090
-source "$(realpath -Ls "$(dirname "$0")/../lib/shell/gitlab.bash")"
+source "$HOME/.local/lib/shell/gitlab.bash"
 
 # => requirements ------------------------------------------------------------------------------------------------- {{{1
 
@@ -44,15 +41,21 @@ else
 		{
 			"action": (if $a == "A" then "create" elif $a == "D" then "delete" elif $a == "M" then "update" else "undef" end),
 			"file_path": $file,
-			"content": $content
-		}
+        } | if ($a != "D") then .content = $content end
 		EO_ACTION
 	)
 
+    # shellcheck disable=SC2016
 	if actions="$(echo "$changes" \
-        | xargs -n 2 bash -c "set -e; [[ -r \"\$1\" ]] || { echo file not found: \"\$1\" >/dev/stderr; exit 2; }; jq -nc --arg a \"\$0\" --rawfile content \"\$1\" --arg file \"\$1\" '$jq_convert'")"; then
+		| xargs -n 2 bash -c '
+			set -e;
+			[[ "$0" == "D" || -r "$1" ]] || { echo file not found: "$1" >/dev/stderr; exit 2; }
+			pth="$1"
+			[[ "$0" == "D" ]] && { pth=/dev/null; }
+			jq -nc --arg a "$0" --rawfile content "$pth" --arg file "$1" '\'"$jq_convert"\'
+	)"; then
 		echo "$actions" \
-            | jq -cnR --arg branch "$BRANCH" --arg message "$message" '{
+			| jq -cnR --arg branch "$BRANCH" --arg message "$message" '{
 			branch: $branch,
 			commit_message: $message,
 			actions: [inputs | fromjson]
