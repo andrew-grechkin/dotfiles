@@ -1,79 +1,99 @@
-#!/usr/bin/env perl
+#!/usr/bin/env bash
 
-use v5.40;
-use autodie;
-use open ':locale';
-use utf8;
-use warnings     qw(FATAL utf8);
-use experimental qw(declared_refs refaliasing);
+# => header (source able) ----------------------------------------------------------------------------------------- {{{1
 
-use English    qw(-no_match_vars);
-use IPC::Open2 qw(open2);
-use JSON::PP   qw();
-
-use constant {
-    'JSON_ONE_LINE' => JSON::PP->new->canonical->utf8(0)->boolean_values(false, true)->pretty(0)->indent(0),
-    'ABORTED'       => 130,
-};
-
-sub main {
-    my \@history = fetch_history();
-
-    my @cmd = (
-        'fzf',                                                  '--ansi',
-        '--reverse',                                            "--delimiter=\t",
-        '--no-multi',                                           '--with-nth=2',
-        q(--preview=jq -Rrn 'inputs | fromjson' <<< '"'{2}'"'), '--bind=ctrl-y:execute-silent()',
-        '--preview-window=right:50%:border-left:wrap:nohidden', '--prompt=clipboard history >',
-    );
-
-    my $pid = open2(my $chld_out, my $chld_in, @cmd) // do {
-        say {*STDERR} 'failed to execute fzf';
-        return 1;
-    };
-    binmode($chld_in, ':encoding(UTF-8)');
-
-    foreach my ($index, $value) (builtin::indexed(@history)) {
-        say {$chld_in} ($index, "\t", JSON_ONE_LINE()->encode($value) =~ s{^"|"$}{}rg);
-    }
-    close $chld_in;
-
-    waitpid($pid, 0)
-        or die "unable to wait for child to finish: $!\n";
-
-    my $child_exit_status = $CHILD_ERROR >> 8;
-    exit if $child_exit_status == ABORTED();
-
-    my $out = <$chld_out>;
-    close $chld_out;
-
-    my ($num) = split m/\t/, $out, 2;
-
-    save_to_clipboard($history[$num]) if defined $num;
-
-    return 0;
+function klipper-item-action() {
+	busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- showKlipperManuallyInvokeActionMenu
 }
+export -f klipper-item-action
 
-sub fetch_history() {
-    my \%payload = JSON_ONE_LINE()
-        ->decode(
-        `busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper getClipboardHistoryMenu`);
-
-    # ignore images and empty lines
-    my @m = grep {$_ && !m/▨/g} ($payload{data}[0] // [])->@*;
-
-    return \@m;
+function klipper-item-get() {
+	busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- getClipboardHistoryItem i "$1" \
+		| jq '.data[0]'
 }
+export -f klipper-item-get
 
-sub save_to_clipboard($str) {
-    open(my $pipe => '|-', 'clipcopy')
-        or die $!;
-    print {$pipe} $str;
-    close $pipe
-        or die $!;
-    return;
+function klipper-item-set() {
+	# don't use this, the API is a crap. It should set by id, not by content
+	# (it's quite tedious to pass text with special symbols and quotes as a command line argument)
+	# busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- setClipboardContents s "$1"
+	clipcopy "$1"
 }
+export -f klipper-item-set
 
-exit main();
+function klipper-items-clear() {
+	busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- clearClipboardHistory
+}
+export -f klipper-items-clear
 
-__END__
+function klipper-items-get() {
+	busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- getClipboardHistoryMenu \
+		| jq -r '.data[]'
+}
+export -f klipper-items-get
+
+# => body (executable) -------------------------------------------------------------------------------------------- {{{1
+
+if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under condition to make file source able
+	set -Eeuo pipefail
+
+	function help() {
+		name=$(basename "$0")
+		echo "$name - Browse clipboard history in terminal"
+		echo
+		echo "Usage:"
+		echo "    $name [options]"
+		echo
+		echo "Command options:"
+		echo "   -h, --help         print help and exit"
+		echo "   -j, --json         print as json (suppress UI)"
+	} &>/dev/stderr
+
+	args=$(getopt --name="$0" --options 'hj' --longoptions 'help,json' -- "$@")
+	eval set -- "$args"
+
+	while ((1)); do
+		case "$1" in
+			-h | --help) help; exit ;;
+			-j | --json) json='1'; shift ;;
+			--) shift; break ;;
+		esac
+	done
+
+	if [[ -n "${json:-}" ]]; then
+		klipper-items-get
+	elif [[ -t 1 ]]; then
+		fzf_cmd=(
+			fzf
+			--ansi
+			--bind="alt-p:toggle-preview,ctrl-s:toggle-sort,ctrl-t:toggle-track"
+			--bind="ctrl-d:half-page-down,ctrl-u:half-page-up,home:top"
+			--bind="ctrl-e:toggle-preview-wrap,ctrl-n:preview-down,ctrl-p:preview-up"
+			--bind="ctrl-w:backward-kill-word,esc:cancel"
+			--delimiter="\t"
+			--listen
+			--no-multi
+			--reverse
+			--scroll-off=4
+			--tabstop=4
+			--with-nth="2.."
+		)
+		fzf_args=(
+			--bind="alt-c:become(klipper-items-clear)"
+			--bind="alt-i:execute(klipper-item-get {1} | jq -j | bat --color always --style numbers,grid --paging always --wrap never)"
+			--bind="alt-enter:become(klipper-item-get {1} | jq -j | primarycopy)"
+			--bind="alt-s:become(klipper-item-get {1} | jq -j | secondarycopy)"
+			--bind="ctrl-m:become(klipper-item-get {1} | jq -j | clipcopy)"
+			--bind="ctrl-r:reload($0)"
+			--bind="ctrl-y:become(klipper-item-get {1} | jq -j | clipcopy)"
+			--header='C-j/k:move C-r:reload A-c:clear A-i:inspect A-p:preview Enter:select'
+			--preview-window="right:40%:border-left:nowrap:nohidden"
+			--preview="klipper-item-get {1} | jq -j | bat --color always --style plain"
+			--prompt="clipboard history > "
+		)
+		export SHELL="$BASH" # enforce bash for all fzf sub shells
+		"$0" | "${fzf_cmd[@]}" "${fzf_args[@]}"
+	else
+		"$0" -j | jq -r 'to_entries | map([.key, .value]).[] | select(.[1] | test("▨") | not) | @tsv'
+	fi
+fi

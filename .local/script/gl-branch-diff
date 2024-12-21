@@ -3,8 +3,9 @@
 set -Eeuo pipefail
 
 source "$HOME/.local/lib/shell/gitlab.bash"
+gl-redefine-vars
 
-HEAD=$(2>/dev/null git fetch --no-tags --porcelain "$REMOTE" HEAD | perl -nal -E'say $F[2]')
->/dev/null git fetch --no-tags --porcelain "$REMOTE" "$1"
+HEAD=$(2>/dev/null git fetch --no-tags --porcelain "$GL_REMOTE" HEAD | perl -nal -E'say $F[2]')
+>/dev/null git fetch --no-tags --porcelain "$GL_REMOTE" "$1"
 
 exec git diff "$HEAD...FETCH_HEAD"
