@@ -1,114 +1,121 @@
 #!/usr/bin/env bash
 
-set -Eeuo pipefail
+# => header (source able) ----------------------------------------------------------------------------------------- {{{1
 
-query='?per_page=100'
-wip='0'
-if [[ -t 1 ]]; then
-	since='2 month ago'
-	state='opened'
-else
-	since='3 month ago'
-	state='all'
-fi
-
-args="$(getopt --name="$0" --options 'jwa:h:p:s:' --longoptions 'json,wip,author:,host:,project:,since:,state:' -- "$@")"
-eval set -- "$args"
-pt_args=()
-
-# shellcheck disable=SC2078
-while [ : ]; do
-	case "$1" in
-		-a | --author) query+="&author_username=$2"; pt_args+=(-a "$2"); shift 2 ;;
-		-h | --host) HOST="$2"; pt_args+=(-h "$2"); shift 2 ;;
-		-j | --json) json='1'; shift ;;
-		-p | --project) PROJECT="$2"; pt_args+=(-p "$2"); shift 2 ;;
-		--since) since="$2"; pt_args+=(--since "$2"); shift 2 ;;
-		-s | --state) state="$2"; shift 2 ;;
-		-w | --wip) wip='1'; pt_args+=(-w); shift ;;
-		--) shift; break ;;
-	esac
-done
-
-source "$HOME/.local/lib/shell/data-processing.bash"
 source "$HOME/.local/lib/shell/gitlab.bash"
 
-fetcher=("$0" "${pt_args[@]}" -s "$state" --since "$since")
-export FZF_RELOAD_CMD="${fetcher[*]@Q}"
+# => body (executable) -------------------------------------------------------------------------------------------- {{{1
 
-if [[ -n "${json:-}" ]]; then
-	[[ "$wip" == '0' ]] && query+='&wip=no'
-	[[ -n "$state" ]]   && query+="&state=$state"
-	if [[ -n "${since:-}" ]]; then
-		# updated_after=$(date --rfc-3339=seconds --date="$(date +%Y-%m-01) -1 month")
-		updated_after=$(date --rfc-3339=seconds --date="$since")
-		query+="&updated_after=$(url_encode "$updated_after")"
-	fi
+if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under condition to make file source able
+	set -Eeuo pipefail
 
-	# https://docs.gitlab.com/ee/api/merge_requests.html#list-project-merge-requests
-	exec xhs "${HOST}/$API/projects/$(url_encode "$PROJECT")/merge_requests${query}" "${COMMON_XH_OPTIONS[@]}"
-elif [[ -t 1 ]]; then
-	if [[ -x "$(command -v json-pretty)" ]]; then
-		prettify_json=(json-pretty --no-filename --color=always)
+	query='?per_page=100'
+	wip='0'
+	if [[ -t 1 ]]; then
+		since='2 month ago'
+		state='opened'
 	else
-		prettify_json=(jq -SC '|' less)
+		since='3 month ago'
+		state='all'
 	fi
 
-	if [[ -x "$(command -v delta)" ]]; then
-		prettify_diff=('|' delta --paging=always)
+	args=$(getopt --name="$0" --options 'jwa:h:p:s:' --longoptions 'json,wip,author:,host:,project:,since:,state:' -- "$@")
+	eval set -- "$args"
+	pt_args=()
+
+	while ((1)); do
+		case "$1" in
+			-a | --author) query+="&author_username=$2"; pt_args+=(-a "$2"); shift 2 ;;
+			-h | --host) GL_HOST="$2"; pt_args+=(-h "$2"); shift 2 ;;
+			-j | --json) json='1'; shift ;;
+			-p | --project) GL_PROJECT="$2"; pt_args+=(-p "$2"); shift 2 ;;
+			--since) since="$2"; pt_args+=(--since "$2"); shift 2 ;;
+			-s | --state) state="$2"; shift 2 ;;
+			-w | --wip) wip='1'; pt_args+=(-w); shift ;;
+			--) shift; break ;;
+		esac
+	done
+
+	gl-redefine-vars
+
+	fetcher=("$0" "${pt_args[@]}" -s "$state" --since "$since")
+	export FZF_RELOAD_CMD="${fetcher[*]@Q}"
+
+	if [[ -n "${json:-}" ]]; then
+		[[ "$wip" == '0' ]] && query+='&wip=no'
+		[[ -n "$state" ]]   && query+="&state=$state"
+		if [[ -n "${since:-}" ]]; then
+			# updated_after=$(date --rfc-3339=seconds --date="$(date +%Y-%m-01) -1 month")
+			updated_after=$(date --rfc-3339=seconds --date="$since")
+			query+="&updated_after=$(url_encode "$updated_after")"
+		fi
+		gl-mr-list "$GL_PROJECT" "$query"
+	elif [[ -t 1 ]]; then
+		if [[ -x "$(command -v json-pretty)" ]]; then
+			prettify_json=(json-pretty --no-filename --color=always)
+		else
+			prettify_json=(jq -SC '|' less)
+		fi
+
+		if [[ -x "$(command -v delta)" ]]; then
+			prettify_diff=('|' delta --paging=always)
+		else
+			prettify_diff=()
+		fi
+
+		fzf_cmd=(
+			fzf
+			--ansi
+			--bind="alt-p:toggle-preview,ctrl-s:toggle-sort,ctrl-t:toggle-track"
+			--bind="ctrl-d:half-page-down,ctrl-u:half-page-up,home:top"
+			--bind="ctrl-e:toggle-preview-wrap,ctrl-n:preview-down,ctrl-p:preview-up"
+			--bind="ctrl-w:backward-kill-word,esc:cancel"
+			--delimiter="\t"
+			--header-lines=1
+			--listen
+			--multi
+			--reverse
+			--scroll-off=4
+			--tabstop=4
+			--track
+			--with-nth="..-2"
+		)
+		fzf_args=(
+			--bind="alt-a:execute-silent(tmux-pane-run -- gl-mr-approve -h '$GL_HOST' -p '$GL_PROJECT' {+1})"
+			--bind="alt-b:execute-silent(python3 -mwebbrowser {-1})"
+			--bind="alt-i:execute(gl-mr-diff {1} ${prettify_diff[*]})"
+			--bind="alt-m:execute-silent(tmux-pane-run -- gl-mr-merge -h '$GL_HOST' -p '$GL_PROJECT' {+1})"
+			--bind="alt-q:execute({ echo \"Approved by:\"; echo; gl-approve-list -h '$GL_HOST' -p '$GL_PROJECT' {1}; } | $PAGER)"
+			--bind="alt-r:execute-silent(tmux-pane-run -- gl-mr-approve -h '$GL_HOST' -p '$GL_PROJECT' {+1} -u)"
+			--bind="alt-s:execute(gl-mr-get '$GL_PROJECT' {1} | ${prettify_json[*]})"
+			--bind="ctrl-r:reload-sync($FZF_RELOAD_CMD)"
+			--bind="ctrl-m:become(echo -n {+1} | tee >(clipcopy); echo)"
+			--bind="ctrl-x:become(echo {q} | tee >(clipcopy) &>/dev/stderr; cat {+f})"
+			--bind="ctrl-y:execute-silent(echo -n {+1} | clipcopy)"
+			--header="A-a:approve A-b:browse A-p:preview A-q:approvals A-i:diff A-m:merge A-s:payload A-r:revoke C-r:reload C-x:dump C-y:yank"
+			--preview-window="right:60%:border-left:wrap:hidden"
+			--preview="gl-mr-diff {1} ${prettify_diff[*]:0:2}"
+			--prompt="$GL_PROJECT > "
+		)
+		export SHELL="$BASH" # enforce bash for all fzf sub shells
+		"${fetcher[@]}" | "${fzf_cmd[@]}" "${fzf_args[@]}"
 	else
-		prettify_diff=()
+		source "$HOME/.local/lib/shell/data-processing.bash"
+
+		jq_fields=(
+			"id;$(tput setaf 3)\(.iid)$(tput sgr0)"
+			"created;$(tput setaf 2)\(.updated_at[0:10])$(tput sgr0)"
+			'wip;\(if .work_in_progress then 1 else 0 end)'
+			'state;\(.state)'
+			# 'project_id;\(.project_id)'
+			"name;$(tput setaf 12)\(.author.name)$(tput sgr0)"
+			"author;$(tput setaf 13)\(.author.username)$(tput sgr0)"
+			# "project;$(tput setaf 6)$PROJECT$(tput sgr0)"
+			"branch;$(tput setaf 7)\(.source_branch)$(tput sgr0)"
+			'title;\(.title)'
+			"url;$(tput setaf 14)\(.web_url)$(tput sgr0)"
+		)
+
+		"${fetcher[@]}" -j | json-array-to-tsv "sort_by(.iid) | reverse" "${jq_fields[@]}"
 	fi
-
-	fzf_cmd=(
-		fzf
-		--ansi
-		--bind="alt-a:execute-silent(tmux-pane-run -t 4 -- gl-mr-approve -h '$HOST' -p '$PROJECT' {+1})"
-		--bind="alt-b:execute-silent(python3 -mwebbrowser {-1})"
-		--bind="alt-i:execute(gl-mr-diff {1} ${prettify_diff[*]})"
-		--bind="alt-m:execute-silent(tmux-pane-run -t 4 -- gl-mr-merge -h '$HOST' -p '$PROJECT' {+1})"
-		--bind="alt-p:toggle-preview,ctrl-alt-w:toggle-preview-wrap,ctrl-s:toggle-sort"
-		--bind="alt-q:execute({ echo \"Approved by:\"; echo; gl-approve-list -h '$HOST' -p '$PROJECT' {1}; } | $PAGER)"
-		--bind="alt-r:execute-silent(tmux-pane-run -t 4 -- gl-mr-approve -h '$HOST' -p '$PROJECT' {+1} -u)"
-		--bind="alt-s:execute(gl-mr {1} | ${prettify_json[*]})"
-		--bind="ctrl-r:reload-sync($FZF_RELOAD_CMD)"
-		--bind="ctrl-m:become(echo -n {+1} | tee >(clipcopy); echo)"
-		--bind="ctrl-x:become(echo {q} | tee >(clipcopy) &>/dev/stderr; cat {+f})"
-		--bind="ctrl-y:execute-silent(echo -n {+1} | clipcopy)"
-		--bind="esc:cancel"
-		--bind="home:top,tab:toggle-out,shift-tab:toggle-in,ctrl-a:toggle-all"
-		--delimiter="\t"
-		--header-lines=1
-		--header="A-a:approve A-b:browse A-p:preview A-q:approvals A-i:diff A-m:merge A-s:payload A-r:revoke C-r:reload C-x:dump C-y:yank"
-		--listen
-		--multi
-		# --no-sort
-		--preview-window="right:60%:border-left:wrap:hidden"
-		--preview="gl-mr-diff {1} ${prettify_diff[*]:0:2}"
-		--prompt="$PROJECT > "
-		--reverse
-		# --scheme=history
-		--scroll-off=4
-		--tabstop=4
-		--track
-		--with-nth="..-2"
-	)
-
-	"${fetcher[@]}" | "${fzf_cmd[@]}"
-else
-	jq_fields=(
-		"id;$(tput setaf 3)\(.iid)$(tput sgr0)"
-		"created;$(tput setaf 2)\(.updated_at[0:10])$(tput sgr0)"
-		'wip;\(if .work_in_progress then 1 else 0 end)'
-		'state;\(.state)'
-		# 'project_id;\(.project_id)'
-		"name;$(tput setaf 12)\(.author.name)$(tput sgr0)"
-		"author;$(tput setaf 13)\(.author.username)$(tput sgr0)"
-		# "project;$(tput setaf 6)$PROJECT$(tput sgr0)"
-		"branch;$(tput setaf 7)\(.source_branch)$(tput sgr0)"
-		'title;\(.title)'
-		"url;$(tput setaf 14)\(.web_url)$(tput sgr0)"
-	)
-
-	"${fetcher[@]}" -j | json-array-to-tsv "sort_by(.iid) | reverse" "${jq_fields[@]}"
 fi

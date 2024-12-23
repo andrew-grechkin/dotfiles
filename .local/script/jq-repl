@@ -73,9 +73,6 @@ fzf_cmd=(
 	--query="$query"
 )
 
-# enforcing BASH is necessary here because of bash specific escaping of quotes used in some operations
-SHELL="$(command -v bash)"
-export SHELL
-
+export SHELL="$BASH" # enforce bash for all fzf sub shells
 # exec would prevent trap from execution
 "${fzf_cmd[@]}"

@@ -106,14 +106,14 @@ BackSpace + super
 # r + super
 #	exo-open --launch FileManager
 r + super
-	wezterm start --always-new-process --class 'Main-Tmux' distrobox enter -n arch -- tmux -L arch
+	busctl --user -j call org.kde.CrowTranslate /org/kde/CrowTranslate/MainWindow org.kde.CrowTranslate.MainWindow translateSelection
 t + super
 	wezterm start --always-new-process --class 'Main-Tmux' tmux
 t + alt + super
-	busctl --user -j call org.kde.CrowTranslate /org/kde/CrowTranslate/MainWindow org.kde.CrowTranslate.MainWindow translateSelection
+	wezterm start --always-new-process --class 'Main-Tmux' distrobox enter -n arch -- tmux -L arch
 y + super
-#	wezterm start --always-new-process zellij
 	wezterm start --always-new-process bash
+#	wezterm start --always-new-process zellij
 y + alt + super
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/fzf-select" nerd
 u + super
@@ -124,8 +124,8 @@ o + super
 	opera
 o + alt + super
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-clipboard"
-p + alt + super
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pacman"
+bracketleft + super
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pkg"
 bracketleft + alt + super
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pkg-search"
 
@@ -152,10 +152,10 @@ semicolon + alt + super
 
 x + alt + super
     screen2text
+x + super
+    qrcode2text
 c + super
 	qalculate-gtk
-c + alt + super
-    qrcode2text
 # b + super
 #	exo-open --launch WebBrowser
 n + alt + super

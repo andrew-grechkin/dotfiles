@@ -1,20 +1,25 @@
 #!/usr/bin/env bash
 
+# => header (source able) ----------------------------------------------------------------------------------------- {{{1
+
+source "$HOME/.local/lib/shell/gitlab.bash"
+
+# => body (executable) -------------------------------------------------------------------------------------------- {{{1
+
 set -Eeuo pipefail
 
 if [[ -t 0 ]]; then
-	args="$(getopt --name="$0" --options 'h:p:a:b:c:f:m:' --longoptions 'host:,project:,action:,branch:,content:,file:,message:' -- "$@")"
+	args=$(getopt --name="$0" --options 'h:p:a:b:c:f:m:' --longoptions 'host:,project:,action:,branch:,content:,file:,message:' -- "$@")
 	eval set -- "$args"
 
 	action='create'
 
-	# shellcheck disable=SC2078
-	while [ : ]; do
+	while ((1)); do
 		case "$1" in
-			-h | --host) HOST="$2"; shift 2 ;;
-			-p | --project) PROJECT="$2"; shift 2 ;;
+			-h | --host) GL_HOST="$2"; shift 2 ;;
+			-p | --project) GL_PROJECT="$2"; shift 2 ;;
 			-a | --action) action="$2"; shift 2 ;;
-			-b | --branch) BRANCH="$2"; shift 2 ;;
+			-b | --branch) GL_BRANCH="$2"; shift 2 ;;
 			-c | --content) content="$2"; shift 2 ;;
 			-f | --file) file="$2"; shift 2 ;;
 			-m | --message) message="$2"; shift 2 ;;
@@ -22,18 +27,17 @@ if [[ -t 0 ]]; then
 		esac
 	done
 
-	source "$HOME/.local/lib/shell/gitlab.bash"
-
-	[[ -z "${BRANCH:-}" ]]  && { echo "branch is required"; exit 1; }
 	[[ -z "${message:-}" ]] && { echo "message is required"; exit 1; }
 	[[ -z "${file:-}" ]]    && { echo "file is required"; exit 1; }
 	[[ -z "${content:-}" ]] && { echo "content is required"; exit 1; }
 
-	# https://docs.gitlab.com/ee/api/commits.html#create-a-commit-with-multiple-files-and-actions
+	gl-redefine-vars
+
+	[[ -z "${GL_BRANCH:-}" ]]  && { echo "branch is required"; exit 1; }
 
 	payload="$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
 	trap 'rm -f "$payload"' EXIT
-	>"$payload" jq -n --arg action "$action" --arg branch "$BRANCH" --rawfile content "$content" --arg file "$file" --arg message "$message" '{
+	>"$payload" jq -n --arg action "$action" --arg branch "$GL_BRANCH" --rawfile content "$content" --arg file "$file" --arg message "$message" '{
 		"branch": $branch,
 		"commit_message": $message,
 		"actions": [
@@ -44,31 +48,21 @@ if [[ -t 0 ]]; then
 			}
 		]
 	}'
+
+	gl-commit-create "$GL_PROJECT" "$payload"
 else
-	args="$(getopt --name="$0" --options 'h:p:' --longoptions 'host:,project:' -- "$@")"
+	args=$(getopt --name="$0" --options 'h:p:' --longoptions 'host:,project:' -- "$@")
 	eval set -- "$args"
 
-	# shellcheck disable=SC2078
-	while [ : ]; do
+	while ((1)); do
 		case "$1" in
-			-h | --host) HOST="$2"; shift 2 ;;
-			-p | --project) PROJECT="$2"; shift 2 ;;
+			-h | --host) GL_HOST="$2"; shift 2 ;;
+			-p | --project) GL_PROJECT="$2"; shift 2 ;;
 			--) shift; break ;;
 		esac
 	done
 
-	source "$HOME/.local/lib/shell/gitlab.bash"
+	gl-redefine-vars
 
-	payload="$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
-	trap 'rm -f "$payload"' EXIT
-	>"$payload" cat
+	gl-commit-create "$GL_PROJECT" <(cat)
 fi
-
-http_post_command=(
-	xhs
-	"${HOST}/$API/projects/$(url_encode "$PROJECT")/repository/commits"
-	"${COMMON_XH_OPTIONS[@]}"
-	@"$payload"
-)
-
-exec "${http_post_command[@]}"
