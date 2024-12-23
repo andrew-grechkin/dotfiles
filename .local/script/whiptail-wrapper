@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+colors='
+root=green,black
+border=green,black
+title=green,black
+roottext=white,black
+window=green,black
+actcheckbox=black,green
+actlistbox=black,white
+actsellistbox=black,green
+button=black,green
+checkbox=green,black
+compactbutton=white,black
+entry=lightgray,black
+listbox=white,black
+textbox=white,black
+'
+
+exec 3>&1
+NEWT_COLORS="$colors" 1>/dev/stderr whiptail --output-fd 3 --clear "$@"

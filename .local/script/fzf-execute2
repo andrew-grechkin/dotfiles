@@ -17,7 +17,5 @@ fzf_cmd=(
 	--with-nth=3..
 )
 
-SHELL="$(command -v bash)"
-export SHELL
-
+export SHELL="$BASH" # enforce bash for all fzf sub shells
 exec "${fzf_cmd[@]}" "$@"

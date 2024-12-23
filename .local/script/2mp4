@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+for file in *.{mkv,avi}; do
+	[[ -r "$file" ]] || continue
+
+	base="${file%.*}"
+	# ext="${file##*.}"
+
+	echo "converting: $file to $base.mp4" >/dev/stderr
+	ffpmeg_cmd=(
+		ffmpeg
+		-loglevel quiet
+		-stats
+		-fflags +genpts
+		-i "$file"
+		-map 0
+		-ignore_unknown
+		-c:v copy
+		-c:a copy
+		-sn
+		-movflags +faststart
+		"${base}.mp4"
+	)
+
+	"${ffpmeg_cmd[@]}"
+done

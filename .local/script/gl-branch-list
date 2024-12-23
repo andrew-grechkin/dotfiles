@@ -1,88 +1,90 @@
 #!/usr/bin/env bash
 
-set -Eeuo pipefail
+# => header (source able) ----------------------------------------------------------------------------------------- {{{1
 
-args="$(getopt --name="$0" --options 'jh:p:' --longoptions 'json,host:,project:' -- "$@")"
-eval set -- "$args"
-pt_args=()
-
-# shellcheck disable=SC2078
-while [ : ]; do
-	case "$1" in
-		-h | --host) HOST="$2"; pt_args+=(-h "$2"); shift 2 ;;
-		-j | --json) json='1'; shift ;;
-		-p | --project) PROJECT="$2"; pt_args+=(-p "$2"); shift 2 ;;
-		--) shift; break ;;
-	esac
-done
-
-source "$HOME/.local/lib/shell/data-processing.bash"
 source "$HOME/.local/lib/shell/gitlab.bash"
 
-fetcher=("$0" "${pt_args[@]}")
-export FZF_RELOAD_CMD="${fetcher[*]@Q}"
+# => body (executable) -------------------------------------------------------------------------------------------- {{{1
 
-if [[ -n "${json:-}" ]]; then
-	# https://docs.gitlab.com/ee/api/branches.html#list-repository-branches
+if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under condition to make file source able
+	set -Eeuo pipefail
 
-	http_fetch_command=(
-		xhs
-		"${HOST}/$API/projects/$(url_encode "$PROJECT")/repository/branches?per_page=100"
-		"${COMMON_XH_OPTIONS[@]}"
-	)
+	args=$(getopt --name="$0" --options 'jh:p:' --longoptions 'json,host:,project:' -- "$@")
+	eval set -- "$args"
+	pt_args=()
 
-	exec "${http_fetch_command[@]}"
-elif [[ -t 1 ]]; then
-	if [[ -x "$(command -v delta)" ]]; then
-		prettify_diff=('|' delta --paging=always)
+	while ((1)); do
+		case "$1" in
+			-h | --host) GL_HOST="$2"; pt_args+=(-h "$2"); shift 2 ;;
+			-j | --json) json='1'; shift ;;
+			-p | --project) GL_PROJECT="$2"; pt_args+=(-p "$2"); shift 2 ;;
+			--) shift; break ;;
+		esac
+	done
+
+	gl-redefine-vars
+
+	fetcher=("$0" "${pt_args[@]}")
+	export FZF_RELOAD_CMD="${fetcher[*]@Q}"
+
+	if [[ -n "${json:-}" ]]; then
+		gl-branches-get "$GL_PROJECT"
+	elif [[ -t 1 ]]; then
+		if [[ -x "$(command -v delta)" ]]; then
+			prettify_diff=('|' delta --paging=always)
+		else
+			prettify_diff=()
+		fi
+
+		fzf_cmd=(
+			fzf
+			--ansi
+			--bind="alt-p:toggle-preview,ctrl-s:toggle-sort,ctrl-t:toggle-track"
+			--bind="ctrl-d:half-page-down,ctrl-u:half-page-up,home:top"
+			--bind="ctrl-e:toggle-preview-wrap,ctrl-n:preview-down,ctrl-p:preview-up"
+			--bind="ctrl-w:backward-kill-word,esc:cancel"
+			--delimiter="\t"
+			--listen
+			--multi
+			--reverse
+			--scroll-off=4
+			--tabstop=4
+			--with-nth="..-2"
+		)
+		fzf_args=(
+			# --bind="alt-a:reload-sync( (set -x; exec &>/tmp/git-approve.log; gl-mr-approve -h '$HOST' -p '$PROJECT' {+1}); $FZF_RELOAD_CMD)"
+			# --bind="alt-m:reload-sync( (set -x; exec &>/tmp/git-merge.log; gl-mr-merge -h '$HOST' -p '$PROJECT' {+1}); $FZF_RELOAD_CMD)"
+			--bind="alt-b:execute-silent(python3 -mwebbrowser {-1})"
+			--bind="alt-c:execute-silent(gl-branches-clean '$GL_PROJECT')+reload-sync($FZF_RELOAD_CMD)"
+			--bind="alt-i:execute(gl-branch-diff {1} ${prettify_diff[*]})"
+			--bind="alt-m:execute-silent(m=\`git gmb\`; echo 'whiptail-wrapper --inputbox \"Creating MR with message:\" 8 78 | xargs -I% --no-run-if-empty echo gl-create-mr -t \$m -m % -s '{1} | tmux-pane-run -ft 2)"
+			--bind="alt-r:execute-silent(tmux-pane-run -- gl-branch-delete -h '$GL_HOST' -p '$GL_PROJECT' {+1})"
+			--bind="ctrl-r:reload-sync($FZF_RELOAD_CMD)"
+			--bind="ctrl-m:become(echo -n {+1} | tee >(clipcopy); echo)"
+			--bind="ctrl-x:become(echo {q} | tee >(clipcopy) &>/dev/stderr; cat {+f})"
+			--bind="ctrl-y:execute-silent(echo -n {} | clipcopy)"
+			--header-lines=1
+			--header="A-b:browse A-c:clear A-p:preview A-i:diff A-r:remove C-r:reload C-x:dump C-y:yank"
+			--preview-window="right:60%:border-left:wrap:hidden"
+			--preview="gl-branch-diff {1} ${prettify_diff[*]:0:2}"
+			--prompt="$GL_PROJECT > "
+		)
+		export SHELL="$BASH" # enforce bash for all fzf sub shells
+		"${fetcher[@]}" | "${fzf_cmd[@]}" "${fzf_args[@]}"
 	else
-		prettify_diff=()
+		source "$HOME/.local/lib/shell/data-processing.bash"
+
+		jq_fields=(
+			"name;$(tput setaf 3)\(.name)$(tput sgr0)"
+			"updated;$(tput setaf 2)\(.commit.committed_date[0:10])$(tput sgr0)"
+			'merged;\(if .merged then 1 else 0 end)'
+			'default;\(if .default then 1 else 0 end)'
+			'protected;\(if .protected then 1 else 0 end)'
+			"author;$(tput setaf 13)\(.commit.author_name)$(tput sgr0)"
+			"title;$(tput setaf 7)\(.commit.title)$(tput sgr0)"
+			"url;$(tput setaf 14)\(.web_url)$(tput sgr0)"
+		)
+
+		"${fetcher[@]}" -j | json-array-to-tsv "sort_by(.commit.committed_date) | reverse" "${jq_fields[@]}"
 	fi
-
-	fzf_cmd=(
-		fzf
-		--ansi
-		# --bind="alt-a:reload-sync( (set -x; exec &>/tmp/git-approve.log; gl-mr-approve -h '$HOST' -p '$PROJECT' {+1}); $FZF_RELOAD_CMD)"
-		--bind="alt-b:execute-silent(python3 -mwebbrowser {-1})"
-		# --bind="alt-m:reload-sync( (set -x; exec &>/tmp/git-merge.log; gl-mr-merge -h '$HOST' -p '$PROJECT' {+1}); $FZF_RELOAD_CMD)"
-		--bind="alt-i:execute(gl-branch-diff {1} ${prettify_diff[*]})"
-		--bind="alt-p:toggle-preview,ctrl-alt-w:toggle-preview-wrap,ctrl-s:toggle-sort"
-		--bind="alt-r:execute-silent(tmux-pane-run -- gl-branch-delete -h '$HOST' -p '$PROJECT' {+1})"
-		--bind="ctrl-r:reload-sync($FZF_RELOAD_CMD)"
-		--bind="ctrl-m:become(echo -n {+1} | tee >(clipcopy); echo)"
-		--bind="ctrl-x:become(echo {q} | tee >(clipcopy) &>/dev/stderr; cat {+f})"
-		--bind="ctrl-y:execute-silent(echo -n {} | clipcopy)"
-		--bind="esc:cancel"
-		--bind="home:top,tab:toggle-out,shift-tab:toggle-in,ctrl-a:toggle-all"
-		--delimiter="\t"
-		--header-lines=1
-		--header="A-b:browse A-p:preview A-i:diff A-r:remove C-r:reload C-x:dump C-y:yank"
-		--listen
-		--multi
-		# --no-sort
-		--preview-window="right:60%:border-left:wrap:hidden"
-		--preview="gl-branch-diff {1} ${prettify_diff[*]:0:2}"
-		--prompt="$PROJECT > "
-		--reverse
-		# --scheme=history
-		--scroll-off=4
-		--tabstop=4
-		--track
-		--with-nth="..-2"
-	)
-
-	"${fetcher[@]}" | "${fzf_cmd[@]}"
-else
-	jq_fields=(
-		"name;$(tput setaf 3)\(.name)$(tput sgr0)"
-		"updated;$(tput setaf 2)\(.commit.committed_date[0:10])$(tput sgr0)"
-		'merged;\(if .merged then 1 else 0 end)'
-		'default;\(if .default then 1 else 0 end)'
-		'protected;\(if .protected then 1 else 0 end)'
-		"author;$(tput setaf 13)\(.commit.author_name)$(tput sgr0)"
-		"title;$(tput setaf 7)\(.commit.title)$(tput sgr0)"
-		"url;$(tput setaf 14)\(.web_url)$(tput sgr0)"
-	)
-
-	"${fetcher[@]}" -j | json-array-to-tsv "sort_by(.commit.committed_date) | reverse" "${jq_fields[@]}"
 fi

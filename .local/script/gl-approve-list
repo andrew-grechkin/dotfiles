@@ -2,34 +2,29 @@
 
 set -Eeuo pipefail
 
-args="$(getopt --name="$0" --options 'jh:p:' --longoptions 'json,host:,project:' -- "$@")"
+args=$(getopt --name="$0" --options 'jh:p:' --longoptions 'json,host:,project:' -- "$@")
 eval set -- "$args"
 
-# shellcheck disable=SC2078
-while [ : ]; do
+while ((1)); do
 	case "$1" in
-		-h | --host) HOST="$2"; shift 2 ;;
+		-h | --host) GL_HOST="$2"; shift 2 ;;
 		-j | --json) json='1'; shift ;;
-		-p | --project) PROJECT="$2"; shift 2 ;;
+		-p | --project) GL_PROJECT="$2"; shift 2 ;;
 		--) shift; break ;;
 	esac
 done
 
-source "$HOME/.local/lib/shell/data-processing.bash"
 source "$HOME/.local/lib/shell/gitlab.bash"
+gl-redefine-vars
 
 fetcher=("$0" "${pt_args[@]}")
 export FZF_RELOAD_CMD="${fetcher[*]@Q}"
 
 if [[ -n "${json:-}" ]]; then
-	# https://docs.gitlab.com/ee/api/merge_request_approvals.html#merge-request-level-mr-approvals
-	http_fetch_command=(
-		xhs
-		"$HOST/$API/projects/$(url_encode "$PROJECT")/merge_requests/$1/approvals"
-		"${COMMON_XH_OPTIONS[@]}"
-	)
-	exec "${http_fetch_command[@]}"
+	gl-mr-approvals-get "$GL_PROJECT" "$1"
 else
+	source "$HOME/.local/lib/shell/data-processing.bash"
+
 	"${fetcher[@]}" "$@" -j | {
 		# reset sequence sgr0 for tmux-256color adds ^O at the end (^O is shift-in, switch to non-graphic character set)
 		# less prints ^O by default even when -R arg is passed and this makes output ugly

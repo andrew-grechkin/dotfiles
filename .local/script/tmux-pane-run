@@ -67,7 +67,7 @@ else
 	fi
 
 	tmux_args=(-v)
-	[[ -z "$focus" ]] && tmux_args+=(-d)
+	[[ -z "${focus:-}" ]] && tmux_args+=(-d)
 
 	tmux split-window "${tmux_args[@]}" "$cmd"
 fi
