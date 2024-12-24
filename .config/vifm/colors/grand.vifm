@@ -3,7 +3,7 @@
 highlight clear
 
 highlight TopLine        cterm=none              ctermfg=White        ctermbg=23
-highlight TopLineSel     cterm=bold              ctermfg=White        ctermbg=36
+highlight TopLineSel     cterm=bold              ctermfg=Black        ctermbg=36
 highlight StatusLine     cterm=bold              ctermfg=White        ctermbg=23
 if $USER == 'root'
 	highlight TopLine    cterm=none              ctermfg=White        ctermbg=Red

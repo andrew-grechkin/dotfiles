@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-for file in *.{mkv,avi}; do
-	[[ -r "$file" ]] || continue
-
+for file in "$@"; do
 	base="${file%.*}"
-	# ext="${file##*.}"
+	ext="${file##*.}"
+
+	[[ "$ext" == "mkv" || "$ext" == "avi" ]] || continue
 
 	echo "converting: $file to $base.mp4" >/dev/stderr
 	ffpmeg_cmd=(

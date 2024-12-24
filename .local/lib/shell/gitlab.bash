@@ -83,12 +83,10 @@ function gl-define-xh-options() {
 	# 	-H "private-token: ${GITLAB_PERSONAL_TOKEN:-}"
 	# )
 }
-export -f gl-define-xh-options
 
 function url_encode() {
 	printf %s "$1" | jq -Rr @uri
 }
-export -f url_encode
 
 function gl-branches-clean() {
 	gl-define-xh-options
@@ -100,11 +98,9 @@ function gl-branches-clean() {
 	)
 	"${http_fetch_command[@]}"
 }
-export -f gl-branches-clean
 
 function gl-branches-get() {
 	# https://docs.gitlab.com/ee/api/branches.html#list-repository-branches
-
 	gl-define-xh-options
 	local http_fetch_command=(
 		xhs
@@ -113,7 +109,6 @@ function gl-branches-get() {
 	)
 	"${http_fetch_command[@]}"
 }
-export -f gl-branches-get
 
 function gl-branch-delete() {
 	# https://docs.gitlab.com/ee/api/branches.html#delete-repository-branch
@@ -126,7 +121,6 @@ function gl-branch-delete() {
 	)
 	"${http_fetch_command[@]}"
 }
-export -f gl-branch-delete
 
 function gl-mr-approvals-get() {
 	# https://docs.gitlab.com/ee/api/merge_request_approvals.html#merge-request-level-mr-approvals
@@ -138,7 +132,6 @@ function gl-mr-approvals-get() {
 	)
 	"${http_fetch_command[@]}"
 }
-export -f gl-mr-approvals-get
 
 function gl-mr-get() {
 	# https://docs.gitlab.com/ee/api/merge_requests.html#get-single-mr
@@ -150,7 +143,6 @@ function gl-mr-get() {
 	)
 	"${http_fetch_command[@]}"
 }
-export -f gl-mr-get
 
 function gl-mr-approve() {
 	# https://docs.gitlab.com/ee/api/merge_request_approvals.html#approve-merge-request
@@ -163,13 +155,13 @@ function gl-mr-approve() {
 	)
 	"${http_fetch_command[@]}"
 }
-export -f gl-mr-approve
 
 function gl-mr-create() {
 	# https://docs.gitlab.com/ee/api/merge_requests.html#create-mr
 	gl-define-xh-options
 	local http_fetch_command=(
 		xhs
+		POST
 		"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/merge_requests"
 		"${GL_COMMON_XH_OPTIONS[@]}"
 		"title=$2"
@@ -179,7 +171,6 @@ function gl-mr-create() {
 	)
 	"${http_fetch_command[@]}"
 }
-export -f gl-mr-create
 
 function gl-mr-list() {
 	# https://docs.gitlab.com/ee/api/merge_requests.html#list-project-merge-requests
@@ -191,7 +182,6 @@ function gl-mr-list() {
 	)
 	"${http_fetch_command[@]}"
 }
-export -f gl-mr-list
 
 function gl-mr-merge() {
 	# https://docs.gitlab.com/ee/api/merge_requests.html#merge-a-merge-request
@@ -204,17 +194,16 @@ function gl-mr-merge() {
 	)
 	"${http_fetch_command[@]}"
 }
-export -f gl-mr-merge
 
 function gl-commit-create() {
 	# https://docs.gitlab.com/ee/api/commits.html#create-a-commit-with-multiple-files-and-actions
 	gl-define-xh-options
 	local http_fetch_command=(
 		xhs
+		POST
 		"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/repository/commits"
 		"${GL_COMMON_XH_OPTIONS[@]}"
 		@"$2"
 	)
 	"${http_fetch_command[@]}"
 }
-export -f gl-commit-create

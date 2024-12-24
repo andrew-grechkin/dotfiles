@@ -5,13 +5,11 @@
 function klipper-item-action() {
 	busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- showKlipperManuallyInvokeActionMenu
 }
-export -f klipper-item-action
 
 function klipper-item-get() {
 	busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- getClipboardHistoryItem i "$1" \
 		| jq '.data[0]'
 }
-export -f klipper-item-get
 
 function klipper-item-set() {
 	# don't use this, the API is a crap. It should set by id, not by content
@@ -19,18 +17,15 @@ function klipper-item-set() {
 	# busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- setClipboardContents s "$1"
 	clipcopy "$1"
 }
-export -f klipper-item-set
 
 function klipper-items-clear() {
 	busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- clearClipboardHistory
 }
-export -f klipper-items-clear
 
 function klipper-items-get() {
 	busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- getClipboardHistoryMenu \
 		| jq -r '.data[]'
 }
-export -f klipper-items-get
 
 # => body (executable) -------------------------------------------------------------------------------------------- {{{1
 
@@ -69,7 +64,7 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 			--bind="alt-p:toggle-preview,ctrl-s:toggle-sort,ctrl-t:toggle-track"
 			--bind="ctrl-d:half-page-down,ctrl-u:half-page-up,home:top"
 			--bind="ctrl-e:toggle-preview-wrap,ctrl-n:preview-down,ctrl-p:preview-up"
-			--bind="ctrl-w:backward-kill-word,esc:cancel"
+			--bind="ctrl-w:backward-kill-word,esc:become(true)"
 			--delimiter="\t"
 			--listen
 			--no-multi
@@ -79,16 +74,16 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 			--with-nth="2.."
 		)
 		fzf_args=(
-			--bind="alt-c:become(klipper-items-clear)"
-			--bind="alt-i:execute(klipper-item-get {1} | jq -j | bat --color always --style numbers,grid --paging always --wrap never)"
-			--bind="alt-enter:become(klipper-item-get {1} | jq -j | primarycopy)"
-			--bind="alt-s:become(klipper-item-get {1} | jq -j | secondarycopy)"
-			--bind="ctrl-m:become(klipper-item-get {1} | jq -j | clipcopy)"
+			--bind="alt-c:become(source $0; klipper-items-clear)"
+			--bind="alt-i:execute(source $0; klipper-item-get {1} | jq -j | bat --color always --style numbers,grid --paging always --wrap never)"
+			--bind="alt-enter:become(source $0; klipper-item-get {1} | jq -j | primarycopy)"
+			--bind="alt-s:become(source $0; klipper-item-get {1} | jq -j | secondarycopy)"
+			--bind="ctrl-m:become(source $0; klipper-item-get {1} | jq -j | clipcopy)"
 			--bind="ctrl-r:reload($0)"
-			--bind="ctrl-y:become(klipper-item-get {1} | jq -j | clipcopy)"
+			--bind="ctrl-y:become(source $0; klipper-item-get {1} | jq -j | clipcopy)"
 			--header='C-j/k:move C-r:reload A-c:clear A-i:inspect A-p:preview Enter:select'
 			--preview-window="right:40%:border-left:nowrap:nohidden"
-			--preview="klipper-item-get {1} | jq -j | bat --color always --style plain"
+			--preview="source $0; klipper-item-get {1} | jq -j | bat --color always --style plain"
 			--prompt="clipboard history > "
 		)
 		export SHELL="$BASH" # enforce bash for all fzf sub shells
