@@ -87,7 +87,7 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 			--bind="alt-m:execute-silent(tmux-pane-run -- gl-mr-merge -h '$GL_HOST' -p '$GL_PROJECT' {+1})"
 			--bind="alt-q:execute({ echo \"Approved by:\"; echo; gl-approve-list -h '$GL_HOST' -p '$GL_PROJECT' {1}; } | $PAGER)"
 			--bind="alt-r:execute-silent(tmux-pane-run -- gl-mr-approve -h '$GL_HOST' -p '$GL_PROJECT' {+1} -u)"
-			--bind="alt-s:execute(gl-mr-get '$GL_PROJECT' {1} | ${prettify_json[*]})"
+			--bind="alt-s:execute(source $0; gl-mr-get '$GL_PROJECT' {1} | ${prettify_json[*]})"
 			--bind="ctrl-r:reload-sync($FZF_RELOAD_CMD)"
 			--bind="ctrl-m:become(echo -n {+1} | tee >(clipcopy); echo)"
 			--bind="ctrl-x:become(echo {q} | tee >(clipcopy) &>/dev/stderr; cat {+f})"

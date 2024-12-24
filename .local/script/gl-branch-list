@@ -43,6 +43,7 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 			--bind="ctrl-d:half-page-down,ctrl-u:half-page-up,home:top"
 			--bind="ctrl-e:toggle-preview-wrap,ctrl-n:preview-down,ctrl-p:preview-up"
 			--bind="ctrl-w:backward-kill-word,esc:cancel"
+			--bind="tab:toggle-out,shift-tab:toggle-in,ctrl-a:toggle-all"
 			--delimiter="\t"
 			--listen
 			--multi
@@ -55,7 +56,7 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 			# --bind="alt-a:reload-sync( (set -x; exec &>/tmp/git-approve.log; gl-mr-approve -h '$HOST' -p '$PROJECT' {+1}); $FZF_RELOAD_CMD)"
 			# --bind="alt-m:reload-sync( (set -x; exec &>/tmp/git-merge.log; gl-mr-merge -h '$HOST' -p '$PROJECT' {+1}); $FZF_RELOAD_CMD)"
 			--bind="alt-b:execute-silent(python3 -mwebbrowser {-1})"
-			--bind="alt-c:execute-silent(gl-branches-clean '$GL_PROJECT')+reload-sync($FZF_RELOAD_CMD)"
+			--bind="alt-c:execute-silent(source $0; gl-branches-clean '$GL_PROJECT')+reload-sync($FZF_RELOAD_CMD)"
 			--bind="alt-i:execute(gl-branch-diff {1} ${prettify_diff[*]})"
 			--bind="alt-m:execute-silent(m=\`git gmb\`; echo 'whiptail-wrapper --inputbox \"Creating MR with message:\" 8 78 | xargs -I% --no-run-if-empty echo gl-create-mr -t \$m -m % -s '{1} | tmux-pane-run -ft 2)"
 			--bind="alt-r:execute-silent(tmux-pane-run -- gl-branch-delete -h '$GL_HOST' -p '$GL_PROJECT' {+1})"

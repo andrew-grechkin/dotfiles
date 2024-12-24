@@ -125,6 +125,7 @@ return {
             which_key.add({
                 mode = {'v'},
                 {'<leader><CR>', ':!bash<CR>', desc = 'execute lines in shell'},
+                {'<leader>d', '"_d', desc = 'delete to black hole'},
                 {'<leader>P', '"+P:let @"=@0<CR>', desc = 'paste clip, replace without copying it'},
                 {'<leader>p', '"+p:let @"=@0<CR>', desc = 'paste clip, replace without copying it'},
                 {'<leader>Y', 'my"+Ygv"*Y`y', desc = 'yank without jank to clipboard'},
