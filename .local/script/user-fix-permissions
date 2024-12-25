@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eEuo pipefail
+set -Eeuo pipefail
 
 # restore file ownership and permission according to passed user and their umask
 # some known dirs are excluded from processing

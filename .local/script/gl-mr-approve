@@ -23,4 +23,4 @@ export -f gl-mr-approve
 export -f url_encode
 
 &>/dev/stderr echo "Approving MRs: $*"
-printf '%s\n' "$@" | jq -Rr @uri | xargs --no-run-if-empty -I% -P "$GL_JOBS" bash -c "gl-mr-approve '$GL_PROJECT' '%' '$action'"
+printf '%s\n' "$@" | jq -Rr @uri | xargs --no-run-if-empty -I% bash -c "echo Approving %; gl-mr-approve '$GL_PROJECT' '%' '$action'"

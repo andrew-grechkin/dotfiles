@@ -19,13 +19,14 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 		state='all'
 	fi
 
-	args=$(getopt --name="$0" --options 'jwa:h:p:s:' --longoptions 'json,wip,author:,host:,project:,since:,state:' -- "$@")
+	args=$(getopt --name="$0" --options 'jwa:b:h:p:s:' --longoptions 'json,wip,author:,branch:,host:,project:,since:,state:' -- "$@")
 	eval set -- "$args"
 	pt_args=()
 
 	while ((1)); do
 		case "$1" in
 			-a | --author) query+="&author_username=$2"; pt_args+=(-a "$2"); shift 2 ;;
+			-b | --branch) query+="&source_branch=$(url_encode "$2")"; pt_args+=(-b "$2"); shift 2 ;;
 			-h | --host) GL_HOST="$2"; pt_args+=(-h "$2"); shift 2 ;;
 			-j | --json) json='1'; shift ;;
 			-p | --project) GL_PROJECT="$2"; pt_args+=(-p "$2"); shift 2 ;;
@@ -70,6 +71,7 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 			--bind="ctrl-d:half-page-down,ctrl-u:half-page-up,home:top"
 			--bind="ctrl-e:toggle-preview-wrap,ctrl-n:preview-down,ctrl-p:preview-up"
 			--bind="ctrl-w:backward-kill-word,esc:cancel"
+			--bind="tab:toggle-out,shift-tab:toggle-in,ctrl-a:toggle-all"
 			--delimiter="\t"
 			--header-lines=1
 			--listen
