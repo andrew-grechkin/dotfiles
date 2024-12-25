@@ -2,7 +2,7 @@
 
 set -Eeuo pipefail
 
-BAT_OPTIONS=(
+bat_options=(
 	--style=numbers
 	--color=always
 	--tabs=4
@@ -12,71 +12,65 @@ BAT_OPTIONS=(
 function header() {
 	stat "$1"
 
-	echo -n "  Type: "
-	file -b "$1"
+	echo "  Type: $(file -b "$1")"
 
-	FILESIZE=$2
-	(( FILESIZE > 10000000)) && return
+	size=$2
+	(( size > 10000000 )) && return
 
-	echo -n "  SHA1: "
-	sha1sum -b "$1" | awk '{print $1}'
+	echo "  SHA1: $(sha1sum -b "$1" | awk '{print $1}')"
 }
 
 function body() {
-	TYPE=$(file -bi "$1")
-	echo "  MIME: $TYPE"
+	mime=$(file -bi "$1")
+	echo "  MIME: $mime"
 
-	FILE=$(basename "$1")
-	# DIR=$(dirname "$1")
-	# BASE="${FILE%.*}"
-	EXT="${FILE##*.}"
+	file=$(basename "$1")
+	base="${file%.[^.]*}"
+	ext="${file:${#base} + 1}"
 
-	if grep 'application/json' <<<"$TYPE" &>/dev/null; then
-		jq -S  --indent 2 < "$1" | bat -l JSON "${BAT_OPTIONS[@]}" && exit 0
-	elif grep 'application/x-.*executable' <<<"$TYPE" &>/dev/null; then
+	if [[ "$mime" == 'application/json' || "$ext" == "json" ]]; then
+		jq -S --indent 2 < "$1" | bat -l json "${bat_options[@]}"; exit 0
+	elif [[ "$mime" =~ application/x-.*executable ]]; then
 		{ readelf -dW "$1" && echo && nm -DC "$1"; } && exit 0
-	elif grep 'application/x-sharedlib' <<<"$TYPE" &>/dev/null; then
+	elif [[ "$mime" == 'application/x-sharedlib' ]]; then
 		{
 			{ readelf -dW "$1" && echo && nm -DC "$1"; } || { objdump -xfTC "$1"; }
 		} && exit 0
-	elif grep 'text/x-shellscript' <<<"$TYPE" &>/dev/null; then
-		bat -l 'Bourne Again Shell (bash)' "${BAT_OPTIONS[@]}"  "$1" && exit 0
-	elif grep 'application/x-object' <<<"$TYPE" &>/dev/null; then
+	elif [[ "$mime" == 'text/x-shellscript' ]]; then
+		bat -l 'Bourne Again Shell (bash)' "${bat_options[@]}"  "$1" && exit 0
+	elif [[ "$mime" == 'application/x-object' ]]; then
 		{ nm -ClS "$1"; echo; objdump -afltSd "$1"; } && exit 0
-	elif grep 'application/x-archive' <<<"$TYPE" &>/dev/null; then
+	elif [[ "$mime" == 'application/x-archive' ]]; then
 		nm -C "$1" && exit 0
-	elif grep 'image/' <<<"$TYPE" &>/dev/null; then
-		YAML_FILE="${FILE%%.jpg}.yml"
-		[[ -r "$YAML_FILE" ]] && cat "$YAML_FILE"
-		FILESIZE=$2
-		(( FILESIZE < 10000000)) && {
-			COLS=$(tput cols)
-			COLS=${COLS:-120}
-			{ chafa --clear -c full -s "${COLS}x${COLS}" "$1"; } \
-				|| true
+	elif [[ "$mime" =~ image/ ]]; then
+		yaml_file="$base.yml"
+		[[ -r "$yaml_file" ]] && bat -l yaml "${bat_options[@]}" "$yaml_file"
+		(( size < 10000000 )) && {
+			cols=$(tput cols)
+			cols=${cols:-120}
+			{ chafa --clear -c full -s "${cols}x${cols}" -f symbols --polite on "$1"; } || true
 		}
 		exit 0
-	elif [[ "$EXT" =~ conf$ ]]; then
-		bat -l conf "${BAT_OPTIONS[@]}" "$1" && exit 0
-	elif [[ "$EXT" =~ yaml?$ ]]; then
-		yaml-sanitize < "$1" | yamlfix - | bat -l yaml "${BAT_OPTIONS[@]}" && exit 0
-	elif [[ "$EXT" =~ tsv$ ]]; then
-		tsv-align "$1" | bat -l tsv --wrap=never "${BAT_OPTIONS[@]}" --color=always && exit 0
+	elif [[ "$ext" == "conf" ]]; then
+		bat -l conf "${bat_options[@]}" "$1" && exit 0
+	elif [[ "$ext" =~ yaml?$ ]]; then
+		yaml-sanitize < "$1" | yamlfix - | bat -l yaml "${bat_options[@]}" && exit 0
+	elif [[ "$ext" == "tsv" ]]; then
+		tsv-align "$1" | bat -l tsv --wrap=never "${bat_options[@]}" --color=always && exit 0
 	else
 		echo
 	fi
 }
 
 function footer() {
-	FILESIZE=$2
-	(( FILESIZE > 10000000)) && return
+	size=$2
 
-	if grep 'charset=binary' <<<"$TYPE" &>/dev/null; then
+	if [[ "$mime" =~ charset=binary ]]; then
 		hexdump -C "$1" && exit 0
-	elif (( FILESIZE < 1000000 )); then
-		bat "${BAT_OPTIONS[@]}"  "$1" \
+	elif (( size < 1000000 )); then
+		bat "${bat_options[@]}"  "$1" \
 			|| cat "$1"
-		(( FILESIZE > 255)) && return
+		(( size > 255)) && return
 		echo
 		hexdump -C "$1" && exit 0
 	fi
@@ -85,10 +79,11 @@ function footer() {
 }
 
 [[ -f "$1" ]] && {
-	FILESIZE=$(command stat -c %s "$1")
-	header "$1"        "$FILESIZE"
+	size=$(command stat -c %s "$1")
+	header "$1" "$size"
 
-	FILEPATH="$(realpath "$1")"
-	body   "$FILEPATH" "$FILESIZE"
-	footer "$FILEPATH" "$FILESIZE"
-} 2> /dev/null
+	filepath="$(realpath "$1")"
+	body "$filepath" "$size"
+	(( size > 10000000 )) || footer "$filepath" "$size"
+}
+# } 2> /dev/null
