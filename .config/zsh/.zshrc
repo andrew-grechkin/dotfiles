@@ -18,7 +18,7 @@ elif [[ -n "$HOSTNAME" && "$HOSTNAME" =~ king\.com$ ]]; then
 	true
 else
 	export HAS_MOUSE='1'
-	export LESS='-x4 -iRSw --mouse'
+	export LESS='-x4 -iRw --mouse'
 fi
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1

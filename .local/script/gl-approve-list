@@ -21,7 +21,7 @@ fetcher=("$0" "${pt_args[@]}")
 export FZF_RELOAD_CMD="${fetcher[*]@Q}"
 
 if [[ -n "${json:-}" ]]; then
-	gl-mr-approvals-get "$GL_PROJECT" "$1"
+	gl-approvals-get "$GL_PROJECT" "$1"
 else
 	source "$HOME/.local/lib/shell/data-processing.bash"
 

@@ -3,7 +3,7 @@
 
 ansi_reset="\033[m"
 
-function join() {
+function join-with-tabs() {
 	local IFS=$'\t';
 	echo -e "$*"
 }
@@ -22,7 +22,7 @@ function json-array-to-tsv() {
 	done
 
 	{
-		echo -e "$(join "${col_names[@]}")"
-		jq -r "$sort_by | .[] | \"$(join "${jq_filter[@]}")\""
-	} | tsv-align
+		echo -e "$(join-with-tabs "${col_names[@]}")"
+		jq -r "$sort_by | .[] | \"$(join-with-tabs "${jq_filter[@]}")\""
+	} | column --table --separator=$'\t' --output-separator=$'\t'
 }

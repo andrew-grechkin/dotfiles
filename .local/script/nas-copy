@@ -6,24 +6,22 @@ source "$HOME/.local/lib/shell/rsync.bash"
 
 rsync_params=(
 	"${RSYNC_DEFAULT_PARAMS[@]}"
+	"${RSYNC_COPY_PARAMS[@]}"
 	"${RSYNC_NAS_PARAMS_COMMON[@]}"
+	-P
 )
+operation="Copying"
 
 args=$(getopt --name="$0" --options 'cs' --longoptions 'checksum,sync' -- "$@")
 eval set -- "$args"
 
 while ((1)); do
 	case "$1" in
-		-c | --checksum) checksum="1"; shift ;;
+		-c | --checksum) rsync_params+=(--checksum); shift ;;
+		-s | --sync) rsync_params+=(--delete); operation="Synchronizing"; shift ;;
 		--) shift; break ;;
 	esac
 done
-
-if [[ "${checksum:-}" == "1" ]]; then
-	rsync_params+=("${RSYNC_DIFF_PARAMS_CS[@]}")
-else
-	rsync_params+=("${RSYNC_DIFF_PARAMS[@]}")
-fi
 
 src=${src:-"home.ams::"}
 dst=${dst:-"./"}
@@ -36,7 +34,7 @@ fi
 
 for dir in "${dirs[@]}"; do
 	echo -n "$(tput setaf 3)"
-	echo "Comparing ${dst}${dir} with ${src}..."
+	echo "$operation $dir from ${src}..."
 	echo -n "$(tput sgr0)"
 
 	rsync "${rsync_params[@]}" "${src}${dir}/" "${dst}${dir}/"

@@ -83,7 +83,7 @@ function maybe_install_modules() {
 	if [ ! -f "$perl_root/finished" ]; then
 		if [[ -r "$workdir/cpanfile" ]]; then
 			echo "Installing required modules from '$workdir/cpanfile', this may take a while..."
-			nice cpanm -nq --installdeps "$workdir" 2>&1 | grep -vF 'LIBARCHIVE.xattr.com.apple.provenance'
+			nice cpanm -nq --installdeps "$workdir" 2>&1 | grep -vF 'LIBARCHIVE.xattr'
 			touch "$perl_root/finished"
 		fi
 	fi

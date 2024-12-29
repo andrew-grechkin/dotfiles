@@ -6,7 +6,7 @@
 	branches     = !"git branch --list --no-column --format='%(refname:lstrip=2)'"
 	brewrite     = "rebase -i --keep-base --exec 'git commit --amend --reset-author --no-edit --no-gpg-sign'"
 	browse       = !"git-browse"
-	brs          = !"gl-branch-list"
+	brs          = !"gl --mode branches"
 	bush         = !"f(){ while true; do git push && break; git pull --no-tags --rebase || break; done }; f"
 	cl           = clone --filter=blob:none
 	commit-again = !"git commit -eF \"$(git root)/.git/COMMIT_EDITMSG\""
@@ -43,7 +43,7 @@
 	m-dt         = !"f(){ git difftool --ignore-space-change -t vimdiff     `git m-span .. $@`; }; f"
 	m-log        = !"f(){ git log                            --color=always `git m-span .. $@`; }; f"
 	m-span       = !"git-merge-span"
-	mrs          = !"gl-mr-list"
+	mrs          = !"gl"
 	mt           = mergetool
 	mt4          = mergetool --tool=nvimdiff4
 	mtg          = mergetool --gui

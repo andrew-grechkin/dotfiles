@@ -2,13 +2,12 @@
 
 set -Eeuo pipefail
 
-args="$(getopt --name="$0" --options 'h:' --longoptions 'height:' -- "$@")"
+args=$(getopt --name="$0" --options 'h:' --longoptions 'height:' -- "$@")
 eval set -- "$args"
 
 HEIGHT="${HEIGHT:-1440}"
 
-# shellcheck disable=SC2078
-while [ : ]; do
+while ((1)); do
 	case "$1" in
 		-h | --height) HEIGHT="$2"; shift 2 ;;
 		--) shift; break ;;
