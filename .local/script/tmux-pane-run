@@ -2,7 +2,7 @@
 
 set -Eeuo pipefail
 
-args="$(getopt --name="$0" --options 'ft:' --longoptions 'focus,timeout:' -- "$@")"
+args="$(getopt --name="$0" --options 'e:ft:' --longoptions 'env:,focus,timeout:' -- "$@")"
 eval set -- "$args"
 
 timeout='0'
@@ -10,6 +10,7 @@ timeout='0'
 # shellcheck disable=SC2078
 while [ : ]; do
 	case "$1" in
+		-e | --env) env="$2"; shift 2 ;;
 		-f | --focus) focus='1'; shift ;;
 		-t | --timeout) timeout="$2"; shift 2 ;;
 		--) shift; break ;;
@@ -19,6 +20,16 @@ done
 if [[ -z "${TMUX:-}" ]]; then
 	"$@"
 else
+	if [[ -n "${env:-}" ]]; then
+		IFS="," read -r -a env_pt <<< "$env"
+		tmux_envs=()
+		for e in "${env_pt[@]}"; do
+			if [[ -n "${!e:-}" ]]; then
+				tmux_envs+=("-e" "$e=${!e}")
+			fi
+		done
+	fi
+
 	if [[ -n "${FZF_PORT:-}" && -n "${FZF_RELOAD_CMD:-}" ]]; then
 		reload="$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
 		printf "reload(%s)\n" "$FZF_RELOAD_CMD" >"$reload"
@@ -29,7 +40,7 @@ else
 					xh :${FZF_PORT:-} "@$reload"
 					sleep $timeout
 				else
-                    echo "Script exitcode: \$(errno \$1)"
+					echo "Script exitcode: \$(errno \$1)"
 					echo "Press Enter to continue"
 					read -n 1 -s -r -p
 				fi
@@ -69,5 +80,5 @@ else
 	tmux_args=(-v)
 	[[ -z "${focus:-}" ]] && tmux_args+=(-d)
 
-	tmux split-window "${tmux_args[@]}" "$cmd"
+	tmux split-window "${tmux_args[@]}" "${tmux_envs[@]}" "$cmd"
 fi

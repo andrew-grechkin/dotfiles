@@ -18,7 +18,7 @@ source "$site_location/perlbrew-dev.rc"
 # shellcheck disable=SC1091
 echo "Installing required modules from '$site_location/cpanfile'"
 
-source "$site_location/perlbrew-dev.rc" nice cpanm -nq --installdeps "$site_location" --with-develop --with-feature=mojo-extras 2>&1 | grep -vF 'LIBARCHIVE.xattr.com.apple.provenance'
+source "$site_location/perlbrew-dev.rc" nice cpanm -nq --installdeps "$site_location" --with-develop --with-feature=mojo-extras 2>&1 | grep -vF 'LIBARCHIVE.xattr'
 
 # => switch to the library  --------------------------------------------------------------------------------------- {{{1
 

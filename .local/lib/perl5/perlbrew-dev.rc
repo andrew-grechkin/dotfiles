@@ -83,7 +83,7 @@ function maybe_install_modules() {
 			echo
 			if [[ -r "$REPO_ROOT/cpanfile" ]]; then
 				echo "Installing required modules from '$REPO_ROOT/cpanfile'"
-				perlbrew exec --with "$PERLBREW_LIBRARY_NAME" nice cpanm -nq --installdeps "$REPO_ROOT" 2>&1 | grep -vF 'LIBARCHIVE.xattr.com.apple.provenance'
+				perlbrew exec --with "$PERLBREW_LIBRARY_NAME" nice cpanm -nq --installdeps "$REPO_ROOT" 2>&1 | grep -vF 'LIBARCHIVE.xattr'
 				touch "$PERLBREW_ROOT/libs/${PERLBREW_LIBRARY_NAME}/finished"
 			fi
 		fi

@@ -52,8 +52,10 @@ elif [[ -t 1 ]]; then
 		--bind="ctrl-d:half-page-down,ctrl-u:half-page-up,home:top"
 		--bind="ctrl-e:toggle-preview-wrap,ctrl-n:preview-down,ctrl-p:preview-up"
 		--bind="ctrl-w:backward-kill-word,esc:cancel"
+		--bind="load:execute-silent(setsid -f -- fzf-reload -i 3 $0)+unbind(load)"
 		--delimiter="\t"
 		--header-lines=1
+		--listen
 		--reverse
 		--scroll-off=4
 		--tabstop=4
@@ -88,11 +90,11 @@ else
 	jq_fields=(
 		"name;\(.name)"
 		"state;$(tput setaf 7)\(.PlaybackStatus)$ansi_reset"
-		"title;$(tput setaf 14)\(.Metadata.\"xesam:title\")$ansi_reset"
-		"artist;$(tput setaf 12)\(.Metadata.\"xesam:artist\"[0]?)$ansi_reset"
 		"position;$(tput setaf 10)\(.Position / 1000000 | round)/\(.Metadata.\"mpris:length\" / 1000000 | round)s (\(if .Metadata.\"mpris:length\" == 0 then 0 else .Position / .Metadata.\"mpris:length\" * 100 | round end)%)$ansi_reset"
 		"volume;\(.Volume)"
 		"loop;$(tput setaf 7)\(.LoopStatus)$ansi_reset"
+		"title;$(tput setaf 14)\(.Metadata.\"xesam:title\")$ansi_reset"
+		"artist;$(tput setaf 12)\(.Metadata.\"xesam:artist\"[0]?)$ansi_reset"
 		"created;$(tput setaf 2)\(.Metadata.\"xesam:contentCreated\"[0:10]?)$ansi_reset"
 		"url;$(tput setaf 6)\(.Metadata.\"xesam:url\")$ansi_reset"
 	)

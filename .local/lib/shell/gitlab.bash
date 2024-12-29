@@ -70,6 +70,7 @@ function gl-redefine-vars() {
 }
 
 function gl-define-xh-options() {
+	GL_PER_PAGE=10
 	GL_COMMON_XH_OPTIONS=(
 		"accept: application/json"
 		"private-token: $GITLAB_PERSONAL_TOKEN"
@@ -88,6 +89,8 @@ function url_encode() {
 	printf %s "$1" | jq -Rr @uri
 }
 
+# => branches ----------------------------------------------------------------------------------------------------- {{{1
+
 function gl-branches-clean() {
 	gl-define-xh-options
 	local http_fetch_command=(
@@ -104,7 +107,7 @@ function gl-branches-get() {
 	gl-define-xh-options
 	local http_fetch_command=(
 		xhs
-		"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/repository/branches?per_page=100"
+		"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/repository/branches?per_page=$GL_PER_PAGE"
 		"${GL_COMMON_XH_OPTIONS[@]}"
 	)
 	"${http_fetch_command[@]}"
@@ -119,10 +122,13 @@ function gl-branch-delete() {
 		"$GL_HOST/$GL_API/projects/$(url_encode "$1")/repository/branches/$2"
 		"${GL_COMMON_XH_OPTIONS[@]}"
 	)
+	&>/dev/stderr echo "Deleting branch: $2"
 	"${http_fetch_command[@]}"
 }
 
-function gl-mr-approvals-get() {
+# => mrs ---------------------------------------------------------------------------------------------------------- {{{1
+
+function gl-approvals-get() {
 	# https://docs.gitlab.com/ee/api/merge_request_approvals.html#merge-request-level-mr-approvals
 	gl-define-xh-options
 	local http_fetch_command=(
@@ -139,6 +145,17 @@ function gl-mr-get() {
 	local http_fetch_command=(
 		xhs
 		"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/merge_requests/$2"
+		"${GL_COMMON_XH_OPTIONS[@]}"
+	)
+	"${http_fetch_command[@]}"
+}
+
+function gl-mrs-get() {
+	gl-define-xh-options
+	# https://docs.gitlab.com/ee/api/merge_requests.html#list-project-merge-requests
+	local http_fetch_command=(
+		xhs
+		"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/merge_requests?per_page=${GL_PER_PAGE}${query:-}"
 		"${GL_COMMON_XH_OPTIONS[@]}"
 	)
 	"${http_fetch_command[@]}"
@@ -172,17 +189,6 @@ function gl-mr-create() {
 	"${http_fetch_command[@]}"
 }
 
-function gl-mr-list() {
-	# https://docs.gitlab.com/ee/api/merge_requests.html#list-project-merge-requests
-	gl-define-xh-options
-	local http_fetch_command=(
-		xhs
-		"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/merge_requests$2"
-		"${GL_COMMON_XH_OPTIONS[@]}"
-	)
-	"${http_fetch_command[@]}"
-}
-
 function gl-mr-merge() {
 	# https://docs.gitlab.com/ee/api/merge_requests.html#merge-a-merge-request
 	gl-define-xh-options
@@ -194,6 +200,151 @@ function gl-mr-merge() {
 	)
 	"${http_fetch_command[@]}"
 }
+
+function gl-mr-rebase() {
+	# https://docs.gitlab.com/ee/api/merge_requests.html#rebase-a-merge-request
+	gl-define-xh-options
+	local http_fetch_command=(
+		xhs
+		PUT
+		"$GL_HOST/$GL_API/projects/$(url_encode "$1")/merge_requests/$2/rebase"
+		"${GL_COMMON_XH_OPTIONS[@]}"
+	)
+	"${http_fetch_command[@]}"
+}
+
+function gl-mr-notes() {
+	# https://docs.gitlab.com/ee/api/notes.html#list-all-merge-request-notes
+	gl-define-xh-options
+	local http_fetch_command=(
+		xhs
+		"$GL_HOST/$GL_API/projects/$(url_encode "$1")/merge_requests/$2/notes"
+		"${GL_COMMON_XH_OPTIONS[@]}"
+	)
+	"${http_fetch_command[@]}"
+}
+
+# => pipelines ---------------------------------------------------------------------------------------------------- {{{1
+
+function gl-pipelines-get() {
+	# https://docs.gitlab.com/ee/api/pipelines.html#list-project-pipelines
+	# https://docs.gitlab.com/ee/api/merge_requests.html#list-merge-request-pipelines
+	gl-define-xh-options
+	local http_fetch_command=(
+		xhs
+		"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/merge_requests/$2/pipelines?per_page=${GL_PER_PAGE}&order_by=updated_at&sort=asc${query:-}"
+		"${GL_COMMON_XH_OPTIONS[@]}"
+	)
+	"${http_fetch_command[@]}"
+}
+
+function gl-pipeline-get() {
+	# https://docs.gitlab.com/ee/api/pipelines.html#get-a-single-pipeline
+	gl-define-xh-options
+	local http_fetch_command=(
+		xhs
+		"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/pipelines/$2"
+		"${GL_COMMON_XH_OPTIONS[@]}"
+	)
+	"${http_fetch_command[@]}"
+}
+
+function gl-pipeline-cancel() {
+	# https://docs.gitlab.com/ee/api/pipelines.html#cancel-a-pipelines-jobs
+	gl-define-xh-options
+	local http_fetch_command=(
+		xhs
+		POST
+		"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/pipelines/$2/cancel"
+		"${GL_COMMON_XH_OPTIONS[@]}"
+	)
+	"${http_fetch_command[@]}"
+}
+
+function gl-pipeline-retry() {
+	# https://docs.gitlab.com/ee/api/pipelines.html#retry-jobs-in-a-pipeline
+	gl-define-xh-options
+	local http_fetch_command=(
+		xhs
+		POST
+		"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/pipelines/$2/retry"
+		"${GL_COMMON_XH_OPTIONS[@]}"
+	)
+	"${http_fetch_command[@]}"
+}
+
+# => jobs --------------------------------------------------------------------------------------------------------- {{{1
+
+function gl-jobs-get() {
+	# https://docs.gitlab.com/ee/api/jobs.html#list-pipeline-jobs
+	gl-define-xh-options
+	local http_fetch_command=(
+		xhs
+		"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/pipelines/$3/jobs?per_page=${GL_PER_PAGE}${query:-}"
+		"${GL_COMMON_XH_OPTIONS[@]}"
+	)
+	"${http_fetch_command[@]}"
+}
+
+function gl-job-get() {
+	# https://docs.gitlab.com/ee/api/jobs.html#get-a-single-job
+	gl-define-xh-options
+	local http_fetch_command=(
+		xhs
+		"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/jobs/$2"
+		"${GL_COMMON_XH_OPTIONS[@]}"
+	)
+	"${http_fetch_command[@]}"
+}
+
+function gl-job-cancel() {
+	# https://docs.gitlab.com/ee/api/jobs.html#cancel-a-job
+	gl-define-xh-options
+	local http_fetch_command=(
+		xhs
+		POST
+		"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/jobs/$2/cancel"
+		"${GL_COMMON_XH_OPTIONS[@]}"
+	)
+	"${http_fetch_command[@]}"
+}
+
+function gl-job-retry() {
+	# https://docs.gitlab.com/ee/api/jobs.html#retry-a-job
+	gl-define-xh-options
+	local http_fetch_command=(
+		xhs
+		POST
+		"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/jobs/$2/retry"
+		"${GL_COMMON_XH_OPTIONS[@]}"
+	)
+	"${http_fetch_command[@]}"
+}
+
+function gl-job-run() {
+	# https://docs.gitlab.com/ee/api/jobs.html#run-a-job
+	gl-define-xh-options
+	local http_fetch_command=(
+		xhs
+		POST
+		"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/jobs/$2/run"
+		"${GL_COMMON_XH_OPTIONS[@]}"
+	)
+	"${http_fetch_command[@]}"
+}
+
+function gl-job-log() {
+	# https://docs.gitlab.com/ee/api/jobs.html#get-a-log-file
+	gl-define-xh-options
+	local http_fetch_command=(
+		xhs
+		"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/jobs/$2/trace"
+		"${GL_COMMON_XH_OPTIONS[@]}"
+	)
+	"${http_fetch_command[@]}"
+}
+
+# => commits ------------------------------------------------------------------------------------------------------ {{{1
 
 function gl-commit-create() {
 	# https://docs.gitlab.com/ee/api/commits.html#create-a-commit-with-multiple-files-and-actions

@@ -7,13 +7,13 @@ set -Eeuo pipefail
 type='uefi'
 usb='0'
 
-args="$(getopt --name="$0" --options='bu' --longoptions='bios,usb' -- "$@")"
+args=$(getopt --name="$0" --options='bf:u' --longoptions='bios,file:,usb' -- "$@")
 eval set -- "$args"
 
-# shellcheck disable=SC2078
-while [ : ]; do
+while ((1)); do
 	case "$1" in
 		-b | --bios) type='bios'; shift ;;
+		-f | --file) file="$2"; shift 2 ;;
 		-u | --usb) usb='1'; shift ;;
 		--) shift; break ;;
 	esac
@@ -26,21 +26,27 @@ OPTIONS=(
 
 if [[ "$type" == "uefi" ]]; then
 	OPTIONS+=(
-		-bios /usr/share/ovmf/x64/OVMF.fd
+		-bios /usr/share/ovmf/x64/OVMF.4m.fd
 	)
 fi
 
 ISO_NAME=$(basename "$1")
 ISO_DIR=$(dirname "$1")
 
-QCOW_NAME="${ISO_NAME/.iso/}.$type.qcow2"
-QCOW_PATH="$ISO_DIR/$QCOW_NAME"
-[[ -f "$QCOW_PATH" ]] || {
-	qemu-img create -f qcow2 "$QCOW_PATH" 128G
-}
-OPTIONS+=(
-	-drive "file=$QCOW_PATH,if=virtio,index=0,media=disk,format=qcow2"
-)
+if [[ -n "${file:-}" ]]; then
+	OPTIONS+=(
+		-drive "file=${file},if=virtio,index=0,media=disk,format=raw"
+	)
+else
+	QCOW_NAME="${ISO_NAME/.iso/}.$type.qcow2"
+	QCOW_PATH="$ISO_DIR/$QCOW_NAME"
+	[[ -f "$QCOW_PATH" ]] || {
+		qemu-img create -f qcow2 "$QCOW_PATH" 128G
+	}
+	OPTIONS+=(
+		-drive "file=$QCOW_PATH,if=virtio,index=0,media=disk,format=qcow2"
+	)
+fi
 
 if [[ "$usb" == '1' ]]; then
 	USB_NAME="${ISO_NAME/.iso/}.$type.usb.qcow2"
@@ -76,7 +82,7 @@ CMD=(
 	# -virtfs "local,path=$HOME/.cache,mount_tag=host0,security_model=passthrough,id=host0"
 )
 
-qemu-system-x86_64 "${CMD[@]}"
+exec qemu-system-x86_64 "${CMD[@]}"
 
 # -drive file=$(QCOW2_IMAGE),if=ide,index=0,media=disk,format=qcow2 \
 	# qemu-system-x86_64                                                   \

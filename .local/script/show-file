@@ -28,19 +28,19 @@ function body() {
 	base="${file%.[^.]*}"
 	ext="${file:${#base} + 1}"
 
-	if [[ "$mime" == 'application/json' || "$ext" == "json" ]]; then
+	if [[ "$mime" =~ ^application/json || "$ext" == "json" ]]; then
 		jq -S --indent 2 < "$1" | bat -l json "${bat_options[@]}"; exit 0
 	elif [[ "$mime" =~ application/x-.*executable ]]; then
 		{ readelf -dW "$1" && echo && nm -DC "$1"; } && exit 0
-	elif [[ "$mime" == 'application/x-sharedlib' ]]; then
+	elif [[ "$mime" =~ ^application/x-sharedlib ]]; then
 		{
 			{ readelf -dW "$1" && echo && nm -DC "$1"; } || { objdump -xfTC "$1"; }
 		} && exit 0
-	elif [[ "$mime" == 'text/x-shellscript' ]]; then
+	elif [[ "$mime" =~ ^text/x-shellscript ]]; then
 		bat -l 'Bourne Again Shell (bash)' "${bat_options[@]}"  "$1" && exit 0
-	elif [[ "$mime" == 'application/x-object' ]]; then
+	elif [[ "$mime" =~ ^application/x-object ]]; then
 		{ nm -ClS "$1"; echo; objdump -afltSd "$1"; } && exit 0
-	elif [[ "$mime" == 'application/x-archive' ]]; then
+	elif [[ "$mime" =~ ^application/x-archive ]]; then
 		nm -C "$1" && exit 0
 	elif [[ "$mime" =~ image/ ]]; then
 		yaml_file="$base.yml"
@@ -54,7 +54,7 @@ function body() {
 	elif [[ "$ext" == "conf" ]]; then
 		bat -l conf "${bat_options[@]}" "$1" && exit 0
 	elif [[ "$ext" =~ yaml?$ ]]; then
-		yaml-sanitize < "$1" | yamlfix - | bat -l yaml "${bat_options[@]}" && exit 0
+		yaml-sanitize < "$1" | yamlfix - 2>/dev/null | bat -l yaml "${bat_options[@]}" && exit 0
 	elif [[ "$ext" == "tsv" ]]; then
 		tsv-align "$1" | bat -l tsv --wrap=never "${bat_options[@]}" --color=always && exit 0
 	else

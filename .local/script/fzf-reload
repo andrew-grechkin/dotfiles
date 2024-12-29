@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+args=$(getopt --name="$0" --options='i:w:' --longoptions='interval:wait:' -- "$@")
+eval set -- "$args"
+
+interval=10
+
+while ((1)); do
+	case "$1" in
+		-i | --interval) interval="$2"; shift 2 ;;
+		-w | --wait) wait="$2"; shift 2 ;;
+		--) shift; break ;;
+	esac
+done
+
+sleep "${wait:-$interval}"
+while ((1)); do
+	xh :"${FZF_PORT:-}" --ignore-stdin --raw "reload(${*@Q})"
+	sleep "$interval"
+done

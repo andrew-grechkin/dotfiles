@@ -2,7 +2,7 @@
 
 # shellcheck disable=SC2034,SC2028
 
-typeset -AHg FX FG BG
+typeset -Ag FX FG BG
 
 for color in {000..255}; do
 	FG[$color]="\033[38;5;${color}m"
