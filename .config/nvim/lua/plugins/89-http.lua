@@ -77,10 +77,10 @@ return {
                         return dynamic_variable_from_command('DQS_S2S_TOKEN', 'authxagent-issue-s2s-token')
                     end,
                     ['PROD_ACCESS_TOKEN'] = function()
-                        return dynamic_variable_from_command('PROD_ACCESS_TOKEN', 'authxagent-issue-access-token-prod')
+                        return dynamic_variable_from_command('PROD_ACCESS_TOKEN', 'authxagent-issue-access-token -p')
                     end,
                     ['PROD_S2S_TOKEN'] = function()
-                        return dynamic_variable_from_command('PROD_S2S_TOKEN', 'authxagent-issue-s2s-token-token-prod')
+                        return dynamic_variable_from_command('PROD_S2S_TOKEN', 'authxagent-issue-s2s-token -p')
                     end,
                     ['NOW'] = function()
                         return dynamic_variable_from_command('NOW', 'date --iso-8601=seconds')

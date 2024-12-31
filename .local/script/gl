@@ -33,7 +33,7 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 			-m | --mr) export GL_MR="$2"; pt_args+=(-m "$2"); shift 2 ;;
 			-p | --project) export GL_PROJECT="$2"; pt_args+=(-p "$2"); shift 2 ;;
 			-a | --author) query+="&author_username=$2"; pt_args+=(-a "$2"); shift 2 ;;
-			-b | --branch) query+="&source_branch=$(url_encode "$2")"; pt_args+=(-b "$2"); shift 2 ;;
+			-b | --branch) query+="&source_branch=$(url_encode "$2")"; branch="$2"; pt_args+=(-b "$2"); shift 2 ;;
 			--since) since="$2"; pt_args+=(--since "$2"); shift 2 ;;
 			-s | --state) state="$2"; shift 2 ;;
 			-w | --wip) wip='1'; pt_args+=(-w); shift ;;
@@ -54,7 +54,7 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 
 	if [[ -n "${json:-}" ]]; then
 		if [[ "$mode" == "branches" ]]; then
-			gl-branches-get "$GL_PROJECT"
+			gl-branches-get "$GL_PROJECT" "${branch:-}"
 		elif [[ "$mode" == "mrs" ]]; then
 			[[ "$wip" == '0' ]] && query+='&wip=no'
 			[[ -n "$state" ]]   && query+="&state=$state"
@@ -124,12 +124,14 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 				--bind="alt-n:execute(source $0; gl-mr-notes '$GL_PROJECT' {1} | jq -r '.[] | \"[\(.updated_at)] \(.author.name):\n\(.body)\n\"' | $PAGER)"
 				--bind="alt-r:execute-silent(tmux-pane-run -- gl-mr-approve -h '$GL_HOST' -p '$GL_PROJECT' {+1} -u)"
 				--bind="alt-s:execute(source $0; gl-mr-get '$GL_PROJECT' {1} | jq -SC | $PAGER)"
+				--bind="alt-t:execute(gl -h '$GL_HOST' -p {-1} -b {9} --mode branches)"
 				--bind="ctrl-m:execute($FZF_RELOAD_CMD -m {1})"
-				--bind="ctrl-x:become(echo {q} | tee >(clipcopy) &>/dev/stderr; cat {+f})"
+				--bind="ctrl-x:become(echo -n {+1} | tee >(clipcopy))"
 				--bind="ctrl-y:execute-silent(echo -n {+1} | clipcopy)"
-				--header="A-A:approve A-M:merge A-R:rebase A-a:approvals A-i:diff A-n:notes A-s:payload A-r:revoke C-x:dump C-y:yank Enter:pipelines A-b:browse A-p:preview C-r:reload"
+				--header="A-A:approve A-M:merge A-R:rebase A-a:approvals A-i:diff A-n:notes A-r:revoke A-s:payload A-t:branch C-x:ids Enter:pipelines A-b:browse A-p:preview C-r:reload"
 				--preview="gl-mr-diff {1} ${prettify_diff[*]:0:2}"
 				--prompt="$GL_PROJECT | ${mode} > "
+				--with-nth="3..-2"
 			)
 		elif [[ "$mode" == "pipelines" ]]; then
 			fzf_args=(
@@ -146,12 +148,12 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 			)
 		elif [[ "$mode" == "jobs" ]]; then
 			fzf_args=(
-				--bind="alt-c:execute-silent(source $0; gl-job-cancel '$GL_PROJECT' {1})"
+				--bind="alt-C:execute-silent(source $0; gl-job-cancel '$GL_PROJECT' {1})"
+				--bind="alt-R:execute-silent(source $0; gl-job-retry  '$GL_PROJECT' {1})"
 				--bind="alt-d:execute-silent(source $0; gl-job-log    '$GL_PROJECT' {1} > ${TMPDIR:-/tmp}/pipeline-$GL_PIPELINE-job-{3}.log)"
-				--bind="alt-r:execute-silent(source $0; gl-job-retry  '$GL_PROJECT' {1})"
 				--bind="alt-s:execute-silent(source $0; gl-job-run    '$GL_PROJECT' {1})"
 				--bind="ctrl-m:execute(source $0; gl-job-log '$GL_PROJECT' {1} | $PAGER)"
-				--header="A-c:cancel A-d:download A-r:retry A-s:run Enter:log A-b:browse A-p:preview C-r:reload"
+				--header="A-C:cancel A-R:retry A-d:download A-s:run Enter:log A-b:browse A-p:preview C-r:reload"
 				--no-sort
 				--preview="source $0; gl-job-get '$GL_PROJECT' {1} | jq -SC"
 				--prompt="$GL_PROJECT (mr: $GL_MR pipeline: $GL_PIPELINE) | ${mode} > "
@@ -191,6 +193,7 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 				"author;$(tput setaf 13)\(.author.username)$ansi_reset"
 				"branch;$(tput setaf 7)\(.source_branch)$ansi_reset"
 				"title;\(.title)"
+				"source_project;\(.source_project_id)"
 			)
 			"${fetcher[@]}" -j | json-array-to-tsv "sort_by(.iid) | reverse" "${jq_fields[@]}"
 		elif [[ "$mode" == "pipelines" ]]; then
