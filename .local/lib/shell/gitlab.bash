@@ -18,7 +18,7 @@ function gl-redefine-vars() {
 		export GL_ROOT
 	fi
 
-	if [[ -z "${GL_PROJECT:-}" ]]; then
+	if [[ -z "${GL_PROJECT:-}" || -z "${GL_HOST:-}" ]]; then
 		if git-in-repo; then
 			set +e
 			# REMOTE=$(git config --local --get "branch.$current_branch.remote" 2>/dev/null || git show-ref 2>/dev/null | grep -Po '(?<=\\brefs/remotes/)[^\\/]+(?=/HEAD\\b)' | head -1)
@@ -34,8 +34,8 @@ function gl-redefine-vars() {
 				exit 1
 			fi
 			IFS=":" read -r -a parts <<< "$repo_url"
-			GL_HOST="${parts[0]#*@}"
-			GL_PROJECT="${parts[1]%.git}"
+			[[ -z "${GL_HOST:-}" ]]    && GL_HOST="${parts[0]#*@}"
+			[[ -z "${GL_PROJECT:-}" ]] && GL_PROJECT="${parts[1]%.git}"
 			set -e
 			export GL_HOST GL_PROJECT GL_REMOTE
 		else
@@ -70,7 +70,7 @@ function gl-redefine-vars() {
 }
 
 function gl-define-xh-options() {
-	GL_PER_PAGE=10
+	GL_PER_PAGE=100
 	GL_COMMON_XH_OPTIONS=(
 		"accept: application/json"
 		"private-token: $GITLAB_PERSONAL_TOKEN"
@@ -105,12 +105,21 @@ function gl-branches-clean() {
 function gl-branches-get() {
 	# https://docs.gitlab.com/ee/api/branches.html#list-repository-branches
 	gl-define-xh-options
-	local http_fetch_command=(
-		xhs
-		"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/repository/branches?per_page=$GL_PER_PAGE"
-		"${GL_COMMON_XH_OPTIONS[@]}"
-	)
-	"${http_fetch_command[@]}"
+	if [[ -n "${2:-}" ]]; then
+		local http_fetch_command=(
+			xhs
+			"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/repository/branches/$(url_encode "$2")"
+			"${GL_COMMON_XH_OPTIONS[@]}"
+		)
+		"${http_fetch_command[@]}" | jq '[.]'
+	else
+		local http_fetch_command=(
+			xhs
+			"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/repository/branches?per_page=$GL_PER_PAGE"
+			"${GL_COMMON_XH_OPTIONS[@]}"
+		)
+		"${http_fetch_command[@]}"
+	fi
 }
 
 function gl-branch-delete() {
@@ -341,7 +350,7 @@ function gl-job-log() {
 		"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/jobs/$2/trace"
 		"${GL_COMMON_XH_OPTIONS[@]}"
 	)
-	"${http_fetch_command[@]}"
+	"${http_fetch_command[@]}" | perl -lpE 's/\r/\n/g'
 }
 
 # => commits ------------------------------------------------------------------------------------------------------ {{{1
@@ -354,6 +363,7 @@ function gl-commit-create() {
 		POST
 		"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/repository/commits"
 		"${GL_COMMON_XH_OPTIONS[@]}"
+		--print=HBhbm
 		@"$2"
 	)
 	"${http_fetch_command[@]}"

@@ -1,0 +1,53 @@
+#!/usr/bin/env perl
+
+use v5.36;
+
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+
+my %options = (
+    'DIFF_LEFT'    => 1,
+    'DIFF_RIGHT'   => 0,
+    'DIFF_SYMM'    => 0,
+    'INTERSECTION' => 0,
+    'UNION'        => 0,
+);
+
+GetOptions(
+    'diff-left|l'      => \$options{DIFF_LEFT},
+    'diff-right|r'     => \$options{DIFF_RIGHT},
+    'diff-symmetric|s' => \$options{DIFF_SYMM},
+    'intersection|i'   => \$options{INTERSECTION},
+    'union|u'          => \$options{UNION},
+) or die "Unable to process command line options\n";
+
+-t 0 and die "STDIN must be provided (left set)\n";
+@ARGV or die "File(s) must be provided (right set)\n";
+
+my %set  = map {chomp; $_ => 2} <<>>;
+my %left = map {chomp; $_ => 1} <STDIN>;
+
+foreach my $left (keys %left) {
+    ++$set{$left};
+}
+
+if ($options{UNION}) {
+    say {*STDOUT} $_ for keys %set;
+} elsif ($options{INTERSECTION}) {
+    foreach my $key (keys %set) {
+        say {*STDOUT} $key if $set{$key} > 2;
+    }
+} elsif ($options{DIFF_SYMM}) {
+    foreach my $key (keys %set) {
+        say {*STDOUT} $key if $set{$key} <= 2;
+    }
+} elsif ($options{DIFF_RIGHT}) {
+    foreach my $key (keys %set) {
+        say {*STDOUT} $key if $set{$key} == 2;
+    }
+} else {
+    foreach my $key (keys %set) {
+        say {*STDOUT} $key if $set{$key} == 1;
+    }
+}
+
+__END__
