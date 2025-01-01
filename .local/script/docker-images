@@ -7,12 +7,12 @@ if [[ -t 1 ]]; then
 	fzf_cmd=(
 		fzf
 		--ansi
-		--bind="alt-c:execute-silent(tmux-pane-run -- docker-clean)"
-		--bind="alt-g:execute-silent(tmux-pane-run -- docker pull {+-1})"
+		--bind="alt-c:execute-silent(fzf-run-reload -- docker-clean)"
+		--bind="alt-g:execute-silent(fzf-run-reload -- docker pull {+-1})"
 		--bind="alt-i:execute(docker inspect {-1} | json-pretty -f {-1})"
 		--bind="alt-p:toggle-preview,ctrl-alt-w:toggle-preview-wrap,ctrl-s:toggle-sort"
-		--bind="alt-r:execute-silent(tmux-pane-run -- docker rmi -f {+1})"
-		--bind="alt-s:execute-silent(tmux-pane-run -- docker push {+-1})"
+		--bind="alt-r:execute-silent(fzf-run-reload -- docker rmi -f {+1})"
+		--bind="alt-s:execute-silent(fzf-run-reload -- docker push {+-1})"
 		--bind="ctrl-m:execute(docker inspect {-1} | jq-repl)"
 		--bind="ctrl-r:reload($FZF_RELOAD_CMD)"
 		--bind="ctrl-y:execute-silent(echo -n {+-1} | clipcopy)"

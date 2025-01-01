@@ -1,26 +1,27 @@
-#!/usr/bin/env perl
+#!/usr/bin/env -S perl -CALDS
 
 use v5.36;
-use autodie;
-use open ':std', ':encoding(UTF-8)';
-use utf8;
-use warnings     qw(FATAL utf8);
-use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
-push(@ARGV, '/usr/share/unicode/UnicodeData.txt');
+push(@ARGV, '/usr/share/unicode/UnicodeData.txt') if @ARGV == 0;
 
-while (my $line = <<>>) {
-    chomp($line);
-    $line && length($line) && substr($line, 0, 1) ne '#'
+say {*STDOUT} 'cp', "\t", 'char', "\t", 'name', "\t", 'type';
+while (defined(my $line = <<>>)) {
+    chomp $line;
+    length($line) && substr($line, 0, 1) ne '#'
         or next;
 
     my @data = split(m/;/, $line);
 
+    $data[1] eq '<control>'
+        and next;
     $data[2] eq 'Cs'                                                           # Unicode surrogate is illegal in UTF-8
         and next;
 
-    my $code   = hex $data[0];
-    my $symbol = $data[1] eq '<control>' ? '\\u' . $data[0] : chr($code);
+    my $code = hex $data[0];
 
-    say sprintf('%-8s %-8s %-20s %s', $data[0], $symbol, $data[1], $data[10] ? "($data[10])" : '');
+    my $symbol = chr($code);
+
+#   my $symbol = $data[1] eq '<control>' ? '\\u' . $data[0] : chr($code);
+
+    say {*STDOUT} $data[0], "\t", $symbol, "\t", $data[1], "\t", $data[10] ? "($data[10])" : '';
 }

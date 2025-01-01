@@ -75,8 +75,8 @@ sub preview_command ($os_name) {
 sub fzf_options ($os_name) {
     state %commands = (
         'Arch Linux' => [
-            '--bind', 'alt-a:execute(tmux-pane-run -f -- sudo pacman -S {+1})',
-            '--bind', 'alt-r:execute(tmux-pane-run -f -- sudo pacman -Rcs {+1})',
+            '--bind', 'alt-a:execute(fzf-run-reload -f -- sudo pacman -S {+1})',
+            '--bind', 'alt-r:execute(fzf-run-reload -f -- sudo pacman -Rcs {+1})',
         ],
         'CentOS Stream' => [
             '--bind', 'alt-a:execute(sudo dnf install --disableplugin=puppet {+1} </dev/tty >/dev/tty)+abort',

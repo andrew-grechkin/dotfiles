@@ -52,7 +52,7 @@ elif [[ -t 1 ]]; then
 		--bind="ctrl-d:half-page-down,ctrl-u:half-page-up,home:top"
 		--bind="ctrl-e:toggle-preview-wrap,ctrl-n:preview-down,ctrl-p:preview-up"
 		--bind="ctrl-w:backward-kill-word,esc:cancel"
-		--bind="load:execute-silent(setsid -f -- fzf-reload -i 3 $0)+unbind(load)"
+		--bind="load:execute-silent(setsid -f -- fzf-time-reload -i 3 $0)+unbind(load)"
 		--delimiter="\t"
 		--header-lines=1
 		--listen

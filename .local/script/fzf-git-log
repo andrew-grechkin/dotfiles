@@ -40,8 +40,8 @@ fzf_cmd=(
 if [[ -n "$FZF_RELOAD_CMD" ]]; then
 	export FZF_RELOAD_CMD
 	fzf_cmd+=(
-		--bind="alt-f:execute-silent(tmux-pane-run -- git fall)"
-		--bind="alt-g:execute-silent(tmux-pane-run -- git up)"
+		--bind="alt-f:execute-silent(fzf-run-reload -- git fall)"
+		--bind="alt-g:execute-silent(fzf-run-reload -- git up)"
 		--bind="alt-m:execute-silent(ABB=\$(git gmb); git switch \$ABB)+reload($FZF_RELOAD_CMD)"
 		--bind="alt-o:execute-silent(C=\$(${COMMAND_EXTRACT_COMMIT}); A=\$(git describe --all --always \$C); git switch --detach \${A/heads\/})+reload($FZF_RELOAD_CMD)"
 		--bind="alt-r:execute(2>/dev/null git rebase -i --committer-date-is-author-date --onto \$(${COMMAND_EXTRACT_COMMIT}) \$(${COMMAND_EXTRACT_COMMIT}))+reload($FZF_RELOAD_CMD)"

@@ -102,8 +102,8 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 
 		if [[ "$mode" == "branches" ]]; then
 			fzf_args=(
-				--bind="alt-N:execute-silent(m=\`git gmb\`; echo 'whiptail-wrapper --inputbox \"Creating MR with message:\" 8 78 | xargs -I% --no-run-if-empty echo gl-create-mr -t \$m -m % -s '{3} | tmux-pane-run -ft 2)"
-				--bind="alt-R:execute-silent(tmux-pane-run -- gl-branch-delete -h '$GL_HOST' -p '$GL_PROJECT' {+3})"
+				--bind="alt-N:execute-silent(m=\`git gmb\`; echo 'whiptail-wrapper --inputbox \"Creating MR with message:\" 8 78 | xargs -I% --no-run-if-empty echo gl-create-mr -t \$m -m % -s '{3} | fzf-run-reload -ft 2)"
+				--bind="alt-R:execute-silent(fzf-run-reload -- gl-branch-delete -h '$GL_HOST' -p '$GL_PROJECT' {+3})"
 				--bind="alt-c:execute-silent(source $0; gl-branches-clean '$GL_PROJECT')+reload-sync($FZF_RELOAD_CMD)"
 				--bind="alt-i:execute(gl-branch-diff {3} ${prettify_diff[*]})"
 				--bind="ctrl-m:execute(gl -b {3})"
@@ -116,13 +116,13 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 			)
 		elif [[ "$mode" == "mrs" ]]; then
 			fzf_args=(
-				--bind="alt-A:execute-silent(tmux-pane-run -- gl-mr-approve -h '$GL_HOST' -p '$GL_PROJECT' {+1})"
-				--bind="alt-M:execute-silent(tmux-pane-run -- gl-mr-merge   -h '$GL_HOST' -p '$GL_PROJECT' {+1})"
+				--bind="alt-A:execute-silent(fzf-run-reload -- gl-mr-approve -h '$GL_HOST' -p '$GL_PROJECT' {+1})"
+				--bind="alt-M:execute-silent(fzf-run-reload -- gl-mr-merge   -h '$GL_HOST' -p '$GL_PROJECT' {+1})"
 				--bind="alt-R:execute-silent(source $0; '$GL_PROJECT' {1})"
 				--bind="alt-a:execute({ echo \"Approved by:\"; echo; gl-approve-list -h '$GL_HOST' -p '$GL_PROJECT' {1}; } | $PAGER)"
 				--bind="alt-i:execute(gl-mr-diff {1} ${prettify_diff[*]})"
 				--bind="alt-n:execute(source $0; gl-mr-notes '$GL_PROJECT' {1} | jq -r '.[] | \"[\(.updated_at)] \(.author.name):\n\(.body)\n\"' | $PAGER)"
-				--bind="alt-r:execute-silent(tmux-pane-run -- gl-mr-approve -h '$GL_HOST' -p '$GL_PROJECT' {+1} -u)"
+				--bind="alt-r:execute-silent(fzf-run-reload -- gl-mr-approve -h '$GL_HOST' -p '$GL_PROJECT' {+1} -u)"
 				--bind="alt-s:execute(source $0; gl-mr-get '$GL_PROJECT' {1} | jq -SC | $PAGER)"
 				--bind="alt-t:execute(gl -h '$GL_HOST' -p {-1} -b {9} --mode branches)"
 				--bind="ctrl-m:execute($FZF_RELOAD_CMD -m {1})"

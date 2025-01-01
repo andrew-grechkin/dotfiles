@@ -4,12 +4,14 @@
 
 typeset -Ag FX FG BG
 
-for color in {000..255}; do
-	FG[$color]="\033[38;5;${color}m"
-	BG[$color]="\033[48;5;${color}m"
-done
+# for color in {000..255}; do
+# 	FG[$color]="\033[38;5;${color}m"
+# 	BG[$color]="\033[48;5;${color}m"
+# done
 
-if tput sgr0 &>/dev/null; then
+# use hardcoded sequences for now, not sure how portable is this
+# if tput sgr0 &>/dev/null; then
+if ((0)); then
 	FX=(
 		[reset]='\033[0m'     [normal]='\033[0m'
 		[bold]='\033[1m'      [no-bold]='\033[21m'
@@ -28,7 +30,6 @@ if tput sgr0 &>/dev/null; then
 	# c_reverse="$(tput smso)"
 	# c_reset="'$(tput sgr0)'"
 	# c_underline="$(tput smul)"
-
 	FG[black]="$(tput setaf 0)"
 	FG[maroon]="$(tput setaf 1)"
 	FG[green]="$(tput setaf 2)"
@@ -43,7 +44,7 @@ if tput sgr0 &>/dev/null; then
 	FG[yellow]="$(tput setaf 11)"
 	FG[blue]="$(tput setaf 12)"
 	FG[magenta]="$(tput setaf 13)"
-	FG[aqua]="$(tput setaf 14)"    FG[cyan]="$(tput setaf 14)"
+	FG[cyan]="$(tput setaf 14)"    FG[aqua]="$(tput setaf 14)"
 	FG[white]="$(tput setaf 15)"
 
 	BG[black]="$(tput setab 0)"
@@ -60,7 +61,7 @@ if tput sgr0 &>/dev/null; then
 	BG[yellow]="$(tput setab 11)"
 	BG[blue]="$(tput setab 12)"
 	BG[magenta]="$(tput setab 13)"
-	BG[aqua]="$(tput setab 14)"    BG[cyan]="$(tput setab 14)"
+	BG[cyan]="$(tput setab 14)"    BG[aqua]="$(tput setab 14)"
 	BG[white]="$(tput setab 15)"
 else
 	FX=(
@@ -90,7 +91,7 @@ else
 	FG[yellow]='\033[93m'
 	FG[blue]='\033[94m'
 	FG[magenta]='\033[95m'
-	FG[aqua]='\033[96m'    FG[cyan]='\033[96m'
+	FG[cyan]='\033[96m'    FG[aqua]='\033[96m'
 	FG[white]='\033[97m'
 
 	BG[black]='\033[40m'
@@ -107,6 +108,6 @@ else
 	BG[yellow]='\033[103m'
 	BG[blue]='\033[104m'
 	BG[magenta]='\033[105m'
-	BG[aqua]='\033[106m'   BG[cyan]='\033[106m'
+	BG[cyan]='\033[106m'   BG[aqua]='\033[106m'
 	BG[white]='\033[107m'
 fi

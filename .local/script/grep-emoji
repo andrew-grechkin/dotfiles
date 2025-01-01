@@ -1,24 +1,20 @@
-#!/usr/bin/env perl
+#!/usr/bin/env -S perl -CALDS
 
 use v5.36;
-use autodie;
-use open ':std', ':encoding(UTF-8)';
-use utf8;
-use warnings     qw(FATAL utf8);
-use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
 use English qw(-no_match_vars);
 
 my $match = qr{[#]\s (?<emoji>\S+) \sE\d+ [.] \d+\s (?<name>.*)}x;
 
-push(@ARGV, '/usr/share/unicode/emoji/emoji-test.txt');
+push(@ARGV, '/usr/share/unicode/emoji/emoji-test.txt') if @ARGV == 0;
 
-while (my $line = <<>>) {
+say 'name', "\t", 'emoji';
+while (defined(my $line = <<>>)) {
     chomp($line);
-    $line && length($line) && substr($line, 0, 1) ne '#'
+    length($line) && substr($line, 0, 1) ne '#'
         or next;
 
     if ($line =~ $match) {
-        say $LAST_PAREN_MATCH{'emoji'}, ' > ', $LAST_PAREN_MATCH{'name'};
+        say $LAST_PAREN_MATCH{'name'}, "\t", $LAST_PAREN_MATCH{'emoji'};
     }
 }

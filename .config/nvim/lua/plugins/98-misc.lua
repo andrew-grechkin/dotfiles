@@ -5,6 +5,7 @@
 --     vim.fn.system({fzf_dir .. '/install', '--bin'})
 -- end
 return {
+    {'NoahTheDuke/vim-just'},
     {'gianarb/vim-flux', enabled = not IS_KVM, ft = {'flux'}},
     {'mgrabovsky/vim-cuesheet', enabled = not IS_KVM, ft = {'cuesheet'}},
     {'pearofducks/ansible-vim', enabled = not IS_KVM, ft = {'ansible'}},
