@@ -1,11 +1,7 @@
-#!/usr/bin/env perl
+#!/usr/bin/env -S perl -CALDS
 
-use v5.38;
-use autodie;
-use open ':locale';
-use utf8;
-use warnings     qw(FATAL utf8);
-use experimental qw(builtin class declared_refs defer for_list refaliasing try);
+use v5.36;
+use experimental qw(declared_refs defer refaliasing);
 
 use Mojo::File      qw(path);
 use Mojo::UserAgent qw();
@@ -16,13 +12,18 @@ use constant {
     'UA'  => Mojo::UserAgent->new->max_redirects(2)->request_timeout(10)->tap(sub {$_->proxy->detect}),
     'URL' => Mojo::URL->new('https://raw.githubusercontent.com/ryanoasis/nerd-fonts/master/glyphnames.json'),
 };
-my $desc_file = path("$ENV{XDG_STATE_HOME}/nerd-font.txt");
+my $desc_file = path("$ENV{XDG_STATE_HOME}/nerd-font.tsv");
 
 sub main() {
     convert_glyphnames() unless (-r $desc_file);
 
-    system('cat', $desc_file) == 0
-        or die "Unable to cat $desc_file";
+    open(my $fh, '<', $desc_file)
+        or die "Can't open $desc_file: $!\n";
+    while (defined(my $line = <$fh>)) {
+        chomp $line;
+        say {*STDOUT} $line
+            or exit 0;
+    }
 
     return 0;
 }
@@ -33,16 +34,18 @@ sub convert_glyphnames() {
     my $metadata = delete $glyphnames{'METADATA'};
 
     my $file;
-    open($file, '>', $desc_file);
+    open($file, '>', $desc_file)
+        or die "Can't open $desc_file: $!\n";
     defer {close $file};
 
+    say {$file} 'code', "\t", 'type', "\t", 'name', "\t", 'char';
     foreach my $key (sort keys %glyphnames) {
         my ($type, $name) = $key =~ m/\A (.+?) - (.+) \z/xx;
         $name =~ s/_/ /xx;
 
         my ($char, $code) = $glyphnames{$key}->@{qw(char code)};
 
-        say {$file} sprintf "%s\t%-8s %-8s %s", $char, $code, $type, $name;
+        say {$file} $code, "\t", $type, "\t", $name, "\t", $char;
     }
 
     return;

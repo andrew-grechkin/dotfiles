@@ -1,1 +1,85 @@
-menu-pkg
+#!/usr/bin/env bash
+
+# => header (source able) ----------------------------------------------------------------------------------------- {{{1
+
+function pacman-items-get() {
+	local convert
+	convert=$(cat <<-'EO_CONVERT'
+		use constant {JSON_ONE_LINE => Cpanel::JSON::XS->new->canonical->utf8(0)->unblessed_bool([1])->pretty(0)->indent(0)};
+		INIT {%e = map {chomp; (split)} <<>>}
+		push @r, {repo => $F[0], name => $F[1], version => $F[2], installed => !!$F[3], explicit => !!(delete $e{$F[1]})};
+		END {
+			push @r, {repo => 'aur', name => $_, version => $e{$_}, installed => true, explicit => true} foreach keys %e;
+			say JSON_ONE_LINE()->encode(\@r)
+		}
+		EO_CONVERT
+	)
+	pacman -Sl | perl -CALS -MCpanel::JSON::XS -lanE "$convert" <(pacman -Qe)
+}
+
+# => body (executable) -------------------------------------------------------------------------------------------- {{{1
+
+if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under condition to make file source able
+	set -Eeuo pipefail
+
+	args=$(getopt --name="$0" --options 'j' --longoptions 'json' -- "$@")
+	eval set -- "$args"
+
+	while ((1)); do
+		case "$1" in
+			-j | --json) json='1'; shift ;;
+			--) shift; break ;;
+		esac
+	done
+
+	if [[ -n "${json:-}" ]]; then
+		pacman-items-get
+	elif [[ -t 1 ]]; then
+		export FZF_RELOAD_CMD="$0"
+		export SHELL="$BASH" # enforce bash for all fzf sub shells
+		default_fzf_cmd=(
+			fzf
+			--ansi
+			--bind="alt-p:toggle-preview,ctrl-s:toggle-sort,ctrl-t:toggle-track"
+			--bind="ctrl-d:half-page-down,ctrl-u:half-page-up,home:top"
+			--bind="ctrl-e:toggle-preview-wrap,ctrl-n:preview-down,ctrl-p:preview-up"
+			--bind="ctrl-r:reload($FZF_RELOAD_CMD)"
+			--bind="ctrl-w:backward-kill-word,esc:cancel"
+			--bind="tab:toggle-out,shift-tab:toggle-in,ctrl-a:toggle-all"
+			--delimiter="\t"
+			--header-lines=1
+			--listen
+			--multi
+			--preview-window="right:50%:border-left:wrap:nohidden,<55(hidden)"
+			--reverse
+			--scroll-off=4
+			--tabstop=4
+			--track
+		)
+
+		fzf_args=(
+			--bind="alt-A:execute(fzf-run-reload -ft 1 -- sudo pacman -S {+1})"
+			--bind="alt-C:execute(fzf-run-reload -f    -- arch-remove-orphans)"
+			--bind="alt-D:execute(fzf-run-reload -ft 1 -- sudo pacman -D --asdeps {+1})"
+			--bind="alt-E:execute(fzf-run-reload -ft 1 -- sudo pacman -D --asexplicit {+1})"
+			--bind="alt-R:execute(fzf-run-reload -ft 1 -- sudo pacman -Rcs {+1})"
+			--bind="alt-U:execute(echo 'trizen -Syu --noconfirm --noedit --needed && sudo pacman -Fy' | fzf-run-reload -ft 1)"
+			--header="A-A:install A-C:clean A-D:asdep A-E:asexp A-R:remove A-U:upgrade A-p:preview C-r:reload"
+			--preview="if [[ {3} == 'installed' ]]; then cat <(pacman -Qi {1}) <(pacman -Ql {1} | awk '{print \$2}'); else cat <(pacman -Si {1}) <(pacman -Fl {1} | awk '{print \$2}'); fi"
+			--prompt="pacman > "
+		)
+		"$0" | "${default_fzf_cmd[@]}" "${fzf_args[@]}"
+	else
+		source "$HOME/.local/lib/shell/color.bash"
+		source "$HOME/.local/lib/shell/data-processing.bash"
+
+		jq_fields=(
+			"name;\(.name)"
+			"explicit;${FG[yellow]}\(if .explicit then \"explicit\" else \"\" end)${FX[reset]}"
+			"installed;${FG[purple]}\(if .installed then \"installed\" else \"\" end)${FX[reset]}"
+			"repo;${FG[gray]}\(.repo)${FX[reset]}"
+		)
+
+		"$0" -j | json-array-to-tsv 'sort_by((.explicit | not), (.installed | not), .name)' "${jq_fields[@]}"
+	fi
+fi

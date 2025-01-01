@@ -19,6 +19,9 @@ our @EXPORT_OK = qw(
     request_to_location_nt
 );
 
+use Data::Printer;
+use Data::Dumper;
+
 use constant {'USER_AGENT' => 'Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:68.6.1) Gecko/20100101 Firefox/68.6.1'};
 
 use constant {
@@ -56,7 +59,7 @@ sub request_to_location_nt($query, $lang = 'en') {
         or die sprintf("Failed to retrieve '%s': %s\n", $url, join(' ', $res->code, $res->message));
 
     my $body   = _uncrap_payload($res->text);
-    my %result = ('q' => $query, 'name' => $query, 'lat' => undef, 'lon' => undef);
+    my %result = ('location_q' => $query, 'location_name' => $query, 'location_lat' => undef, 'location_lon' => undef);
 
     _try2(\%result, $body);
     if (!$result{'lat'} || !$result{'lon'}) {
@@ -67,11 +70,13 @@ sub request_to_location_nt($query, $lang = 'en') {
 #         _try3(\%result, $body);
 #     }
 
-    if ($result{'lat'} && $result{'lon'}) {
-        $result{'exif_lat'}   = to_exif_lat($result{'lat'});
-        $result{'exif_lon'}   = to_exif_lon($result{'lon'});
-        $result{'url_osm'}    = sprintf 'https://www.openstreetmap.org/#map=15/%s/%s', @result{'lat', 'lon'};
-        $result{'url_google'} = sprintf 'https://www.google.com/maps/@%s,%s,15z',      @result{'lat', 'lon'};
+    if ($result{'location_lat'} && $result{'location_lon'}) {
+        $result{'location_exif_lat'} = to_exif_lat($result{'location_lat'});
+        $result{'location_exif_lon'} = to_exif_lon($result{'location_lon'});
+        $result{'location_url_osm'}  = sprintf 'https://www.openstreetmap.org/#map=15/%s/%s',
+            @result{'location_lat', 'location_lon'};
+        $result{'location_url_google'} = sprintf 'https://www.google.com/maps/@%s,%s,15z',
+            @result{'location_lat', 'location_lon'};
     }
 
     return wantarray ? (\%result, $body) : \%result;
@@ -97,7 +102,7 @@ sub _try1($result_href, $body_aref) {
     my \@body = $body_aref;
 
     ## no critic (ValuesAndExpressions::ProhibitMagicNumbers)
-    $result_href->@{'lat', 'lon'} = ($body[0][1][0][14][9][2], $body[0][1][0][14][9][3]);
+    $result_href->@{'location_lat', 'location_lon'} = ($body[0][1][0][14][9][2], $body[0][1][0][14][9][3]);
 
     return $result_href;
 }
@@ -107,7 +112,6 @@ sub _try2($result_href, $body_aref) {
 
 #     ## no critic (ValuesAndExpressions::ProhibitMagicNumbers)
 
-    use Data::Printer;
     foreach my $it (@body) {
         next unless ($it && ref $it);
         if (   looks_like_number($it->[0] && $it->[1] && !(ref $it->[1]))
@@ -116,8 +120,8 @@ sub _try2($result_href, $body_aref) {
             && looks_like_number($it->[2][0][3][2])
             && looks_like_number($it->[2][0][3][3]))
         {
-            $result_href->{'name'} = $it->[1];
-            $result_href->@{'lat', 'lon'} = ($it->[2][0][3][2], $it->[2][0][3][3]);
+            $result_href->{'location_name'} = $it->[1];
+            $result_href->@{'location_lat', 'location_lon'} = ($it->[2][0][3][2], $it->[2][0][3][3]);
             last;
         }
     }
@@ -134,7 +138,6 @@ sub _try3($result_href, $body_aref) {
 }
 
 sub _recursive_search_coordinates($result_href, $aref) {
-    use Data::Dumper;
     my \@arr = $aref;
     my $size = scalar @arr;
     for (my $i = 0; $i < $size; ++$i) {

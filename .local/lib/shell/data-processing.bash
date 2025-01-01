@@ -9,12 +9,13 @@ function join-with-tabs() {
 }
 
 function json-array-to-tsv() {
-	sort_by="$1"
+	local sort_by="$1"
 	shift
-	jq_fields=("$@")
+	local jq_fields=("$@")
 
-	col_names=()
-	jq_filter=()
+	local col_names=()
+	local jq_filter=()
+	local field
 	for field in "${jq_fields[@]}"; do
 		IFS=";" read -r -a keyval <<< "$field"
 		col_names+=("${keyval[0]}")

@@ -2,13 +2,12 @@
 
 set -Eeuo pipefail
 
-args="$(getopt --name="$0" --options 'p:' --longoptions 'paging:' -- "$@")"
+args=$(getopt --name="$0" --options 'p:' --longoptions 'paging:' -- "$@")
 eval set -- "$args"
 
 paging='auto'
 
-# shellcheck disable=SC2078,SC2034
-while [ : ]; do
+while ((1)); do
 	case "$1" in
 		-p | --paging) paging="$2"; shift 2 ;;
 		--) shift; break ;;

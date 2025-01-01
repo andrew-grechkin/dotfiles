@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+args=$(getopt --name="$0" --options 'e:ft:' --longoptions 'env:,focus,timeout:' -- "$@")
+eval set -- "$args"
+
+timeout='0'
+
+while ((1)); do
+	case "$1" in
+		-e | --env) env="$2"; shift 2 ;;
+		-f | --focus) focus='1'; shift ;;
+		-t | --timeout) timeout="$2"; shift 2 ;;
+		--) shift; break ;;
+	esac
+done
+
+# if fzf is listening and a reload command is set, send reload signal to fzf
+if [[ -n "${FZF_PORT:-}" && -n "${FZF_RELOAD_CMD:-}" ]]; then
+	reload="$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
+	printf "reload(%s)\n" "$FZF_RELOAD_CMD" >"$reload"
+	reloading=$(cat <<-EO_RELOADING
+		&>/dev/stderr echo
+		&>/dev/stderr echo reloading fzf...
+		&>/dev/stderr curl -s -XPOST localhost:${FZF_PORT:-} --data "@$reload"
+		EO_RELOADING
+	)
+fi
+
+header=$(cat <<-EO_HEADER
+	function footer() {
+		if [[ "\$1" == "0" ]]; then
+			sleep 1
+
+			${reloading:-}
+
+			sleep $timeout
+		else
+			echo "Script exitcode: \$(errno \$1)"
+			echo "Press Enter to continue"
+			read -n 1 -s -r -p
+		fi
+		rm -f "$reload"
+	}
+	trap 'footer \$?' EXIT
+	EO_HEADER
+)
+
+# prefer run from args, fallback to stdin
+if [[ -n "$*" ]]; then
+	cmd=$(
+		echo "$header";
+		echo "${@@Q}"
+	)
+else
+	cmd=$(
+		echo "$header";
+		cat < /dev/stdin
+	)
+fi
+
+if [[ -z "${TMUX:-}" ]]; then
+	"$BASH" -c "$cmd"
+else
+	# environment must be exposed explicitly for tmux
+	if [[ -n "${env:-}" ]]; then
+		IFS="," read -r -a env_pt <<< "$env"
+		tmux_envs=()
+		for e in "${env_pt[@]}"; do
+			if [[ -n "${!e:-}" ]]; then
+				tmux_envs+=("-e" "$e=${!e}")
+			fi
+		done
+	fi
+
+	tmux_args=(-v)
+	[[ -z "${focus:-}" ]] && tmux_args+=(-d)
+
+	tmux split-window "${tmux_args[@]}" "${tmux_envs[@]}" "$cmd"
+fi

@@ -125,7 +125,7 @@ o + super
 o + alt + super
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-clipboard"
 bracketleft + super
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pkg"
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pacman"
 bracketleft + alt + super
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pkg-search"
 
