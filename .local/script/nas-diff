@@ -34,10 +34,10 @@ else
 	dirs=("$@")
 fi
 
+source "$HOME/.local/lib/shell/color.bash"
+
 for dir in "${dirs[@]}"; do
-	echo -n "$(tput setaf 3)"
-	echo "Comparing ${dst}${dir} with ${src}..."
-	echo -n "$(tput sgr0)"
+	echo -e "${FG[olive]}Comparing ${dst}${dir} with ${src}...${FX[reset]}"
 
 	rsync "${rsync_params[@]}" "${src}${dir}/" "${dst}${dir}/"
 done

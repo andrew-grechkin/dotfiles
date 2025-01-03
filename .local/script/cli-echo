@@ -18,24 +18,22 @@ elif [[ -t 2 ]]; then
 	echo "STDERR is a tty"
 fi
 
+source "$HOME/.local/lib/shell/color.bash"
+
 if [[ /dev/stdin -ef /dev/null ]]; then
 	echo "STDIN is a /dev/null"
 elif [[ -t 0 ]]; then
 	echo "STDIN is a tty"
 else
 	echo
-	echo -n "$(tput setaf 3)"
-	echo "STDIN data is passed:"
-	echo -n "$(tput sgr0)"
+	echo -e "${FG[olive]}STDIN data is passed:${FX[reset]}"
 	cat
 fi
 
 for FILE in "$@"; do
 	if [[ -r $FILE ]]; then
 		echo
-		echo -n "$(tput setaf 3)"
-		echo "passed file: $FILE"
-		echo -n "$(tput sgr0)"
+		echo -e "${FG[olive]}passed file: ${FILE}${FX[reset]}"
 		cat "$FILE"
 	fi
 done

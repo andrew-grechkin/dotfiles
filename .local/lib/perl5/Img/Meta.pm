@@ -29,12 +29,12 @@ use constant {
            </rdf:Alt>
           </dc:description>
          </rdf:Description>
-        % if ($info{location}{lat} && $info{location}{lon}) {
+        % if ($info{location_lat} && $info{location_lon}) {
 
          <rdf:Description rdf:about=''
           xmlns:exif='http://ns.adobe.com/exif/1.0/'>
-          <exif:GPSLatitude><%= $info{location}{lat} %></exif:GPSLatitude>
-          <exif:GPSLongitude><%= $info{location}{lon} %></exif:GPSLongitude>
+          <exif:GPSLatitude><%= $info{location_lat} %></exif:GPSLatitude>
+          <exif:GPSLongitude><%= $info{location_lon} %></exif:GPSLongitude>
          </rdf:Description>
         % }
 
@@ -55,10 +55,7 @@ use constant {
 use constant {'TMPL' => Mojo::Template->new};
 
 sub xmp_render($payload_href) {
-    my %payload;
-    @payload{qw(description location)} = $payload_href->@{qw(description location)};
-    $payload{'description'} //= '';
-    $payload{'location'}    //= {};
+    my %payload = ($payload_href->%*);
     return TMPL()->render(METADATA_TMPL_COORD(), %payload);
 }
 

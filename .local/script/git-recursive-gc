@@ -21,7 +21,7 @@ if [[ "$#" -eq "1" ]] && [[ "$1" =~ \.git/?$ ]]; then
 		fi
 	fi
 
-	echo "$FG[olive]Gc $REPO$FX[reset]"
+	echo -e "$FG[olive]Gc $REPO$FX[reset]"
 
 	nice git -C "$REPO" gc --keep-largest-pack --prune=now
 else

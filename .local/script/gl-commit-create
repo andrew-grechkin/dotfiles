@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 
-# => header (source able) ----------------------------------------------------------------------------------------- {{{1
-
 source "$HOME/.local/lib/shell/gitlab.bash"
-
-# => body (executable) -------------------------------------------------------------------------------------------- {{{1
 
 set -Eeuo pipefail
 
@@ -33,7 +29,7 @@ if [[ -t 0 ]]; then
 
 	gl-redefine-vars
 
-	[[ -z "${GL_BRANCH:-}" ]]  && { echo "branch is required"; exit 1; }
+	[[ -z "${GL_BRANCH:-}" ]] && { echo "branch is required"; exit 1; }
 
 	payload="$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
 	trap 'rm -f "$payload"' EXIT
