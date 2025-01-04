@@ -1,21 +1,21 @@
 # shellcheck disable=SC2034
 
 function gl-redefine-vars() {
-	if [[ -z "${GL_JOBS:-}" ]]; then
-		GL_JOBS=4
-
-		[[ -x "$(command -v nproc)" ]] && { GL_JOBS="$(nproc)"; }
+	if [[ -z "${GL_ROOT:-}" ]]; then
+		GL_ROOT=$(git rev-parse --show-superproject-working-tree --show-toplevel | head -1)
+		export GL_ROOT
 	fi
-	export GL_JOBS="$GL_JOBS"
 
 	if [[ -z "${GL_BRANCH:-}" ]]; then
 		GL_BRANCH=$(git rev-parse --verify --abbrev-ref HEAD 2>/dev/null)
 		export GL_BRANCH
 	fi
 
-	if [[ -z "${GL_ROOT:-}" ]]; then
-		GL_ROOT=$(git rev-parse --show-superproject-working-tree --show-toplevel | head -1)
-		export GL_ROOT
+	if [[ -z "${GL_JOBS:-}" ]]; then
+		GL_JOBS=4
+
+		[[ -x "$(command -v nproc)" ]] && { GL_JOBS="$(nproc)"; }
+		export GL_JOBS
 	fi
 
 	if [[ -z "${GL_PROJECT:-}" || -z "${GL_HOST:-}" ]]; then
@@ -122,6 +122,19 @@ function gl-branches-get() {
 	fi
 }
 
+function gl-branch-create() {
+	# https://docs.gitlab.com/ee/api/branches.html#create-repository-branch
+	gl-define-xh-options
+	local http_fetch_command=(
+		xhs
+		POST
+		"$GL_HOST/$GL_API/projects/$(url_encode "$1")/repository/branches?branch=$2&ref=$3"
+		"${GL_COMMON_XH_OPTIONS[@]}"
+	)
+	&>/dev/stderr echo "Creating branch: $2 ($3)"
+	"${http_fetch_command[@]}"
+}
+
 function gl-branch-delete() {
 	# https://docs.gitlab.com/ee/api/branches.html#delete-repository-branch
 	gl-define-xh-options
@@ -135,6 +148,13 @@ function gl-branch-delete() {
 	"${http_fetch_command[@]}"
 }
 
+function gl-branch-diff() {
+	HEAD=$(2>/dev/null git fetch --no-tags --porcelain "$GL_REMOTE" HEAD | perl -nal -E'say $F[2]')
+	>/dev/null git fetch --no-tags --porcelain "$GL_REMOTE" "$1"
+
+	exec git diff "$HEAD...FETCH_HEAD"
+}
+
 # => mrs ---------------------------------------------------------------------------------------------------------- {{{1
 
 function gl-approvals-get() {
@@ -146,6 +166,13 @@ function gl-approvals-get() {
 		"${GL_COMMON_XH_OPTIONS[@]}"
 	)
 	"${http_fetch_command[@]}"
+}
+
+function gl-mr-diff() {
+	HEAD=$(2>/dev/null git fetch --no-tags --porcelain "$GL_REMOTE" HEAD | perl -nal -E'say $F[2]')
+	>/dev/null git fetch --no-tags --porcelain "$GL_REMOTE" "merge-requests/$1/head"
+
+	exec git diff "$HEAD...FETCH_HEAD"
 }
 
 function gl-mr-get() {
@@ -207,6 +234,7 @@ function gl-mr-merge() {
 		"$GL_HOST/$GL_API/projects/$(url_encode "$1")/merge_requests/$2/merge"
 		"${GL_COMMON_XH_OPTIONS[@]}"
 	)
+	&>/dev/stderr echo "Merging MR: $2"
 	"${http_fetch_command[@]}"
 }
 
@@ -284,15 +312,47 @@ function gl-pipeline-retry() {
 
 # => jobs --------------------------------------------------------------------------------------------------------- {{{1
 
-function gl-jobs-get() {
+function gl-do-jobs-get() {
 	# https://docs.gitlab.com/ee/api/jobs.html#list-pipeline-jobs
-	gl-define-xh-options
 	local http_fetch_command=(
 		xhs
 		"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/pipelines/$3/jobs?per_page=${GL_PER_PAGE}${query:-}"
 		"${GL_COMMON_XH_OPTIONS[@]}"
 	)
-	"${http_fetch_command[@]}"
+	"${http_fetch_command[@]}" | jq -c '.[]'
+}
+
+function gl-do-bridges-get() {
+	# https://docs.gitlab.com/ee/api/jobs.html#list-pipeline-trigger-jobs
+	local http_fetch_command=(
+		xhs
+		"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/pipelines/$3/bridges?per_page=${GL_PER_PAGE}${query:-}"
+		"${GL_COMMON_XH_OPTIONS[@]}"
+	)
+	"${http_fetch_command[@]}" | jq -c '.[]'
+}
+
+function gl-do-all-jobs-get() {
+	# >/dev/stderr echo "gl-do-all-jobs-get: $*"
+	gl-define-xh-options
+	gl-do-jobs-get "$1" "$2" "$3"
+	# recursively get all jobs from children pipelines
+	bridges=$(gl-do-bridges-get "$1" "$2" "$3")
+	echo "$bridges"
+	export -f gl-do-jobs-get gl-do-bridges-get gl-do-all-jobs-get gl-define-xh-options url_encode
+	jq -r 'if .downstream_pipeline then .downstream_pipeline | "\(.project_id)/mr/\(.id)" else empty end' <<<"$bridges" \
+		| xargs -rI% -P4 bash -c 'IFS="/" read -r -a parts <<< "%"; gl-do-all-jobs-get "${parts[@]} | mbuffer"'
+
+	# sequential
+	# mapfile -t downstream < <(jq -r 'if .downstream_pipeline then .downstream_pipeline | "\(.project_id)/mr/\(.id)" else empty end' <<<"$bridges")
+	# for dpl in "${downstream[@]}"; do
+	# 	IFS='/' read -r -a parts <<< "$dpl"
+	# 	gl-do-all-jobs-get "${parts[@]}"
+	# done
+}
+
+function gl-jobs-get() {
+	gl-do-all-jobs-get "$1" "$2" "$3" | jq -cn '[inputs] | sort_by(.pipeline.id, .created_at)'
 }
 
 function gl-job-get() {
@@ -350,7 +410,21 @@ function gl-job-log() {
 		"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/jobs/$2/trace"
 		"${GL_COMMON_XH_OPTIONS[@]}"
 	)
+	&>/dev/stderr echo "Downloading logs..."
 	"${http_fetch_command[@]}" | perl -lpE 's/\r/\n/g'
+}
+
+function gl-job-download-artifacts() {
+	# https://docs.gitlab.com/ee/api/job_artifacts.html#get-job-artifacts
+	gl-define-xh-options
+	local http_fetch_command=(
+		xhs
+		"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/jobs/$2/artifacts"
+		"${GL_COMMON_XH_OPTIONS[@]}"
+		--follow
+	)
+	&>/dev/stderr echo "Downloading artifacts..."
+	"${http_fetch_command[@]}"
 }
 
 # => commits ------------------------------------------------------------------------------------------------------ {{{1

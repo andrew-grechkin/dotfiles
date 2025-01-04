@@ -76,7 +76,7 @@ alias yum-add-repo='yum-config-manager --add-repo "http://yum-mirror/yum/persona
 
 # => zsh ---------------------------------------------------------------------------------------------------------- {{{1
 
-alias fix-compaudit='compaudit | xargs chmod go-w'
+alias fix-compaudit='compaudit | xargs -r chmod go-w'
 
 # => go ----------------------------------------------------------------------------------------------------------- {{{1
 
@@ -94,7 +94,7 @@ alias mbsync='mbsync -c ~/.config/isync/mbsyncrc andrew-grechkin julia-grechkina
 
 # => misc --------------------------------------------------------------------------------------------------------- {{{1
 
-alias -g xa='xargs -d "\n" -ri'
+alias -g xa='xargs -rd\n'
 alias fm='vifm . .'
 alias dd='command dd oflag=sync conv=sparse,excl status=progress'
 alias :q='exit'

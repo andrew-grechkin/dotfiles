@@ -20,4 +20,4 @@ export -f gl-branch-delete
 export -f url_encode
 
 &>/dev/stderr echo "Deleting branches: $*"
-printf '%s\n' "$@" | jq -Rr @uri | xargs --no-run-if-empty -I% -P "$GL_JOBS" bash -c "gl-branch-delete '$GL_PROJECT' '%'"
+printf '%s\n' "$@" | jq -Rr @uri | xargs -rI% -P "$GL_JOBS" bash -c "gl-branch-delete '$GL_PROJECT' '%'"

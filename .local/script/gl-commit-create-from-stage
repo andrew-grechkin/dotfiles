@@ -1,11 +1,5 @@
 #!/usr/bin/env bash
 
-# => header (source able) ----------------------------------------------------------------------------------------- {{{1
-
-source "$HOME/.local/lib/shell/gitlab.bash"
-
-# => body (executable) -------------------------------------------------------------------------------------------- {{{1
-
 set -Eeuo pipefail
 
 args=$(getopt --name="$0" --options 'h:p:b:m:' --longoptions 'host:,project:,branch:,message:' -- "$@")
@@ -23,12 +17,12 @@ done
 
 [[ -z "${message:-}"   ]] && { echo "error: message is required" >/dev/stderr; exit 1; }
 
-gl-redefine-vars
+source "$HOME/.local/lib/shell/gitlab.bash"
 
 [[ -z "${GL_BRANCH:-}" ]] && { echo "error: branch is required"  >/dev/stderr; exit 1; }
 
 if [[ -t 1 ]]; then
-    gl-commit-create "$GL_PROJECT" <("$0" -b "$GL_BRANCH" -m "$message")
+	gl-commit-create "$GL_PROJECT" <("$0" -b "$GL_BRANCH" -m "$message")
 else
 	pushd "$GL_ROOT" >/dev/null
 
@@ -47,7 +41,7 @@ else
 
 	# shellcheck disable=SC2016
 	if actions="$(echo "$changes" \
-		| xargs -n 2 bash -c '
+		| xargs -rn2 bash -c '
 			set -e;
 			[[ "$0" == "D" || -r "$1" ]] || { echo file not found: "$1" >/dev/stderr; exit 2; }
 			pth="$1"

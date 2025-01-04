@@ -20,7 +20,7 @@ fi
 
 # detect working instance (unfortunately a lot of them are broken)
 # xh https://codeberg.org/aryak/mozhi/raw/branch/master/instances.json | jq -r '.[].link // empty'
-# xh https://codeberg.org/aryak/mozhi/raw/branch/master/instances.json | jq -r '.[].link // empty' | xargs -r -I '{}' bash -c "echo 'checking: {}:'; xh '{}/api/translate' --ignore-stdin --form text='$text' engine='$engine' from='$source' to='$target'"
+# xh https://codeberg.org/aryak/mozhi/raw/branch/master/instances.json | jq -r '.[].link // empty' | xargs -rI{} bash -c "echo 'checking: {}:'; xh '{}/api/translate' --ignore-stdin --form text='$text' engine='$engine' from='$source' to='$target'"
 
 # man: getopt
 args="$(getopt --name="$0" --options 'i:e:s:t:h' --longoptions 'instance:,engine:,source:,target:,help' -- "$@")"

@@ -41,7 +41,9 @@ header=$(cat <<-EO_HEADER
 			echo "Press Enter to continue"
 			read -n 1 -s -r -p
 		fi
-		rm -f "$reload"
+		if [[ -n "${reload:-}" ]]; then
+			rm -f "${reload:-}"
+		fi
 	}
 	trap 'footer \$?' EXIT
 	EO_HEADER

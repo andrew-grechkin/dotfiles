@@ -78,6 +78,7 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 		else
 			prettify_diff=()
 		fi
+		wait='read -rs -n1 -t 30 -p "press any key..."; echo'
 
 		fzf_cmd=(
 			fzf
@@ -102,16 +103,16 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 
 		if [[ "$mode" == "branches" ]]; then
 			fzf_args=(
-				--bind="alt-N:execute-silent(m=\`git gmb\`; echo 'whiptail-wrapper --inputbox \"Creating MR with message:\" 8 78 | xargs -I% --no-run-if-empty echo gl-create-mr -t \$m -m % -s '{3} | fzf-run-reload -ft 2)"
+				--bind="alt-N:execute-silent(m=\`git gmb\`; echo 'whiptail-wrapper --inputbox \"Creating MR with message:\" 8 78 | xargs -rI% echo gl-create-mr -t \$m -m % -s '{3} | fzf-run-reload -ft 2)"
 				--bind="alt-R:execute-silent(fzf-run-reload -- gl-branch-delete -h '$GL_HOST' -p '$GL_PROJECT' {+3})"
 				--bind="alt-c:execute-silent(source $0; gl-branches-clean '$GL_PROJECT')+reload-sync($FZF_RELOAD_CMD)"
-				--bind="alt-i:execute(gl-branch-diff {3} ${prettify_diff[*]})"
+				--bind="alt-i:execute(source $0; gl-branch-diff {3} ${prettify_diff[*]})"
 				--bind="ctrl-m:execute(gl -b {3})"
 				# --bind="ctrl-x:become(echo {q} | tee >(clipcopy) &>/dev/stderr; cat {+f})"
 				--bind="ctrl-x:become(echo -n {+3} | tee >(clipcopy); echo)"
 				--bind="ctrl-y:execute-silent(echo -n {3} | clipcopy)"
 				--header="A-N:new-mr A-R:remove A-c:clear A-i:diff C-x:dump C-y:yank Enter:mr A-b:browse A-p:preview C-r:reload"
-				--preview="gl-branch-diff {3} ${prettify_diff[*]:0:2}"
+				--preview="source $0; gl-branch-diff {3} ${prettify_diff[*]:0:2}"
 				--prompt="$GL_PROJECT | ${mode} > "
 			)
 		elif [[ "$mode" == "mrs" ]]; then
@@ -120,7 +121,7 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 				--bind="alt-M:execute-silent(fzf-run-reload -- gl-mr-merge   -h '$GL_HOST' -p '$GL_PROJECT' {+1})"
 				--bind="alt-R:execute-silent(source $0; '$GL_PROJECT' {1})"
 				--bind="alt-a:execute({ echo \"Approved by:\"; echo; gl-approve-list -h '$GL_HOST' -p '$GL_PROJECT' {1}; } | $PAGER)"
-				--bind="alt-i:execute(gl-mr-diff {1} ${prettify_diff[*]})"
+				--bind="alt-i:execute(source $0; gl-mr-diff {1} ${prettify_diff[*]})"
 				--bind="alt-n:execute(source $0; gl-mr-notes '$GL_PROJECT' {1} | jq -r '.[] | \"[\(.updated_at)] \(.author.name):\n\(.body)\n\"' | $PAGER)"
 				--bind="alt-r:execute-silent(fzf-run-reload -- gl-mr-approve -h '$GL_HOST' -p '$GL_PROJECT' {+1} -u)"
 				--bind="alt-s:execute(source $0; gl-mr-get '$GL_PROJECT' {1} | jq -SC | $PAGER)"
@@ -129,7 +130,7 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 				--bind="ctrl-x:become(echo -n {+1} | tee >(clipcopy))"
 				--bind="ctrl-y:execute-silent(echo -n {+1} | clipcopy)"
 				--header="A-A:approve A-M:merge A-R:rebase A-a:approvals A-i:diff A-n:notes A-r:revoke A-s:payload A-t:branch C-x:ids Enter:pipelines A-b:browse A-p:preview C-r:reload"
-				--preview="gl-mr-diff {1} ${prettify_diff[*]:0:2}"
+				--preview="source $0; gl-mr-diff {1} ${prettify_diff[*]:0:2}"
 				--prompt="$GL_PROJECT | ${mode} > "
 				--with-nth="3..-2"
 			)
@@ -148,50 +149,52 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 			)
 		elif [[ "$mode" == "jobs" ]]; then
 			fzf_args=(
-				--bind="alt-C:execute-silent(source $0; gl-job-cancel '$GL_PROJECT' {1})"
-				--bind="alt-R:execute-silent(source $0; gl-job-retry  '$GL_PROJECT' {1})"
-				--bind="alt-d:execute-silent(source $0; gl-job-log    '$GL_PROJECT' {1} > ${TMPDIR:-/tmp}/pipeline-$GL_PIPELINE-job-{3}.log)"
-				--bind="alt-s:execute-silent(source $0; gl-job-run    '$GL_PROJECT' {1})"
-				--bind="ctrl-m:execute(source $0; gl-job-log '$GL_PROJECT' {1} | $PAGER)"
-				--header="A-C:cancel A-R:retry A-d:download A-s:run Enter:log A-b:browse A-p:preview C-r:reload"
+				--bind="alt-C:execute-silent(source $0; gl-job-cancel {-3} {1})"
+				--bind="alt-D:execute(source $0; o=${TMPDIR:-/tmp}/pipeline-$GL_PIPELINE-job-{3}.zip; gl-job-download-artifacts {-3} {1} > \$o; echo Saved to: \$o; $wait)"
+				--bind="alt-R:execute-silent(source $0; gl-job-retry  {-3} {1})"
+				--bind="alt-d:execute(source $0; o=${TMPDIR:-/tmp}/pipeline-$GL_PIPELINE-job-{3}.log; gl-job-log {-3} {1} > \$o; echo Saved to: \$o; $wait)"
+				--bind="alt-s:execute-silent(source $0; gl-job-run    {-3} {1})"
+				--bind="ctrl-m:execute(source $0; gl-job-log {-3} {1} | $PAGER)"
+				--header="A-C:cancel A-D:dnlart A-R:retry A-d:dnllog A-s:run Enter:log A-b:browse A-p:preview C-r:reload"
 				--no-sort
-				--preview="source $0; gl-job-get '$GL_PROJECT' {1} | jq -SC"
+				--preview="source $0; gl-job-get {-3} {1} | jq -SC"
 				--prompt="$GL_PROJECT (mr: $GL_MR pipeline: $GL_PIPELINE) | ${mode} > "
 				--scheme=history
 				--track
-				--with-nth="3..-3"
+				--with-nth="3..-4"
 			)
 		fi
 
 		export SHELL="$BASH" # enforce bash for all fzf sub shells
 		"${fetcher[@]}" | "${fzf_cmd[@]}" "${fzf_args[@]}"
 	else
+		source "$HOME/.local/lib/shell/color.bash"
 		source "$HOME/.local/lib/shell/data-processing.bash"
 
 		if [[ "$mode" == "branches" ]]; then
 			jq_fields=(
 				"id;\(.commit.id)"
 				"url;\(.web_url)"
-				"name;$(tput setaf 3)\(.name)$ansi_reset"
+				"name;${FG[olive]}\(.name)${FX[reset]}"
 				"default;\(if .default then 1 else 0 end)"
 				"protected;\(if .protected then 1 else 0 end)"
 				"merged;\(if .merged then 1 else 0 end)"
-				"updated;$(tput setaf 2)\(.commit.committed_date[0:10])$ansi_reset"
-				"author;$(tput setaf 13)\(.commit.author_name)$ansi_reset"
-				"title;$(tput setaf 7)\(.commit.title)$ansi_reset"
+				"updated;${FG[green]}\(.commit.committed_date[0:10])${FX[reset]}"
+				"author;${FG[magenta]}\(.commit.author_name)${FX[reset]}"
+				"title;${FG[silver]}\(.commit.title)${FX[reset]}"
 			)
 			"${fetcher[@]}" -j | json-array-to-tsv "sort_by(.commit.committed_date) | reverse" "${jq_fields[@]}"
 		elif [[ "$mode" == "mrs" ]]; then
 			jq_fields=(
 				"id;\(.iid)"
 				"url;\(.web_url)"
-				"id;$(tput setaf 3)\(.iid)$ansi_reset"
-				"created;$(tput setaf 2)\(.updated_at[0:10])$ansi_reset"
+				"id;${FG[olive]}\(.iid)${FX[reset]}"
+				"created;${FG[green]}\(.updated_at[0:10])${FX[reset]}"
 				"wip;\(if .work_in_progress then 1 else 0 end)"
 				"state;\(.state)"
-				"name;$(tput setaf 12)\(.author.name)$ansi_reset"
-				"author;$(tput setaf 13)\(.author.username)$ansi_reset"
-				"branch;$(tput setaf 7)\(.source_branch)$ansi_reset"
+				"name;${FG[blue]}\(.author.name)${FX[reset]}"
+				"author;${FG[magenta]}\(.author.username)${FX[reset]}"
+				"branch;${FG[silver]}\(.source_branch)${FX[reset]}"
 				"title;\(.title)"
 				"source_project;\(.source_project_id)"
 			)
@@ -200,10 +203,10 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 			jq_fields=(
 				"id;\(.id)"
 				"url;\(.web_url)"
-				"id;$(tput setaf 3)\(.id)$ansi_reset"
+				"id;${FG[olive]}\(.id)${FX[reset]}"
 				"status;\(.status)"
-				"source;$(tput setaf 7)\(.source)$ansi_reset"
-				"created;$(tput setaf 2)\(.created_at)$ansi_reset"
+				"source;${FG[silver]}\(.source)${FX[reset]}"
+				"created;${FG[green]}\(.created_at)${FX[reset]}"
 				"updated;\(.updated_at)"
 				"mr.id;$GL_MR"
 			)
@@ -212,19 +215,22 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 			jq_fields=(
 				"id;\(.id)"
 				"url;\(.web_url)"
-				"name;$(tput setaf 3)\(.name)$ansi_reset"
-				"stage;$(tput setaf 7)\(.stage)$ansi_reset"
+				"pipeline.id;\(.pipeline.id)"
+				"pipeline.src;\(.pipeline.source)"
+				"name;${FG[olive]}\(.name)${FX[reset]}"
+				"stage;${FG[silver]}\(.stage)${FX[reset]}"
 				"status;\(.status)"
-				"allow_failure;$(tput setaf 7)\(.allow_failure)$ansi_reset"
-				"user;$(tput setaf 13)\(.user.username)$ansi_reset"
-				"duration;\( (.duration | round?) // .duration )"
-				"created;$(tput setaf 2)\(.created_at)$ansi_reset"
+				"canfail;${FG[silver]}\(.allow_failure)${FX[reset]}"
+				"user;${FG[magenta]}\(.user.username)${FX[reset]}"
+				"dur;\( (.duration | round?) // .duration )"
+				"created;${FG[green]}\(.created_at)${FX[reset]}"
 				"started;\(.started_at)"
-				"finished;$(tput setaf 2)\(.finished_at)$ansi_reset"
+				"finished;${FG[green]}\(.finished_at)${FX[reset]}"
+				"pipeline.pr;\(.pipeline.project_id)"
 				"mr.id;$GL_MR"
 				"pipeline.id;\(.pipeline.id)"
 			)
-			"${fetcher[@]}" -j | json-array-to-tsv "sort_by(.created_at, .updated_at, .finished_at) | reverse" "${jq_fields[@]}"
+			"${fetcher[@]}" -j | json-array-to-tsv "." "${jq_fields[@]}"
 		fi
 	fi
 fi

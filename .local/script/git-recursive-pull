@@ -11,7 +11,7 @@ if [[ "$#" -eq "1" ]] && [[ "$1" =~ \.git/?$ ]]; then
 	REPO=$(dirname "$1")
 
 	if [[ -n "$(git -C "$REPO" branch --show-current)" ]]; then
-		echo "$FG[olive]Updating ${REPO}$FX[reset]"
+		echo -e "$FG[olive]Updating ${REPO}$FX[reset]"
 
 		git -C "$REPO" -c color.ui=always fetch --force      \
 			&& nice git -C "$REPO" -c color.ui=always bleach \
@@ -22,7 +22,7 @@ else
 		if [[ -n "$(command -v parallel)" ]]; then
 			parallel -j-2 --delay 0.3 -0 "$0" {}
 		else
-			xargs -0 --max-args=1 --no-run-if-empty "$0"
+			xargs -0rn1 "$0"
 		fi
 	}
 fi

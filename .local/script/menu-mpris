@@ -63,11 +63,11 @@ elif [[ -t 1 ]]; then
 		--with-nth="2..-2"
 	)
 	fzf_args=(
-		--bind="alt-a:execute-silent(busctl --user --json=short get-property {1} $MPRIS_OBJ $MPRIS_IF -- LoopStatus | jq -r 'if (.data == \"None\") then \"Track\" elif (.data == \"Track\") then \"Playlist\" else \"None\" end' | xargs busctl --user set-property {1} $MPRIS_OBJ $MPRIS_IF -- LoopStatus s)+reload-sync($0)"
+		--bind="alt-a:execute-silent(busctl --user --json=short get-property {1} $MPRIS_OBJ $MPRIS_IF -- LoopStatus | jq -r 'if (.data == \"None\") then \"Track\" elif (.data == \"Track\") then \"Playlist\" else \"None\" end' | xargs -r busctl --user set-property {1} $MPRIS_OBJ $MPRIS_IF -- LoopStatus s)+reload-sync($0)"
 		--bind="alt-b:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Seek x -9999999999999)+reload-sync($0)"
 		--bind="alt-h:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Seek x -60000000)+reload-sync($0)"
-		--bind="alt-j:execute-silent(busctl --user --json=short get-property {1} $MPRIS_OBJ $MPRIS_IF -- Volume | jq -r '.data - 0.05' | xargs busctl --user set-property {1} $MPRIS_OBJ $MPRIS_IF -- Volume d)+reload-sync($0)"
-		--bind="alt-k:execute-silent(busctl --user --json=short get-property {1} $MPRIS_OBJ $MPRIS_IF -- Volume | jq -r '.data + 0.05' | xargs busctl --user set-property {1} $MPRIS_OBJ $MPRIS_IF -- Volume d)+reload-sync($0)"
+		--bind="alt-j:execute-silent(busctl --user --json=short get-property {1} $MPRIS_OBJ $MPRIS_IF -- Volume | jq -r '.data - 0.05' | xargs -r busctl --user set-property {1} $MPRIS_OBJ $MPRIS_IF -- Volume d)+reload-sync($0)"
+		--bind="alt-k:execute-silent(busctl --user --json=short get-property {1} $MPRIS_OBJ $MPRIS_IF -- Volume | jq -r '.data + 0.05' | xargs -r busctl --user set-property {1} $MPRIS_OBJ $MPRIS_IF -- Volume d)+reload-sync($0)"
 		--bind="alt-l:execute-silent( busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Seek x  60000000)+reload-sync($0)"
 		--bind="alt-r:execute-silent( busctl --user call {1} $MPRIS_OBJ $MPRIS    -- Quit)+reload-sync($0)"
 		--bind="ctrl-h:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Seek x -10000000)+reload-sync($0)"
@@ -85,18 +85,19 @@ elif [[ -t 1 ]]; then
 
 	"$0" | "${fzf_cmd[@]}" "${fzf_args[@]}"
 else
+	source "$HOME/.local/lib/shell/color.bash"
 	source "$HOME/.local/lib/shell/data-processing.bash"
 
 	jq_fields=(
 		"name;\(.name)"
-		"state;$(tput setaf 7)\(.PlaybackStatus)$ansi_reset"
-		"position;$(tput setaf 10)\(.Position / 1000000 | round)/\(.Metadata.\"mpris:length\" / 1000000 | round)s (\(if .Metadata.\"mpris:length\" == 0 then 0 else .Position / .Metadata.\"mpris:length\" * 100 | round end)%)$ansi_reset"
+		"state;${FG[silver]}\(.PlaybackStatus)${FX[reset]}"
+		"position;${FG[lime]}\(.Position / 1000000 | round)/\(.Metadata.\"mpris:length\" / 1000000 | round)s (\(if .Metadata.\"mpris:length\" == 0 then 0 else .Position / .Metadata.\"mpris:length\" * 100 | round end)%)${FX[reset]}"
 		"volume;\(.Volume)"
-		"loop;$(tput setaf 7)\(.LoopStatus)$ansi_reset"
-		"title;$(tput setaf 14)\(.Metadata.\"xesam:title\")$ansi_reset"
-		"artist;$(tput setaf 12)\(.Metadata.\"xesam:artist\"[0]?)$ansi_reset"
-		"created;$(tput setaf 2)\(.Metadata.\"xesam:contentCreated\"[0:10]?)$ansi_reset"
-		"url;$(tput setaf 6)\(.Metadata.\"xesam:url\")$ansi_reset"
+		"loop;${FG[silver]}\(.LoopStatus)${FX[reset]}"
+		"title;${FG[cyan]}\(.Metadata.\"xesam:title\")${FX[reset]}"
+		"artist;${FG[blue]}\(.Metadata.\"xesam:artist\"[0]?)${FX[reset]}"
+		"created;${FG[green]}\(.Metadata.\"xesam:contentCreated\"[0:10]?)${FX[reset]}"
+		"url;\(.Metadata.\"xesam:url\")"
 	)
 
 	"$0" -j | jq -nc '[inputs | select(.PlaybackStatus != "Stopped")]' | json-array-to-tsv 'sort_by(.Metadata."xesam:title") | reverse | sort_by(.PlaybackStatus) | reverse' "${jq_fields[@]}"

@@ -1,8 +1,6 @@
 # vim: filetype=sh
 # shellcheck disable=SC2034
 
-ansi_reset="\033[m"
-
 function join-with-tabs() {
 	local IFS=$'\t';
 	echo -e "$*"

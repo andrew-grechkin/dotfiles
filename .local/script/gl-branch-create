@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+args=$(getopt --name="$0" --options 'h:p:t:' --longoptions 'host:,project:,target:' -- "$@")
+eval set -- "$args"
+
+while ((1)); do
+	case "$1" in
+		-h | --host) GL_HOST="$2"; shift 2 ;;
+		-p | --project) GL_PROJECT="$2"; shift 2 ;;
+		-t | --target) target="$2"; shift 2 ;;
+		--) shift; break ;;
+	esac
+done
+
+[[ -z "${target:-}" ]]  && { echo "target is required"; exit 1; }
+
+source "$HOME/.local/lib/shell/gitlab.bash"
+gl-redefine-vars
+export -f gl-define-xh-options
+export -f gl-branch-create
+export -f url_encode
+
+&>/dev/stderr echo "Creating branches: $*"
+printf '%s\n' "$@" | xargs -rI% -P "$GL_JOBS" bash -c "gl-branch-create '$GL_PROJECT' '%' '$target'"

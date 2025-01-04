@@ -16,7 +16,7 @@ function npm-typescript-setup () {
 
 function npm-global-install () {
 	jq -r '.devDependencies | to_entries | map([.key, .value] | join("@")) | .[] | @sh' package.json \
-		| xargs -t npm -g install
+		| xargs -rt npm -g install
 }
 
 function npm-global-common () {

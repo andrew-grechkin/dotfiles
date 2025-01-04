@@ -17,13 +17,14 @@ done
 source "$HOME/.local/lib/shell/gitlab.bash"
 gl-redefine-vars
 
-fetcher=("$0" "${pt_args[@]}")
-export FZF_RELOAD_CMD="${fetcher[*]@Q}"
-
 if [[ -n "${json:-}" ]]; then
 	gl-approvals-get "$GL_PROJECT" "$1"
 else
+	source "$HOME/.local/lib/shell/color.bash"
 	source "$HOME/.local/lib/shell/data-processing.bash"
+
+	fetcher=("$0" "${pt_args[@]}")
+	export FZF_RELOAD_CMD="${fetcher[*]@Q}"
 
 	"${fetcher[@]}" "$@" -j | {
 		# reset sequence sgr0 for tmux-256color adds ^O at the end (^O is shift-in, switch to non-graphic character set)
@@ -33,13 +34,13 @@ else
 		# so there are 3 ways of solving this issue:
 		# * process all ouptut with `sed 's/\x0f//g'` before passing it to less
 		# * use terminal which doesn't add ^O as a part of reset sequence (xterm)
-		# * use hardcoded ansi_reset (might be not portable but who cares)
+		# * use hardcoded reset (might be not portable but who cares)
 		# TERM=xterm
 		jq_fields=(
-			"id;$(tput setaf 3)\(.user.id)$ansi_reset"
+			"id;${FG[olive]}\(.user.id)${FX[reset]}"
 			"uname;\(.user.username)"
-			"name;$(tput setaf 12)\(.user.name)$ansi_reset"
-			"url;$(tput setaf 14)\(.user.web_url)$ansi_reset"
+			"name;${FG[blue]}\(.user.name)${FX[reset]}"
+			"url;${FG[cyan]}\(.user.web_url)${FX[reset]}"
 		)
 
 		jq '.approved_by' | json-array-to-tsv "sort_by(.iid) | reverse" "${jq_fields[@]}"
