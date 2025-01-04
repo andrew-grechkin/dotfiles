@@ -26,5 +26,5 @@ export -f url_encode
 
 &>/dev/stderr echo "Merging MRs (sleep $sleep_sec): $*"
 
-printf '%s\n' "$@" | jq -Rr @uri | xargs --no-run-if-empty -I% \
-	bash -c "if [[ '${approve:-}' == '1' ]]; then gl-mr-approve '$GL_PROJECT' '%' 'approve'; fi; echo Merging %; gl-mr-merge '$GL_PROJECT' '%' && sleep $sleep_sec"
+printf '%s\n' "$@" | jq -Rr @uri | xargs -rI% \
+	bash -c "if [[ '${approve:-}' == '1' ]]; then gl-mr-approve '$GL_PROJECT' '%' 'approve'; fi; gl-mr-merge '$GL_PROJECT' '%' && sleep $sleep_sec"

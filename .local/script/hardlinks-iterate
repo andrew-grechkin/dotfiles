@@ -5,8 +5,8 @@
 set -Euo pipefail
 
 # shellcheck disable=SC2016
-# hardlinks | xargs -d "\n" -ri bash -c 'eval "array=({})"; printf "%s\n" "${array[@]}" | fzf'
+# hardlinks | xargs -d "\n" -rI{} bash -c 'eval "array=({})"; printf "%s\n" "${array[@]}" | fzf'
 
 hardlinks-scan --json \
 	| jq -r '.[] | @sh' \
-	| xargs -d "\n" -ri bash -c 'eval "array=({})"; printf "%s\n" "${array[@]}" | fzf --multi --bind "tab:toggle-out,shift-tab:toggle-in"'
+	| xargs -rI{} -d\n bash -c 'eval "array=({})"; printf "%s\n" "${array[@]}" | fzf --multi --bind "tab:toggle-out,shift-tab:toggle-in"'

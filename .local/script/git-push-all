@@ -4,5 +4,5 @@ set -Eeuo pipefail
 
 git-in-repo && {
 	git remote \
-		| xargs --no-run-if-empty -n 1 -P 0 git push --force-with-lease
+		| xargs -rn1 -P0 git push --force-with-lease
 }

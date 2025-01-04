@@ -32,10 +32,10 @@ else
 	dirs=("$@")
 fi
 
+source "$HOME/.local/lib/shell/color.bash"
+
 for dir in "${dirs[@]}"; do
-	echo -n "$(tput setaf 3)"
-	echo "$operation $dir from ${src}..."
-	echo -n "$(tput sgr0)"
+	echo -e "${FG[olive]}$operation $dir from ${src}...${FX[reset]}"
 
 	rsync "${rsync_params[@]}" "${src}${dir}/" "${dst}${dir}/"
 done

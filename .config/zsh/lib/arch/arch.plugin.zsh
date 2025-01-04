@@ -29,17 +29,3 @@ function arch-upgrade-all() {
 	ansible-playbook playbooks/upgrade.yaml -i hosts.yaml -K --ask-vault-pass
 	popd &>/dev/null
 }
-
-# => pacman + fzf ------------------------------------------------------------------------------------------------- {{{1
-
-function arch-install() {
-	pacman -Slq \
-	| fzf --reverse --multi --bind 'tab:toggle-out,shift-tab:toggle-in' --preview 'cat <(pacman -Si {1}) <(pacman -Fl {1} | awk "{print \$2}")' \
-	| xargs -ro sudo pacman -S
-}
-
-function arch-remove() {
-	pacman -Qqe \
-	| fzf --reverse --multi --bind 'tab:toggle-out,shift-tab:toggle-in' --preview "pacman -Qi {1}" \
-	| xargs -ro sudo pacman -Rns
-}

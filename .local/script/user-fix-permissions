@@ -49,28 +49,30 @@ cat > "$IGNORE_FILE" <<END
 **/@eaDir/
 END
 
+source "$HOME/.local/lib/shell/color.bash"
+
 # umask is supported by chmod: https://teaching.idallen.com/cst8207/13w/notes/510_umask.html
 sudo bash -ec "
 	umask '$USR_UMASK'
-	echo '$(tput setaf 3)Checking owner/group$(tput sgr0)'
+	echo -e '${FG[olive]}Checking owner/group${FX[reset]}'
 	fd      -Lapu --ignore-file='$IGNORE_FILE' --search-path='$PWD' --exec-batch chown -c -h '${USR}:${GRP}' -- {}
 
-	echo '$(tput setaf 3)Checking dir mode$(tput sgr0)'
+	echo -e '${FG[olive]}Checking dir mode${FX[reset]}'
 	fd -t d -Lapu --ignore-file='$IGNORE_FILE' --search-path='$PWD' --exec-batch chmod -c 'go-rwx,+rwX,g+s'  -- {}
 
-	echo '$(tput setaf 3)Checking file mode$(tput sgr0)'
+	echo -e '${FG[olive]}Checking file mode${FX[reset]}'
 	fd -t f -Lapu --ignore-file='$IGNORE_FILE' --search-path='$PWD' --exec-batch chmod -c 'go-rw,+rw'        -- {}
 "
 
 if [[ -e ".gnupg" ]]; then
-	echo "$(tput setaf 3)Correcting .gnupg mode$(tput sgr0)"
+	echo -e "${FG[olive]}Correcting .gnupg mode${FX[reset]}"
 	REAL_PATH="$(realpath .gnupg)"
 	sudo chmod -c -R 'u=rwX,go-rwx,g-s' "$REAL_PATH"
 	recursively_remove_write_permission "$REAL_PATH"
 fi
 
 if [[ -e ".ssh" ]]; then
-	echo "$(tput setaf 3)Correcting .ssh mode$(tput sgr0)"
+	echo -e "${FG[olive]}Correcting .ssh mode${FX[reset]}"
 	REAL_PATH="$(realpath .ssh)"
 	sudo chmod -c -R 'u=rwX,go-rwx,g-s' "$REAL_PATH"
 	recursively_remove_write_permission "$REAL_PATH"

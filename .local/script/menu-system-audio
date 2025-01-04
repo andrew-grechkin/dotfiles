@@ -13,7 +13,7 @@ mpris_svc=\$(busctl --user -j list \
 busctl --user -j get-property \$mpris_svc $mpris_obj $mpris_if Volume | jq -r .data \
     | perl -M List::Util=min -lnE 'say; say min(1.0, \$_ + 0.05)' \
     | tee >(echo "current volume: \$(cat)" >/dev/stderr) \
-    | xargs --no-run-if-empty -I% busctl --user -j set-property \$mpris_svc $mpris_obj $mpris_if Volume d %
+    | xargs -rI% busctl --user -j set-property \$mpris_svc $mpris_obj $mpris_if Volume d %
 EO_MPRIS_RAISE
 
 cat << EO_MPRIS_LOWER > "$XDG_RUNTIME_DIR/mpris-lower"
@@ -24,7 +24,7 @@ mpris_svc=\$(busctl --user -j list \
 busctl --user -j get-property \$mpris_svc $mpris_obj $mpris_if Volume | jq -r .data \
     | perl -M List::Util=max -lnE 'say; say max(0.0, \$_ - 0.05)' \
     | tee >(echo "current volume: \$(cat)" >/dev/stderr) \
-    | xargs --no-run-if-empty -I% busctl --user -j set-property \$mpris_svc $mpris_obj $mpris_if Volume d %
+    | xargs -rI% busctl --user -j set-property \$mpris_svc $mpris_obj $mpris_if Volume d %
 EO_MPRIS_LOWER
 
 cat << EO_LIST | fzf-execute-no-abort

@@ -128,7 +128,7 @@ command! take    :mkdir %a | cd %a
 command! ln      ln %f:p %D
 command! cp      tsp cp -av --sparse=auto --reflink=auto -- %f:p %D/
 command! cpl     tsp cp -av --link                       -- %f:p %D/
-command! cprsync rsync-copy-fat                         %f:p %D/
+command! cprsync rsync-copy-fat                             %f:p %D/
 
 " execute
 command! run    !! ./%c
@@ -139,8 +139,8 @@ command! t      tsp %m
 command! df     df -h %m
 
 " compare
-command! diff   vimdiff %f %F
-command! ddiff  diff-dirs %f %F %m
+command! diff   vimdiff   %c:p %C
+command! ddiff  diff-dirs %c:p %C %m
 
 " search
 command! vgrep  vim "+grep %a"
@@ -158,8 +158,8 @@ command! rep    tsp archive-convert %c
 command! unp    tsp archive-extract --here %c
 
 " checksum
-command! md     find %c -type f -print0 | sort -z | xargs --null md5sum -b > %c.md5
-command! sha    find %c -type f -print0 | sort -z | xargs --null sha256sum -b > %c.sha256
+command! md     find %c -type f -print0 | sort -z | xargs -0r md5sum    -b > %c.md5
+command! sha    find %c -type f -print0 | sort -z | xargs -0r sha256sum -b > %c.sha256
 
 " encrypt/decrypt
 command! encrypt gpg-encrypt %f
@@ -304,6 +304,9 @@ filextype *.3gp,
 	\ ffplay -fs -autoexit,
 	\ {View using mplayer}
 	\ mplayer,
+filextype *.avi,*.mkv
+	\ {Convert to mp4}
+	\ tsp 2mp4 %f:p %i,
 fileviewer *.3gp,
 	\*.as[fx],*.avi,*.dat,*.divx,*.fl[icv],*.lrv,*.m2v,*.m4v,*.mkv,*.mov,*.mp4,*.mpeg,*.mpg,*.mts,
 	\*.ogv,*.qt,*.r[am],*.vob,*.webm,*.wmv

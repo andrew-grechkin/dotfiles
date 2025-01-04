@@ -2,19 +2,13 @@
 
 set -Eeuo pipefail
 
-[[ -x "$(command -v jq)" ]] || {
-	echo "jq is not installed. Please install from 'https://jqlang.github.io/jq/download/'"
-	exit 1
-}
-
 color='auto'
 filename=''
 
-args="$(getopt --name="$0" --options 'nc:f:C' --longoptions 'no-filename,color:,filename:' -- "$@")"
+args=$(getopt --name="$0" --options 'nc:f:C' --longoptions 'no-filename,color:,filename:' -- "$@")
 eval set -- "$args"
 
-# shellcheck disable=SC2078
-while [ : ]; do
+while ((1)); do
 	case "$1" in
 		-c | --color) color="$2"; shift 2 ;;
 		-f | --filename) filename="$2"; shift 2 ;;
@@ -33,6 +27,7 @@ elif [[ -x "$(command -v yq)" ]]; then
 else
 	formatter='| jq --indent 2 -S'
 	lang="json"
+	colorizer="-C"
 fi
 
 if [[ "$color" != 'never' ]] && [[ -t 1 || "$color" == 'always' ]]; then
@@ -48,9 +43,7 @@ if [[ "$color" != 'never' ]] && [[ -t 1 || "$color" == 'always' ]]; then
 		fi
 
 		colorizer="| bat --wrap=never -l '$lang' --color='$color' ${bat_options[*]@Q}"
-	else
-		colorizer="-C"
 	fi
 fi
 
-bash -c "cat ${*@Q} ${formatter:-| cat} ${colorizer:-}"
+eval "cat ${*@Q} ${formatter:-| cat} ${colorizer:-}"

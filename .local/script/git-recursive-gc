@@ -21,7 +21,7 @@ if [[ "$#" -eq "1" ]] && [[ "$1" =~ \.git/?$ ]]; then
 		fi
 	fi
 
-	echo "$FG[olive]Gc $REPO$FX[reset]"
+	echo -e "$FG[olive]Gc $REPO$FX[reset]"
 
 	nice git -C "$REPO" gc --keep-largest-pack --prune=now
 else
@@ -29,7 +29,7 @@ else
 		if [[ -n "$(command -v parallel)" ]]; then
 			parallel -j-50% --delay 0.3 -0 "$0" {}
 		else
-			xargs -0 --max-args=1 --no-run-if-empty "$0"
+			xargs -0rn1 "$0"
 		fi
 	}
 fi

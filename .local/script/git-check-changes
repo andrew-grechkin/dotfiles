@@ -56,8 +56,8 @@ function cleanup {
 
 	if ! git cherry-pick --empty=drop --no-rerere-autoupdate -Xtheirs -Xignore-all-space "$WWW"; then
 		# when file is deleted the conflict is guarantied, need a way to unfold it
-		git status --porcelain | awk '{if ($1=="DU") print $2}' | xargs git checkout --theirs
-		git status --porcelain | awk '{if ($1=="DU") print $2}' | xargs git add
+		git status --porcelain | awk '{if ($1=="DU") print $2}' | xargs -r git checkout --theirs
+		git status --porcelain | awk '{if ($1=="DU") print $2}' | xargs -r git add
 		git commit --no-verify -m'fixed'
 	fi
 
