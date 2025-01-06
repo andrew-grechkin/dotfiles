@@ -65,7 +65,11 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 			fi
 			gl-mrs-get "$GL_PROJECT"
 		elif [[ "$mode" == "pipelines" ]]; then
-			gl-pipelines-get "$GL_PROJECT" "$GL_MR"
+			if [[ -n "${GL_MR:-}" ]]; then
+				gl-pipelines-mr-get "$GL_PROJECT" "$GL_MR"
+			else
+				gl-pipelines-get "$GL_PROJECT"
+			fi
 		elif [[ "$mode" == "jobs" ]]; then
 			gl-jobs-get "$GL_PROJECT" "$GL_MR" "$GL_PIPELINE"
 		else
@@ -136,13 +140,13 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 			)
 		elif [[ "$mode" == "pipelines" ]]; then
 			fzf_args=(
-				--bind="alt-c:execute-silent(source $0; gl-pipeline-cancel '$GL_PROJECT' {1})"
-				--bind="alt-r:execute-silent(source $0; gl-pipeline-retry  '$GL_PROJECT' {1})"
+				--bind="alt-C:execute-silent(source $0; gl-pipeline-cancel '$GL_PROJECT' {1})"
+				--bind="alt-R:execute-silent(source $0; gl-pipeline-retry  '$GL_PROJECT' {1})"
 				--bind="ctrl-m:execute($FZF_RELOAD_CMD -m {-1} -i {1})"
-				--header="A-c:cancel A-r:retry Enter:jobs A-b:browse A-p:preview C-r:reload"
+				--header="A-C:cancel A-R:retry Enter:jobs A-b:browse A-p:preview C-r:reload"
 				--no-sort
 				--preview="source $0; gl-pipeline-get '$GL_PROJECT' {1} | jq -SC"
-				--prompt="$GL_PROJECT (mr: $GL_MR) | ${mode} > "
+				--prompt="$GL_PROJECT (mr: ${GL_MR:-*}) | ${mode} > "
 				--scheme=history
 				--track
 				--with-nth="3..-2"
@@ -192,8 +196,8 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 				"created;${FG[green]}\(.updated_at[0:10])${FX[reset]}"
 				"wip;\(if .work_in_progress then 1 else 0 end)"
 				"state;\(.state)"
-				"name;${FG[blue]}\(.author.name)${FX[reset]}"
-				"author;${FG[magenta]}\(.author.username)${FX[reset]}"
+				# "name;${FG[blue]}\(.author.name[0:25])${FX[reset]}"
+				"author;${FG[magenta]}\(.author.username[0:25])${FX[reset]}"
 				"branch;${FG[silver]}\(.source_branch)${FX[reset]}"
 				"title;\(.title)"
 				"source_project;\(.source_project_id)"
@@ -204,11 +208,12 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 				"id;\(.id)"
 				"url;\(.web_url)"
 				"id;${FG[olive]}\(.id)${FX[reset]}"
-				"status;\(.status)"
+				"status;\(.status | if . == \"failed\" then \"${FG[red]}\(.)\" end)${FX[reset]}"
 				"source;${FG[silver]}\(.source)${FX[reset]}"
+				"ref;\(.ref)"
 				"created;${FG[green]}\(.created_at)${FX[reset]}"
 				"updated;\(.updated_at)"
-				"mr.id;$GL_MR"
+				"mr.id;undef"
 			)
 			"${fetcher[@]}" -j | json-array-to-tsv "sort_by(.created_at, .updated_at) | reverse" "${jq_fields[@]}"
 		elif [[ "$mode" == "jobs" ]]; then
@@ -219,7 +224,7 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 				"pipeline.src;\(.pipeline.source)"
 				"name;${FG[olive]}\(.name)${FX[reset]}"
 				"stage;${FG[silver]}\(.stage)${FX[reset]}"
-				"status;\(.status)"
+				"status;\(.status | if . == \"failed\" then \"${FG[red]}\(.)\" end)${FX[reset]}"
 				"canfail;${FG[silver]}\(.allow_failure)${FX[reset]}"
 				"user;${FG[magenta]}\(.user.username)${FX[reset]}"
 				"dur;\( (.duration | round?) // .duration )"
