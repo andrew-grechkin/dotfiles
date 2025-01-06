@@ -263,13 +263,23 @@ function gl-mr-notes() {
 
 # => pipelines ---------------------------------------------------------------------------------------------------- {{{1
 
-function gl-pipelines-get() {
-	# https://docs.gitlab.com/ee/api/pipelines.html#list-project-pipelines
+function gl-pipelines-mr-get() {
 	# https://docs.gitlab.com/ee/api/merge_requests.html#list-merge-request-pipelines
 	gl-define-xh-options
 	local http_fetch_command=(
 		xhs
 		"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/merge_requests/$2/pipelines?per_page=${GL_PER_PAGE}&order_by=updated_at&sort=asc${query:-}"
+		"${GL_COMMON_XH_OPTIONS[@]}"
+	)
+	"${http_fetch_command[@]}"
+}
+
+function gl-pipelines-get() {
+	# https://docs.gitlab.com/ee/api/pipelines.html#list-project-pipelines
+	gl-define-xh-options
+	local http_fetch_command=(
+		xhs
+		"${GL_HOST}/$GL_API/projects/$(url_encode "$1")/pipelines?per_page=${GL_PER_PAGE}&order_by=updated_at&sort=asc${query:-}"
 		"${GL_COMMON_XH_OPTIONS[@]}"
 	)
 	"${http_fetch_command[@]}"
@@ -341,7 +351,7 @@ function gl-do-all-jobs-get() {
 	echo "$bridges"
 	export -f gl-do-jobs-get gl-do-bridges-get gl-do-all-jobs-get gl-define-xh-options url_encode
 	jq -r 'if .downstream_pipeline then .downstream_pipeline | "\(.project_id)/mr/\(.id)" else empty end' <<<"$bridges" \
-		| xargs -rI% -P4 bash -c 'IFS="/" read -r -a parts <<< "%"; gl-do-all-jobs-get "${parts[@]} | mbuffer"'
+		| xargs -rI% -P0 bash -c 'IFS="/" read -r -a parts <<< "%"; gl-do-all-jobs-get "${parts[@]}" | mbuffer -q'
 
 	# sequential
 	# mapfile -t downstream < <(jq -r 'if .downstream_pipeline then .downstream_pipeline | "\(.project_id)/mr/\(.id)" else empty end' <<<"$bridges")
