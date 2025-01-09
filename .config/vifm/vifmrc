@@ -252,7 +252,7 @@ filextype *.ps,*.eps,*.ps.gz
 filetype *.cue,
 	\*.aac,*.ac3,*.ape,*.flac,*.m4a,*.m4b,*.mp3,*.og[agx],*.opus,*.spx,*.wav,*.wma,*.wv
 	\ {Play using mpv in background}
-	\ execute-detached mpv --quiet --no-osc --term-osd=force --no-audio-display --vid=no -- %c:p,
+	\ exec-detached mpv --quiet --no-osc --term-osd=force --no-audio-display --vid=no -- %c:p,
 	\ {Play using mpv}
 	\ mpv --no-osc --term-osd=force --no-audio-display --vid=no -- %c:p %s,
 	\ {Play using ffplay}
@@ -700,7 +700,7 @@ filetype {*/},{.*/}
 	\ {Show dir}
 	\ show-dir %c | less,
 	\ {Play dir recursively background}
-	\ execute-detached mpv --quiet --no-osc --term-osd=force --no-audio-display --vid=no -- %c:p,
+	\ exec-detached mpv --quiet --no-osc --term-osd=force --no-audio-display --vid=no -- %c:p,
 	\ {Play dir recursively foreground}
 	\ mpv --no-osc --term-osd=force --no-audio-display --vid=no -- %c:p %s,
 	\ {Compress (foreground) tar.zstd}

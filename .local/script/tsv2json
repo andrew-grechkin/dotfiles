@@ -3,7 +3,7 @@
 # parse TSV file with headers to a JSON array of hashes detecting keys by header
 
 # the try-catch dance below is necessary to support json encoded arrays and hashes and also json-like strings in tsv
-# (such strings which are json encoded but don't have duble quotes around them)
+# (such strings which are json encoded but don't have double quotes around them)
 # also excessively escaped output of mysql dump is supported
 
 def ingest_field:

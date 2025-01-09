@@ -42,7 +42,7 @@ return {
             },
             { -- url: https://github.com/shumphrey/fugitive-gitlab.vim
                 'shumphrey/fugitive-gitlab.vim',
-                enabled = IS_WORK and not IS_KVM,
+                enabled = IS_WORK,
                 config = function()
                     vim.g.fugitive_gitlab_domains = {'https://gitlab.' .. PRIVATE_DOMAIN .. '.com'}
                 end,

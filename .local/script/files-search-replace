@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+command git rev-parse HEAD &>/dev/null || {
+	echo "Unsafe to run outside of a git repo" >/dev/stderr
+	exit 1
+}
+
+if [[ "$#" -lt 1 ]]; then
+	echo "Please pass a substitute regex s/// or s{}{}" >/dev/stderr
+	exit 1
+fi
+
+args=("$@")
+regex="${args[-1]}"
+unset "args[-1]"
+
+if [[ "$regex" =~ ^s/ ]]; then
+	search=$(echo "$regex" | grep -o -P '(?<=s/)(.*?)(?=/)')
+elif [[ "$regex" =~ ^s\{ ]]; then
+	search=$(echo "$regex" | grep -o -P '(?<=s{)(.*?)(?=}{)')
+else
+	echo "Invalid regex: '$regex'" >/dev/stderr
+	exit 1
+fi
+
+rg "${args[@]}" -0Ll "$search" | xargs -0r perl -i -pE "BEGIN {@ARGV = grep {! -l} @ARGV} $regex"
