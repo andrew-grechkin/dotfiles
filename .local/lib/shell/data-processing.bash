@@ -15,9 +15,9 @@ function json-array-to-tsv() {
 	local jq_filter=()
 	local field
 	for field in "${jq_fields[@]}"; do
-		IFS=";" read -r -a keyval <<< "$field"
-		col_names+=("${keyval[0]}")
-		jq_filter+=("${keyval[1]}")
+		IFS=";" read -r <<< "$field" key value
+		col_names+=("$key")
+		jq_filter+=("$value")
 	done
 
 	{
