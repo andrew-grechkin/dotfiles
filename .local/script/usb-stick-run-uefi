@@ -2,10 +2,10 @@
 
 set -Eeuo pipefail
 
-VENDOR="0x090c"
-PRODUCT="0x1000"
+VENDOR="${VENDOR:-0x090c}"
+PRODUCT="${VENDOR:-0x1000}"
 
-CMD=(
+args=(
 	-audiodev "pa,id=snd0"
 	-bios /usr/share/ovmf/x64/OVMF.4m.fd
 	-cpu host
@@ -22,4 +22,4 @@ CMD=(
 	-vga virtio
 )
 
-exec qemu-system-x86_64 "${CMD[@]}"
+exec qemu-system-x86_64 "${args[@]}"

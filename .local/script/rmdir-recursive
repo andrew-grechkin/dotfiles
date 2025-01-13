@@ -1,5 +1,3 @@
 #!/usr/bin/env bash
 
-set -Eeuo pipefail
-
 find "$@" -type d -empty -exec rmdir --ignore-fail-on-non-empty -p {} \+

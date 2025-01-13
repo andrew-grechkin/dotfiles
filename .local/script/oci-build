@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+dir=$(dirname "$1")
+tag=${1%%.*}
+
+docker build --rm "$dir" -t "$tag" -f "$1"

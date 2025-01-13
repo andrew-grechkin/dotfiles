@@ -7,12 +7,12 @@ if [[ -t 1 ]]; then
 	fzf_cmd=(
 		fzf
 		--ansi
-		--bind="alt-c:execute-silent(fzf-run-reload -- docker-clean)"
-		--bind="alt-g:execute-silent(fzf-run-reload -- docker pull {+-1})"
+		--bind="alt-R:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -- docker rmi -f {+1})"
+		--bind="alt-S:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -- docker push {+-1})"
+		--bind="alt-c:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -- docker-clean)"
+		--bind="alt-g:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -- docker pull {+-1})"
 		--bind="alt-i:execute(docker inspect {-1} | json-pretty -f {-1})"
 		--bind="alt-p:toggle-preview,ctrl-alt-w:toggle-preview-wrap,ctrl-s:toggle-sort"
-		--bind="alt-r:execute-silent(fzf-run-reload -- docker rmi -f {+1})"
-		--bind="alt-s:execute-silent(fzf-run-reload -- docker push {+-1})"
 		--bind="ctrl-m:execute(docker inspect {-1} | jq-repl)"
 		--bind="ctrl-r:reload($FZF_RELOAD_CMD)"
 		--bind="ctrl-y:execute-silent(echo -n {+-1} | clipcopy)"
@@ -20,7 +20,7 @@ if [[ -t 1 ]]; then
 		--bind="tab:toggle-out,shift-tab:toggle-in"
 		--delimiter="\t"
 		--header-lines=1
-		--header="C-j/k:move C-m/Enter:jq-repl C-r:reload C-y:yank A-c:clear A-g:pull A-i:inspect A-p:preview A-r:remove A-s:push"
+		--header="A-R:remove A-S:push A-c:clear A-g:pull A-i:inspect Enter:jq-repl A-p:preview C-r:reload C-y:yank"
 		--multi
 		--preview-window="right:60%:border-left:wrap:hidden"
 		--preview="docker inspect {-1} | json-pretty -C -f {-1}"

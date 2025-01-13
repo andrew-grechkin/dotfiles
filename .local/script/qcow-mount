@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -xEeuo pipefail
+set -Eeuo pipefail
 
 if [[ -n "${1:-}" ]]; then
 	sudo modprobe nbd max_part=2

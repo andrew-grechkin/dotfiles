@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -Eeuo pipefail
-
 [[ -n "${1:-}" ]] || exit 1
 
 exec rsync -rthvu --info=progress2 --delete "$@"

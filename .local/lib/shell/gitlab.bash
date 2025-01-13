@@ -1,5 +1,3 @@
-# shellcheck disable=SC2034
-
 function gl-redefine-vars() {
 	if [[ -z "${GL_JOBS:-}" ]]; then
 		GL_JOBS=4
@@ -79,7 +77,9 @@ function gl-http-request() {
 		local uri="$2"
 		shift 2
 	fi
+
 	gl-required-vars
+
 	local gl_common_xh_options=(
 		"accept: application/json"
 		"private-token: ${GITLAB_PERSONAL_TOKEN? is required to access ${GL_HOST?is required}}"
@@ -125,7 +125,6 @@ function gl-branch-delete() {
 function gl-branch-diff() {
 	HEAD=$(2>/dev/null git fetch --no-tags --porcelain "$GL_REMOTE" HEAD | perl -nal -E'say $F[2]')
 	>/dev/null git fetch --no-tags --porcelain "$GL_REMOTE" "$1"
-
 	git diff "$HEAD...FETCH_HEAD"
 }
 
@@ -139,7 +138,6 @@ function gl-approvals-get() {
 function gl-mr-diff() {
 	HEAD=$(2>/dev/null git fetch --no-tags --porcelain "$GL_REMOTE" HEAD | perl -nal -E'say $F[2]')
 	>/dev/null git fetch --no-tags --porcelain "$GL_REMOTE" "merge-requests/$1/head"
-
 	git diff "$HEAD...FETCH_HEAD"
 }
 
@@ -228,15 +226,9 @@ function gl-do-all-jobs-get() {
 
 	# recursive get all jobs from children pipelines
 	export -f gl-do-jobs-get gl-do-bridges-get gl-do-all-jobs-get
+	# shellcheck disable=SC2016
 	jq -r 'if .downstream_pipeline then .downstream_pipeline | "\(.project_id)/mr/\(.id)" else empty end' <<<"$bridges" \
 		| xargs -rI% -P0 bash -c 'IFS="/" read -r -a parts <<< "%"; gl-do-all-jobs-get "${parts[@]}" | mbuffer -q'
-
-	# sequential
-	# mapfile -t downstream < <(jq -r 'if .downstream_pipeline then .downstream_pipeline | "\(.project_id)/mr/\(.id)" else empty end' <<<"$bridges")
-	# for dpl in "${downstream[@]}"; do
-	# 	IFS='/' read -r -a parts <<< "$dpl"
-	# 	gl-do-all-jobs-get "${parts[@]}"
-	# done
 }
 
 function gl-jobs-get() {
