@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eEuo pipefail
+set -Eeuo pipefail
 
 renice -n 5 "$$" > /dev/null
 
