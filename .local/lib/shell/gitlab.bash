@@ -36,8 +36,8 @@ function gl-redefine-vars() {
 			[[ -z "${GL_HOST:-}" ]]    && GL_HOST="${parts[0]#*@}"
 			[[ -z "${GL_PROJECT:-}" ]] && GL_PROJECT="${parts[1]%.git}"
 			set -e
-			export GL_HOST GL_PROJECT GL_REMOTE
 		fi
+		export GL_HOST GL_PROJECT GL_REMOTE
 	fi
 }
 
@@ -47,7 +47,7 @@ function gl-required-vars() {
 
 	if [[ -z "${GITLAB_PERSONAL_TOKEN:-}" ]]; then
 		if [[ -x "$(command -v pass)" ]]; then
-			if res=$(pass show "personal/${GL_HOST}" 2>/dev/null); then
+			if res=$(pass show "personal/${GL_HOST}" 2>/dev/null | head -1); then
 				GITLAB_PERSONAL_TOKEN="$res"
 			fi
 		fi
@@ -118,7 +118,7 @@ function gl-branch-create() {
 
 function gl-branch-delete() {
 	# https://docs.gitlab.com/ee/api/branches.html#delete-repository-branch
-	&>/dev/stderr echo "Deleting branch: $2"
+	&>/dev/stderr echo "Deleting branch: $2 ($1)"
 	gl-http-request DELETE "/projects/$(url_encode "$1")/repository/branches/$2"
 }
 
@@ -274,4 +274,11 @@ function gl-job-download-artifacts() {
 function gl-commit-create() {
 	# https://docs.gitlab.com/ee/api/commits.html#create-a-commit-with-multiple-files-and-actions
 	gl-http-request POST "/projects/$(url_encode "$1")/repository/commits" --print=HBhbm @"$2"
+}
+
+# => groups ------------------------------------------------------------------------------------------------------- {{{1
+
+function gl-groups-list() {
+	# https://docs.gitlab.com/ee/api/projects.html#search-for-projects-by-name
+	gl-http-request "/groups/$(url_encode "$1")/projects?per_page=$GL_PER_PAGE&include_subgroups=true&simple=true&order_by=id&sort=asc"
 }

@@ -19,10 +19,8 @@ done
 
 source "$HOME/.local/lib/shell/gitlab.bash"
 gl-redefine-vars
-export -f gl-define-xh-options
 export -f gl-mr-approve
 export -f gl-mr-merge
-export -f url_encode
 
 &>/dev/stderr echo "Merging MRs (sleep $sleep_sec): $*"
 
