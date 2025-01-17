@@ -18,9 +18,7 @@ done
 
 source "$HOME/.local/lib/shell/gitlab.bash"
 gl-redefine-vars
-export -f gl-define-xh-options
 export -f gl-mr-approve
-export -f url_encode
 
 &>/dev/stderr echo "Approving MRs: $*"
 printf '%s\n' "$@" | jq -Rr @uri | xargs -rI% bash -c "echo Approving %; gl-mr-approve '$GL_PROJECT' '%' '$action'"
