@@ -15,20 +15,41 @@ print "256 color mode\n\n";
 # display back ground colors
 
 print "8 colors (4 bit):\n";
-print 'normal: ';
+print 'light:         ';
+for (my $color = 0; $color < 8; $color++) {
+    print(sprintf "\x1b[2;%s;40m:: %2s ::", $color + 30, $color);
+}
+print "\x1b[0m\n";
+print 'normal:        ';
 for (my $color = 0; $color < 8; $color++) {
     print(sprintf "\x1b[%s;40m:: %2s ::", $color + 30, $color);
 }
 print "\x1b[0m\n";
-print 'bright: ';
+print 'bold:          ';
+for (my $color = 0; $color < 8; $color++) {
+    print(sprintf "\x1b[1;%s;40m:: %2s ::", $color + 30, $color);
+}
+print "\x1b[0m\n";
+print 'bright light:  ';
+for (my $color = 0; $color < 8; $color++) {
+    print(sprintf "\x1b[2;%s;40m:: %2s ::", $color + 90, $color);
+}
+print "\x1b[0m\n";
+print 'bright normal: ';
 for (my $color = 0; $color < 8; $color++) {
     print(sprintf "\x1b[%s;40m:: %2s ::", $color + 90, $color);
 }
 print "\x1b[0m\n";
-print 'bold:   ';
+print 'bright bold:   ';
 for (my $color = 0; $color < 8; $color++) {
-    print(sprintf "\x1b[1;%s;40m:: %2s ::", $color + 30, $color);
+    print(sprintf "\x1b[1;%s;40m:: %2s ::", $color + 90, $color);
 }
+
+# print "\x1b[0m\n";
+# print 'bright: ';
+# for (my $color = 0; $color < 8; $color++) {
+#     print(sprintf "\x1b[%s;40m:: %2s ::", $color + 90, $color);
+# }
 
 print "\x1b[0m\n";
 

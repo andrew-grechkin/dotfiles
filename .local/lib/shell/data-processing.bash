@@ -1,6 +1,8 @@
 # vim: filetype=sh
 # shellcheck disable=SC2034
 
+source "$HOME/.local/lib/shell/color.bash"
+
 function join-with-tabs() {
 	local IFS=$'\t';
 	echo -e "$*"
@@ -11,13 +13,21 @@ function json-array-to-tsv() {
 	shift
 	local jq_fields=("$@")
 
-	local col_names=()
-	local jq_filter=()
-	local field
+	local col_names jq_filter field
 	for field in "${jq_fields[@]}"; do
-		IFS=";" read -r <<< "$field" key value
+		# support explicit separator passed as the first character
+		if [[ "$field" =~ ^[[:alnum:]] ]]; then
+			IFS=";" read -r <<< "$field" key value color
+		else
+			IFS="${field:0:1}" read -r <<< "${field:1}" key value color
+		fi
+
 		col_names+=("$key")
-		jq_filter+=("$value")
+		if [[ -n "${color:-}" ]]; then
+			jq_filter+=("${FG[$color]}${value}${FX[reset]}")
+		else
+			jq_filter+=("$value")
+		fi
 	done
 
 	{

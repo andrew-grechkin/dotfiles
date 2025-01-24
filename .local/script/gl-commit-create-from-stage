@@ -21,6 +21,8 @@ source "$HOME/.local/lib/shell/gitlab.bash"
 
 [[ -z "${GL_BRANCH:-}" ]] && { echo "error: branch is required"  >/dev/stderr; exit 1; }
 
+gl-redefine-vars
+
 if [[ -t 1 ]]; then
 	gl-commit-create "$GL_PROJECT" <("$0" -b "$GL_BRANCH" -m "$message")
 else

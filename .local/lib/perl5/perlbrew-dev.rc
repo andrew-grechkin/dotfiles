@@ -7,7 +7,7 @@
 
 # => environment -------------------------------------------------------------------------------------------------- {{{1
 
-PERL_VERSION_REQUIRED="${PERL_VERSION_REQUIRED:-5.40.0}"
+PERL_VERSION_REQUIRED="${PERL_VERSION_REQUIRED:-5.40.1}"
 
 if command git rev-parse HEAD &>/dev/null; then
 	REPO_ROOT="$(git rev-parse --show-toplevel)"
