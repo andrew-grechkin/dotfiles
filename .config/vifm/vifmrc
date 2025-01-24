@@ -435,7 +435,7 @@ filetype *.tsv
 	\ {Repl jq}
 	\ tsv2json %c | jq-repl,
 	\ {Convert -> sqlite}
-	\ sqlite-utils insert %c:r.db %c:r %c --tsv,
+	\ sqlite-utils insert --tsv %c:r.db %c:r %c,
 
 filetype *.md5
 	\ {Check MD5 hash sum}

@@ -70,14 +70,13 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 		)
 		"$0" | "${default_fzf_cmd[@]}" "${fzf_args[@]}"
 	else
-		source "$HOME/.local/lib/shell/color.bash"
 		source "$HOME/.local/lib/shell/data-processing.bash"
 
 		jq_fields=(
 			"name;\(.name)"
-			"explicit;${FG[yellow]}\(if .explicit then \"explicit\" else \"\" end)${FX[reset]}"
-			"installed;${FG[purple]}\(if .installed then \"installed\" else \"\" end)${FX[reset]}"
-			"repo;${FG[gray]}\(.repo)${FX[reset]}"
+			"explicit;\(if .explicit then \"explicit\" else \"\" end);yellow"
+			"installed;\(if .installed then \"installed\" else \"\" end);purple"
+			"repo;\(.repo);gray"
 		)
 
 		"$0" -j | json-array-to-tsv 'sort_by((.explicit | not), (.installed | not), .name)' "${jq_fields[@]}"

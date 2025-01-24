@@ -20,7 +20,6 @@ gl-redefine-vars
 if [[ -n "${json:-}" ]]; then
 	gl-approvals-get "$GL_PROJECT" "$1"
 else
-	source "$HOME/.local/lib/shell/color.bash"
 	source "$HOME/.local/lib/shell/data-processing.bash"
 
 	fetcher=("$0" "${pt_args[@]}")
@@ -37,10 +36,10 @@ else
 		# * use hardcoded reset (might be not portable but who cares)
 		# TERM=xterm
 		jq_fields=(
-			"id;${FG[olive]}\(.user.id)${FX[reset]}"
+			"id;\(.user.id);olive"
 			"uname;\(.user.username)"
-			"name;${FG[blue]}\(.user.name)${FX[reset]}"
-			"url;${FG[cyan]}\(.user.web_url)${FX[reset]}"
+			"name;\(.user.name);blue"
+			"url;\(.user.web_url);cyan"
 		)
 
 		jq '.approved_by' | json-array-to-tsv "sort_by(.iid) | reverse" "${jq_fields[@]}"
