@@ -90,9 +90,25 @@ function gl-http-request() {
 	xh "$verb" "https://$GL_HOST/${GL_API}$uri" "${gl_common_xh_options[@]}" "$@"
 }; [[ -n "${BASH:-}" ]] && export -f gl-http-request
 
+function gl-http-get-all-pages() {
+	local uri headers pages max_pages
+	max_pages="3"
+	uri="$1"
+	headers=$(gl-http-request HEAD "$uri" --print=h | headers_to_json)
+	pages=$(jq -r '."x-total-pages"' <<<"$headers")
+	seq "$((pages > max_pages ? max_pages : pages))" \
+		| xargs -rI{} -P0 bash -c "gl-http-request '${uri}&page={}' | jq -cS '.[]' | mbuffer -q" \
+		| jq -cn '[inputs]'
+}; [[ -n "${BASH:-}" ]] && export -f gl-http-get-all-pages
+
 function url_encode() {
 	printf %s "$1" | jq -Rr @uri
 }; [[ -n "${BASH:-}" ]] && export -f url_encode
+
+function headers_to_json() {
+	sort -u | grep -P '^[[:alnum:]_\-]+:\s' \
+		| jq -nR '[inputs | split(": ") | {key: (.[0] | ascii_downcase), value: .[1]}] | from_entries'
+}; [[ -n "${BASH:-}" ]] && export -f headers_to_json
 
 # => branches ----------------------------------------------------------------------------------------------------- {{{1
 
@@ -148,7 +164,7 @@ function gl-mr-get() {
 
 function gl-mrs-get() {
 	# https://docs.gitlab.com/ee/api/merge_requests.html#list-project-merge-requests
-	gl-http-request "/projects/$(url_encode "$1")/merge_requests?per_page=${GL_PER_PAGE}${query:-}"
+	gl-http-get-all-pages "/projects/$(url_encode "$1")/merge_requests?per_page=${GL_PER_PAGE}${query:-}"
 }
 
 function gl-mr-approve() {
@@ -186,7 +202,7 @@ function gl-pipelines-mr-get() {
 
 function gl-pipelines-get() {
 	# https://docs.gitlab.com/ee/api/pipelines.html#list-project-pipelines
-	gl-http-request "/projects/$(url_encode "$1")/pipelines?per_page=${GL_PER_PAGE}&order_by=updated_at&sort=asc${query:-}"
+	gl-http-get-all-pages "/projects/$(url_encode "$1")/pipelines?per_page=${GL_PER_PAGE}&order_by=updated_at&sort=asc${query:-}"
 }
 
 function gl-pipeline-get() {

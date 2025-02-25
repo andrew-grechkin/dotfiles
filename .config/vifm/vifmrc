@@ -480,6 +480,9 @@ filetype *.torrent
 fileviewer *.torrent
 	\ dump_torrent -v,
 
+fileviewer !{*/}!{.*/}/.gpg.pub$/
+	\ gpg --import-options show-only --import,
+
 filetype !{*/}!{.*/}/.gpg$/
 	\ {GPG decrypt}
 	\ gpg-decrypt,
