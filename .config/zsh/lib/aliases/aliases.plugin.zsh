@@ -10,6 +10,7 @@ alias vi-tsv='vi -c "set filetype=csv"'
 # => apps --------------------------------------------------------------------------------------------------------- {{{1
 
 alias htop='htop -u "$USER"'
+alias j='~/.config/just/justfile'
 
 # => commands ----------------------------------------------------------------------------------------------------- {{{1
 
@@ -61,7 +62,7 @@ alias gcc-all-defines=' gcc -dM -E - < /dev/null | sort'
 # => journal ------------------------------------------------------------------------------------------------------ {{{1
 
 alias j-rotate='sudo journalctl --rotate; sudo journalctl --vacuum-size=1'
-alias        j='sudo journalctl -fb --no-tail --since "1 week ago"      | fzf-journal'
+alias       jt='sudo journalctl -fb --no-tail --since "1 week ago"      | fzf-journal'
 alias      jte='sudo journalctl -fb --no-tail --since "1 week ago" -p 4 | fzf-journal'
 
 # => perf --------------------------------------------------------------------------------------------------------- {{{1

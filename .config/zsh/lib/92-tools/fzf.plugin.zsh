@@ -137,6 +137,8 @@ function _fzf_complete_kubectl_post() {
 
 # => git completion ----------------------------------------------------------------------------------------------- {{{1
 
+function fzf-bks-clusters-widget()       LBUFFER+=$(bks --tui)
+function fzf-bks-namespaces-widget()     LBUFFER+=$(bks --tui --mode namespaces | lines2args)
 function fzf-git-branches-widget()       LBUFFER+=$(fzf-git-branches --all | lines2args)
 function fzf-git-files-changed-widget()  LBUFFER+=$(fzf-git-files-changed  | lines2args)
 function fzf-git-files-widget()          LBUFFER+=$(fzf-git-files          | lines2args)
@@ -145,6 +147,8 @@ function fzf-git-hashes-widget()         LBUFFER+=$(fzf-git-hashes         | lin
 function fzf-git-remotes-widget()        LBUFFER+=$(fzf-git-remotes        | lines2args)
 function fzf-git-tags-widget()           LBUFFER+=$(fzf-git-tags           | lines2args)
 
+zle -N fzf-bks-clusters-widget
+zle -N fzf-bks-namespaces-widget
 zle -N fzf-git-branches-widget
 zle -N fzf-git-files-changed-widget
 zle -N fzf-git-files-widget
@@ -155,10 +159,12 @@ zle -N fzf-git-tags-widget
 
 bindkey ';;' fzf-git-files-widget
 bindkey ';H' fzf-git-hashes-all-widget
+bindkey ';c' fzf-bks-clusters-widget
+bindkey ';g' fzf-git-files-changed-widget
 bindkey ';h' fzf-git-hashes-widget
 bindkey ';j' fzf-git-branches-widget
-bindkey ';k' fzf-git-remotes-widget
-bindkey ';l' fzf-git-files-changed-widget
+bindkey ';n' fzf-bks-namespaces-widget
+bindkey ';r' fzf-git-remotes-widget
 bindkey ';t' fzf-git-tags-widget
 
 # => context completion ------------------------------------------------------------------------------------------- {{{1

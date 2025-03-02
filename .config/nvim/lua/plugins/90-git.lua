@@ -78,7 +78,6 @@ return {
                 virt_text_pos = 'eol', -- 'eol' | 'overlay' | 'right_align'
             },
             current_line_blame_formatter = '<author>, <author_time:%Y-%m-%d> - <summary>',
-            show_deleted = false,
             sign_priority = 6,
             update_debounce = 100,
             status_formatter = nil, -- Use default
