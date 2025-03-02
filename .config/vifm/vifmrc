@@ -376,7 +376,7 @@ fileviewer <application/vnd.sqlite3>
 
 " => File associations: misc -------------------------------------------------------------------------------------- {{{1
 
-filetype *.oci.image
+filetype *.oci.image,*.Dockerfile,Dockerfile
 	\ {Build OCI image}
 	\ oci-build %f,
 
@@ -479,6 +479,9 @@ filetype *.torrent
 	\ ktorrent %f &,
 fileviewer *.torrent
 	\ dump_torrent -v,
+
+fileviewer !{*/}!{.*/}/.gpg.pub$/
+	\ gpg --import-options show-only --import,
 
 filetype !{*/}!{.*/}/.gpg$/
 	\ {GPG decrypt}

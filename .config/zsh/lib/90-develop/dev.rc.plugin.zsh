@@ -34,7 +34,8 @@ function activate() {
 		files+=("$repo_root/projects/deployments/dev.rc")
 	fi
 
-	for local file in "${files[@]}"; do
+	local file
+	for file in "${files[@]}"; do
 		if [[ -r "$file" ]]; then
 			if [[ "$file" =~ dev.rc$ ]]; then
 				try-source-dev-rc "$file"

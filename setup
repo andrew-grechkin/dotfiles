@@ -41,6 +41,7 @@ ln -srf .config/fd                                           ~/.config/
 ln -srf .config/fontconfig/conf.d                            ~/.config/fontconfig/
 ln -srf .config/fzfrc                                        ~/.config/fzfrc
 ln -srf .config/git                                          ~/.config/
+ln -srf .config/just                                         ~/.config/
 ln -srf .config/luarocks                                     ~/.config/
 ln -srf .config/mpv                                          ~/.config/
 ln -srf .config/picom.conf                                   ~/.config/
@@ -63,6 +64,7 @@ ln -srf .local/lib/shell                                     ~/.local/lib/
 ln -srf .local/script                                        ~/.local/
 ln -srf .local/share/3rdparty                                ~/.local/share/
 ln -srf .local/share/distrobox                               ~/.local/share/
+ln -srf .local/share/skel                                    ~/.local/share/
 
 command cp -rf ".config/htop"                                ~/.config/ 2>/dev/null
 command cp -rf ".config/locale.conf"                         ~/.config/ 2>/dev/null

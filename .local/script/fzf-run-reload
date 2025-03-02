@@ -2,7 +2,7 @@
 
 set -Eeuo pipefail
 
-args=$(getopt --name="$0" --options 'e:ft:' --longoptions 'env:,focus,timeout:' -- "$@")
+args=$(getopt --name="$0" --options 'e:fkt:' --longoptions 'env:,focus,keep,timeout:' -- "$@")
 eval set -- "$args"
 
 timeout='0'
@@ -11,6 +11,7 @@ while ((1)); do
 	case "$1" in
 		-e | --env) env="$2"; shift 2 ;;
 		-f | --focus) focus='1'; shift ;;
+		-k | --keep) keep='1'; shift ;;
 		-t | --timeout) timeout="$2"; shift 2 ;;
 		--) shift; break ;;
 	esac
@@ -28,42 +29,40 @@ if [[ -n "${FZF_PORT:-}" && -n "${FZF_RELOAD_CMD:-}" ]]; then
 	)
 fi
 
-header=$(cat <<-EO_HEADER
-	function footer() {
-		if [[ "\$1" == "0" ]]; then
-			sleep 1
+exec_script="$(mktemp --suffix=-fzf-run-reload --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
+if [[ -z "${keep:-}" ]]; then
+	trap 'rm -f "$exec_script"' EXIT
+fi
 
-			${reloading:-}
+cat > "$exec_script" <<EO_HEADER
+function footer() {
+	if [[ "\$1" == "0" ]]; then
+		sleep 1
 
-			sleep $timeout
-		else
-			echo "Script exitcode: \$(errno \$1)"
-			echo "Press Enter to continue"
-			read -n 1 -s -r -p
-		fi
-		if [[ -n "${reload:-}" ]]; then
-			rm -f "${reload:-}"
-		fi
-	}
-	trap 'footer \$?' EXIT
-	EO_HEADER
-)
+		${reloading:-}
+
+		sleep $timeout
+	else
+		echo "Script exitcode: \$(errno \$1)"
+		echo "Press Enter to continue"
+		read -n 1 -s -r -p
+	fi
+	if [[ -n "${reload:-}" ]]; then
+		rm -f "${reload:-}"
+	fi
+}; trap 'footer \$?' EXIT
+
+EO_HEADER
 
 # prefer run from args, fallback to stdin
 if [[ -n "$*" ]]; then
-	cmd=$(
-		echo "$header";
-		echo "${@@Q}"
-	)
+	echo "${@@Q}" >> "$exec_script"
 else
-	cmd=$(
-		echo "$header";
-		cat < /dev/stdin
-	)
+	cat >> "$exec_script" < /dev/stdin
 fi
 
 if [[ -z "${TMUX:-}" ]]; then
-	"$BASH" -c "$cmd"
+	"$BASH" "$exec_script"
 else
 	# environment must be exposed explicitly for tmux
 	if [[ -n "${env:-}" ]]; then
@@ -79,5 +78,5 @@ else
 	tmux_args=(-v)
 	[[ -z "${focus:-}" ]] && tmux_args+=(-d)
 
-	tmux split-window "${tmux_args[@]}" "${tmux_envs[@]}" "$cmd"
+	tmux split-window "${tmux_args[@]}" "${tmux_envs[@]}" "$BASH $exec_script"
 fi

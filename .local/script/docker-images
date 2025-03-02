@@ -2,45 +2,69 @@
 
 set -Eeuo pipefail
 
-if [[ -t 1 ]]; then
-	export FZF_RELOAD_CMD="$0 | json2tsv | tsv-align"
+args=$(getopt --name="$0" --options 'j' --longoptions 'json' -- "$@")
+eval set -- "$args"
+
+while ((1)); do
+	case "$1" in
+		-j | --json) json='1'; shift ;;
+		--) shift; break ;;
+	esac
+done
+
+fetcher=("$0")
+export FZF_RELOAD_CMD="${fetcher[*]@Q}"
+
+if [[ -n "${json:-}" ]]; then
+	docker images -a --format "{{json . }}" "$@" 2>/dev/null | jq -nRc '[inputs | fromjson]'
+elif [[ -t 1 ]]; then
 	fzf_cmd=(
 		fzf
 		--ansi
+		--bind="alt-b:execute-silent(python3 -mwebbrowser {2})"
+		--bind="alt-p:toggle-preview,ctrl-s:toggle-sort,ctrl-t:toggle-track"
+		--bind="ctrl-d:half-page-down,ctrl-u:half-page-up,home:top"
+		--bind="ctrl-e:toggle-preview-wrap,ctrl-n:preview-down,ctrl-p:preview-up"
+		--bind="ctrl-r:reload-sync($FZF_RELOAD_CMD)"
+		--bind="ctrl-w:backward-kill-word,esc:cancel"
+		--bind="tab:toggle-out,shift-tab:toggle-in,ctrl-a:toggle-all"
+		--delimiter="\t"
+		--header-lines=1
+		--listen
+		--multi
+		--reverse
+		--scroll-off=4
+		--tabstop=4
+	)
+
+	fzf_args=(
 		--bind="alt-R:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -- docker rmi -f {+1})"
 		--bind="alt-S:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -- docker push {+-1})"
 		--bind="alt-c:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -- docker-clean)"
 		--bind="alt-g:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -- docker pull {+-1})"
 		--bind="alt-i:execute(docker inspect {-1} | json-pretty -f {-1})"
-		--bind="alt-p:toggle-preview,ctrl-alt-w:toggle-preview-wrap,ctrl-s:toggle-sort"
+		--bind="ctrl-e:execute(docker run -it --rm {-1})"
 		--bind="ctrl-m:execute(docker inspect {-1} | jq-repl)"
-		--bind="ctrl-r:reload($FZF_RELOAD_CMD)"
 		--bind="ctrl-y:execute-silent(echo -n {+-1} | clipcopy)"
-		--bind="home:top"
-		--bind="tab:toggle-out,shift-tab:toggle-in"
-		--delimiter="\t"
-		--header-lines=1
-		--header="A-R:remove A-S:push A-c:clear A-g:pull A-i:inspect Enter:jq-repl A-p:preview C-r:reload C-y:yank"
-		--multi
+		--header="A-R:remove A-S:push A-c:clear A-g:pull A-i:inspect C-e:exec C-y:yank Enter:jq-repl A-p:preview C-r:reload"
 		--preview-window="right:60%:border-left:wrap:hidden"
 		--preview="docker inspect {-1} | json-pretty -C -f {-1}"
 		--prompt="docker images > "
-		--reverse
-		--scroll-off=4
-		--tabstop=4
 		--with-nth="..-2"
 	)
-	eval "$FZF_RELOAD_CMD" | "${fzf_cmd[@]}"
+
+	export SHELL="$BASH" # enforce bash for all fzf sub shells
+	"${fetcher[@]}" | "${fzf_cmd[@]}" "${fzf_args[@]}"
 else
-	docker images -a --format "{{json . }}" \
-		"${OPTIONS[@]}" "$@" 2>/dev/null \
-		| jq -nRc '[inputs | fromjson] | sort_by(.repository // .Repository) | map({
-			id: (.Id // .ID) | .[0:10],
-			# created: (.Created // (.CreatedAt | strptime("%Y-%m-%d %T") | mktime)) | todateiso8601,
-			repository: (.repository // .Repository),
-			tag: (.tag // .Tag),
-			size: .Size,
-			use: .Containers,
-            path: "\(.repository // .Repository):\(.tag // .Tag)"
-	})'
+	source "$HOME/.local/lib/shell/data-processing.bash"
+
+	jq_fields=(
+		"id;\((.Id // .ID) | .[0:10]);olive"
+		"use;\(.Containers)"
+		"repository;\(.repository // .Repository);teal"
+		"tag;\(.tag // .Tag)"
+		"size;\((.Size / (1024 * 1024)) | round) ${FG[gray]}MiB;silver"
+		"path;\(.repository // .Repository):\(.tag // .Tag)"
+	)
+	"${fetcher[@]}" -j | json-array-to-tsv "sort_by(.repository // .Repository)" "${jq_fields[@]}"
 fi

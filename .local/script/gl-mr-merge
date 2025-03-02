@@ -5,7 +5,7 @@ set -Eeuo pipefail
 args=$(getopt --name="$0" --options 'ah:p:s:' --longoptions 'approve,host:,project:,sleep:' -- "$@")
 eval set -- "$args"
 
-sleep_sec=10
+sleep_sec=60
 
 while ((1)); do
 	case "$1" in
@@ -24,5 +24,13 @@ export -f gl-mr-merge
 
 &>/dev/stderr echo "Merging MRs (sleep $sleep_sec): $*"
 
-printf '%s\n' "$@" | jq -Rr @uri | xargs -rI% \
-	bash -c "if [[ '${approve:-}' == '1' ]]; then gl-mr-approve '$GL_PROJECT' '%' 'approve'; fi; gl-mr-merge '$GL_PROJECT' '%' && sleep $sleep_sec"
+# flag that tail is being executed and sleep is required
+flag="$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
+trap 'rm -f "$flag"' EXIT
+
+printf '%s\n' "$@" | jq -Rr @uri \
+	| xargs -rI% bash -c "
+		[[ '${approve:-}' == '1' ]] && gl-mr-approve '$GL_PROJECT' '%' 'approve'
+		[[ -s $flag ]] && sleep $sleep_sec;
+		gl-mr-merge '$GL_PROJECT' '%' && echo '%' >> '$flag'
+"

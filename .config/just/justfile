@@ -1,0 +1,15 @@
+#!/usr/bin/env -S just --justfile
+
+# https://just.systems/man/en/
+
+@default:
+	just --list --justfile {{justfile()}}
+
+[no-cd]
+@init-nodejs:
+	rsync-copy ~/.local/share/skel/nodejs/ ./
+
+[no-cd]
+@init-ts-app:
+	rsync-copy ~/.local/share/skel/ts-app/ ./
+	npm install --no-audit --no-fund

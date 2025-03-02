@@ -95,6 +95,41 @@ vueIndentScriptAndStyle: true
 END_PRETTIER_CONFIG
 }
 
+function ts-package-setup () {
+	cat > package.json << "END_PACKAGE_JSON"
+{
+  "author": "",
+  "description": "",
+  "engines": {
+    "node": ">=22.6.0"
+  },
+  "keywords": [],
+  "main": "src/main.ts",
+  "name": "app",
+  "scripts": {
+    "build": "npx tsc",
+    "dev": "node --import=tsx --watch-path=src src/main.ts server",
+    "predev": "env | sort"
+  },
+  "type": "module",
+  "version": "1.0.0"
+}
+END_PACKAGE_JSON
+
+	dev_packages=(
+		typescript @types/node
+		globals @eslint/js typescript-eslint @typescript-eslint/eslint-plugin @typescript-eslint/parser
+		eslint eslint-plugin-prettier eslint-config-prettier
+		# gts
+	)
+	run_packages=(
+		@minionjs/core @mojojs/core @types/stack-utils @types/ws dotenv tsx
+	)
+
+	npm install --no-audit --no-fund "${dev_packages[@]}" --save-dev
+	npm install --no-audit --no-fund "${run_packages[@]}"
+}
+
 # => exports ------------------------------------------------------------------------------------------------------ {{{1
 
 # export NPM_CONFIG_PREFIX="$XDG_DATA_HOME/npm"

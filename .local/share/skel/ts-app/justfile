@@ -1,0 +1,27 @@
+# https://just.systems/man/en/
+
+# set fallback
+
+@default:
+	just --list --justfile {{justfile()}}
+
+@build:
+	npm run build
+
+@dev:
+	npm run dev
+
+@fix:
+	npx eslint . --fix
+
+@lint:
+	npx eslint .
+
+@prepare:
+    npm ci --no-audit --no-fund
+
+@run: build
+	node dist/src/main.js server
+
+@test: fix build
+	true
