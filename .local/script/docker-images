@@ -63,7 +63,8 @@ else
 		"use;\(.Containers)"
 		"repository;\(.repository // .Repository);teal"
 		"tag;\(.tag // .Tag)"
-		"size;\((.Size / (1024 * 1024)) | round) ${FG[gray]}MiB;silver"
+		"size;\(.Size);silver"
+		# "size;\((.Size / (1024 * 1024)) | round) ${FG[gray]}MiB;silver"
 		"path;\(.repository // .Repository):\(.tag // .Tag)"
 	)
 	"${fetcher[@]}" -j | json-array-to-tsv "sort_by(.repository // .Repository)" "${jq_fields[@]}"

@@ -54,7 +54,6 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 			--reverse
 			--scroll-off=4
 			--tabstop=4
-			--track
 		)
 
 		fzf_args=(
