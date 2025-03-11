@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+sudo dpkg --add-architecture i386
+sudo apt-get update -y
+sudo apt-get upgrade -y
+sudo apt-get install -y python3 python3-pip
+sudo pip3 install gog-install
+sudo sed -Ei 's/«|»//g' "$(which gog-install)"
+sudo apt-get install -y \
+	libc6:i386 \
+	libasound2:i386 \
+	libasound2-data:i386 \
+	libasound2-plugins:i386 \
+	libcurl3:i386 \
+	libgtk2.0-0:i386 \
+	libopenal1:i386 \
+	libglu1:i386
+sudo apt-get clean
+sudo rm -rf /var/lib/apt/lists/*
+
+mkdir -p ~/.config/UNDERTALE_linux
+
+gog-install --install-dir=/opt/games ./undertale_en_1_08_18328.sh

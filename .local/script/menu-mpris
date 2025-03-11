@@ -45,24 +45,11 @@ function mpris-get-items() {
 if [[ -n "${json:-}" ]]; then
 	mpris-get-items
 elif [[ -t 1 ]]; then
-	fzf_cmd=(
-		fzf
-		--ansi
-		--bind="alt-p:toggle-preview,ctrl-s:toggle-sort,ctrl-t:toggle-track"
-		--bind="ctrl-d:half-page-down,ctrl-u:half-page-up,home:top"
-		--bind="ctrl-e:toggle-preview-wrap,ctrl-n:preview-down,ctrl-p:preview-up"
-		--bind="ctrl-w:backward-kill-word,esc:cancel"
-		--bind="load:execute-silent(setsid -f -- fzf-time-reload -i 3 $0)+unbind(load)"
-		--delimiter="\t"
-		--header-lines=1
-		--listen
-		--reverse
-		--scroll-off=4
-		--tabstop=4
-		--track
-		--with-nth="2..-2"
-	)
+	export FZF_RELOAD_CMD="$0"
+	source "$HOME/.local/lib/shell/fzf.bash"
+
 	fzf_args=(
+		--bind="load:execute-silent(setsid -f -- fzf-time-reload -i 3 $0)+unbind(load)"
 		--bind="alt-a:execute-silent(busctl --user --json=short get-property {1} $MPRIS_OBJ $MPRIS_IF -- LoopStatus | jq -r 'if (.data == \"None\") then \"Track\" elif (.data == \"Track\") then \"Playlist\" else \"None\" end' | xargs -r busctl --user set-property {1} $MPRIS_OBJ $MPRIS_IF -- LoopStatus s)+reload-sync($0)"
 		--bind="alt-b:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Seek x -9999999999999)+reload-sync($0)"
 		--bind="alt-h:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Seek x -60000000)+reload-sync($0)"
@@ -77,13 +64,15 @@ elif [[ -t 1 ]]; then
 		--bind="left:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Seek x -10000000)+reload-sync($0)"
 		--bind="right:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Seek x  10000000)+reload-sync($0)"
 		--bind="up:execute-silent(busctl --user --json=short get-property {1} $MPRIS_OBJ $MPRIS_IF -- Volume | jq -r '.data + 0.05' | xargs -r busctl --user set-property {1} $MPRIS_OBJ $MPRIS_IF -- Volume d)+reload-sync($0)"
-		--header="A-a:loop A-b:begin A-h:-60s A-l:+60s Dn:lower Up:higher Left:-10s Right:+10s Enter:play/pause C-n:next C-p:previous C-r:reload C-y:yank"
+		--header="A-a:loop A-b:begin A-h:-60s A-l:+60s Dn:lower Up:higher Left:-10s Right:+10s Enter:play/pause C-n:next C-p:previous $DEFAULT_FZF_KEYS"
 		--preview-window="right:60%:border-left:wrap:hidden"
 		--preview="echo -n {-1}"
 		--prompt="mpris > "
+		--with-nth="2..-2"
+		--track
 	)
 
-	"$0" | "${fzf_cmd[@]}" "${fzf_args[@]}"
+	"$0" | fzf-exec "${fzf_args[@]}"
 else
 	source "$HOME/.local/lib/shell/data-processing.bash"
 

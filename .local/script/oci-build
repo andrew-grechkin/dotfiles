@@ -3,6 +3,7 @@
 set -Eeuo pipefail
 
 dir=$(dirname "$1")
-tag=${1%%.*}
+tag=$(echo -n "${1%%.*}" | perl -nE 'print lc')
 
+set -x
 docker build --rm "$dir" -t "$tag" -f "$1"

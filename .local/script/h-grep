@@ -8,7 +8,6 @@ SKIM_OPTS=(
 	--reverse
 	--regex
 	--print-query
-	# --bind='esc:cancel'
 )
 REGEX="$(sk "${SKIM_OPTS[@]}" < "$FILE" | head -1)"
 

@@ -84,26 +84,7 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 		fi
 		wait='read -rs -n1 -t 30 -p "press any key..."; echo'
 
-		fzf_cmd=(
-			fzf
-			--ansi
-			--bind="alt-b:execute-silent(python3 -mwebbrowser {2})"
-			--bind="alt-p:toggle-preview,ctrl-s:toggle-sort,ctrl-t:toggle-track"
-			--bind="ctrl-d:half-page-down,ctrl-u:half-page-up,home:top"
-			--bind="ctrl-e:toggle-preview-wrap,ctrl-n:preview-down,ctrl-p:preview-up"
-			--bind="ctrl-r:reload-sync($FZF_RELOAD_CMD)"
-			--bind="ctrl-w:backward-kill-word,esc:cancel"
-			--bind="tab:toggle-out,shift-tab:toggle-in,ctrl-a:toggle-all"
-			--delimiter="\t"
-			--header-lines=1
-			--listen
-			--multi
-			--preview-window="right:60%:border-left:wrap:hidden"
-			--reverse
-			--scroll-off=4
-			--tabstop=4
-			--with-nth="3.."
-		)
+		source "$HOME/.local/lib/shell/fzf.bash"
 
 		if [[ "$mode" == "branches" ]]; then
 			fzf_args=(
@@ -118,6 +99,7 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 				--header="A-N:new-mr A-R:remove A-c:clear A-i:diff C-x:dump C-y:yank Enter:mr A-b:browse A-p:preview C-r:reload"
 				--preview="source $0; gl-branch-diff {3} ${prettify_diff[*]:0:2}"
 				--prompt="$GL_PROJECT | ${mode} > "
+				--with-nth="3.."
 			)
 		elif [[ "$mode" == "mrs" ]]; then
 			fzf_args=(
@@ -155,11 +137,11 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 			fzf_args=(
 				--bind="alt-C:execute-silent(source $0; gl-job-cancel {-3} {1})"
 				--bind="alt-D:execute(source $0; o=${TMPDIR:-/tmp}/pipeline-$GL_PIPELINE-job-{3}.zip; gl-job-download-artifacts {-3} {1} > \$o; echo Saved to: \$o; $wait)"
-				--bind="alt-R:execute-silent(source $0; gl-job-retry  {-3} {1})"
+				--bind="alt-R:execute-silent(echo source $0\; gl-redefine-vars\; gl-job-retry {-3} {1} | fzf-run-reload -t 2)"
 				--bind="alt-d:execute(source $0; o=${TMPDIR:-/tmp}/pipeline-$GL_PIPELINE-job-{3}.log; gl-job-log {-3} {1} > \$o; echo Saved to: \$o; $wait)"
-				--bind="alt-s:execute-silent(echo source $0\; gl-redefine-vars\; for id in {+1}\; do gl-job-run {-3} \\\$id\; done | fzf-run-reload -t 10)"
+				--bind="alt-s:execute-silent(echo source $0\; gl-redefine-vars\; for id in {+1}\; do gl-job-run {-3} \\\$id\; done | fzf-run-reload -t 2)"
 				--bind="ctrl-m:execute(source $0; gl-job-log {-3} {1} | $PAGER)"
-				--header="A-C:cancel A-D:dnlart A-R:retry A-d:dnllog A-s:run Enter:log A-b:browse A-p:preview C-r:reload"
+				--header="A-C:cancel A-D:dnlart A-R:retry A-d:dnllog A-s:run Enter:log A-b:browse $DEFAULT_FZF_KEYS"
 				--no-sort
 				--preview="source $0; gl-job-get {-3} {1} | jq -SC"
 				--prompt="$GL_PROJECT (mr: $GL_MR pipeline: $GL_PIPELINE) | ${mode} > "
@@ -169,8 +151,7 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 			)
 		fi
 
-		export SHELL="$BASH" # enforce bash for all fzf sub shells
-		"${fetcher[@]}" | "${fzf_cmd[@]}" "${fzf_args[@]}"
+		"${fetcher[@]}" | fzf-exec-multi "${fzf_args[@]}"
 	else
 		source "$HOME/.local/lib/shell/data-processing.bash"
 
@@ -207,7 +188,7 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 				"id;\(.id)"
 				"url;\(.web_url)"
 				"id;\(.id);olive"
-				"status;\(.status | if . == \"failed\" then \"${FG[red]}\(.)\" end)${FX[reset]}"
+				"status;\(.status | if . == \"failed\" then \"${FG[red]}\(.)\" elif . == \"success\" then \"${FG[lime]}\(.)\" end)${FX[reset]}"
 				"source;\(.source);silver"
 				"ref;\(.ref);magenta"
 				"created;\(.created_at);green"
@@ -223,7 +204,7 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 				"pipeline.src;\(.pipeline.source);gray"
 				"name;\(.name);teal"
 				"stage;\(.stage);silver"
-				"status;\(.status | if . == \"failed\" then \"${FG[red]}\(.)\" end)${FX[reset]}"
+				"status;\(.status | if . == \"failed\" then \"${FG[red]}\(.)\" elif . == \"success\" then \"${FG[lime]}\(.)\" end)${FX[reset]}"
 				"canfail;\(.allow_failure);silver"
 				"user;\(.user.username);blue"
 				"dur;\( (.duration | round?) // .duration )"
