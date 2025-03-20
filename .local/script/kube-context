@@ -4,33 +4,16 @@ set -Eeuo pipefail
 
 if [[ -t 1 ]]; then
 	export FZF_RELOAD_CMD="$0"
-	export SHELL="$BASH" # enforce bash for all fzf sub shells
-	default_fzf_cmd=(
-		fzf
-		--ansi
-		--bind="alt-p:toggle-preview,ctrl-s:toggle-sort,ctrl-t:toggle-track"
-		--bind="ctrl-d:half-page-down,ctrl-u:half-page-up,home:top"
-		--bind="ctrl-e:toggle-preview-wrap,ctrl-n:preview-down,ctrl-p:preview-up"
-		--bind="ctrl-r:reload($FZF_RELOAD_CMD)"
-		--bind="ctrl-w:backward-kill-word,esc:cancel"
-		--bind="tab:toggle-out,shift-tab:toggle-in,ctrl-a:toggle-all"
-		--delimiter="\t"
-		--header-lines=1
-		--listen
-		--multi
-		--preview-window="right:50%:border-left:wrap:hidden"
-		--reverse
-		--scroll-off=4
-		--tabstop=4
-		--track
-	)
+	source "$HOME/.local/lib/shell/fzf.bash"
+
 	fzf_args=(
 		--bind="alt-R:execute(echo printf \'%s\\\\n\' {+2} \| xargs -rn1 kubectl config delete-context | fzf-run-reload -t 2)"
 		--bind="ctrl-m:become(kubectl config use-context {2})"
-		--header="A-R:remove Enter:set C-r:reload"
+		--preview-window="right:50%:border-left:wrap:hidden"
+		--header="A-R:remove Enter:set $DEFAULT_FZF_KEYS"
 		--prompt="kubectl context > "
 	)
-	"$0" | "${default_fzf_cmd[@]}" "${fzf_args[@]}"
+	"$0" | fzf-exec-multi "${fzf_args[@]}"
 else
 	{
 		echo -e "namespace\tcontext\tcluster\tuser\tcurrent";

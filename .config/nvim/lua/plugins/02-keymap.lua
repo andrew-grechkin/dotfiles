@@ -173,7 +173,7 @@ return {
             which_key.add({
                 nowait = true,
                 remap = false,
-                {'<leader>""', ':belowright vsplit<CR>', desc = 'vsplit right'},
+                {'<leader>"', ':belowright vsplit<CR>', desc = 'vsplit right'},
                 {'<leader>\'', ':belowright split<CR>', desc = 'split below'},
             })
 

@@ -110,6 +110,10 @@ gen-cdpath
 
 source-file "$XDG_CONFIG_HOME/shell/interactive.work"
 
+if [[ -n "$VISUAL" && ! -x $(command -v "$VISUAL") ]]; then
+	unset VISUAL
+fi
+
 # => show profiler ------------------------------------------------------------------------------------------------ {{{1
 
 # zprof
