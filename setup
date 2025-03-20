@@ -23,18 +23,14 @@ chmod -R u=rwX,go-rwxs .ssh
 	command cp -rf ".config/user-dirs.locale"                ~/.config/
 }
 
+ln -srf .bashrc                                              ~/
 ln -sr  .gnupg                                               ~/ 2>/dev/null
 ln -sr  .ssh                                                 ~/ 2>/dev/null
 ln -sr  .xprofile                                            ~/ 2>/dev/null
-ln -srf .bashrc                                              ~/
 ln -srf .zshenv                                              ~/
 
-[[ -d ~/.config/atuin ]] && rm -rf ~/.config/atuin
-
-ln -srf .config/atuin                                        ~/.config/
 ln -srf .config/chromium-flags.conf                          ~/.config/
 ln -srf .config/chromium-flags.conf                          ~/.config/chrome-flags.conf
-ln -srf .config/commitlintrc.yaml                            ~/.config/
 ln -srf .config/environment.d/*                              ~/.config/environment.d/
 ln -srf .config/eza                                          ~/.config/
 ln -srf .config/fd                                           ~/.config/
@@ -70,7 +66,11 @@ command cp -rf ".config/htop"                                ~/.config/ 2>/dev/n
 command cp -rf ".config/locale.conf"                         ~/.config/ 2>/dev/null
 
 if [[ "$USER" == "agrechkin" ]]; then
+	[[ -d ~/.config/atuin ]] && rm -rf ~/.config/atuin
+
+	ln -srf .config/atuin                                    ~/.config/
 	ln -srf .config/bspwm                                    ~/.config/
+	ln -srf .config/commitlintrc.yaml                        ~/.config/
 	ln -srf .config/containers                               ~/.config/
 	ln -srf .config/lazygit                                  ~/.config/
 	ln -srf .config/luaformatter                             ~/.config/

@@ -17,8 +17,6 @@ filter=(
 	--regex
 	--reverse
 	--multi
-	# --bind="tab:toggle-out,shift-tab:toggle-in"
-	# --bind='esc:cancel'
 )
 
 output="$(sort -u < "$file" | "${filter[@]}" | tee /tmp/blah)"

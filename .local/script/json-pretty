@@ -18,7 +18,7 @@ while ((1)); do
 	esac
 done
 
-if [[ -x "$(command -v json2yaml)" && -x "$(command -v perl)" && -n "$(perl -e 'print $] >= 5.036')" ]]; then
+if [[ -x "$(command -v json2yaml)" && -x "$(command -v perl)" && -n "$(perl -e 'print $] >= 5.036')" && -n "$(perl -MYAML::XS -e 'print $YAML::XS::VERSION' 2>/dev/null)" ]]; then
 	formatter="| json2yaml"
 	lang="yaml"
 elif [[ -x "$(command -v yq)" ]]; then

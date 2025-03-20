@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+if [[ ! -x "$HOME/.cache/bin/fnm" ]]; then
+	1>/dev/stderr echo "> installing fnm to $HOME/.cache/bin..."
+	url="https://github.com/Schniz/fnm/releases/latest/download/fnm-linux.zip"
+
+	curl -Lsf "$url"                        \
+		| zcat      >"$HOME/.cache/bin/fnm" \
+		&& chmod a+x "$HOME/.cache/bin/fnm"
+fi
+
+"$HOME/.cache/bin/fnm" install lts/jod
+"$HOME/.cache/bin/fnm" default lts/jod

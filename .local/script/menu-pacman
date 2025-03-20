@@ -36,26 +36,7 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 		pacman-items-get
 	elif [[ -t 1 ]]; then
 		export FZF_RELOAD_CMD="$0"
-		export SHELL="$BASH" # enforce bash for all fzf sub shells
-		default_fzf_cmd=(
-			fzf
-			--ansi
-			--bind="alt-p:toggle-preview,ctrl-s:toggle-sort,ctrl-t:toggle-track"
-			--bind="ctrl-d:half-page-down,ctrl-u:half-page-up,home:top"
-			--bind="ctrl-e:toggle-preview-wrap,ctrl-n:preview-down,ctrl-p:preview-up"
-			--bind="ctrl-r:reload($FZF_RELOAD_CMD)"
-			--bind="ctrl-w:backward-kill-word,esc:cancel"
-			--bind="tab:toggle-out,shift-tab:toggle-in,ctrl-a:toggle-all"
-			--delimiter="\t"
-			--header-lines=1
-			--listen
-			--multi
-			--preview-window="right:50%:border-left:wrap:nohidden,<55(hidden)"
-			--reverse
-			--scroll-off=4
-			--tabstop=4
-			--track
-		)
+		source "$HOME/.local/lib/shell/fzf.bash"
 
 		fzf_args=(
 			--bind="alt-A:execute(fzf-run-reload -ft 1 -- sudo pacman -S {+1})"
@@ -64,11 +45,12 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 			--bind="alt-E:execute(fzf-run-reload -ft 1 -- sudo pacman -D --asexplicit {+1})"
 			--bind="alt-R:execute(fzf-run-reload -ft 1 -- sudo pacman -Rcs {+1})"
 			--bind="alt-U:execute(echo 'trizen -Syu --noconfirm --noedit --needed && sudo pacman -Fy' | fzf-run-reload -ft 1)"
-			--header="A-A:install A-C:clean A-D:asdep A-E:asexp A-R:remove A-U:upgrade A-p:preview C-r:reload"
+			--header="A-A:install A-C:clean A-D:asdep A-E:asexp A-R:remove A-U:upgrade $DEFAULT_FZF_KEYS"
 			--preview="if [[ {3} == 'installed' ]]; then cat <(pacman -Qi {1}) <(pacman -Ql {1} | awk '{print \$2}'); else cat <(pacman -Si {1}) <(pacman -Fl {1} | awk '{print \$2}'); fi"
+			--preview-window="right:50%:border-left:wrap:nohidden,<55(hidden)"
 			--prompt="pacman > "
 		)
-		"$0" | "${default_fzf_cmd[@]}" "${fzf_args[@]}"
+		"$0" | fzf-exec-multi "${fzf_args[@]}"
 	else
 		source "$HOME/.local/lib/shell/data-processing.bash"
 

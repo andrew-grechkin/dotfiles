@@ -13,58 +13,44 @@ while ((1)); do
 done
 
 fetcher=("$0")
-export FZF_RELOAD_CMD="${fetcher[*]@Q}"
 
 if [[ -n "${json:-}" ]]; then
-	docker images -a --format "{{json . }}" "$@" 2>/dev/null | jq -nRc '[inputs | fromjson]'
+	docker images -a --format "{{json . }}" "$@" 2>/dev/null | jq -nRcS '[inputs | fromjson | with_entries( .key |= ascii_downcase )]'
 elif [[ -t 1 ]]; then
-	fzf_cmd=(
-		fzf
-		--ansi
-		--bind="alt-b:execute-silent(python3 -mwebbrowser {2})"
-		--bind="alt-p:toggle-preview,ctrl-s:toggle-sort,ctrl-t:toggle-track"
-		--bind="ctrl-d:half-page-down,ctrl-u:half-page-up,home:top"
-		--bind="ctrl-e:toggle-preview-wrap,ctrl-n:preview-down,ctrl-p:preview-up"
-		--bind="ctrl-r:reload-sync($FZF_RELOAD_CMD)"
-		--bind="ctrl-w:backward-kill-word,esc:cancel"
-		--bind="tab:toggle-out,shift-tab:toggle-in,ctrl-a:toggle-all"
-		--delimiter="\t"
-		--header-lines=1
-		--listen
-		--multi
-		--reverse
-		--scroll-off=4
-		--tabstop=4
-	)
+	export FZF_RELOAD_CMD="${fetcher[*]@Q}"
+	source "$HOME/.local/lib/shell/fzf.bash"
 
 	fzf_args=(
-		--bind="alt-R:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -- docker rmi -f {+1})"
-		--bind="alt-S:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -- docker push {+-1})"
-		--bind="alt-c:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -- docker-clean)"
+		--bind="alt-E:execute(docker run -it --rm -h \$(basename {3}) --entrypoint sh {-1})"
+		--bind="alt-I:execute(docker inspect {1} | jq-repl)"
+		--bind="alt-R:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -t 1 -- docker rmi -f {+1})"
+		--bind="alt-S:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -t 1 -- docker push {+-1})"
+		--bind="alt-b:execute-silent(true)"
+		--bind="alt-c:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -t 1 -- docker-clean)"
 		--bind="alt-g:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -- docker pull {+-1})"
-		--bind="alt-i:execute(docker inspect {-1} | json-pretty -f {-1})"
-		--bind="ctrl-e:execute(docker run -it --rm {-1})"
-		--bind="ctrl-m:execute(docker inspect {-1} | jq-repl)"
+		--bind="alt-i:execute(docker inspect {1} | json-pretty -f {-1})"
+		--bind="ctrl-e:execute(docker run -it --rm -h \$(basename {3}) {-1})"
+		--bind="ctrl-m:execute(docker run -it --rm -h \$(basename {3}) --entrypoint bash {-1})"
 		--bind="ctrl-y:execute-silent(echo -n {+-1} | clipcopy)"
-		--header="A-R:remove A-S:push A-c:clear A-g:pull A-i:inspect C-e:exec C-y:yank Enter:jq-repl A-p:preview C-r:reload"
-		--preview-window="right:60%:border-left:wrap:hidden"
+		--header="A-R:remove A-S:push A-I:jq-repl A-c:clear A-g:pull A-i:inspect C-e:exec Enter:bash $DEFAULT_FZF_KEYS"
 		--preview="docker inspect {-1} | json-pretty -C -f {-1}"
 		--prompt="docker images > "
 		--with-nth="..-2"
 	)
 
-	export SHELL="$BASH" # enforce bash for all fzf sub shells
-	"${fetcher[@]}" | "${fzf_cmd[@]}" "${fzf_args[@]}"
+	"${fetcher[@]}" | fzf-exec-multi "${fzf_args[@]}"
 else
 	source "$HOME/.local/lib/shell/data-processing.bash"
 
 	jq_fields=(
-		"id;\((.Id // .ID) | .[0:10]);olive"
-		"use;\(.Containers)"
-		"repository;\(.repository // .Repository);teal"
-		"tag;\(.tag // .Tag)"
-		"size;\((.Size / (1024 * 1024)) | round) ${FG[gray]}MiB;silver"
-		"path;\(.repository // .Repository):\(.tag // .Tag)"
+		"id;\(.id | .[0:10]);olive"
+		"use;\(.containers)"
+		"repository;\(.repository);teal"
+		"tag;\(.tag)"
+		"size;\(.size | if type == \"string\" then . else \"\((. / (1024 * 1024)) | round) ${FG[gray]}MiB\" end);silver"
+		"created;\(if .createdat then .createdat else .created | todateiso8601 end)"
+		"since;\(.createdsince // \"\")"
+		"path;\(.repository):\(.tag)"
 	)
-	"${fetcher[@]}" -j | json-array-to-tsv "sort_by(.repository // .Repository)" "${jq_fields[@]}"
+	"${fetcher[@]}" -j | json-array-to-tsv 'sort_by(.repository == "<none>", .repository)' "${jq_fields[@]}"
 fi

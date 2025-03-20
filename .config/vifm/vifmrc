@@ -360,9 +360,9 @@ filetype *.sqlar,.*.sqlar
 	\ sqlite3 %c -Ax &,
 filetype <application/vnd.sqlite3>
 	\ {View}
-	\ sqlite-utils rows %c %c:r --nl | json2tsv | tsv-show,
+	\ sqlite-utils rows %c %c:r --nl | json2tsv | tsv-show | less --header=1,
 	\ {Browse}
-	\ datasette %c -c,
+	\ datasette %c -o,
 	\ {Dump}
 	\ sqlite-utils rows %c %c:r --nl > %c.jsonl %i,
 	\ {Repl}
@@ -402,6 +402,10 @@ filetype CMakeLists.txt
 filetype <application/x-ndjson>,*.jsonl
 	\ {View}
 	\ json2tsv %c | tsv-show,
+	\ {Convert -> sqlite}
+	\ sqlite-utils insert --nl %c:r.db %c:r %c,
+	\ {Compact json}
+	\ jq -c < %c | sponge %c,
 fileviewer <application/x-ndjson>,*.jsonl
 	\ head -30 %c | json2tsv,
 
@@ -412,6 +416,8 @@ filetype <application/json>,*.json,*.jsonc
 	\ jq-repl %c,
 	\ {Reformat json}
 	\ reformat -a,
+	\ {Compact json}
+	\ jq -c < %c | sponge %c,
 	\ {Convert json -> yaml}
 	\ json2yaml %c > %c:r.yaml &,
 " fileviewer *.json
@@ -434,8 +440,11 @@ filetype *.tsv
 	\ vi -c "set filetype=csv" %c,
 	\ {Repl jq}
 	\ tsv2json %c | jq-repl,
+	\ {Dump}
+	\ tsv2jsonl %c > %c.jsonl %i,
 	\ {Convert -> sqlite}
-	\ sqlite-utils insert --tsv %c:r.db %c:r %c,
+	\ tsv2jsonl %c | sqlite-utils insert --nl %c:r.db %c:r -,
+" sqlite-utils is not good at importing tsv, can loose quotes for example
 
 filetype *.md5
 	\ {Check MD5 hash sum}

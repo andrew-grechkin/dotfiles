@@ -8,6 +8,7 @@ set -Eo pipefail
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1
 
-pyenv install -v 3.11.5
-pyenv global 3.11.5
-pip install pynvim
+PYTHON_REQUIRED_VERSION="3.13.2"
+pyenv install -s "$PYTHON_REQUIRED_VERSION"
+pyenv global "$PYTHON_REQUIRED_VERSION"
+# pip install pynvim

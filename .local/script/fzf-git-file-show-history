@@ -25,6 +25,13 @@ ARGV[-1]="$PTH_REL_ROOT"
 cd -- "$GIT_ROOT" || exit 1
 
 if [[ -t 1 ]]; then
+	fetcher=(
+		"$0"
+		"${ARGV[@]}"
+	)
+	export FZF_RELOAD_CMD="${fetcher[*]@Q}"
+	source "$HOME/.local/lib/shell/fzf.bash"
+
 	COMMAND_EXTRACT_COMMIT="echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | tr -d '\n'"
 
 	HEADER=$(
@@ -33,38 +40,23 @@ if [[ -t 1 ]]; then
 		EOF_HEADER
 	)
 
-	fetcher=(
-		"$0"
-		"${ARGV[@]}"
-	)
-
-	fzf_cmd=(
-		fzf
-		--ansi
-		--bind="ctrl-y:execute-silent(${COMMAND_EXTRACT_COMMIT} | clipcopy)"
-		--header-first
-		--header="$HEADER"
-		--no-multi
-		--no-sort
-		--prompt="$PTH_REL_ROOT > "
-		--reverse
-		--scheme=history
-		--scroll-off=8
-		--track
-	)
-
-	fzf_cmd+=(
+	fzf_args=(
 		--bind="alt-b:execute-silent(git browse \"\$($COMMAND_EXTRACT_COMMIT)\" -- \"$PTH_REL_ROOT\")"
 		--bind="alt-d:execute(git diff \"\$($COMMAND_EXTRACT_COMMIT)\" HEAD -- \"$PTH_REL_ROOT\" | delta --paging=always)"
 		--bind="ctrl-a:execute(show-commit \$(${COMMAND_EXTRACT_COMMIT}) --show-signature | delta --paging=always)"
 		--bind="ctrl-b:execute(git blame -M -w \"\$(${COMMAND_EXTRACT_COMMIT})\" \"$PTH_REL_ROOT\" | delta --paging=always)"
 		--bind="ctrl-m:execute(git show \"\$(${COMMAND_EXTRACT_COMMIT}):$PTH_REL_ROOT\" | bat --color=always --paging=always --file-name=$PTH_REL_ROOT)"
 		--bind="ctrl-o:execute(show-commit \$(${COMMAND_EXTRACT_COMMIT}) --show-signature -- \"$PTH_REL_ROOT\" | delta --paging=always)"
-		--bind="ctrl-r:reload-sync(${fetcher[*]@Q})"
+		--bind="ctrl-y:execute-silent(${COMMAND_EXTRACT_COMMIT} | clipcopy)"
+		--header-first
+		--header="$HEADER"
 		--preview="git show \"\$(${COMMAND_EXTRACT_COMMIT}):$PTH_REL_ROOT\" | bat --color=always --paging=never --file-name=$PTH_REL_ROOT"
+		--prompt="$PTH_REL_ROOT > "
+		--scheme=history
+		--track
 	)
 
-	"${fetcher[@]}" | "${fzf_cmd[@]}"
+	"${fetcher[@]}" | fzf-exec "${fzf_args[@]}"
 else
 	git-log-branch --follow "${ARGV[@]}"
 fi
