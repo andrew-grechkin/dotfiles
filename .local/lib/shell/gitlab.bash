@@ -139,9 +139,9 @@ function gl-branch-delete() {
 }
 
 function gl-branch-diff() {
-	HEAD=$(2>/dev/null git fetch --no-tags --porcelain "$GL_REMOTE" HEAD | perl -nal -E'say $F[2]')
+	head=$(2>/dev/null git fetch --no-tags --porcelain "$GL_REMOTE" HEAD | perl -nal -E'say $F[2]')
 	>/dev/null git fetch --no-tags --porcelain "$GL_REMOTE" "$1"
-	git diff "$HEAD...FETCH_HEAD"
+	git diff "$head...FETCH_HEAD"
 }
 
 # => mrs ---------------------------------------------------------------------------------------------------------- {{{1
@@ -152,9 +152,9 @@ function gl-approvals-get() {
 }
 
 function gl-mr-diff() {
-	HEAD=$(2>/dev/null git fetch --no-tags --porcelain "$GL_REMOTE" HEAD | perl -nal -E'say $F[2]')
+	head=$(2>/dev/null git fetch --no-tags --porcelain "$GL_REMOTE" HEAD | perl -nal -E'say $F[2]')
 	>/dev/null git fetch --no-tags --porcelain "$GL_REMOTE" "merge-requests/$1/head"
-	git diff "$HEAD...FETCH_HEAD"
+	git diff "$head...FETCH_HEAD"
 }
 
 function gl-mr-get() {

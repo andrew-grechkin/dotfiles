@@ -1,5 +1,4 @@
 # vim: filetype=sh
-# shellcheck disable=SC2034
 
 source "$HOME/.local/lib/shell/color.bash"
 
@@ -15,10 +14,9 @@ function json-array-to-tsv() {
 
 	local col_names jq_filter field
 	for field in "${jq_fields[@]}"; do
-		# support explicit separator passed as the first character
-		if [[ "$field" =~ ^[[:alnum:]] ]]; then
+		if [[ "$field" =~ ^[[:alnum:]_] ]]; then
 			IFS=";" read -r <<< "$field" key value color
-		else
+		else # support explicit separator passed as the first character
 			IFS="${field:0:1}" read -r <<< "${field:1}" key value color
 		fi
 
