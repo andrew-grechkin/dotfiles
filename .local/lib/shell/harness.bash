@@ -1,11 +1,10 @@
 function ha-api-auth() {
-	export HARNESS_ORG_ID="${HARNESS_ORG_ID:-default}"
 	export HARNESS_API_HOST="${HARNESS_API_HOST:-app.harness.io}"
 	export HARNESS_ORG_ID="${HARNESS_ORG_ID:-$(pass show personal/harness-org-id 2>/dev/null)}"
 	export HARNESS_ACCOUNT="${HARNESS_ACCOUNT:-$(pass show personal/harness-account 2>/dev/null)}"
 	export HARNESS_API_KEY="${HARNESS_API_KEY:-$(pass show personal/harness 2>/dev/null)}"
-	export HA_ACCQ="accountIdentifier=$HARNESS_ACCOUNT"
-	export HA_DEFQ="accountIdentifier=$HARNESS_ACCOUNT&orgIdentifier=$HARNESS_ORG_ID"
+	export HA_ACCQ="${HA_ACCQ:-accountIdentifier=$HARNESS_ACCOUNT}"
+	export HA_DEFQ="${HA_DEFQ:-accountIdentifier=$HARNESS_ACCOUNT&orgIdentifier=$HARNESS_ORG_ID}"
 }; [[ -n "${BASH:-}" ]] && export -f ha-api-auth
 
 function ha-http-request() {
