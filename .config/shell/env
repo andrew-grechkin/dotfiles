@@ -20,9 +20,9 @@ if ! declare -F 'append_path' > /dev/null; then
 fi
 
 DIRS=(
-	"$HOME/.local/scripts-ext/work-private"
-	"$HOME/.local/scripts-ext/work"
 	"$HOME/.local/scripts-ext/private"
+	"$HOME/.local/scripts-ext/work-private"
+	"$HOME/.local/scripts-ext/work-public"
 	"$HOME/.local/script"
 	"$HOME/.local/usr/bin"
 	"$HOME/.local/bin"
