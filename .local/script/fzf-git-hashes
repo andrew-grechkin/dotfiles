@@ -7,9 +7,7 @@ export FZF_RELOAD_CMD="${CURRENT_SCRIPT#fzf-} ${*@Q}"
 
 fzf_cmd=(
 	fzf-git-log
-	--multi
-	--bind="ctrl-m:become(printf '%s\n' {+1})"
-	--bind='tab:toggle+down,shift-tab:toggle+up'
+	--bind="ctrl-m:become(grep -o '[[:xdigit:]]\{6,\}' {+f} | xargs -rn1 git pcommit)"
 )
 
 eval "$FZF_RELOAD_CMD" \

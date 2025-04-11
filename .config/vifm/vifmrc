@@ -492,18 +492,18 @@ fileviewer *.torrent
 fileviewer !{*/}!{.*/}/.gpg.pub$/
 	\ gpg --import-options show-only --import,
 
-filetype !{*/}!{.*/}/.gpg$/
+filetype <application/pgp-encrypted>
 	\ {GPG decrypt}
 	\ gpg-decrypt,
 	\ {GPG enarmor}
 	\ gpg --enarmor,
-fileviewer !{*/}!{.*/}/.gpg$/
+fileviewer <application/pgp-encrypted>
 	\ gpg --decrypt,
 
-filetype !{*/}!{.*/}/.asc$|.sig$/
+fileviewer <application/pgp-signature>
 	\ {GPG signature verify}
 	\ !!gpg --verify,
-fileviewer !{*/}!{.*/}/.asc$|.sig$/
+fileviewer <application/pgp-signature>
 	\ gpg --verify,
 
 filetype !{*/}!{.*/}/.base64$/
@@ -741,7 +741,7 @@ filetype {*},{.*}
 " What should be saved automatically between vifm sessions. Drop "savedirs"
 " value if you don't want vifm to remember last visited directories for you.
 " set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,phistory,fhistory,dirstack,registers,bookmarks,bmarks
-set vifminfo=bmarks,bookmarks,chistory,dhistory,dirstack,fhistory,phistory,registers,savedirs,shistory,state,tui
+set vifminfo=bmarks,bookmarks,chistory,dhistory,dirstack,fhistory,phistory,registers,savedirs,shistory,state
 
 " => Examples of configuring both panels -------------------------------------------------------------------------- {{{1
 

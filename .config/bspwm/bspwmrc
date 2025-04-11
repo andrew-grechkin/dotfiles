@@ -62,3 +62,4 @@ bspc rule -a 'VirtualBoxVM'                      desktop='5'
 bspc rule -a 'Zathura'                           state=floating center=on rectangle=1280x720+0+0
 bspc rule -a 'crow-translate'                    state=floating rectangle=1280x720-600-360
 bspc rule -a 'dolphin'                           desktop='4'
+bspc rule -a 'zoom_linux_float_video_window'     state=floating sticky=on

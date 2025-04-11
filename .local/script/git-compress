@@ -3,6 +3,7 @@
 set -Eeuo pipefail
 
 git-in-repo && {
-	git reflog expire --all --expire=now \
-		&& nice git gc --keep-largest-pack "$@"
+	git fp
+	git reflog expire --all --expire=now --expire-unreachable=now \
+		&& nice git gc --prune=now --keep-largest-pack "$@"
 }

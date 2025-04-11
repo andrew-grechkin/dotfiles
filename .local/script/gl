@@ -88,7 +88,7 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 
 		if [[ "$mode" == "branches" ]]; then
 			fzf_args=(
-				--bind="alt-N:execute-silent(m=\`git gmb\`; echo 'whiptail-wrapper --inputbox \"Creating MR with message:\" 8 78 | xargs -rI% echo gl-create-mr -t \$m -m % -s '{3} | fzf-run-reload -ft 2)"
+				--bind="alt-N:execute-silent(m=\`git main-branch\`; echo 'whiptail-wrapper --inputbox \"Creating MR with message:\" 8 78 | xargs -rI% echo gl-create-mr -t \$m -m % -s '{3} | fzf-run-reload -ft 2)"
 				--bind="alt-R:execute-silent(fzf-run-reload -- gl-branch-delete -h '$GL_HOST' -p '$GL_PROJECT' {+3})"
 				--bind="alt-c:execute-silent(source $0; gl-branches-clean '$GL_PROJECT')+reload-sync($FZF_RELOAD_CMD)"
 				--bind="alt-i:execute(source $0; gl-branch-diff {3} ${prettify_diff[*]})"

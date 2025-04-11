@@ -7,47 +7,45 @@ if [[ -z "$GIT_PREFIX" ]]; then
 fi
 
 if [[ -n "$(command -v delta)"  ]]; then
-	LOG_PAGER="delta"
+	LOG_PAGER=("delta" --paging=always)
 else
-	LOG_PAGER="$PAGER"
+	LOG_PAGER=("$PAGER")
 fi
+
+source "$HOME/.local/lib/shell/fzf.bash"
 
 # this is necessary because in graph mode some lines are not having commit hash
 COMMAND_EXTRACT_COMMIT='echo {} | grep -o "[[:xdigit:]]\{6,\}" | head -1 | tr -d "\n"'
+COMMAND_EXTRACT_REF='echo {} | grep -o "[[:xdigit:]]\{6,\}" | head -1 | tr -d "\n" | xargs -r git pcommit | git ant | tee /dev/stderr | perl -lpE "m/~\d+$/ || s|^remotes\/[^\/]+\/||"'
 
-fzf_cmd=(
-	fzf
-	--ansi
+fzf_args=(
+	--bind="alt-I:execute(show-commit \$(${COMMAND_EXTRACT_COMMIT}) ${OPTIONS[*]} --show-signature | ${LOG_PAGER[*]} -s)"
 	--bind="alt-b:execute-silent(git browse \$(${COMMAND_EXTRACT_COMMIT}))"
-	--bind="alt-i:execute(show-commit \$(${COMMAND_EXTRACT_COMMIT}) ${OPTIONS[@]} --show-signature | $LOG_PAGER)"
-	--bind="ctrl-m:become(echo {+1} | tee >(clipcopy))"
-	--bind="ctrl-x:become(echo {q} | tee >(clipcopy) &>/dev/stderr; cat {+f})"
-	--bind="ctrl-y:execute-silent(${COMMAND_EXTRACT_COMMIT} | clipcopy)"
-	--bind="home:top,tab:toggle-out,shift-tab:toggle-in,ctrl-a:toggle-all"
-	# --bind="shift-tab:become(echo -n \$(${COMMAND_EXTRACT_COMMIT}))"
-	# --bind="tab:become(echo -n \$(${COMMAND_EXTRACT_COMMIT}))"
-	--header="C-j/k:move C-m/enter:take A-i:view A-p:preview A-b:browse C-x:dump"
-	--listen
-	--multi
+	--bind="alt-i:execute(show-commit \$(${COMMAND_EXTRACT_COMMIT}) ${OPTIONS[*]} --show-signature | ${LOG_PAGER[*]})"
+	--bind="ctrl-m:become(grep -o '[[:xdigit:]]\{6,\}' {+f} | xargs -rn1 git pcommit | xargs -r echo -n | tee >(clipcopy))"
+	--bind="ctrl-x:become([[ -n {q} ]] && echo {q} | tee >(clipcopy) &>/dev/stderr; cat {+f})"
+	--bind="ctrl-y:execute-silent(${COMMAND_EXTRACT_COMMIT} | xargs -r git pcommit | trim-whole | clipcopy)"
+	--delimiter=" "
+	--header-lines=0
+	--header="C-j/k:move Enter:take A-i/I:view C-x:dump A-b:browse A-p:preview"
 	--no-sort
-	--preview="show-commit \$(${COMMAND_EXTRACT_COMMIT}) --color=always ${OPTIONS[@]} | $LOG_PAGER"
-	--reverse
+	--preview="show-commit \$(${COMMAND_EXTRACT_COMMIT}) --color=always ${OPTIONS[*]} | ${LOG_PAGER[*]}"
 	--scheme=history
-	--scroll-off=4
 	--track
 )
 
+
 if [[ -n "$FZF_RELOAD_CMD" ]]; then
 	export FZF_RELOAD_CMD
-	fzf_cmd+=(
+	fzf_args+=(
 		--bind="alt-f:execute-silent(fzf-run-reload -- git fall)"
 		--bind="alt-g:execute-silent(fzf-run-reload -- git up)"
-		--bind="alt-m:execute-silent(ABB=\$(git gmb); git switch \$ABB)+reload($FZF_RELOAD_CMD)"
-		--bind="alt-o:execute-silent(C=\$(${COMMAND_EXTRACT_COMMIT}); A=\$(git describe --all --always \$C); git switch --detach \${A/heads\/})+reload($FZF_RELOAD_CMD)"
+		--bind="alt-m:execute-silent(ABB=\$(git main-branch); git switch \$ABB)+reload($FZF_RELOAD_CMD)"
+		--bind="alt-o:execute-silent(R=\$(${COMMAND_EXTRACT_REF}); git switch \${R} || git switch --detach \${R})+reload($FZF_RELOAD_CMD)"
 		--bind="alt-r:execute(2>/dev/null git rebase -i --committer-date-is-author-date --onto \$(${COMMAND_EXTRACT_COMMIT}) \$(${COMMAND_EXTRACT_COMMIT}))+reload($FZF_RELOAD_CMD)"
 		--bind="ctrl-r:reload($FZF_RELOAD_CMD)"
-		--header="C-j/k:move C-m/enter:view A-p:preview C-n/p:p-move C-y:yank C-r:reload A-f:fetch A-g:pull A-m:co-m A-o:co A-r:rebase A-b:browse"
+		--header="C-j/k:move Enter:take C-n/p:p-move C-y:yank C-r:reload A-f:fetch A-g:pull A-i/I:view A-m:co-m A-o:co A-r:rebase A-b:browse A-p:preview"
 	)
 fi
 
-exec "${fzf_cmd[@]}" "$@"
+fzf-exec-multi "${fzf_args[@]}" "$@"

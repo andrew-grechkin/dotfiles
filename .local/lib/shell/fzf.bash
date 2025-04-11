@@ -17,7 +17,7 @@ function fzf-exec() {
 		--bind="ctrl-d:half-page-down,ctrl-u:half-page-up,home:top"
 		--bind="ctrl-e:toggle-preview-wrap,ctrl-n:preview-down,ctrl-p:preview-up"
 		--bind="ctrl-m:execute-silent(true)"
-		--bind="ctrl-r:reload-sync($FZF_RELOAD_CMD:-$0)"
+		--bind="ctrl-r:reload-sync(${FZF_RELOAD_CMD:-$0})"
 		--bind="ctrl-w:backward-kill-word,esc:cancel"
 		--bind="ctrl-y:execute-silent(echo -n {1} | clipcopy)"
 		--delimiter="\t"
@@ -29,7 +29,7 @@ function fzf-exec() {
 		--tabstop=4
 	)
 
-	fzf "${default_fzf_cmd_options[@]}" "$@"
+	FZF_DEFAULT_OPTS_FILE="" fzf "${default_fzf_cmd_options[@]}" "$@"
 }
 
 function fzf-exec-multi() {

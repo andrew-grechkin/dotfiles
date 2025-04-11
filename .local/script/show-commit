@@ -38,10 +38,10 @@ git-in-repo && {
 		SHOW_OPTIONS+=(--first-parent)
 		SPAN="$REF^1..$REF^2"
 	else
-		if git gmr &>/dev/null; then
+		if git main-remote &>/dev/null; then
 			# # has remote
 			# COMMIT="$(git rev-parse "$REF" 2>/dev/null)"
-			# MAIN_UPSTREAM_BRANCH="$(git gmu 2>/dev/null)"
+			# MAIN_UPSTREAM_BRANCH="$(git main-upstream 2>/dev/null)"
 			# MAIN_UPSTREAM_COMMIT="$(git rev-parse "$MAIN_UPSTREAM_BRANCH" 2>/dev/null)"
 			# if [[ "$MAIN_UPSTREAM_COMMIT" = "$COMMIT" ]]; then
 			# 	SPAN="$REF"
@@ -62,6 +62,6 @@ git-in-repo && {
 			SPAN="$REF"
 		fi
 
-		git --no-pager show --patch --pretty=fuller "${SHOW_OPTIONS[@]}" "$SPAN" "$@"
+		git --no-pager show --show-signature --patch --pretty=fuller "${SHOW_OPTIONS[@]}" "$SPAN" "$@"
 	fi
 } 2>/dev/null | "${GIT_PAGER[@]}"

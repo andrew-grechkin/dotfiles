@@ -38,9 +38,10 @@ if [[ "$#" -eq "1" ]] && [[ "$1" =~ \.git/?$ ]]; then
 	echo -e "$FG[olive]Gc (full=$full) $REPO$FX[reset]"
 
 	if [[ "$full" == '1' ]]; then
-		nice git -C "$REPO" gc --prune=now
+		git -C "$REPO" reflog expire --all --expire=now --expire-unreachable=now \
+			&&nice git -C "$REPO" gc --prune=now
 	else
-		nice git -C "$REPO" gc --keep-largest-pack --prune=now
+		nice git -C "$REPO" gc --prune=now --keep-largest-pack
 	fi
 else
 	fd -0uL -E 'bazel-*' -td -tf --prune '\.git\z' "${1:-$PWD}" \

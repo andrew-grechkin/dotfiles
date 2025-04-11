@@ -22,8 +22,6 @@
 	tabs                          = 4
 
 [delta "decorations"]
-	commit-decoration-style      = BrightBlue ul ol
-	commit-style                 = BrightCyan
 	file-decoration-style        = Cyan box
 	file-style                   = BrightYellow
 	hunk-header-style            = none

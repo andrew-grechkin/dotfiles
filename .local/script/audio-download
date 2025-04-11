@@ -16,12 +16,14 @@ done
 
 shift $((OPTIND - 1))
 
-OPTIONS=(
+yt_dlp_args=(
 	--embed-thumbnail
 	--format="ba[ext=m4a]"
 	--list-formats
 	--no-config
 	--no-simulate
+	-o '%(fulltitle)s {id=%(id)s,up=%(uploader_id)s,ep=%(timestamp)s}.%(ext)s'
 )
 
-exec yt-dlp "${OPTIONS[@]}" "$@"
+umask 0002
+exec yt-dlp "${yt_dlp_args[@]}" "$@"

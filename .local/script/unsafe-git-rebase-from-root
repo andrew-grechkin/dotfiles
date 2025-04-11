@@ -12,7 +12,7 @@ git-in-repo && {
 		* ) echo "invalid"; exit 1 ;;
 	esac
 
-	main_branch="$(git gmb)"
+	main_branch="$(git main-branch)"
 
 	git checkout --orphan new-root
 	git rm -rf .

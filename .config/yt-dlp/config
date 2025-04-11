@@ -9,4 +9,4 @@
 # --download-archive
 # --write-auto-subs
 # --write-subs
--o '%(fulltitle)s {id=%(id)s,up=%(uploader_id)s,d=%(timestamp)s}.%(ext)s'
+-o '%(fulltitle)s {id=%(id)s,up=%(uploader_id)s,ep=%(timestamp)s}.%(ext)s'
