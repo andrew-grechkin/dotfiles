@@ -130,25 +130,25 @@ bracketleft + alt + super
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pkg-search"
 
 a + alt + super
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-audio"
+	wezterm start --always-new-process --class 'TermFloating' just -g audio
 s + super
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pass"
 d + super
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-app"
 f + alt + super
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-film"
+	wezterm start --always-new-process --class 'TermFloating' just -g films
 g + alt + super
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-mpris"
 h + alt + super
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-mpv-history"
 j + alt + super
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "/media/nfs/home/doc/@technical"
+	wezterm start --always-new-process --class 'TermFloating' just -g books "/media/nfs/home/doc/@technical"
 k + alt + super
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-man-keyword"
 l + alt + super
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "/media/nfs/home/doc/@fiction"
+	wezterm start --always-new-process --class 'TermFloating' just -g books "/media/nfs/home/doc/@fiction"
 semicolon + alt + super
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "/media/nfs/home/doc/@study"
+	wezterm start --always-new-process --class 'TermFloating' just -g books "/media/nfs/home/doc/@study"
 
 x + alt + super
     screen2text
@@ -165,7 +165,7 @@ m + alt + super
 comma + alt + super
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-docs" "$HOME/.local/share/wiki"
 period + alt + super
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-book" "${XDG_DATA_HOME}/cheatsheet"
+	wezterm start --always-new-process --class 'TermFloating' just -g books "${XDG_DATA_HOME}/cheatsheet"
 period + alt + super + shift
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-docs"
 
