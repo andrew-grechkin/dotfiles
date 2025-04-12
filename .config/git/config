@@ -1,15 +1,15 @@
 [alias]
 	aa           = add --all
-	amend        = commit --amend --reset-author
+	amend        = commit --amend
 	b            = branch -vv
-	behind       = !"MUB=\"$(git main-upstream)\"; echo \"Behind $MUB:\" &>/dev/stderr; git log --oneline \"HEAD..$MUB\" | wc -l"
+	behind       = !"f(){ mu=\"$(git main-upstream)\"; echo \"Behind $mu:\" &>/dev/stderr; git log --oneline \"${1:-HEAD}..$mu\" | wc -l; }; f"
 	branches     = !"git branch --list --no-column --format='%(refname:lstrip=2)'"
-	brewrite     = "rebase -i --keep-base --exec 'git commit --amend --reset-author --no-edit --no-gpg-sign'"
 	browse       = !"git-browse"
 	brs          = !"gl --mode branches"
 	bush         = !"f(){ while true; do git push && break; git pull --no-tags --rebase || break; done }; f"
 	cl           = clone --filter=blob:none
 	commit-again = !"git commit -eF \"$(git root)/.git/COMMIT_EDITMSG\""
+    date-copy    = !"f(){ git-amend -kd \"${1:-HEAD}\"; }; f"
 	d            = -c delta.side-by-side=true diff --ignore-space-change
 	dc           = -c delta.side-by-side=true diff --ignore-space-change --cached
 	dd           = -c delta.side-by-side=true diff
@@ -45,7 +45,6 @@
 	mtg          = mergetool --gui
 	p            = push --force-with-lease
 	pall         = !"git-push-all"
-	pdesc        = !"f(){ git describe --always \"${@:-HEAD}\"; }; f"
 	pub          = !"git push -u origin \"$(git bname)\" -o merge_request.create -o merge_request.remove_source_branch"
 	puba         = !"git push -u origin \"$(git bname)\" -o merge_request.create -o merge_request.remove_source_branch -o merge_request.merge_when_pipeline_succeeds"
 	s            = !"menu-git-search"
@@ -67,7 +66,7 @@
 
 	# git rev-parse --abbrev-ref --symbolic-full-name HEAD
 
-	main-branch   = !"git show-ref main master trunk | grep 'refs/remotes/.*' | git ant | sort | grep -Pom1 '^\\w+'"
+	main-branch   = !"git show-ref main master trunk | grep -Pom1 '(?:refs/heads/)\\K.*'"
 	main-head     = !"f(){ git show-ref HEAD | grep 'refs/remotes/'\"$(git main-remote)\" | grep -Po '(?<=\\brefs/remotes/).*' | sort -r | head -1; }; f"
 	# detect main remote by main branch
 	main-remote   = !"f(){ git config --local --get \"branch.$(git main-branch).remote\" 2>/dev/null; }; f"
@@ -88,12 +87,15 @@
 	# print upstream
 	current-upstream = rev-parse --abbrev-ref --symbolic-full-name @{upstream}
 
+    author-date = show -s --format=%aI
+    commit-date = show -s --format=%cI
 	# print branch name
-	pbranch = !"f(){ git rev-parse --verify --abbrev-ref \"${@:-HEAD}\" 2>/dev/null; }; f"
+	pbranch     = !"f(){ git rev-parse --verify --abbrev-ref \"${@:-HEAD}\" 2>/dev/null; }; f"
 	# print commit
-	pcommit = !"f(){ git rev-parse --verify              \"${@:-HEAD}\" 2>/dev/null; }; f"
+	pcommit     = !"f(){ git rev-parse --verify              \"${@:-HEAD}\" 2>/dev/null; }; f"
+	pdesc       = !"f(){ git describe --always \"${@:-HEAD}\"; }; f"
 	# print root of the repo
-	root    = !"git rev-parse --show-superproject-working-tree --show-toplevel | head -1"
+	root        = !"git rev-parse --show-superproject-working-tree --show-toplevel | head -1"
 
 	### care taking ----------------------------------------------------------------------------------------------------
 
@@ -109,11 +111,13 @@
 	remove-remote-head  = !"f(){ git remote set-head -d     \"${@:-$(git current-remote)}\"; }; f"
 	restore-remote-head = !"f(){ git remote set-head --auto \"${@:-$(git current-remote)}\"; }; f"
 
+    rewrite-history       = rebase -i --committer-date-is-author-date --force --no-update-refs --empty=keep --exec 'git-amend -rk'
+    rewrite-history-as-me = rebase -i --committer-date-is-author-date --force --no-update-refs --empty=keep --exec 'git-amend -rkA'
+
 	### experimental ---------------------------------------------------------------------------------------------------
 
 	add-mr-refs  = config --local --add remote.origin.fetch '+refs/merge-requests/*/head:refs/remotes/origin/merge-requests/*/head'
 	make-shallow = !"git fetch --prune-tags --prune; git tag -d \"$(git tag -l)\"; git reflog expire --expire=all --all; git gc --prune=all"
-    rewrite-history-as-me = rebase -i --no-update-refs --empty=keep --exec 'GIT_AUTHOR_DATE="$(git show -s --format=%aI)" GIT_COMMITTER_DATE="$(git show -s --format=%aI)" git commit -nq --amend --no-edit --reset-author'
 
 [apply]
 	whitespace = fix

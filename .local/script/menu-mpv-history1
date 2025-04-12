@@ -45,7 +45,7 @@ sub main {
         my @cmd = (
             'fzf-execute2',
             sprintf('--bind=alt-r:execute-silent(grep -vF {2} %s | sponge %s)+reload(%s)', TSV(), TSV(), $0),
-            qq{--bind=ctrl-r:reload($0)},
+            qq{--bind=ctrl-l:reload($0)},
             q{--bind=ctrl-u:execute-silent(echo -n {2} | perl -pE 'chomp; s/"(.+?)"/$1/g' | clipcopy)},
             q{--header-lines=1},
         );

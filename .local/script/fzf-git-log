@@ -43,7 +43,6 @@ if [[ -n "$FZF_RELOAD_CMD" ]]; then
 		--bind="alt-m:execute-silent(ABB=\$(git main-branch); git switch \$ABB)+reload($FZF_RELOAD_CMD)"
 		--bind="alt-o:execute-silent(R=\$(${COMMAND_EXTRACT_REF}); git switch \${R} || git switch --detach \${R})+reload($FZF_RELOAD_CMD)"
 		--bind="alt-r:execute(2>/dev/null git rebase -i --committer-date-is-author-date --onto \$(${COMMAND_EXTRACT_COMMIT}) \$(${COMMAND_EXTRACT_COMMIT}))+reload($FZF_RELOAD_CMD)"
-		--bind="ctrl-r:reload($FZF_RELOAD_CMD)"
 		--header="C-j/k:move Enter:take C-n/p:p-move C-y:yank C-r:reload A-f:fetch A-g:pull A-i/I:view A-m:co-m A-o:co A-r:rebase A-b:browse A-p:preview"
 	)
 fi

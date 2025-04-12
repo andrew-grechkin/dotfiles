@@ -58,7 +58,6 @@ elif [[ -t 1 ]]; then
 		--bind="ctrl-m:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- PlayPause)+reload-sync($0)"
 		--bind="ctrl-n:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Next)+reload-sync($0)"
 		--bind="ctrl-p:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Previous)+reload-sync($0)"
-		--bind="ctrl-r:reload-sync($0)"
 		--bind="ctrl-y:execute-silent(echo -n {-1} | clipcopy)"
 		--bind="down:execute-silent(busctl --user --json=short get-property {1} $MPRIS_OBJ $MPRIS_IF -- Volume | jq -r '.data - 0.05' | xargs -r busctl --user set-property {1} $MPRIS_OBJ $MPRIS_IF -- Volume d)+reload-sync($0)"
 		--bind="left:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Seek x -10000000)+reload-sync($0)"

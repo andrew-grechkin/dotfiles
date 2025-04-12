@@ -6,7 +6,7 @@ if [[ -n "$BASH" ]]; then
 	export SHELL="$BASH" # enforce bash for all fzf sub shells, even if default shell is not bash
 fi
 
-DEFAULT_FZF_KEYS='A-p:preview C-r:reload C-y:yank'
+DEFAULT_FZF_KEYS='A-p:preview C-l:reload C-y:yank'
 
 function fzf-exec() {
 	local default_fzf_cmd_options=(
@@ -16,8 +16,8 @@ function fzf-exec() {
 		--bind="alt-p:toggle-preview,ctrl-s:toggle-sort,ctrl-t:toggle-track"
 		--bind="ctrl-d:half-page-down,ctrl-u:half-page-up,home:top"
 		--bind="ctrl-e:toggle-preview-wrap,ctrl-n:preview-down,ctrl-p:preview-up"
+		--bind="ctrl-l:reload-sync(${FZF_RELOAD_CMD:-$0})"
 		--bind="ctrl-m:execute-silent(true)"
-		--bind="ctrl-r:reload-sync(${FZF_RELOAD_CMD:-$0})"
 		--bind="ctrl-w:backward-kill-word,esc:cancel"
 		--bind="ctrl-y:execute-silent(echo -n {1} | clipcopy)"
 		--delimiter="\t"
