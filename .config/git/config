@@ -96,6 +96,7 @@
 	pdesc       = !"f(){ git describe --always \"${@:-HEAD}\"; }; f"
 	# print root of the repo
 	root        = !"git rev-parse --show-superproject-working-tree --show-toplevel | head -1"
+	root2       = !"git rev-parse                                  --show-toplevel | head -1"
 
 	### care taking ----------------------------------------------------------------------------------------------------
 

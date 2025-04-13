@@ -20,7 +20,7 @@ CMD=(
 	--bind="ctrl-m:execute(show-commit {1} | $LOG_PAGER)"
 	--bind="ctrl-n:preview-down,ctrl-p:preview-up"
 	--cmd-prompt="search commit > "
-	--cmd-query="$query"
+	--cmd-query="${query:-}"
 	--cmd="git-log-wrapper ${*@Q} -P -G '{}'"
 	--interactive
 	--no-multi

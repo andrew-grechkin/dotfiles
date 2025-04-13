@@ -10,11 +10,12 @@ git-in-repo && {
 	# git alias
 	# check how aliases run with a bang: man git-config
 	[[ -n "${GIT_PREFIX:-}" ]] && {
-		cd -- "$(git root)/$GIT_PREFIX"
+		cd -- "$(git root2)/$GIT_PREFIX"
 		unset GIT_PREFIX
 	}
 
-	CMD=(git log
+	git_args=(
+		log
 		--color=always
 		--abbrev-commit
 		--date='format-local:%Y-%m-%d'
@@ -26,5 +27,5 @@ git-in-repo && {
 		"$@"
 	)
 
-	exec "${CMD[@]}"
+	exec git "${git_args[@]}"
 }
