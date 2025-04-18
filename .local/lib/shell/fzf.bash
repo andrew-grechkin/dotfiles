@@ -22,6 +22,7 @@ function fzf-exec() {
 		--bind="ctrl-y:execute-silent(echo -n {1} | clipcopy)"
 		--delimiter="\t"
 		--header-lines=1
+		--header="$DEFAULT_FZF_KEYS"
 		--listen
 		--preview-window="right:60%:border-left:wrap:hidden"
 		--reverse
@@ -39,4 +40,25 @@ function fzf-exec-multi() {
 	)
 
 	fzf-exec "${default_fzf_cmd_options_multi[@]}" "$@"
+}
+
+function sk-exec() {
+	local default_sk_cmd_options=(
+		--ansi
+		--bind="alt-B:execute(${VISUAL:-${EDITOR:-vi}} '$0')"
+		--bind="alt-b:execute-silent(python3 -mwebbrowser {2})"
+		--bind="alt-p:toggle-preview,ctrl-s:toggle-sort,ctrl-t:toggle-track"
+		--bind="ctrl-d:half-page-down,ctrl-u:half-page-up,home:top"
+		--bind="ctrl-e:toggle-preview-wrap,ctrl-n:preview-down,ctrl-p:preview-up"
+		--bind="ctrl-l:reload-sync(${FZF_RELOAD_CMD:-$0})"
+		--bind="ctrl-m:execute-silent(true)"
+		--bind="ctrl-w:backward-kill-word"
+		--bind="ctrl-y:execute-silent(echo -n {1} | clipcopy)"
+		--delimiter="\t"
+		--preview-window="right:60%:border-left:wrap:hidden"
+		--reverse
+		--tabstop=4
+	)
+
+	sk "${default_sk_cmd_options[@]}" "$@"
 }

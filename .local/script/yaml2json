@@ -1,16 +1,18 @@
 #!/usr/bin/env -S perl -CALEO
 
 use v5.36;
+use experimental qw(builtin);
 
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
 
-use YAML::XS         qw();
 use Cpanel::JSON::XS qw();
-use experimental     qw(builtin);
+use YAML::XS         qw();
 
 use constant {
-    'JSON'          => Cpanel::JSON::XS->new->canonical->utf8(0)->unblessed_bool([1])->pretty->space_before(0),
-    'JSON_ONE_LINE' => Cpanel::JSON::XS->new->canonical->utf8(0)->unblessed_bool([1])->pretty(0)->indent(0),
+    'JSON_MULTI_LINE' =>
+        Cpanel::JSON::XS->new->allow_nonref(1)->canonical->utf8(0)->unblessed_bool([1])->pretty->space_before(0),
+    'JSON_ONE_LINE' =>
+        Cpanel::JSON::XS->new->allow_nonref(1)->canonical->utf8(0)->unblessed_bool([1])->pretty(0)->indent(0),
 };
 
 my $inject_path = 0;
@@ -21,17 +23,11 @@ my @data;
 if (@ARGV) {
     @data = map {my $d = YAML::XS::LoadFile($_); $d->{'__path__'} = $_ if $inject_path; $d} @ARGV;
 } else {
-    my @lines;
-    while (defined(my $line = <<>>)) {
-        push @lines, $line;
-    }
-
-    my $input = join('', @lines);
-    @data = YAML::XS::Load($input);
+    @data = YAML::XS::Load(do {local $/ = undef; <STDIN>});
 }
 
 if (-t 1 && @data == 1) {
-    print JSON()->encode($data[0]);
+    print JSON_MULTI_LINE()->encode($data[0]);
 } else {
     say JSON_ONE_LINE()->encode($_) foreach @data;
 }

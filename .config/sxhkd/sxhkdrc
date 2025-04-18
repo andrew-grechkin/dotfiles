@@ -150,10 +150,12 @@ l + alt + super
 semicolon + alt + super
 	wezterm start --always-new-process --class 'TermFloating' just -g books "/media/nfs/home/doc/@study"
 
-x + alt + super
-    screen2text
-x + super
+z + super
     qrcode2text
+x + alt + super
+	busctl --user -j call org.kde.CrowTranslate /org/kde/CrowTranslate/MainWindow org.kde.CrowTranslate.MainWindow translateScreenArea
+x + super
+    screen2text
 c + super
 	qalculate-gtk
 # b + super

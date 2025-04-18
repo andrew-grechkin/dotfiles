@@ -1,20 +1,22 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 
 set -Eeuo pipefail
 
-# shellcheck disable=SC2016
-PREVIEW='echo -n "\"${}\""'
+export FZF_RELOAD_CMD="env | sort | sed 's/=.*//'"
+source "$HOME/.local/lib/shell/fzf.bash"
 
-fzf_cmd=(
-	fzf
-	--ansi
-	--bind="ctrl-y:execute(bash -c '{ echo -n \"{}=\"; $PREVIEW; } | clipcopy')+abort"
-	--bind="enter:execute(bash -c '$PREVIEW | clipcopy')+abort"
-	--bind="ctrl-m:execute(bash -c '{ echo -n \"{}=\"; $PREVIEW; }'| $PAGER)"
-	--preview-window=right:60%:border-left:wrap:nohidden
-	--preview="bash -c '$PREVIEW'"
+# shellcheck disable=SC2016
+preview_quoted='echo -n "\"${}\""'
+# shellcheck disable=SC2016
+preview='echo "${}"'
+
+fzf_args=(
+	--bind="alt-i:execute(bash -c 'echo -n {}=; $preview_quoted' | ${PAGER:-less})"
+	--bind="ctrl-m:become(bash -c '$preview' | tee >(trim-whole | clipcopy))"
+	--bind="ctrl-y:execute-silent(bash -c 'echo -n {}=; $preview_quoted' | clipcopy)"
+	--header-lines=0
+	--preview-window="right:60%:border-left:wrap:nohidden"
+	--preview="bash -c '$preview'"
 )
 
-{
-	env | sort | sed 's/=.*//'
-} | "${fzf_cmd[@]}"
+eval "$FZF_RELOAD_CMD" | fzf-exec "${fzf_args[@]}"

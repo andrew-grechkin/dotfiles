@@ -8,4 +8,4 @@ set -Eeuo pipefail
 	else
 		magick import -window root bmp:-
 	fi
-} | tesseract - - 2>/dev/null | tee >(clipcopy)
+} | tesseract - - 2>/dev/null | tee >(xsel -pint 500) >(xsel -bint 500)

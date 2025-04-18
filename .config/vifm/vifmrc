@@ -376,6 +376,9 @@ fileviewer <application/vnd.sqlite3>
 
 " => File associations: misc -------------------------------------------------------------------------------------- {{{1
 
+fileviewer *-cert.pub
+	\ ssh-keygen -Lf %c,
+
 filetype *.oci.image,*.Dockerfile,Dockerfile
 	\ {Build OCI image}
 	\ oci-build %f,

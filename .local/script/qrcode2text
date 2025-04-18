@@ -9,4 +9,4 @@ set -Eeuo pipefail
 	else
 		magick import -window root bmp:-
 	fi
-} | zbarimg --raw -Stest-inverted - 2>/dev/null | perl -gnE 'say trim($_) if $_' | tee >(clipcopy)
+} | zbarimg --raw -Stest-inverted - 2>/dev/null | perl -gnE 'say trim($_) if $_' | tee >(xsel -pint 500) >(xsel -bint 500)

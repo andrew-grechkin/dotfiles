@@ -3,9 +3,9 @@
 set -Eeuo pipefail
 
 if [[ -n "$(command -v delta)"  ]]; then
-	LOG_PAGER="delta"
+	pager="delta"
 else
-	LOG_PAGER="$PAGER"
+	pager="${PAGER:-less}"
 fi
 
 if [[ -n "$*" ]]; then
@@ -13,22 +13,19 @@ if [[ -n "$*" ]]; then
 	shift
 fi
 
-CMD=(
-	--ansi
+source "$HOME/.local/lib/shell/fzf.bash"
+
+sk_args=(
 	--bind="alt-o:execute-silent(git switch --detach {1})+abort"
-	--bind="alt-p:toggle-preview,ctrl-alt-w:toggle-preview-wrap,ctrl-s:toggle-sort"
-	--bind="ctrl-m:execute(show-commit {1} | $LOG_PAGER)"
-	--bind="ctrl-n:preview-down,ctrl-p:preview-up"
+	--bind="ctrl-m:execute(show-commit {1} | $pager)"
 	--cmd-prompt="search comment > "
-	--cmd-query="$query"
+	--cmd-query="${query:-}"
 	--cmd="git-log-wrapper ${*@Q} -P --grep '{}'"
+	--delimiter=" "
 	--interactive
-	--no-multi
 	--no-sort
-	--preview-window="right:60%:border-left:wrap"
+	--preview-window="right:60%:border-left:wrap:nohidden"
 	--preview="show-commit {1}"
-	--reverse
-	--tabstop=4
 )
 
-exec sk "${CMD[@]}"
+sk-exec "${sk_args[@]}"
