@@ -7,7 +7,7 @@
 
 # => environment -------------------------------------------------------------------------------------------------- {{{1
 
-PERL_VERSION_REQUIRED="${PERL_VERSION_REQUIRED:-5.40.0}"
+PERL_VERSION_REQUIRED="${PERL_VERSION_REQUIRED:-5.40.2}"
 
 if command git rev-parse HEAD &>/dev/null; then
 	workdir="$(git rev-parse --show-toplevel)"
@@ -80,8 +80,8 @@ function maybe_install_perl() {
 }
 
 function maybe_install_modules() {
-	if [ ! -f "$perl_root/finished" ]; then
-		if [[ -r "$workdir/cpanfile" ]]; then
+	if [[ -r "$workdir/cpanfile" ]]; then
+		if [[ ! -f "$perl_root/finished" || "$perl_root/finished" -ot "$workdir/cpanfile" ]]; then
 			echo "Installing required modules from '$workdir/cpanfile', this may take a while..."
 			nice cpanm -nq --installdeps "$workdir" 2>&1 | grep -vF 'LIBARCHIVE.xattr'
 			touch "$perl_root/finished"
