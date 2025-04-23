@@ -15,22 +15,25 @@ fi
 source "$HOME/.local/lib/shell/fzf.bash"
 
 # this is necessary because in graph mode some lines are not having commit hash
-command_extract_commit='echo {} | grep -o "[[:xdigit:]]\{6,\}" | head -1 | tr -d "\n"'
-command_extract_ref='echo {} | grep -o "[[:xdigit:]]\{6,\}" | head -1 | tr -d "\n" | xargs -r git pcommit | git ant | tee /dev/stderr | perl -lpE "m/~\d+$/ || s|^remotes\/[^\/]+\/||"'
+cmd_current_branch='git branch --show-current'
+cmd_extract_branch='echo {} | grep -o "[[:xdigit:]]\{6,\}" | head -1 | xargs -r git branch --format="%(refname:short)" --contains | head -1'
+cmd_extract_commit='echo {} | grep -o "[[:xdigit:]]\{6,\}" | head -1 | tr -d "\n"'
+cmd_extract_desc='echo {} | grep -o "[[:xdigit:]]\{6,\}" | head -1 | xargs -r git describe --all --always --contains'
+cmd_extract_ref='echo {} | grep -o "[[:xdigit:]]\{6,\}" | head -1 | xargs -r git pcommit | git ant | tee /dev/stderr | perl -lpE "m/~\d+$/ || s|^remotes\/[^\/]+\/||"'
 
 fzf_args=(
-	--bind="alt-I:execute(show-commit \$(${command_extract_commit}) -- ${OPTIONS[*]} --show-signature | ${LOG_PAGER[*]} -s)"
-	--bind="alt-b:execute-silent(git browse \$(${command_extract_commit}))"
-	--bind="alt-d:execute(show-commit \$(${command_extract_commit}) --diff -- ${OPTIONS[*]} --show-signature | ${LOG_PAGER[*]})"
-	--bind="alt-i:execute(show-commit \$(${command_extract_commit}) -- ${OPTIONS[*]} --show-signature | ${LOG_PAGER[*]})"
+	--bind="alt-I:execute(show-commit \$($cmd_extract_commit) -- ${OPTIONS[*]} --show-signature | ${LOG_PAGER[*]} -s)"
+	--bind="alt-b:execute-silent(git browse \$($cmd_extract_commit))"
+	--bind="alt-d:execute(show-commit \$($cmd_extract_commit) --diff -- ${OPTIONS[*]} --show-signature | ${LOG_PAGER[*]})"
+	--bind="alt-i:execute(show-commit \$($cmd_extract_commit) -- ${OPTIONS[*]} --show-signature | ${LOG_PAGER[*]})"
 	--bind="ctrl-m:become(grep -o '[[:xdigit:]]\{6,\}' {+f} | xargs -rn1 git pcommit | xargs -r echo -n | tee >(clipcopy))"
 	--bind="ctrl-x:become([[ -n {q} ]] && echo {q} | tee >(clipcopy) &>/dev/stderr; cat {+f})"
-	--bind="ctrl-y:execute-silent(${command_extract_commit} | xargs -r git pcommit | trim-whole | clipcopy)"
+	--bind="ctrl-y:execute-silent($cmd_extract_commit | xargs -r git pcommit | trim-whole | clipcopy)"
 	--delimiter=" "
 	--header-lines=0
-	--header="C-j/k:move Enter:take A-i/I:view C-x:dump A-b:browse A-p:preview"
+	--header="Enter:take A-i/I:diff C-x:dump A-b:browse A-p:preview"
 	--no-sort
-	--preview="show-commit \$(${command_extract_commit}) -- ${OPTIONS[*]} | ${LOG_PAGER[*]}"
+	--preview="show-commit \$($cmd_extract_commit) -- ${OPTIONS[*]} | ${LOG_PAGER[*]}"
 	--scheme=history
 	--track
 )
@@ -41,10 +44,10 @@ if [[ -n "$FZF_RELOAD_CMD" ]]; then
 	fzf_args+=(
 		--bind="alt-f:execute-silent(fzf-run-reload -- git fall)"
 		--bind="alt-g:execute-silent(fzf-run-reload -- git up)"
-		--bind="alt-m:execute-silent(ABB=\$(git main-branch); git switch \$ABB)+reload($FZF_RELOAD_CMD)"
-		--bind="alt-o:execute-silent(R=\$(${command_extract_ref}); git switch \${R} || git switch --detach \${R})+reload($FZF_RELOAD_CMD)"
-		--bind="alt-r:execute(2>/dev/null git rebase -i --committer-date-is-author-date --onto \$(${command_extract_commit}) \$(${command_extract_commit}))+reload($FZF_RELOAD_CMD)"
-		--header="C-j/k:move Enter:take C-n/p:p-move C-y:yank C-r:reload A-f:fetch A-g:pull A-i/I:view A-m:co-m A-o:co A-r:rebase A-b:browse A-p:preview"
+		--bind="alt-m:execute-silent(mb=\$(git main-branch); git switch \$mb)+reload($FZF_RELOAD_CMD)"
+		--bind="alt-o:execute-silent(r=\$($cmd_extract_ref); git switch \$r || git switch --detach \$r)+reload($FZF_RELOAD_CMD)"
+		--bind="alt-r:execute-silent(tmux split-window; sleep 0.5; b=\$($cmd_extract_branch) && c=\$($cmd_current_branch) && d=\$($cmd_extract_desc) && tmux send-keys \"git rebase -i \$b \$c --onto \$d --committer-date-is-author-date\")"
+		--header="Enter:take C-n/p:p-move C-y:yank A-f:fetch A-g:pull A-i/I:diff A-m:co-m A-o:co A-r:rebase C-l:reload A-b:browse A-p:preview"
 	)
 fi
 

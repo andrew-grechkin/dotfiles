@@ -139,13 +139,14 @@ function _fzf_complete_kubectl_post() {
 
 function fzf-bks-clusters-widget()       LBUFFER+=$(bks --tui)
 function fzf-bks-namespaces-widget()     LBUFFER+=$(bks --tui --mode namespaces | lines2args)
-function fzf-git-branches-widget()       LBUFFER+=$(fzf-git-branches --all | lines2args)
-function fzf-git-files-changed-widget()  LBUFFER+=$(fzf-git-files-changed  | lines2args)
-function fzf-git-files-widget()          LBUFFER+=$(fzf-git-files          | lines2args)
-function fzf-git-hashes-all-widget()     LBUFFER+=$(fzf-git-hashes-all     | lines2args)
-function fzf-git-hashes-widget()         LBUFFER+=$(fzf-git-hashes         | lines2args)
-function fzf-git-remotes-widget()        LBUFFER+=$(fzf-git-remotes        | lines2args)
-function fzf-git-tags-widget()           LBUFFER+=$(fzf-git-tags           | lines2args)
+function fzf-git-branches-widget()       LBUFFER+=$(fzf-git-branches --all      | lines2args)
+function fzf-git-files-changed-widget()  LBUFFER+=$(fzf-git-files-changed       | lines2args)
+function fzf-git-files-widget()          LBUFFER+=$(fzf-git-files               | lines2args)
+function fzf-git-log-all-graph-widget()  LBUFFER+=$(fzf-git-log-all-graph       | lines2args)
+function fzf-git-hashes-all-widget()     LBUFFER+=$(fzf-git-hashes-all          | lines2args)
+function fzf-git-hashes-widget()         LBUFFER+=$(fzf-git-hashes              | lines2args)
+function fzf-git-remotes-widget()        LBUFFER+=$(fzf-git-remotes             | lines2args)
+function fzf-git-tags-widget()           LBUFFER+=$(fzf-git-tags                | lines2args)
 
 zle -N fzf-bks-clusters-widget
 zle -N fzf-bks-namespaces-widget
@@ -154,13 +155,15 @@ zle -N fzf-git-files-changed-widget
 zle -N fzf-git-files-widget
 zle -N fzf-git-hashes-all-widget
 zle -N fzf-git-hashes-widget
+zle -N fzf-git-log-all-graph-widget
 zle -N fzf-git-remotes-widget
 zle -N fzf-git-tags-widget
 
 bindkey ';;' fzf-git-files-widget
 bindkey ';H' fzf-git-hashes-all-widget
 bindkey ';c' fzf-bks-clusters-widget
-bindkey ';g' fzf-git-files-changed-widget
+bindkey ';f' fzf-git-files-changed-widget
+bindkey ';g' fzf-git-log-all-graph-widget
 bindkey ';h' fzf-git-hashes-widget
 bindkey ';j' fzf-git-branches-widget
 bindkey ';n' fzf-bks-namespaces-widget
