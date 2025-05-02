@@ -8,6 +8,7 @@
 autoload -Uz vcs_info
 
 setopt PROMPT_SUBST
+export PROMPT_EOL_MARK='%B%S%F{red}<No newline at end of file>%f%s%b'
 
 function precmd() {
 	vcs_info

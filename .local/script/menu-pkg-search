@@ -10,8 +10,6 @@ fetcher=(
 	pacman -F -x
 )
 
-# sk --ansi --reverse -i -c "${fetcher[*]} \"{}\""
-
 fzf_cmd=(
 	fzf
 	--ansi

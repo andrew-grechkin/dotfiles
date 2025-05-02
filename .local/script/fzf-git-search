@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+if [[ -n "$*" ]]; then
+	query=${1}
+	shift
+fi
+
+source "$HOME/.local/lib/shell/fzf.bash"
+
+fzf_args=(
+	"${FZF_GIT_DEFAULT_ARGS[@]}"
+	--bind="change:reload(q={q}; if [[ -n \"\$q\" ]]; then git-log-wrapper ${*@Q} -P -G \"\$q\"; else git-log-wrapper ${*@Q}; fi)"
+	--phony
+	--preview-window="right:60%:border-left:wrap:nohidden"
+	--prompt="search commit > "
+	--query="${query:-}"
+)
+
+if [[ -n "${query:-}" ]]; then
+	git-log-wrapper "${@@Q}" -P -G "${query:-}"
+else
+	git-log-wrapper "${@@Q}"
+fi | fzf-exec-multi "${fzf_args[@]}"

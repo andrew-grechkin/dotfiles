@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+[[ -r "$1" ]] && exit 1
+
+{
+	echo '#!/usr/bin/env bash'
+	echo
+	echo 'set -Eeuo pipefail'
+} >> "$1"
+
+chmod a+x "$1"
+
+"${VISUAL:-vim}" "$1"

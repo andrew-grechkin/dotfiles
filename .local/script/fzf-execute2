@@ -10,7 +10,7 @@ fzf_cmd=(
 	--bind="ctrl-y:execute-silent(p={2}; echo -n {1} \\$\"\${p@Q}\" | clipcopy)"
 	--bind="tab:execute(p={2}; echo {1} \\$\"\${p@Q}\")+become(true)"
 	--delimiter=$'\u0009'
-	--header='C-j/k:move C-m/enter:exec A-p:preview C-y:yank C-g:url'
+	--header='Enter:exec C-g:url A-p:preview C-y:yank'
 	--no-multi
 	--preview="p={2}; echo {1} \\$\"\${p@Q}\""
 	--reverse

@@ -142,11 +142,34 @@ function fzf-bks-namespaces-widget()     LBUFFER+=$(bks --tui --mode namespaces 
 function fzf-git-branches-widget()       LBUFFER+=$(fzf-git-branches --all      | lines2args)
 function fzf-git-files-changed-widget()  LBUFFER+=$(fzf-git-files-changed       | lines2args)
 function fzf-git-files-widget()          LBUFFER+=$(fzf-git-files               | lines2args)
-function fzf-git-log-all-graph-widget()  LBUFFER+=$(fzf-git-log-all-graph       | lines2args)
 function fzf-git-hashes-all-widget()     LBUFFER+=$(fzf-git-hashes-all          | lines2args)
 function fzf-git-hashes-widget()         LBUFFER+=$(fzf-git-hashes              | lines2args)
+function fzf-git-log-all-graph-widget()  LBUFFER+=$(fzf-git-log-all-graph       | lines2args)
 function fzf-git-remotes-widget()        LBUFFER+=$(fzf-git-remotes             | lines2args)
+function fzf-git-search-file-widget()    LBUFFER+=$(fzf-git-search-file         | lines2args)
+function fzf-git-search-message-widget() LBUFFER+=$(fzf-git-search-message      | lines2args)
+function fzf-git-search-widget()         LBUFFER+=$(fzf-git-search              | lines2args)
 function fzf-git-tags-widget()           LBUFFER+=$(fzf-git-tags                | lines2args)
+function open-current-script-widget() {
+    local tokens
+    tokens=("${(@f)$( args2lines <<< "$LBUFFER" )}")
+
+    if [[ -n "${tokens[-1]}" ]]; then
+        local files file real_path
+        files=( "${tokens[-1]}" "$(command -v ${tokens[-1]})")
+
+        for file in "${files[@]}"; do
+            if [[ -r "$file" ]]; then
+                real_path=$(realpath "$file")
+                if [[ "$(file -bi "$real_path" | sed 's|.*charset=||')" != "binary" ]]; then
+                    "$VISUAL" "$file"
+                else
+                    show-file "$file" | "${PAGER:-less}"
+                fi
+            fi
+        done
+    fi
+}
 
 zle -N fzf-bks-clusters-widget
 zle -N fzf-bks-namespaces-widget
@@ -157,18 +180,26 @@ zle -N fzf-git-hashes-all-widget
 zle -N fzf-git-hashes-widget
 zle -N fzf-git-log-all-graph-widget
 zle -N fzf-git-remotes-widget
+zle -N fzf-git-search-file-widget
+zle -N fzf-git-search-message-widget
+zle -N fzf-git-search-widget
 zle -N fzf-git-tags-widget
+zle -N open-current-script-widget
 
-bindkey ';;' fzf-git-files-widget
-bindkey ';H' fzf-git-hashes-all-widget
-bindkey ';c' fzf-bks-clusters-widget
-bindkey ';f' fzf-git-files-changed-widget
-bindkey ';g' fzf-git-log-all-graph-widget
-bindkey ';h' fzf-git-hashes-widget
-bindkey ';j' fzf-git-branches-widget
-bindkey ';n' fzf-bks-namespaces-widget
-bindkey ';r' fzf-git-remotes-widget
-bindkey ';t' fzf-git-tags-widget
+bindkey ';;'  fzf-git-files-widget
+bindkey ';H'  fzf-git-hashes-all-widget
+bindkey ';c'  fzf-bks-clusters-widget
+bindkey ';f'  fzf-git-files-changed-widget
+bindkey ';g'  fzf-git-log-all-graph-widget
+bindkey ';h'  fzf-git-hashes-widget
+bindkey ';j'  fzf-git-branches-widget
+bindkey ';n'  fzf-bks-namespaces-widget
+bindkey ';o'  open-current-script-widget
+bindkey ';r'  fzf-git-remotes-widget
+bindkey ';sf' fzf-git-search-file-widget
+bindkey ';sm' fzf-git-search-message-widget
+bindkey ';ss' fzf-git-search-widget
+bindkey ';t'  fzf-git-tags-widget
 
 # => context completion ------------------------------------------------------------------------------------------- {{{1
 

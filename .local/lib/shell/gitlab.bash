@@ -141,6 +141,9 @@ function gl-branch-delete() {
 function gl-branch-diff() {
 	head=$(2>/dev/null git fetch --no-tags --porcelain "$GL_REMOTE" HEAD | perl -nal -E'say $F[2]')
 	>/dev/null git fetch --no-tags --porcelain "$GL_REMOTE" "$1"
+	git show --color=always --pretty=fuller --no-patch 'FETCH_HEAD'
+	echo
+	git diff --color=always --stat "$head...FETCH_HEAD"
 	git diff "$head...FETCH_HEAD"
 }
 
@@ -153,8 +156,17 @@ function gl-approvals-get() {
 
 function gl-mr-diff() {
 	head=$(2>/dev/null git fetch --no-tags --porcelain "$GL_REMOTE" HEAD | perl -nal -E'say $F[2]')
-	>/dev/null git fetch --no-tags --porcelain "$GL_REMOTE" "merge-requests/$1/head"
-	git diff "$head...FETCH_HEAD"
+	if res=$(git fetch --no-tags --porcelain "$GL_REMOTE" "merge-requests/$1/head" 2>/dev/stdout); then
+		git show --color=always --pretty=fuller --no-patch 'FETCH_HEAD'
+		echo
+		git diff --color=always --stat "$head...FETCH_HEAD"
+		git diff "$head...FETCH_HEAD"
+	else
+		&>/dev/stderr cat <<< "$res"
+		&>/dev/stderr echo
+		&>/dev/stderr echo "Unable to fetch MR branch: merge-requests/$1/head"
+		&>/dev/stderr echo "    MR might be just empty"
+	fi
 }
 
 function gl-mr-get() {

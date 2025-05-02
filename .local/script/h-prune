@@ -11,16 +11,19 @@ function finish {
 }
 trap finish EXIT
 
-filter=(
-	sk
-	--bind="ctrl-d:half-page-down,ctrl-u:half-page-up,home:top"
-	--print-query
-	--regex
-	--reverse
+fzf_args=(
+	--bind="change:reload(sort -u < '$file' | rg -Pa --color=always {q})"
+	--bind="ctrl-m:become(echo {q}; cat {+f})"
+	--bind="start:change-query()"
+	--bind="tab:toggle-out,shift-tab:toggle-in,ctrl-a:toggle-all"
 	--multi
+	--phony
+	--print-query
+	--query="."
+	--reverse
 )
 
-output="$(sort -u < "$file" | "${filter[@]}" | tee /tmp/blah)"
+output="$(echo 'loading...' | fzf "${fzf_args[@]}")"
 regex="$(echo "$output" | head -n 1)"
 lines="$(echo "$output" | tail -n +2)"
 
@@ -29,11 +32,11 @@ if [[ -n "$regex" ]]; then
 	cp -f "$file" "$file.prune.bak"
 
 	echo "Lines before: $(wc -l < "$file")"
-	grep -av -P "$regex" "$file" > "$temp_file"
+	rg -Pav "$regex" "$file" > "$temp_file"
 	echo "Lines after: $(wc -l < "$temp_file")"
 	mv -f "$temp_file" "$file"
 elif [[ -n "$lines" ]]; then
-	echo "Pruning history for whole lines: $(echo "$lines" | wc -l)"
+	echo "Pruning history for whole lines: $(wc -l <<< "$lines")"
 	cp -f "$file" "$file.prune.bak"
 
 	cp -f "$file" "$temp_file"

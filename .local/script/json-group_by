@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+# group array elements into an object of arrays
+# keys are determined by the parameter
+#
+#
+# $ jq -n '[{a:1, t:"one"}, {a:1, t:"one"}, {a:2, t:"two"}]' | json-group_by '.t'
+# {
+#   "one": [
+#     {
+#       "a": 1,
+#       "t": "one"
+#     },
+#     {
+#       "a": 1,
+#       "t": "one"
+#     }
+#   ],
+#   "two": [
+#     {
+#       "a": 2,
+#       "t": "two"
+#     }
+#   ]
+# }
+
+exec jq '
+    reduce .[] as $it ({};
+        "\($it | '"$1"')" as $key |
+        if . | has($key) then
+            ."\($key)" += [$it]
+        else
+            . += {"\($key)": [$it]}
+        end
+    )
+'

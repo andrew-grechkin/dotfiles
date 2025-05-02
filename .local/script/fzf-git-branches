@@ -2,8 +2,14 @@
 
 set -Eeuo pipefail
 
-CURRENT_SCRIPT="$(basename "$0")"
-export FZF_RELOAD_CMD="${CURRENT_SCRIPT#fzf-}"
+source "$HOME/.local/lib/shell/fzf.bash"
 
-"$FZF_RELOAD_CMD" \
-	| fzf --multi --bind 'tab:toggle-out,shift-tab:toggle-in' --preview 'git show --color=always {}'
+CURRENT_SCRIPT="$(basename "$0")"
+export FZF_RELOAD_CMD="${CURRENT_SCRIPT#fzf-} $*"
+
+fzf_args=(
+	"${FZF_GIT_DEFAULT_ARGS[@]}"
+	--bind="ctrl-m:become(cat {+f1})"
+)
+
+eval "$FZF_RELOAD_CMD" | fzf-exec-multi "${fzf_args[@]}"

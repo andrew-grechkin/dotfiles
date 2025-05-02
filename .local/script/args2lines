@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+if [[ -n "$*" ]]; then
+	echo "${*@Q}"
+elif [[ ! -t 0 ]]; then
+	cat
+fi | xargs -rn1 echo

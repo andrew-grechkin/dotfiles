@@ -2,15 +2,18 @@
 
 set -Eeuo pipefail
 
-FILE="$XDG_STATE_HOME/zsh/history@$HOSTNAME"
+file="$XDG_STATE_HOME/zsh/history@$HOSTNAME"
 
-SKIM_OPTS=(
-	--reverse
-	--regex
+fzf_args=(
+	--bind="change:reload(rg -Pa --color=always {q} '$file')"
+	--bind="ctrl-m:become(echo {q})"
+	--bind="start:change-query()"
+	--phony
 	--print-query
+	--query="."
+	--reverse
 )
-REGEX="$(sk "${SKIM_OPTS[@]}" < "$FILE" | head -1)"
 
-if [[ -n "$REGEX" ]]; then
-	grep -a -P "$REGEX" "$FILE"
+if regex="$(echo 'loading...' | fzf "${fzf_args[@]}")"; then
+	rg -Pa --no-line-number "$regex" "$file"
 fi
