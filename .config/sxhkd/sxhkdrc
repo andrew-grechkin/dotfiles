@@ -160,8 +160,8 @@ c + super
 	qalculate-gtk
 # b + super
 #	exo-open --launch WebBrowser
-n + alt + super
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/open-vim-wiki"
+# n + alt + super
+# 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/open-vim-wiki"
 m + alt + super
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-man-name"
 comma + alt + super

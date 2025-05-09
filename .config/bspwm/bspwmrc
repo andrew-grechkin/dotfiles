@@ -37,14 +37,14 @@ bspc config window_gap              0
 
 bspc rule -r '*'
 bspc config external_rules_command "$(realpath ~/.local/script/bspwm-external-rules)"
-bspc rule -a '*:*:Picture in Picture' state=floating sticky=on rectangle=564x317-600-360
+bspc rule -a '*:*:Picture in Picture' state=floating sticky=on
 bspc rule -a 'TermFloatingSmall'      state=floating center=on rectangle=640x480+0+0
 bspc rule -a 'TermFloating'           state=floating center=on rectangle=1280x720+0+0
 bspc rule -a 'floating'               state=floating center=on rectangle=1280x720+0+0
 bspc rule -a 'gpclient'               state=floating sticky=on
 bspc rule -a 'kscreen_osd_service'    state=floating sticky=on
 bspc rule -a 'matplotlib'             state=floating center=on rectangle=1280x720+0+0
-bspc rule -a 'mpv'                    state=floating sticky=on rectangle=564x317-600-360
+bspc rule -a 'mpv'                    state=floating sticky=on focus=off border=off
 bspc rule -a 'pinentry'               state=floating sticky=on
 
 bspc rule -a 'Chromium'                          desktop='1'
@@ -60,6 +60,6 @@ bspc rule -a 'Sxiv'                              state=floating center=on rectan
 bspc rule -a 'VirtualBox Manager'                desktop='4'
 bspc rule -a 'VirtualBoxVM'                      desktop='5'
 bspc rule -a 'Zathura'                           state=floating center=on rectangle=1280x720+0+0
-bspc rule -a 'crow-translate'                    state=floating rectangle=1280x720-600-360
+bspc rule -a 'crow-translate'                    state=floating
 bspc rule -a 'dolphin'                           desktop='4'
 bspc rule -a 'zoom_linux_float_video_window'     state=floating sticky=on

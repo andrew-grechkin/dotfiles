@@ -13,7 +13,20 @@ say {$log} "args: @ARGV";
 my ($window_id, $class_name, $instance_name, $params) = @ARGV;
 my $output = '';
 
-if ($params !~ m/\brectangle=\d/) {
+use constant {
+    'MPV_H'        => 148,
+    'MPV_H_OFFSET' => 48,
+    'MPV_W'        => 263,
+    'MPV_W_OFFSET' => 22,
+};
+
+if ($class_name eq 'mpv') {
+    my ($width, $height) = split(m/\s+/, `xdotool getdisplaygeometry`);
+    my $x = $width - MPV_W_OFFSET() - MPV_W();
+    my $y = $height - MPV_H_OFFSET() - MPV_H();
+    say {$log} "setting params explicitly for $class_name";
+    $output = "center=off focus=off follow=off state=floating sticky=on rectangle=${\MPV_W}x${\MPV_H}+${x}+${y}";
+} elsif ($params !~ m/\brectangle=\d/) {
     my $xprop = `xprop -id "$window_id"`;
     say {$log} "xprop: $xprop";
 

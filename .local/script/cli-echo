@@ -2,38 +2,34 @@
 
 set -Eeuo pipefail
 
-echo "i'am:       '$0'"
-echo -n "params: ($#) "
-echo "${@@Q}"
+source "$HOME/.local/lib/shell/color.bash"
+
+echo -e "i'am: ${FG[blue]}'$0'${FX[reset]}"
+echo "passed args [$#]: ${*@Q}"
 
 if [[ /dev/stdout -ef /dev/null ]]; then
-	echo "STDOUT is a /dev/null"
+	echo -e "${FG[olive]}STDOUT is a /dev/null${FX[reset]}"
 elif [[ -t 1 ]]; then
-	echo "STDOUT is a tty"
+	echo -e "${FG[olive]}STDOUT is a tty${FX[reset]}"
 fi
 
 if [[ /dev/stderr -ef /dev/null ]]; then
-	echo "STDERR is a /dev/null"
+	echo -e "${FG[olive]}STDERR is a /dev/null${FX[reset]}"
 elif [[ -t 2 ]]; then
-	echo "STDERR is a tty"
-fi
-
-source "$HOME/.local/lib/shell/color.bash"
-
-if [[ /dev/stdin -ef /dev/null ]]; then
-	echo "STDIN is a /dev/null"
-elif [[ -t 0 ]]; then
-	echo "STDIN is a tty"
-else
-	echo
-	echo -e "${FG[olive]}STDIN data is passed:${FX[reset]}"
-	cat
+	echo -e "${FG[olive]}STDERR is a tty${FX[reset]}"
 fi
 
 for FILE in "$@"; do
 	if [[ -r $FILE ]]; then
-		echo
-		echo -e "${FG[olive]}passed file: ${FILE}${FX[reset]}"
-		cat "$FILE"
+		echo -e "${FG[olive]}passed file: ${FX[reset]}$(file -i "$FILE")"
 	fi
 done
+
+if [[ /dev/stdin -ef /dev/null ]]; then
+	echo -e "${FG[olive]}STDIN is a /dev/null${FX[reset]}"
+elif [[ -t 0 ]]; then
+	echo -e "${FG[olive]}STDIN is a tty${FX[reset]}"
+else
+	echo -e "${FG[olive]}STDIN data is passed:${FX[reset]}"
+	cat
+fi

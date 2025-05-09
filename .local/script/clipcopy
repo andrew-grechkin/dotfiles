@@ -16,7 +16,12 @@ case "$OSTYPE" in
 		cat "$@" | pbcopy
 		;;
 	*)
-		if [[ -n "$(command -v xsel)" ]]; then
+		if [[ -n "$*" && -n "$(command -v xclip)" && "$(file -b --mime-type "$1" 2>/dev/null)" =~ ^image/ ]]; then
+			# copy image with correct mime type
+			# print targets: xclip -selection clipboard -t TARGETS -o
+			mime="$(file -b --mime-type "$1")"
+			xclip -in -selection clipboard -target "$mime" "$1"
+		elif [[ -n "$(command -v xsel)" ]]; then
 			# xsel fails to put big payloads into clipboard
 			cat "$@" | xsel --input --clipboard &>/dev/null
 		elif [[ -n "$(command -v xclip)" ]]; then
