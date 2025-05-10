@@ -3,6 +3,16 @@
 set -Eeuo pipefail
 
 CURRENT_SCRIPT="$(basename "$0")"
-fetch_data=("${CURRENT_SCRIPT#fzf-}" "$@")
+
+# always include some refs into selection
+refs=(
+	HEAD
+	"$(git bname || true)"
+	"$(git main-branch || true)"
+)
+
+# filter out empty elements
+readarray -t valid_refs < <(echo "${refs[@]}" | xargs -rn1 echo) || true
+fetch_data=("${CURRENT_SCRIPT#fzf-}" "${valid_refs[@]}" "$@")
 
 "${fetch_data[@]}" | FZF_RELOAD_CMD="${fetch_data[*]@Q}" fzf-git-log

@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+git-in-repo && {
+	init_ref="${1:-HEAD}"
+	ref="$init_ref"
+	ctr=1
+
+	while (( "$(git branch --format='%(refname:short)' --contains "$ref" 2>/dev/null | wc -l 2>/dev/null)" == 1 )); do
+		(( ctr+=1 ))
+		ref="${init_ref}~$ctr"
+	done
+
+	echo "$ref" | xargs -r git pcommit | git ant | perl -lpE "m/~\d+$/ || s|^remotes\/[^\/]+\/||"
+}

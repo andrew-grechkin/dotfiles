@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+git-in-repo && {
+	if current_branch="$(git branch --show-current 2>/dev/null)"; then
+		if branches="$(git branch --format='%(refname:short)' --contains "$1" 2>/dev/null)"; then
+			if echo "$branches" | grep -Fxv "$current_branch" | grep -Fxm1 -e 'main' -e 'master' -e 'trunk'; then
+				# if reachable from one of the main branches just use it
+				exit
+			fi
+
+			# if reachable from several branches use first non-current branch
+			{ echo "$branches" | grep -Fxv "$current_branch" || true; echo "$1"; } | head -1 || true
+		fi
+	fi
+}

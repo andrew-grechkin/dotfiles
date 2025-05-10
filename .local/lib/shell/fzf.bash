@@ -51,20 +51,21 @@ function fzf-exec-multi() {
 CMD_CURRENT_BRANCH='git branch --show-current'
 CMD_EXTRACT_BRANCH='echo {} | grep -o "[[:xdigit:]]\{6,\}" | head -1 | xargs -r git branch --format="%(refname:short)" --contains | head -1'
 CMD_EXTRACT_COMMIT='echo {} | grep -o "[[:xdigit:]]\{6,\}" | head -1 | tr -d "\n"'
-CMD_EXTRACT_DESC='echo {} | grep -o "[[:xdigit:]]\{6,\}" | head -1 | xargs -r git describe --all --always --contains'
-CMD_EXTRACT_REF='echo {} | grep -o "[[:xdigit:]]\{6,\}" | head -1 | xargs -r git pcommit | git ant | tee /dev/stderr | perl -lpE "m/~\d+$/ || s|^remotes\/[^\/]+\/||"'
+CMD_EXTRACT_DESC='  echo {} | grep -o "[[:xdigit:]]\{6,\}" | head -1 | xargs -r git describe --all --always --contains'
+CMD_EXTRACT_REF='   echo {} | grep -o "[[:xdigit:]]\{6,\}" | head -1 | xargs -r git pcommit | git ant | perl -lpE "m/~\d+$/ || s|^remotes\/[^\/]+\/||"'
 
 FZF_GIT_DEFAULT_ARGS=(
 	--bind="alt-I:execute(show-commit \$($CMD_EXTRACT_COMMIT) -- ${OPTIONS[*]} --show-signature | ${LOG_PAGER[*]} -s)"
 	--bind="alt-b:execute-silent(git browse \$($CMD_EXTRACT_COMMIT))"
-	--bind="alt-d:execute(show-commit \$($CMD_EXTRACT_COMMIT) --diff -- ${OPTIONS[*]} --show-signature | ${LOG_PAGER[*]})"
+	--bind="alt-c:execute(show-commit \$($CMD_EXTRACT_COMMIT) --diff -- ${OPTIONS[*]} --show-signature | ${LOG_PAGER[*]})"
+	--bind="alt-d:execute( { s=\$($CMD_EXTRACT_COMMIT)..HEAD; echo Explicit diff for \$s; echo; git --no-pager diff --color=always --minimal --patch --stat \$s; } | ${LOG_PAGER[*]})"
 	--bind="alt-i:execute(show-commit \$($CMD_EXTRACT_COMMIT) -- ${OPTIONS[*]} --show-signature | ${LOG_PAGER[*]})"
 	--bind="ctrl-m:become(grep -o '[[:xdigit:]]\{6,\}' {+f} | xargs -rn1 git pcommit | tee >(clipcopy))"
 	--bind="ctrl-x:become([[ -n {q} ]] && echo {q} | tee >(clipcopy) &>/dev/stderr; cat {+f})"
 	--bind="ctrl-y:execute-silent($CMD_EXTRACT_COMMIT | xargs -r git pcommit | trim-whole | clipcopy)"
 	--delimiter=" "
 	--header-lines=0
-	--header="Enter:take A-d/i/I:diff C-x:dump A-b:browse A-p:preview"
+	--header="Enter:take A-c/i/I:change A-d:diff C-x:dump A-b:browse A-p:preview"
 	--no-sort
 	--preview="show-commit \$($CMD_EXTRACT_COMMIT) -- ${OPTIONS[*]} | ${LOG_PAGER[*]}"
 	--scheme=history

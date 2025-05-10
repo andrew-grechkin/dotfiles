@@ -65,8 +65,9 @@ git-in-repo && {
 			else
 				commits="$(git --no-pager log --color=always --oneline "$main_upstream_branch..$ref")"
 				if [[ "${branch_diff:-}" == "1" ]] && (( $(echo "$commits" | wc -l) > 1 )); then
-					echo "Combined diff for commits:"
+					echo "Combined diff for commits: $main_upstream_branch...$ref"
 					echo "$commits"
+					echo
 					git --no-pager diff "${log_args[@]}" "$main_upstream_branch...$ref" "$@"
 					# echo
 					# span="$main_upstream_branch..$ref"
