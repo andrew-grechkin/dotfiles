@@ -170,6 +170,8 @@ command! hardlinker tsp hardlinker -ar
 
 command! tail tail -f %f
 
+command! mime xdg-mime query filetype %f
+
 " => File associations -------------------------------------------------------------------------------------------- {{{1
 
 " The file type is for the default programs to be used with a file extension.
@@ -567,7 +569,7 @@ filetype *.iso,*.mdf,*.nrg
 	\ {Mount with fuseiso}
 	\ FUSE_MOUNT|fuseiso %SOURCE_FILE %DESTINATION_DIR,
 
-filetype <application/x-iso9660-image>
+filetype <application/vnd.efi.iso,application/x-iso9660-image>
 	\ {Run with qemu UEFI}
 	\ setsid -f iso-run %c %i,
 	\ {Run with qemu BIOS}
@@ -606,7 +608,7 @@ fileviewer *.tar,
 filetype *.7z,*.epub,*.whl,
 	\*.dsl.dz,*.tar,*.zip,*.ova,*.sfs,*.a,*.so,lib*.so.*,
 	\*.apk,*.apm,*.ar,*.arj,*.cab,*.chm,*.cpio,*.cramfs,*.deb,*.dll,*.dmg,*.doc,*.esd,*.exe,
-	\*.flv,*.hxs,*.img,*.iso,*.iso,*.jar,*.lib,*.macho,*.msi,*.msp,*.nsis,*.pkg,*.pmd,*.ppt,
+	\*.flv,*.hxs,*.img,*.jar,*.lib,*.macho,*.msi,*.msp,*.nsis,*.pkg,*.pmd,*.ppt,
 	\*.qcow,*.qcow2,*.qcow2c,*.r00,*.rar,*.raw,*.rpm,*.squashfs,*.swf,*.swm,*.sys,*.vdi,*.vhd,*.vmdk,*.wim,*.xar,*.xls,
 	\*.tar.bz2,*.tbz2,*.tbz,*.tz2,*.tar.gz,*.tgz,*.taz,*.tar.lz,*.tlzip,*.tar.lzma,*.tlzma,*.tlz,
 	\*.tar.lzop,*.tlzo,*.tlzop,*.tar.xz,*.txz,*.tar.zst,*.tzst,*.tar.Z,*.taZ,
@@ -622,7 +624,7 @@ filetype *.7z,*.epub,*.whl,
 fileviewer *.7z,*.whl,
 	\*.dsl.dz,*.tar,*.zip,*.ova,*.sfs,
 	\*.apk,*.apm,*.ar,*.arj,*.cab,*.chm,*.cpio,*.cramfs,*.deb,*.dll,*.dmg,*.doc,*.esd,*.exe,
-	\*.flv,*.hxs,*.img,*.iso,*.iso,*.jar,*.lib,*.macho,*.msi,*.msp,*.nsis,*.pkg,*.pmd,*.ppt,
+	\*.flv,*.hxs,*.img,*.jar,*.lib,*.macho,*.msi,*.msp,*.nsis,*.pkg,*.pmd,*.ppt,
 	\*.qcow,*.qcow2,*.qcow2c,*.r00,*.rar,*.raw,*.rpm,*.squashfs,*.swf,*.swm,*.sys,*.vdi,*.vhd,*.vmdk,*.wim,*.xar,*.xls
 	\ 7z l %c &,
 
