@@ -20,7 +20,7 @@ use constant {
 # => implementation ----------------------------------------------------------------------------------------------- {{{1
 
 use constant {
-    'SOCK_PATH'        => '/tmp/bspwm_0_0-socket',
+    'SOCK_PATH'        => $ENV{BSPWM_SOCKET} || '/tmp/bspwm_0_0-socket',
     'SOCK_BUFFER_SIZE' => 64 * 1024,
     'JSON_CODER'       =>
         JSON::PP->new->utf8->pretty->canonical->convert_blessed->allow_blessed->boolean_values(0, 1)->indent(0),

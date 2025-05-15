@@ -32,8 +32,6 @@ if [[ -t 1 ]]; then
 	export FZF_RELOAD_CMD="${fetcher[*]@Q}"
 	source "$HOME/.local/lib/shell/fzf.bash"
 
-	COMMAND_EXTRACT_COMMIT="echo {} | grep -o '[[:xdigit:]]\{6,\}' | head -1 | tr -d '\n'"
-
 	HEADER=$(
 		cat <<- EOF_HEADER
 		Press A-b: browse, A-d: diff-head, A-p: preview, C-b: blame, C-a: all, C-o: only, C-m/enter: view
@@ -41,19 +39,17 @@ if [[ -t 1 ]]; then
 	)
 
 	fzf_args=(
-		--bind="alt-b:execute-silent(git browse \"\$($COMMAND_EXTRACT_COMMIT)\" -- \"$PTH_REL_ROOT\")"
-		--bind="alt-d:execute(git diff \"\$($COMMAND_EXTRACT_COMMIT)\" HEAD -- \"$PTH_REL_ROOT\" | delta --paging=always)"
-		--bind="ctrl-a:execute(show-commit \$(${COMMAND_EXTRACT_COMMIT}) -- --show-signature | delta --paging=always)"
-		--bind="ctrl-b:execute(git blame -M -w \"\$(${COMMAND_EXTRACT_COMMIT})\" \"$PTH_REL_ROOT\" | delta --paging=always)"
-		--bind="ctrl-m:execute(git show \"\$(${COMMAND_EXTRACT_COMMIT}):$PTH_REL_ROOT\" | bat --color=always --paging=always --file-name=$PTH_REL_ROOT)"
-		--bind="ctrl-o:execute(show-commit \$(${COMMAND_EXTRACT_COMMIT}) -- --show-signature -- \"$PTH_REL_ROOT\" | delta --paging=always)"
-		--bind="ctrl-y:execute-silent(${COMMAND_EXTRACT_COMMIT} | clipcopy)"
-		--header-first
+		"${FZF_GIT_DEFAULT_ARGS[@]}"
+		--bind="alt-b:execute-silent(git browse \"\$($CMD_EXTRACT_COMMIT)\" -- \"$PTH_REL_ROOT\")"
+		--bind="alt-d:execute(git diff \"\$($CMD_EXTRACT_COMMIT)\" HEAD -- \"$PTH_REL_ROOT\" | delta --paging=always)"
+		--bind="ctrl-a:execute(show-commit \$(${CMD_EXTRACT_COMMIT}) -- --show-signature | delta --paging=always)"
+		--bind="ctrl-b:execute(git blame -M -w \"\$(${CMD_EXTRACT_COMMIT})\" \"$PTH_REL_ROOT\" | delta --paging=always)"
+		--bind="ctrl-m:execute(git show \"\$(${CMD_EXTRACT_COMMIT}):$PTH_REL_ROOT\" | bat --color=always --paging=always --file-name=$PTH_REL_ROOT)"
+		--bind="ctrl-o:execute(show-commit \$(${CMD_EXTRACT_COMMIT}) -- --show-signature -- \"$PTH_REL_ROOT\" | delta --paging=always)"
+		--bind="ctrl-y:execute-silent(${CMD_EXTRACT_COMMIT} | clipcopy)"
 		--header="$HEADER"
-		--preview="git show \"\$(${COMMAND_EXTRACT_COMMIT}):$PTH_REL_ROOT\" | bat --color=always --paging=never --file-name=$PTH_REL_ROOT"
+		--preview="git show \"\$(${CMD_EXTRACT_COMMIT}):$PTH_REL_ROOT\" | bat --color=always --paging=never --file-name=$PTH_REL_ROOT"
 		--prompt="$PTH_REL_ROOT > "
-		--scheme=history
-		--track
 	)
 
 	"${fetcher[@]}" | fzf-exec "${fzf_args[@]}"

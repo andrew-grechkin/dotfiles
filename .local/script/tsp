@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+export TMPDIR="$XDG_RUNTIME_DIR"
+
+exec /usr/bin/tsp "$@"

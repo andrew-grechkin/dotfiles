@@ -4,6 +4,12 @@ return {
         config = function()
             local plugin = require('lint')
 
+            -- customize linters
+            local deno = plugin.linters.deno
+            deno.args = {}
+            deno.cmd = 'deno-check'
+            deno.stdin = true
+
             plugin.linters_by_ft = {
                 gitcommit = {'commitlint'},
                 json = {'jsonlint'},
@@ -12,6 +18,8 @@ return {
                 puppet = {'puppet-lint'},
                 sql = {'sqlfluff'},
                 yaml = {'yamllint'},
+                ['deno'] = {'deno'},
+                ['typescript.deno'] = {'deno'},
             }
 
             vim.api.nvim_create_autocmd({'BufWritePost'}, {

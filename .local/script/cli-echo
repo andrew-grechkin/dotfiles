@@ -1,22 +1,37 @@
 #!/usr/bin/env bash
 
-set -Eeuo pipefail
-
 source "$HOME/.local/lib/shell/color.bash"
 
 echo -e "i'am: ${FG[blue]}'$0'${FX[reset]}"
 echo "passed args [$#]: ${*@Q}"
 
+if [[ /dev/stdin -ef /dev/null ]]; then
+	echo -e "${FG[olive]}STDIN  is a ${FX[reset]}/dev/null"
+elif [[ -t 0 ]]; then
+	echo -e "${FG[olive]}STDIN  is a ${FX[reset]}tty"
+else
+	echo -en "${FG[olive]}STDIN  is a ${FX[reset]}"
+	file -b /proc/self/fd/0
+	# echo -e "${FG[olive]}STDIN data is passed:${FX[reset]}"
+	# cat
+fi
+
 if [[ /dev/stdout -ef /dev/null ]]; then
-	echo -e "${FG[olive]}STDOUT is a /dev/null${FX[reset]}"
+	echo -e "${FG[olive]}STDOUT is a ${FX[reset]}/dev/null"
 elif [[ -t 1 ]]; then
-	echo -e "${FG[olive]}STDOUT is a tty${FX[reset]}"
+	echo -e "${FG[olive]}STDOUT is a ${FX[reset]}tty"
+else
+	echo -en "${FG[olive]}STDOUT is a ${FX[reset]}"
+	file -b /proc/self/fd/1
 fi
 
 if [[ /dev/stderr -ef /dev/null ]]; then
-	echo -e "${FG[olive]}STDERR is a /dev/null${FX[reset]}"
+	echo -e "${FG[olive]}STDERR is a ${FX[reset]}/dev/null"
 elif [[ -t 2 ]]; then
-	echo -e "${FG[olive]}STDERR is a tty${FX[reset]}"
+	echo -e "${FG[olive]}STDERR is a ${FX[reset]}tty"
+else
+	echo -en "${FG[olive]}STDERR is a ${FX[reset]}"
+	file -b /proc/self/fd/2
 fi
 
 for FILE in "$@"; do
@@ -24,12 +39,3 @@ for FILE in "$@"; do
 		echo -e "${FG[olive]}passed file: ${FX[reset]}$(file -i "$FILE")"
 	fi
 done
-
-if [[ /dev/stdin -ef /dev/null ]]; then
-	echo -e "${FG[olive]}STDIN is a /dev/null${FX[reset]}"
-elif [[ -t 0 ]]; then
-	echo -e "${FG[olive]}STDIN is a tty${FX[reset]}"
-else
-	echo -e "${FG[olive]}STDIN data is passed:${FX[reset]}"
-	cat
-fi

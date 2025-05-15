@@ -9,7 +9,7 @@ highlight Socket cterm=none ctermfg=LightMagenta ctermbg=default
 
 " file name specific highlight
 highlight /^.*\.(csh|sh|zsh)$/I cterm=none ctermfg=Green ctermbg=default
-highlight /^.*\.(torrent|7z|ace|alz|arc|arj|bz|bz2|cab|cpio|deb|dict.dz|dsl.dz|dwm|dz|ear|esd|gz|jar|lha|lrz|lz|lz4|lzh|lzma|lzo|rar|rpm|rz|sar|swm|t7z|tar|taz|tbz|tbz2|tgz|tlz|txz|tz|tzo|tzst|war|whl|wim|xz|z|zip|zoo|zst|zstd)$/I cterm=none ctermfg=LightRed ctermbg=default
+highlight /^.*\.(torrent|7z|ace|alz|arc|arj|br|bz|bz2|cab|cpio|deb|dict.dz|dsl.dz|dwm|dz|ear|esd|gz|jar|lha|lrz|lz|lz4|lzh|lzma|lzo|rar|rpm|rz|sar|sqlar|swm|t7z|tar|taz|tbz|tbz2|tgz|tlz|txz|tz|tzo|tzst|war|whl|wim|xz|z|zip|zoo|zst|zstd)$/I cterm=none ctermfg=LightRed ctermbg=default
 highlight /^.*\.(asf|avi|bmp|cgm|dl|emf|flc|fli|flv|gif|gl|jp2|jpeg|jpg|lrv|m2v|m4v|mjpeg|mjpg|mkv|mng|mov|mp4|mp4v|mpeg|mpg|nuv|ogm|ogv|ogx|pbm|pcx|pgm|png|ppm|qt|rm|rmvb|svg|svgz|tga|tif|tiff|ts|vob|webm|webp|wmv|xbm|xcf|xpm|xwd|yuv)$/I cterm=none ctermfg=LightMagenta ctermbg=default
 highlight /^.*\.(aac|ac3|ape|au|flac|kar|m4a|m4b|mid|midi|mka|mp3|mpa|mpc|oga|ogg|opus|ra|spx|wav|wv|xspf)$/I cterm=none ctermfg=LightCyan ctermbg=default
 highlight /^.*\.(editorconfig|json|yaml|yml|toml|conf)$/I cterm=none ctermfg=LightWhite ctermbg=default

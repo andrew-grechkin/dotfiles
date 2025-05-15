@@ -10,6 +10,9 @@ return {
 
             -- => default keybindings ----------------------------------------------------------------------------- {{{1
 
+            -- vim.notify('init lsp', 'INFO')
+            vim.lsp.config('denols', {filetypes = {'deno', 'typescript.deno'}})
+
             local wk_ok, which_key = pcall(require, 'which-key')
             if not wk_ok then return end
 
@@ -81,41 +84,40 @@ return {
                 config = function()
                     local ensure_installed = T {'bashls', 'jsonls', 'perlnavigator', 'yamlls'}
 
-                    local function on_attach(data, bufnr)
-                        -- data.config.capabilities = nil
-                        -- print('attached', vim.inspect(data.config))
-                        if data.config.set_on_attach then data.config.set_on_attach(data, bufnr) end
-                    end
+                    -- local function on_attach(data, bufnr)
+                    --     -- data.config.capabilities = nil
+                    --     -- print('attached', vim.inspect(data.config))
+                    --     if data.config.set_on_attach then data.config.set_on_attach(data, bufnr) end
+                    -- end
 
-                    -- LSP settings (for overriding per client)
-                    local lsp_handlers = {
-                        ['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, {
-                            border = 'rounded',
-                        }),
-                        ['textDocument/signatureHelp'] = vim.lsp.with(vim.lsp.handlers.signature_help,
-                            {border = 'rounded'}),
-                    }
+                    -- -- LSP settings (for overriding per client)
+                    -- local lsp_handlers = {
+                    --     ['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, {
+                    --         border = 'rounded',
+                    --     }),
+                    --     ['textDocument/signatureHelp'] = vim.lsp.with(vim.lsp.handlers.signature_help,
+                    --         {border = 'rounded'}),
+                    -- }
 
                     local plugin = require('mason-lspconfig')
                     plugin.setup {
-                        automatic_installation = true,
                         ensure_installed = ensure_installed,
-                        handlers = {
-                            function(server_name)
-                                local opts = {on_attach = on_attach, handlers = lsp_handlers}
-                                local lsp_set_ok, settings = pcall(require,
-                                    string.format('lsp.settings-%s', server_name))
-                                if lsp_set_ok then
-                                    if settings.set_prepare then
-                                        settings.set_prepare(server_name, settings)
-                                    end
-                                    opts = vim.tbl_deep_extend('force', settings, opts)
-                                end
+                        -- handlers = {
+                        --     function(server_name)
+                        --         local opts = {on_attach = on_attach, handlers = lsp_handlers}
+                        --         local lsp_set_ok, settings = pcall(require,
+                        --             string.format('lsp.settings-%s', server_name))
+                        --         if lsp_set_ok then
+                        --             if settings.set_prepare then
+                        --                 settings.set_prepare(server_name, settings)
+                        --             end
+                        --             opts = vim.tbl_deep_extend('force', settings, opts)
+                        --         end
 
-                                -- Refer to https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md
-                                require('lspconfig')[server_name].setup(opts)
-                            end,
-                        },
+                        --         -- Refer to https://github.com/neovim/nvim-lspconfig/blob/master/doc/configs.md
+                        --         require('lspconfig')[server_name].setup(opts)
+                        --     end,
+                        -- },
                     }
                 end,
             },

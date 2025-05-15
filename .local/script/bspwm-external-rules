@@ -4,7 +4,7 @@ use v5.34;
 use autodie;
 use warnings qw(FATAL utf8);
 
-open(my $log, '>>', '/tmp/bspwm-external-rule.log')
+open(my $log, '>>', "$ENV{XDG_RUNTIME_DIR}/bspwm-external-rule.log")
     or warn "open failed: $!";
 
 say {$log} '################################################################################################';

@@ -21,6 +21,7 @@ function fzf-exec() {
 		--bind="alt-p:toggle-preview,ctrl-s:toggle-sort,ctrl-t:toggle-track"
 		--bind="ctrl-d:half-page-down,ctrl-u:half-page-up,home:top"
 		--bind="ctrl-e:toggle-preview-wrap,ctrl-n:preview-down,ctrl-p:preview-up"
+		--bind="ctrl-g:jump"
 		--bind="ctrl-l:reload-sync(${FZF_RELOAD_CMD:-$0})"
 		--bind="ctrl-m:execute-silent(true)"
 		--bind="ctrl-w:backward-kill-word,esc:cancel"
@@ -52,9 +53,10 @@ CMD_CURRENT_BRANCH='git branch --show-current'
 CMD_EXTRACT_BRANCH='echo {} | grep -o "[[:xdigit:]]\{6,\}" | head -1 | xargs -r git branch --format="%(refname:short)" --contains | head -1'
 CMD_EXTRACT_COMMIT='echo {} | grep -o "[[:xdigit:]]\{6,\}" | head -1 | tr -d "\n"'
 CMD_EXTRACT_DESC='  echo {} | grep -o "[[:xdigit:]]\{6,\}" | head -1 | xargs -r git describe --all --always --contains'
-CMD_EXTRACT_REF='   echo {} | grep -o "[[:xdigit:]]\{6,\}" | head -1 | xargs -r git pcommit | git ant | perl -lpE "m/~\d+$/ || s|^remotes\/[^\/]+\/||"'
+CMD_EXTRACT_REF='   echo {} | grep -o "[[:xdigit:]]\{6,\}" | head -1 | xargs -r git pcommit | git ant2 | perl -lpE "m/~\d+$/ || s|^remotes\/[^\/]+\/||"'
 
 FZF_GIT_DEFAULT_ARGS=(
+	# --bind="load:pos(git lag | grep -Pnm1 '[^\/]HEAD' - | grep -Po '^\d+')"
 	--bind="alt-I:execute(show-commit \$($CMD_EXTRACT_COMMIT) -- ${OPTIONS[*]} --show-signature | ${LOG_PAGER[*]} -s)"
 	--bind="alt-b:execute-silent(git browse \$($CMD_EXTRACT_COMMIT))"
 	--bind="alt-c:execute(show-commit \$($CMD_EXTRACT_COMMIT) --diff -- ${OPTIONS[*]} --show-signature | ${LOG_PAGER[*]})"
@@ -69,5 +71,6 @@ FZF_GIT_DEFAULT_ARGS=(
 	--no-sort
 	--preview="show-commit \$($CMD_EXTRACT_COMMIT) -- ${OPTIONS[*]} | ${LOG_PAGER[*]}"
 	--scheme=history
+	--tiebreak="begin,chunk"
 	--track
 )

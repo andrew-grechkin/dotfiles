@@ -26,7 +26,7 @@ function _term-spectrum() {
 
 # Show all 256 colors with color number
 function term-spectrum-ls() {
-    _term-spectrum
+	_term-spectrum
 	for code in {000..255}; do
 		print -P -- "$code: %{$FG[$code]%}$ZSH_SPECTRUM_TEXT%{$reset_color%}"
 	done
@@ -34,7 +34,7 @@ function term-spectrum-ls() {
 
 # Show all 256 colors where the background is set to specific color
 function term-spectrum-bls() {
-    _term-spectrum
+	_term-spectrum
 	for code in {000..255}; do
 		print -P -- "$code: %{$BG[$code]%}$ZSH_SPECTRUM_TEXT%{$reset_color%}"
 	done

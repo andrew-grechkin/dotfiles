@@ -77,6 +77,7 @@
 	main-upstream = !"git pbranch \"$(git main-head)\""
 
     ant   =            name-rev --always --name-only --no-undefined --annotate-stdin        --exclude=HEAD --exclude='remotes/*'
+    ant2  =            name-rev --always --name-only --no-undefined --annotate-stdin        --exclude=HEAD
 	name  = !"f(){ git name-rev --always --name-only --no-undefined                         --exclude=HEAD ${@:-HEAD}; }; f"
 	rname = !"f(){ git name-rev --always --name-only --no-undefined --refs='refs/remotes/*' --exclude=HEAD ${@:-HEAD}; }; f"
 	# print current branch

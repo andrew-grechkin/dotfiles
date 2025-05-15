@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
 
+set -Eeuo pipefail
+
 for file in "$@"; do
 	base="${file%.*}"
 	ext="${file##*.}"
 
-	[[ "$ext" == "mkv" || "$ext" == "avi" ]] || continue
+	[[ "$ext" == "mkv" || "$ext" == "avi" || "$ext" == "webm" ]] || continue
 
-	echo "converting: $file to $base.mp4" >/dev/stderr
-	ffpmeg_cmd=(
-		ffmpeg
-		-loglevel quiet
-		-stats
+	echo "converting: $file to $base.mp4"
+	ffmpeg_args=(
+		-loglevel info
+		-hide_banner
 		-fflags +genpts
 		-i "$file"
 		-map 0
@@ -21,6 +22,7 @@ for file in "$@"; do
 		-movflags +faststart
 		"${base}.mp4"
 	)
+	[[ -t 1 ]] || ffmpeg_args+=(-nostats)
 
-	"${ffpmeg_cmd[@]}"
+	ffmpeg "${ffmpeg_args[@]}"
 done

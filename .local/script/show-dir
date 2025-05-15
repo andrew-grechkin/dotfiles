@@ -8,6 +8,9 @@ DIR="${1:-$(pwd)}"
 	stat "$DIR"
 
 	echo "  Type: $(file -b "$DIR")"
+	mime=$(file -bi "$1")
+	echo "  FILE: $mime"
+	echo "  MIME: $(xdg-mime query filetype "$1")"
 	echo
 
 	if [[ -x "$(command -v eza)" ]]; then

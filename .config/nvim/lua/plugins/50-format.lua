@@ -3,6 +3,15 @@ return {
         'stevearc/conform.nvim',
         event = {'BufReadPre', 'BufNewFile'},
         opts = {
+            formatters = {
+                ['beautysh'] = {command = 'beautysh', args = {'--indent-size', '4', '--tab', '-'}},
+                -- ['eslint'] = {command = 'eslint-fix-stdout', args = '$FILENAME'},
+                ['jq-sort'] = {command = 'jq', args = {'-S', '--indent', '2'}},
+                ['jq-sort-one-line'] = {command = 'jq', args = {'-S', '-c'}},
+                ['lua-format'] = {command = 'lua-format', args = {'-i'}},
+                ['yaml-sanitize'] = {command = 'yaml-sanitize'},
+                ['deno'] = {command = 'deno-check', args = {'-f'}},
+            },
             default_format_opts = {lsp_format = 'fallback'},
             formatters_by_ft = {
                 -- ['_'] = {'trim_newlines', 'trim_whitespace'},
@@ -26,6 +35,8 @@ return {
                 -- typescript = {'prettierd', 'deno_fmt'},
                 xml = {'xmllint'},
                 yaml = {'yamlfix'},
+                ['deno'] = {'deno'},
+                ['typescript.deno'] = {'deno'},
             },
             formatters_by_ft_manual = {
                 json = {'jq-sort'},
@@ -37,14 +48,6 @@ return {
             log_level = vim.log.levels.DEBUG,
             notify_no_formatters = true,
             notify_on_error = true,
-            formatters = {
-                ['beautysh'] = {command = 'beautysh', args = {'--indent-size', '4', '--tab', '-'}},
-                -- ['eslint'] = {command = 'eslint-fix-stdout', args = '$FILENAME'},
-                ['jq-sort'] = {command = 'jq', args = {'-S', '--indent', '2'}},
-                ['jq-sort-one-line'] = {command = 'jq', args = {'-S', '-c'}},
-                ['lua-format'] = {command = 'lua-format', args = {'-i'}},
-                ['yaml-sanitize'] = {command = 'yaml-sanitize'},
-            },
         },
         config = function(_, opts)
             local plugin = require('conform')

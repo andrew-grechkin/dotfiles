@@ -1,1 +1,1 @@
-autocmd BufNewFile,BufRead *.svct    set filetype=yaml
+autocmd BufNewFile,BufRead *.svct setlocal filetype=yaml

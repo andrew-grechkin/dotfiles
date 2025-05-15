@@ -55,4 +55,4 @@ EOSCRIPT
 
 man -ak .                 \
 	| perl -nlE "$SCRIPT" \
-	| fzf-execute-term --tiebreak=begin,chunk,index
+	| fzf-execute-term --tiebreak="begin,chunk"

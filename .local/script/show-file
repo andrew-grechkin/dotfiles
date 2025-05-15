@@ -2,7 +2,7 @@
 
 set -Eeuo pipefail
 
-bat_options=(
+bat_args=(
 	--style=numbers
 	--color=always
 	--tabs=4
@@ -22,14 +22,16 @@ function header() {
 
 function body() {
 	mime=$(file -bi "$1")
-	echo "  MIME: $mime"
+	echo "  FILE: $mime"
+	echo "  MIME: $(xdg-mime query filetype "$1")"
+	echo
 
 	file=$(basename "$1")
 	base="${file%.[^.]*}"
 	ext="${file:${#base} + 1}"
 
 	if [[ "$mime" =~ ^application/json || "$ext" == "json" ]]; then
-		jq -S --indent 2 < "$1" | bat -l json "${bat_options[@]}"; exit 0
+		jq -S --indent 2 < "$1" | bat -l json "${bat_args[@]}"; exit 0
 	elif [[ "$mime" =~ application/x-.*executable ]]; then
 		{ readelf -dW "$1" && echo && nm -DC "$1"; } && exit 0
 	elif [[ "$mime" =~ ^application/x-sharedlib ]]; then
@@ -37,28 +39,33 @@ function body() {
 			{ readelf -dW "$1" && echo && nm -DC "$1"; } || { objdump -xfTC "$1"; }
 		} && exit 0
 	elif [[ "$mime" =~ ^text/x-shellscript ]]; then
-		bat -l 'Bourne Again Shell (bash)' "${bat_options[@]}"  "$1" && exit 0
+		bat -l 'Bourne Again Shell (bash)' "${bat_args[@]}"  "$1" && exit 0
 	elif [[ "$mime" =~ ^application/x-object ]]; then
 		{ nm -ClS "$1"; echo; objdump -afltSd "$1"; } && exit 0
 	elif [[ "$mime" =~ ^application/x-archive ]]; then
 		nm -C "$1" && exit 0
+	elif [[ "$mime" =~ video/ || "$mime" =~ audio/ ]]; then
+		mediainfo "$1"
+		ffprobe -hide_banner -pretty "$1" 2>&1
+		# mp3info %c:p,
+		exit 0
+	elif [[ "$mime" =~ image/vnd.djvu ]]; then
+		exit 0
 	elif [[ "$mime" =~ image/ ]]; then
 		yaml_file="$base.yml"
-		[[ -r "$yaml_file" ]] && bat -l yaml "${bat_options[@]}" "$yaml_file"
+		[[ -r "$yaml_file" ]] && bat -l yaml "${bat_args[@]}" "$yaml_file"
 		(( size < 10000000 )) && {
 			cols=$(tput cols)
 			cols=${cols:-120}
-			{ chafa --clear -c full -s "${cols}x${cols}" -f symbols --polite on "$1"; } || true
+			{ chafa --clear -c full --view-size "${cols}x${cols}" -f symbols --polite on "$1"; } || true
 		}
 		exit 0
 	elif [[ "$ext" == "conf" ]]; then
-		bat -l conf "${bat_options[@]}" "$1" && exit 0
+		bat -l conf "${bat_args[@]}" "$1" && exit 0
 	elif [[ "$ext" =~ yaml?$ ]]; then
-		yaml-sanitize < "$1" | yamlfix - 2>/dev/null | bat -l yaml "${bat_options[@]}" && exit 0
+		yaml-sanitize < "$1" | yamlfix - 2>/dev/null | bat -l yaml "${bat_args[@]}" && exit 0
 	elif [[ "$ext" == "tsv" ]]; then
-		tsv-align "$1" | bat -l tsv --wrap=never "${bat_options[@]}" --color=always && exit 0
-	else
-		echo
+		tsv-align "$1" | bat -l tsv --wrap=never "${bat_args[@]}" --color=always && exit 0
 	fi
 }
 
@@ -68,7 +75,7 @@ function footer() {
 	if [[ "$mime" =~ charset=binary ]]; then
 		hexdump -C "$1" && exit 0
 	elif (( size < 1000000 )); then
-		bat "${bat_options[@]}"  "$1" \
+		bat "${bat_args[@]}"  "$1" \
 			|| cat "$1"
 		(( size > 255)) && return
 		echo
