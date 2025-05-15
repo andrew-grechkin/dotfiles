@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-# prefer tsp wrapper with redirected TMPDIR
-PATH="$(dirname "$0"):$PATH"
-export PATH
-
 # => header (source able) ----------------------------------------------------------------------------------------- {{{1
 
 function tsp-items-get() {
