@@ -209,8 +209,8 @@ filextype <application/vnd.ms-htmlhelp,application/rtf,text/rtf>,
 	\{*.chm,*.rtf}
 	\ {Open with xdg-open}
 	\ xdg-open %c:p %i &,
-filextype <application/epub+zip,application/x-fictionbook*>,
-	\{*.epub,*.fb2,*.fbz,*.mobi,*.tcr}
+filextype <application/epub+zip,application/x-zip-compressed-fb2,application/x-fictionbook*>,
+	\{*.epub,*.fb2,*.fb2.zip,*.fbz,*.mobi,*.tcr}
 	\ {Open with xdg-open}
 	\ xdg-open %c:p %i &,
 	\ FBReader %c:p %i &,
@@ -279,7 +279,7 @@ filextype <video/*>
 	\ mplayer %c:p %i &,
 filextype <video/*>{*.avi,*.mkv,*.webm}
 	\ {Video convert to mp4}
-	\ tsp 2mp4 %f:p %i &,
+	\ tsp -L video-convert 2mp4 %f:p %i &,
 
 " => File associations: Audio ------------------------------------------------------------------------------------- {{{1
 
@@ -606,6 +606,7 @@ fileviewer <application/x-tar,application/x-*compressed-tar,application/vnd.efi.
 filetype <application/x-tar,application/x-*compressed-tar,application/vnd.efi.img>,
 	\<application/x-cpio*,application/x-rpm>,
 	\<application/epub+zip,application/vnd.rar,application/x-7z-compressed,application/java-archive,application/zip>,
+	\<application/x-zip-compressed-fb2>,
 	\<application/vnd.debian.binary-package>
 	\ {Archive mount with fuse3-p7zip}
 	\ FUSE_MOUNT|fuse3-p7zip %SOURCE_FILE %DESTINATION_DIR,
@@ -618,6 +619,7 @@ filetype <application/x-tar,application/x-*compressed-tar,application/vnd.efi.im
 fileviewer <application/x-tar,application/x-*compressed-tar,application/vnd.efi.img>,
 	\<application/x-cpio*,application/x-rpm>,
 	\<application/epub+zip,application/vnd.rar,application/x-7z-compressed,application/java-archive,application/zip>,
+	\<application/x-zip-compressed-fb2>,
 	\<application/vnd.debian.binary-package>
 	\ 7z l %c:p,
 

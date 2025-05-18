@@ -2,34 +2,34 @@
 
 set -Eeuo pipefail
 
-BIOS=()
-OPTIONS=()
+bios=()
+options=()
 
-if [[ "$1" =~ uefi ]]; then
-	BIOS+=(
+[[ "$1" =~ bios ]] || {
+	bios+=(
 		-bios /usr/share/ovmf/x64/OVMF.4m.fd
 	)
-fi
+}
 
 if [[ "$1" =~ usb.qcow2$ ]]; then
-	OPTIONS+=(
+	options+=(
 		-device "qemu-xhci,id=xhci"
 		-device "usb-storage,bus=xhci.0,drive=stick"
 		-drive "file=$1,if=none,id=stick,format=qcow2"
 	)
 elif [[ "$1" =~ qcow2$ ]]; then
-	OPTIONS+=(
+	options+=(
 		-drive "file=$1,if=virtio,index=0,media=disk,format=qcow2"
 	)
 else
-	OPTIONS+=(
+	options+=(
 		-drive "file=$1,if=virtio,index=0,media=disk,format=raw"
 	)
 fi
 
-CMD=(
+args=(
 	-audiodev "pa,id=snd0"
-	"${BIOS[@]}"
+	"${bios[@]}"
 	-cpu host
 	-device ich9-intel-hda
 	-device "hda-output,audiodev=snd0"
@@ -39,7 +39,7 @@ CMD=(
 	# -device "virtio-net,netdev=network0"
 	# -netdev "tap,id=network0,ifname=tap0,script=no,downscript=no"
 	# -device "e1000,netdev=network0,mac=52:55:00:d1:55:01"
-	"${OPTIONS[@]}"
+	"${options[@]}"
 	-display "gtk,zoom-to-fit=on"
 	-enable-kvm
 	-k en-us
@@ -52,4 +52,4 @@ CMD=(
 	# -virtfs "local,path=$HOME/.cache,mount_tag=host0,security_model=passthrough,id=host0"
 )
 
-exec qemu-system-x86_64 "${CMD[@]}"
+exec qemu-system-x86_64 "${args[@]}"
