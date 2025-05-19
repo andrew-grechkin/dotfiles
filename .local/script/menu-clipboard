@@ -42,7 +42,7 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 		echo "Command options:"
 		echo "   -h, --help         print help and exit"
 		echo "   -j, --json         print as json (suppress UI)"
-	} &>/dev/stderr
+	} >&2
 
 	args=$(getopt --name="$0" --options 'hj' --longoptions 'help,json' -- "$@")
 	eval set -- "$args"

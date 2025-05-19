@@ -23,13 +23,13 @@ function gl-redefine-vars() {
 			# REMOTE=$(git config --local --get "branch.$current_branch.remote" 2>/dev/null || git show-ref 2>/dev/null | grep -Po '(?<=\\brefs/remotes/)[^\\/]+(?=/HEAD\\b)' | head -1)
 			GL_REMOTE="$(git remote -v | perl -nE 'my ($remote) = m/(\w+)\s+(?:.*?gitlab)/; say $remote if $remote' | head -1)"
 			if [[ -z "$GL_REMOTE" ]]; then
-				>/dev/stderr echo "unable to detect gitlab related remote for this repo among:"
-				>/dev/stderr git remote -v
+				>&2 echo "unable to detect gitlab related remote for this repo among:"
+				>&2 git remote -v
 				exit 1
 			fi
 			repo_url="$(git config --get "remote.${GL_REMOTE}.url")"
 			if [[ -z "$repo_url" ]]; then
-				>/dev/stderr echo "unable to detect repo url for remote: $GL_REMOTE"
+				>&2 echo "unable to detect repo url for remote: $GL_REMOTE"
 				exit 1
 			fi
 			IFS=":" read -r -a parts <<< "$repo_url"
@@ -57,10 +57,12 @@ function gl-required-vars() {
 		if [[ -r "$token_file" ]]; then
 			GITLAB_PERSONAL_TOKEN=$(cat "$token_file")
 		else
-			>/dev/stderr echo "Please provide gitlab token with 'api' permission as one of:"
-			>/dev/stderr echo "  - pass personal/${GL_HOST}"
-			>/dev/stderr echo "  - GITLAB_PERSONAL_TOKEN env variable"
-			>/dev/stderr echo "  - $token_file file"
+			{
+				echo "Please provide gitlab token with 'api' permission as one of:"
+				echo "  - pass personal/${GL_HOST}"
+				echo "  - GITLAB_PERSONAL_TOKEN env variable"
+				echo "  - $token_file file"
+			} >&2
 			exit 1
 		fi
 	fi
@@ -128,13 +130,13 @@ function gl-branches-get() {
 
 function gl-branch-create() {
 	# https://docs.gitlab.com/ee/api/branches.html#create-repository-branch
-	&>/dev/stderr echo "Creating branch: $2 (from $3)"
+	>&2 echo "Creating branch: $2 (from $3)"
 	gl-http-request POST "/projects/$(url_encode "$1")/repository/branches?branch=$2&ref=$3"
 }
 
 function gl-branch-delete() {
 	# https://docs.gitlab.com/ee/api/branches.html#delete-repository-branch
-	&>/dev/stderr echo "Deleting branch: $2 ($1)"
+	>&2 echo "Deleting branch: $2 ($1)"
 	gl-http-request DELETE "/projects/$(url_encode "$1")/repository/branches/$2"
 }
 
@@ -156,16 +158,18 @@ function gl-approvals-get() {
 
 function gl-mr-diff() {
 	head=$(2>/dev/null git fetch --no-tags --porcelain "$GL_REMOTE" HEAD | perl -nal -E'say $F[2]')
-	if res=$(git fetch --no-tags --porcelain "$GL_REMOTE" "merge-requests/$1/head" 2>/dev/stdout); then
+	if res=$(git fetch --no-tags --porcelain "$GL_REMOTE" "merge-requests/$1/head" 2>&1); then
 		git show --color=always --pretty=fuller --no-patch 'FETCH_HEAD'
 		echo
 		git diff --color=always --stat "$head...FETCH_HEAD"
 		git diff "$head...FETCH_HEAD"
 	else
-		&>/dev/stderr cat <<< "$res"
-		&>/dev/stderr echo
-		&>/dev/stderr echo "Unable to fetch MR branch: merge-requests/$1/head"
-		&>/dev/stderr echo "    MR might be just empty"
+		{
+			cat <<< "$res"
+			echo
+			echo "Unable to fetch MR branch: merge-requests/$1/head"
+			echo "    MR might be just empty"
+		} >&2
 	fi
 }
 
@@ -191,7 +195,7 @@ function gl-mr-create() {
 
 function gl-mr-merge() {
 	# https://docs.gitlab.com/ee/api/merge_requests.html#merge-a-merge-request
-	&>/dev/stderr echo "Merging MR: $2"
+	>&2 echo "Merging MR: $2"
 	gl-http-request PUT "/projects/$(url_encode "$1")/merge_requests/$2/merge"
 }
 
@@ -247,7 +251,7 @@ function gl-do-bridges-get() {
 }
 
 function gl-do-all-jobs-get() {
-	# >/dev/stderr echo "gl-do-all-jobs-get: $*"
+	# >&2 echo "gl-do-all-jobs-get: $*"
 	gl-do-jobs-get "$1" "$2" "$3"
 	bridges=$(gl-do-bridges-get "$1" "$2" "$3")
 	echo "$bridges"
@@ -286,14 +290,14 @@ function gl-job-run() {
 
 function gl-job-log() {
 	# https://docs.gitlab.com/ee/api/jobs.html#get-a-log-file
-	&>/dev/stderr echo "Fetching logs..."
+	>&2 echo "Fetching logs..."
 	gl-http-request "/projects/$(url_encode "$1")/jobs/$2/trace" \
 		| perl -lpE 's/\r/\n/g'
 }
 
 function gl-job-download-artifacts() {
 	# https://docs.gitlab.com/ee/api/job_artifacts.html#get-job-artifacts
-	&>/dev/stderr echo "Downloading artifacts..."
+	>&2 echo "Downloading artifacts..."
 	gl-http-request "/projects/$(url_encode "$1")/jobs/$2/artifacts" --follow
 }
 

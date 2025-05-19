@@ -51,7 +51,7 @@ function define_histfile() {
 
 		export HISTFILE
 	else
-		echo 'HOSTNAME is undefined, HISTFILE is a default value' &>/dev/stderr
+		echo 'HOSTNAME is undefined, HISTFILE is a default value' >&2
 	fi
 }
 define_histfile

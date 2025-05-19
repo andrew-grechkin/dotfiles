@@ -17,6 +17,6 @@ done
 
 sleep "${wait:-$interval}"
 while ((1)); do
-	&>/dev/stderr curl -fs -XPOST "localhost:${FZF_PORT:-}" --data "reload(${*@Q})"
+	>&2 curl -fs -XPOST "localhost:${FZF_PORT:-}" --data "reload(${*@Q})"
 	sleep "$interval"
 done

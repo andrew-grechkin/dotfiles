@@ -73,7 +73,7 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 		elif [[ "$mode" == "jobs" ]]; then
 			gl-jobs-get "$GL_PROJECT" "$GL_MR" "$GL_PIPELINE"
 		else
-			>/dev/stderr echo "unknown mode: $mode"
+			>&2 echo "unknown mode: $mode"
 			exit 1
 		fi
 	elif [[ -t 1 ]]; then
@@ -93,7 +93,7 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 				--bind="alt-c:execute-silent(source $0; gl-branches-clean '$GL_PROJECT')+reload-sync($FZF_RELOAD_CMD)"
 				--bind="alt-i:execute(source $0; gl-branch-diff {3} ${prettify_diff[*]})"
 				--bind="ctrl-m:execute(gl -b {3})"
-				# --bind="ctrl-x:become(echo {q} | tee >(clipcopy) &>/dev/stderr; cat {+f})"
+				# --bind="ctrl-x:become(echo {q} | tee >(clipcopy) >&2; cat {+f})"
 				--bind="ctrl-x:become(echo -n {+3} | tee >(clipcopy); echo)"
 				--bind="ctrl-y:execute-silent(echo -n {3} | clipcopy)"
 				--header="A-N:new-mr A-R:remove A-c:clear A-i:diff C-x:dump C-y:yank Enter:mr A-b:browse C-l:reload A-p:preview"

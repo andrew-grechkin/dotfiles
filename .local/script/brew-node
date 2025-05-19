@@ -3,7 +3,7 @@
 set -Eeuo pipefail
 
 if [[ ! -x "$HOME/.cache/bin/fnm" ]]; then
-	1>/dev/stderr echo "> installing fnm to $HOME/.cache/bin..."
+	1>&2 echo "> installing fnm to $HOME/.cache/bin..."
 	url="https://github.com/Schniz/fnm/releases/latest/download/fnm-linux.zip"
 
 	curl -Lsf "$url"                        \

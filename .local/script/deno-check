@@ -24,6 +24,6 @@ if [[ "${fix:-}" == '1' ]]; then
 		cat "$@" | deno fmt --ext=ts --indent-width=4 --line-width=120 --prose-wrap=preserve --single-quote=true -
 	fi
 else
-	# deno check          "$@" 2>/dev/stdout
+	# deno check          "$@" 2>&1
 	cat "$@" | deno lint  --ext=ts --json -
 fi

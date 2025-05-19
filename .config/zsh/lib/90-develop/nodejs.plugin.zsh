@@ -137,7 +137,7 @@ END_PACKAGE_JSON
 # => install (if necessary) --------------------------------------------------------------------------------------- {{{1
 
 if [[ ! -x "$HOME/.cache/bin/fnm" ]]; then
-	1>/dev/stderr echo "> first run installing fnm to $HOME/.cache/bin (one time initialization)..."
+	1>&2 echo "> first run installing fnm to $HOME/.cache/bin (one time initialization)..."
 	url="https://github.com/Schniz/fnm/releases/latest/download/fnm-linux.zip"
 
 	curl -Lsf "$url"                        \

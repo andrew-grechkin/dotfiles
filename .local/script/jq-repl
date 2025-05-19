@@ -56,7 +56,7 @@ fzf_cmd=(
 	--bind="ctrl-d:half-page-down,ctrl-u:half-page-up"
 	--bind="ctrl-j:preview-down,ctrl-k:preview-up"
 	--bind="ctrl-m:execute(jq -c$rawi$rawo {q} '$input' | ${prettify[*]} | less)"
-	--bind="ctrl-x:become(q={q}; echo -n jq -c$rawo \"\${q@Q}\" | tee >(clipcopy) >/dev/stderr; echo >/dev/stderr; jq -c$rawo {q} '$input')"
+	--bind="ctrl-x:become(q={q}; echo -n jq -c$rawo \"\${q@Q}\" | tee >(clipcopy) >&2; echo >&2; jq -c$rawo {q} '$input')"
 	--bind="ctrl-y:execute-silent(echo -n {q} | clipcopy)"
 	--bind="down:preview-down,up:preview-up"
 	--bind="end:preview-bottom"

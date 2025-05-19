@@ -3,7 +3,7 @@
 set -Eeuo pipefail
 
 if ! command git rev-parse HEAD &>/dev/null; then
-	echo 'Please run this command in a git repo' > /dev/stderr
+	echo 'Please run this command in a git repo' >&2
 	exit 1
 fi
 
@@ -29,7 +29,7 @@ if ! git merge-base --is-ancestor "$WHAT" "$WHERE"; then
 	exit 0
 fi
 
-echo "The reference $WHAT is reachable from $WHERE" >/dev/stderr
+echo "The reference $WHAT is reachable from $WHERE" >&2
 CURRENT_REF="$(git name-rev --name-only --no-undefined HEAD)"
 TMP_STR="$(tr -dc A-Za-z0-9 </dev/urandom | head -c 8; echo)"
 TMP_BRANCH="check-changes/$TMP_STR"
@@ -71,12 +71,12 @@ fi
 
 DIFF="$(git diff "${DIFF_OPTS[@]}" --patch "$TMP_BRANCH" "$WHERE")"
 if [[ -n "$DIFF" ]]; then
-	echo "But not all changes made in $WHAT are available in $WHERE now" >/dev/stderr
-	echo >/dev/stderr
-	echo "The following changes are overwritten:" >/dev/stderr
+	echo "But not all changes made in $WHAT are available in $WHERE now" >&2
+	echo >&2
+	echo "The following changes are overwritten:" >&2
 	echo "$DIFF"
 	exit 2
 else
-	echo "And all the changes made in $WHAT are available in $WHERE" >/dev/stderr
+	echo "And all the changes made in $WHAT are available in $WHERE" >&2
 	set -x
 fi

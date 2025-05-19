@@ -22,7 +22,7 @@ fi
 
 if [[ $# -eq 0 ]]; then
 	if [[ -z "${URI:-}" ]]; then
-		echo 'Not enough arguments' >/dev/stderr
+		echo 'Not enough arguments' >&2
 		exit 1
 	else
 		VERB_URL+=("$URI")
@@ -88,11 +88,11 @@ else
 	fi
 fi
 
->/dev/stderr echo "portable:"
-{ echo -n "$("${XH[@]}" "${VERB_URL[@]}" "$@" "${OPTS[@]}" --curl)"; echo " -s ${post_process[*]}"; } | tee /dev/stderr | primarycopy
->/dev/stderr echo
+>&2 echo "portable:"
+{ echo -n "$("${XH[@]}" "${VERB_URL[@]}" "$@" "${OPTS[@]}" --curl)"; echo " -s ${post_process[*]}"; } | tee -a /dev/stderr | primarycopy
+>&2 echo
 
 cmd=("${XH[@]}" "${VERB_URL[@]}" "$@" --ignore-stdin "${opts[@]}" "${OPTS[@]}")
 
->/dev/stderr echo "executing:"
-{ echo "$(printf '%q ' "${cmd[@]}")""${post_process[*]}"; echo; } | tee /dev/stderr | bash
+>&2 echo "executing:"
+{ echo "$(printf '%q ' "${cmd[@]}")""${post_process[*]}"; echo; } | tee -a /dev/stderr | bash

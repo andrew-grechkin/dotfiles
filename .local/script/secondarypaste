@@ -14,6 +14,6 @@ if [[ -n "$(command -v xsel)" ]]; then
 elif [[ -n "$(command -v xclip)" ]]; then
 	xclip -o -sel sec 2>/dev/null
 else
-	echo "secondarypaste: xclip/xsel not installed" >/dev/stderr
+	echo "secondarypaste: xclip/xsel not installed" >&2
 	exit 1
 fi

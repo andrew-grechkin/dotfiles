@@ -38,7 +38,7 @@ function maybe_install_perl() {
 	if [[ ! -e "$perl_root/bin/perl" ]]; then
 		# curl -fsSL https://raw.githubusercontent.com/skaji/relocatable-perl/main/perl-install | bash -s "$perl_root"
 		[[ -x "$(command -v bsdtar)" ]] || {
-			>/dev/stderr echo "bsdtar is not found, please install it for your system"
+			>&2 echo "bsdtar is not found, please install it for your system"
 			return 1
 		}
 
@@ -55,7 +55,7 @@ function maybe_install_perl() {
 			| command grep -m 1 -P "^$PERL_VERSION_REQUIRED.*?,$os,$arch,")
 
 		if [[ -z "$first_match" ]]; then
-			>/dev/stderr echo "Failed to match required perl version: $PERL_VERSION_REQUIRED"
+			>&2 echo "Failed to match required perl version: $PERL_VERSION_REQUIRED"
 			return 1
 		fi
 
@@ -68,7 +68,7 @@ function maybe_install_perl() {
 		>/dev/null mkdir -p "$perl_root"
 		curl -fsSL "$perl_url" | bsdtar -xf - --strip-components 1 -C "$perl_root"
 		if [[ ! -f $perl_root/bin/perl ]]; then
-			>/dev/stderr "Failed to install perl"
+			>&2 "Failed to install perl"
 			return 1
 		fi
 

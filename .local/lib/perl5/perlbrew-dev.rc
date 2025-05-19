@@ -109,6 +109,6 @@ if check_prerequisites && maybe_install_perl && maybe_install_modules; then
 	fi
 	(exit 0)
 else
-	echo "Something went wront" >/dev/stderr
+	echo "Something went wrong" >&2
 	(exit 1)
 fi

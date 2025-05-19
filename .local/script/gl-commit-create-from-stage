@@ -15,11 +15,11 @@ while ((1)); do
 	esac
 done
 
-[[ -z "${message:-}"   ]] && { echo "error: message is required" >/dev/stderr; exit 1; }
+[[ -z "${message:-}"   ]] && { echo "error: message is required" >&2; exit 1; }
 
 source "$HOME/.local/lib/shell/gitlab.bash"
 
-[[ -z "${GL_BRANCH:-}" ]] && { echo "error: branch is required"  >/dev/stderr; exit 1; }
+[[ -z "${GL_BRANCH:-}" ]] && { echo "error: branch is required"  >&2; exit 1; }
 
 gl-redefine-vars
 
@@ -29,7 +29,7 @@ else
 	pushd "$GL_ROOT" >/dev/null
 
 	if ! changes="$(git status --porcelain | grep -P '^A|^D|^M')"; then
-		echo 'nothing to do' >/dev/stderr
+		echo 'nothing to do' >&2
 		exit 0
 	fi
 
@@ -45,7 +45,7 @@ else
 	if actions="$(echo "$changes" \
 		| xargs -rn2 bash -c '
 			set -e;
-			[[ "$0" == "D" || -r "$1" ]] || { echo file not found: "$1" >/dev/stderr; exit 2; }
+			[[ "$0" == "D" || -r "$1" ]] || { echo file not found: "$1" >&2; exit 2; }
 			pth="$1"
 			[[ "$0" == "D" ]] && { pth=/dev/null; }
 			jq -nc --arg a "$0" --rawfile content "$pth" --arg file "$1" '\'"$jq_convert"\'

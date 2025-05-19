@@ -11,7 +11,7 @@ function try-source-dev-rc() {
 		if [[ -r "$pth.asc" ]]; then
 			gpg --verify "$pth.asc" "$pth" 2>/dev/null && source "$pth"
 		else
-			>/dev/stderr echo "unable to setup local dev environment: found and skipped unsigned $pth"
+			>&2 echo "unable to setup local dev environment: found and skipped unsigned $pth"
 		fi
 	fi
 }

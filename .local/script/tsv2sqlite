@@ -6,5 +6,5 @@ if [[ -t 0 && -r "$1" ]]; then
 elif [[ ! -t 0 && -n "$1" ]]; then
 	sqlite-utils insert --tsv "$1.db" "$1" -
 else
-	>/dev/stderr echo provide a file or STDIN and a table name
+	>&2 echo provide a file or STDIN and a table name
 fi

@@ -20,5 +20,5 @@ source "$HOME/.local/lib/shell/gitlab.bash"
 gl-redefine-vars
 export -f gl-branch-create
 
-&>/dev/stderr echo "Creating branches: $*"
+>&2 echo "Creating branches: $*"
 printf '%s\n' "$@" | xargs -rI% -P "$GL_JOBS" bash -c "gl-branch-create '$GL_PROJECT' '%' '$target'"

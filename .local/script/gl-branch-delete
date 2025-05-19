@@ -17,5 +17,5 @@ source "$HOME/.local/lib/shell/gitlab.bash"
 gl-redefine-vars
 export -f gl-branch-delete
 
-&>/dev/stderr echo "Deleting branches: $*"
+>&2 echo "Deleting branches: $*"
 printf '%s\n' "$@" | jq -Rr @uri | xargs -rI% -P "$GL_JOBS" bash -c "gl-branch-delete '$GL_PROJECT' '%'"

@@ -7,12 +7,12 @@ git-in-repo || exit 95
 PTH="${*: -1}"
 
 if [[ -z "$PTH" || "$PTH" == '--' || "$PTH" == "$0" ]]; then
-	echo "Provide relative path to file" > /dev/stderr
+	echo "Provide relative path to file" >&2
 	exit 1
 fi
 
 # if [[ ! -e "$PTH" ]]; then
-# 	echo "Path not found: $PTH" > /dev/stderr
+# 	echo "Path not found: $PTH" >&2
 # 	exit 2
 # fi
 

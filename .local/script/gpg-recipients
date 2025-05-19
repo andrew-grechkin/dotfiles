@@ -3,5 +3,5 @@
 set -Eeuo pipefail
 
 {
-	2>/dev/stdout 1>/dev/null exec gpg --list-packets --batch "$@"
+	2>&1 1>/dev/null exec gpg --list-packets --batch "$@"
 } | grep -F 'key, ID' | grep -Po '([[:alnum:]]){16}' | sort -r

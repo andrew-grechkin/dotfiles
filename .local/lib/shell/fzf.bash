@@ -63,7 +63,7 @@ FZF_GIT_DEFAULT_ARGS=(
 	--bind="alt-d:execute( { s=\$($CMD_EXTRACT_COMMIT)..HEAD; echo Explicit diff for \$s; echo; git --no-pager diff --color=always --minimal --patch --stat \$s; } | ${LOG_PAGER[*]})"
 	--bind="alt-i:execute(show-commit \$($CMD_EXTRACT_COMMIT) -- ${OPTIONS[*]} --show-signature | ${LOG_PAGER[*]})"
 	--bind="ctrl-m:become(grep -o '[[:xdigit:]]\{6,\}' {+f} | xargs -rn1 git pcommit | tee >(clipcopy))"
-	--bind="ctrl-x:become([[ -n {q} ]] && echo {q} | tee >(clipcopy) &>/dev/stderr; cat {+f})"
+	--bind="ctrl-x:become([[ -n {q} ]] && echo {q} | tee >(clipcopy) >&2; cat {+f})"
 	--bind="ctrl-y:execute-silent($CMD_EXTRACT_COMMIT | xargs -r git pcommit | trim-whole | clipcopy)"
 	--delimiter=" "
 	--header-lines=0

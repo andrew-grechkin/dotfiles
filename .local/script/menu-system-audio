@@ -12,7 +12,7 @@ mpris_svc=\$(busctl --user -j list \
 
 busctl --user -j get-property \$mpris_svc $mpris_obj $mpris_if Volume | jq -r .data \
     | perl -M List::Util=min -lnE 'say; say min(1.0, \$_ + 0.05)' \
-    | tee >(echo "current volume: \$(cat)" >/dev/stderr) \
+    | tee >(echo "current volume: \$(cat)" >&2) \
     | xargs -rI% busctl --user -j set-property \$mpris_svc $mpris_obj $mpris_if Volume d %
 EO_MPRIS_RAISE
 
@@ -23,7 +23,7 @@ mpris_svc=\$(busctl --user -j list \
 
 busctl --user -j get-property \$mpris_svc $mpris_obj $mpris_if Volume | jq -r .data \
     | perl -M List::Util=max -lnE 'say; say max(0.0, \$_ - 0.05)' \
-    | tee >(echo "current volume: \$(cat)" >/dev/stderr) \
+    | tee >(echo "current volume: \$(cat)" >&2) \
     | xargs -rI% busctl --user -j set-property \$mpris_svc $mpris_obj $mpris_if Volume d %
 EO_MPRIS_LOWER
 

@@ -22,7 +22,7 @@ gl-redefine-vars
 export -f gl-mr-approve
 export -f gl-mr-merge
 
-&>/dev/stderr echo "Merging MRs (sleep $sleep_sec): $*"
+>&2 echo "Merging MRs (sleep $sleep_sec): $*"
 
 # flag that tail is being executed and sleep is required
 flag="$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"

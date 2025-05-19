@@ -3,7 +3,7 @@
 set -Eeuo pipefail
 
 if [[ ! -x "$HOME/.cache/bin/dvm" ]]; then
-	1>/dev/stderr echo "> installing dvm to $HOME/.cache/bin..."
+	1>&2 echo "> installing dvm to $HOME/.cache/bin..."
 	url="https://github.com/justjavac/dvm/releases/download/v1.9.3/dvm-x86_64-unknown-linux-gnu.zip"
 
 	curl -Lsf "$url"                        \

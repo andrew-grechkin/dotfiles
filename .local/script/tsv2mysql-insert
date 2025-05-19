@@ -15,7 +15,7 @@ while [ : ]; do
 	esac
 done
 
-[[ -z "${table:-}" ]] && { echo "error: table is required" >/dev/stderr; exit 1; }
+[[ -z "${table:-}" ]] && { echo "error: table is required" >&2; exit 1; }
 
 cat "$@" \
 	| jq --null-input --raw-input --raw-output --unbuffered --arg table "$table" --arg update "${update:-}" '

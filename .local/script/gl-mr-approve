@@ -20,5 +20,5 @@ source "$HOME/.local/lib/shell/gitlab.bash"
 gl-redefine-vars
 export -f gl-mr-approve
 
-&>/dev/stderr echo "Approving MRs: $*"
+>&2 echo "Approving MRs: $*"
 printf '%s\n' "$@" | jq -Rr @uri | xargs -rI% bash -c "echo Approving %; gl-mr-approve '$GL_PROJECT' '%' '$action'"

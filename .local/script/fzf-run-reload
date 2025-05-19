@@ -22,9 +22,9 @@ if [[ -n "${FZF_PORT:-}" && -n "${FZF_RELOAD_CMD:-}" ]]; then
 	reload="$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
 	printf "reload(%s)\n" "$FZF_RELOAD_CMD" >"$reload"
 	reloading=$(cat <<-EO_RELOADING
-		&>/dev/stderr echo
-		&>/dev/stderr echo reloading fzf...
-		&>/dev/stderr curl -s -XPOST localhost:${FZF_PORT:-} --data "@$reload"
+		>&2 echo
+		>&2 echo reloading fzf...
+		>&2 curl -s -XPOST localhost:${FZF_PORT:-} --data "@$reload"
 		EO_RELOADING
 	)
 fi

@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-xargs -rI{} bash -c ">/dev/stderr eval ${*@Q} && echo {}"
+xargs -rI{} bash -c ">&2 eval ${*@Q} && echo {}"
 exit 0
