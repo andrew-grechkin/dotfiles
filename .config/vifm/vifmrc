@@ -130,8 +130,8 @@ command! flat!   :!fd -H0t d %a | perl -plE 'INIT { $/ = "\0"}; s/\R/\\n/g' | so
 " create
 command! take    :mkdir %a | cd %a
 command! ln      ln %f:p %D
-command! cp      tsp cp -av --sparse=auto --reflink=auto -- %f:p %D/
-command! cpl     tsp cp -av --link                       -- %f:p %D/
+command! cp      tsp cp -av --sparse=auto --reflink=auto -- %f:p %D/ %i &
+command! cpl     tsp cp -av --link                       -- %f:p %D/ %i &
 
 " execute
 command! run    !! ./%c
@@ -156,15 +156,15 @@ command! gz     tsp gzip -v                     %c:p %i &
 command! p      tsp archive-create              %f   %i &
 command! z      tsp 7z a %c.7z                  %f   %i &
 
-" textify
-command! armor  tsp gpg --enarmor %c:p %i &
-command! base   base64 -w 120 %c:p | tee >(>%c.base64) | clipcopy %i &
-
 " repack
-command! rep    tsp archive-convert %c:p %i &
+command! rep    tsp archive-convert        %c:p %i &
 
 " unpack
 command! unp    tsp archive-extract --here %c:p %i &
+
+" textify
+command! armor  tsp gpg --enarmor          %c:p %i &
+command! base   base64 -w 120 %c:p | tee >(>%c.base64) | clipcopy %i &
 
 " checksum
 command! md     find . -maxdepth 1 -type f -print0 | sort -z | grep -Pvz '\dsum$' | xargs -0r md5sum  -b > .md5sum
@@ -353,8 +353,8 @@ filextype !<image/vnd.djvu*><image/*>
 	\ {View in gpicview}
 	\ gpicview %c:p %i &,
 fileviewer !<image/vnd.djvu*><image/*>
-    \ chafa --clear -c 240 --view-size %pwx%ph -f symbols --polite on %c:p,
-    \ viu -t -w %pw -h %ph %c:p,
+	\ chafa --clear -c 240 --view-size %pwx%ph -f symbols --polite on %c:p,
+	\ viu -t -w %pw -h %ph %c:p,
 	\ mediainfo %c:p,
 	\ identify -verbose %c:p,
 
@@ -412,7 +412,7 @@ filetype {CMakeLists.txt}
 
 filetype <application/x-ndjson>,{*.jsonl}
 	\ {View}
-	\ json2tsv %c:p | tsv-show,
+	\ json2tsv %c:p | tsv-show --paging=always,
 	\ {Convert -> sqlite}
 	\ sqlite-utils insert --nl %c:r.db %c:r %c:p,
 	\ {Compact json}
@@ -637,28 +637,32 @@ filetype <application/x-tar>
 	\ {Compress xz}
 	\ tsp xz -v %c:p %i &,
 filetype /[.](tar[.])?br$/
-	\ {Decompress brotli}
+	\ {Decompress}
 	\ tsp brotli -d --rm %c:p %i &,
 filetype <application/x-bzip2*>
-	\ {Decompress bzip2}
+	\ {Decompress}
 	\ tsp bzip2 -dv %c:p %i &,
 filetype <application/lz4,application/x-lz4-compressed-tar>
-	\ {Decompress lz4}
+	\ {Inspect}
+	\ lz4 --list %c %m,
+	\ {Decompress}
 	\ tsp lz4 -d --rm %c:p %i &,
 filetype <application/lzma,application/x-lzma-compressed-tar>
-	\ {Decompress lzma}
+	\ {Decompress}
 	\ tsp lzma -d %c:p %i &,
 filetype <application/xz,application/x-xz-compressed-tar>
-	\ {Decompress xz}
+	\ {Inspect}
+	\ xz -l %c %m,
+	\ {Decompress}
 	\ tsp xz -dv %c:p %i &,
 filetype <application/zstd,application/x-zstd-compressed-tar>
-	\ {Decompress zstd}
+	\ {Decompress}
 	\ tsp zstd -d --rm %c:p %i &,
 
 filetype <application/gzip,application/x-compressed-tar>
-	\ {Inspect gzip}
+	\ {Inspect}
 	\ gzip -l %c %m,
-	\ {Decompress gzip}
+	\ {Decompress}
 	\ tsp gunzip -v %c:p %i &,
 fileviewer <application/gzip>
 	\ gzip -l %c,
@@ -732,10 +736,10 @@ filetype <inode/directory>
 	\ mpv --no-osc --term-osd=force --no-audio-display --vid=no -- %c:p %s,
 	\ {Compress (foreground) as tar.zstd}
 	\ tar -c %f | pv | zstd > %c.tzst,
-	\ {Compress (foreground) as sqlar}
-	\ sqlite3 %c:r.sqlar -Acv %f,
 	\ {Compress (foreground) as tar}
-	\ tar -c %f | pv > %f.tar,
+	\ tar -c %f | pv > %c.tar,
+	\ {Compress (background) as sqlar}
+	\ tsp sqlite3 %c:r.sqlar -Acv %f,
 fileviewer <inode/directory>
 	\ show-dir %c:p,
 
@@ -762,6 +766,10 @@ set vifminfo=bmarks,bookmarks,chistory,dhistory,dirstack,fhistory,phistory,regis
 " filter! /^.*\.(lo|o|d|class|py[co])$|.*~$/
 
 " => mappings ----------------------------------------------------------------------------------------------------- {{{1
+
+" disable undo keybinding
+nnoremap u <nop>
+vnoremap u <nop>
 
 nnoremap L :edit %"c %n<CR>
 
@@ -823,25 +831,25 @@ nnoremap <c-@> :sync<CR>
 nnoremap [t    :tabprev<CR>
 nnoremap ]t    :tabnext<CR>
 
-nnoremap <silent> rp :!tsp rsync-copy --info=name1               %f:p %D/<CR>
-vnoremap <silent> rp :!tsp rsync-copy --info=name1               %f:p %D/<CR>
-nnoremap <silent> ru :!tsp rsync-copy --info=name1 -u            %f:p %D/<CR>
-vnoremap <silent> ru :!tsp rsync-copy --info=name1 -u            %f:p %D/<CR>
-nnoremap <silent> rs :!tsp rsync-copy --info=name1 -uXx --delete %f:p %D/<CR>
-vnoremap <silent> rs :!tsp rsync-copy --info=name1 -uXx --delete %f:p %D/<CR>
-nnoremap <silent> rP :!tsp rsync-move --info=name1 %f:p %D/ && tsp -d rmdir-recursive %f<CR>
-vnoremap <silent> rP :!tsp rsync-move --info=name1 %f:p %D/ && tsp -d rmdir-recursive %f<CR>
+nnoremap <silent> rp :!tsp rsync-copy --info=name1               %f:p %D/ %i &<CR>
+vnoremap <silent> rp :!tsp rsync-copy --info=name1               %f:p %D/ %i &<CR>
+nnoremap <silent> ru :!tsp rsync-copy --info=name1 -u            %f:p %D/ %i &<CR>
+vnoremap <silent> ru :!tsp rsync-copy --info=name1 -u            %f:p %D/ %i &<CR>
+nnoremap <silent> rs :!tsp rsync-copy --info=name1 -uXx --delete %f:p %D/ %i &<CR>
+vnoremap <silent> rs :!tsp rsync-copy --info=name1 -uXx --delete %f:p %D/ %i &<CR>
+nnoremap <silent> rP :!tsp rsync-move --info=name1 %f:p %D/ && tsp -d rmdir-recursive %f %i &<CR>
+vnoremap <silent> rP :!tsp rsync-move --info=name1 %f:p %D/ && tsp -d rmdir-recursive %f %i &<CR>
 
-nnoremap RD :!rsync-diff --checksum                     %f:p %D/<CR>
-vnoremap RD :!rsync-diff --checksum                     %f:p %D/<CR>
-nnoremap Rd :!rsync-diff                                %f:p %D/<CR>
-vnoremap Rd :!rsync-diff                                %f:p %D/<CR>
-nnoremap Rp :!rsync-copy --info=progress2               %f:p %D/<CR>
-vnoremap Rp :!rsync-copy --info=progress2               %f:p %D/<CR>
-nnoremap Ru :!rsync-copy --info=progress2 -u            %f:p %D/<CR>
-vnoremap Ru :!rsync-copy --info=progress2 -u            %f:p %D/<CR>
-nnoremap Rs :!rsync-copy --info=progress2 -uXx --delete %f:p %D/<CR>
-vnoremap Rs :!rsync-copy --info=progress2 -uXx --delete %f:p %D/<CR>
+nnoremap RD :!rsync-diff --checksum                     %f:p %D/ %i &<CR>
+vnoremap RD :!rsync-diff --checksum                     %f:p %D/ %i &<CR>
+nnoremap Rd :!rsync-diff                                %f:p %D/ %i &<CR>
+vnoremap Rd :!rsync-diff                                %f:p %D/ %i &<CR>
+nnoremap Rp :!rsync-copy --info=progress2               %f:p %D/ %i &<CR>
+vnoremap Rp :!rsync-copy --info=progress2               %f:p %D/ %i &<CR>
+nnoremap Ru :!rsync-copy --info=progress2 -u            %f:p %D/ %i &<CR>
+vnoremap Ru :!rsync-copy --info=progress2 -u            %f:p %D/ %i &<CR>
+nnoremap Rs :!rsync-copy --info=progress2 -uXx --delete %f:p %D/ %i &<CR>
+vnoremap Rs :!rsync-copy --info=progress2 -uXx --delete %f:p %D/ %i &<CR>
 
 " => fzf integration (ctrl-t, ctrl-p) ----------------------------------------------------------------------------- {{{1
 

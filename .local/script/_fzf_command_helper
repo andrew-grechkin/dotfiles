@@ -4,7 +4,8 @@ set -Euo pipefail
 
 {
 	if command git rev-parse HEAD &>/dev/null; then
-		cat <(git ls-files -c --exclude-standard --recurse-submodules) <(git ls-files -o --exclude-standard)
+		git ls-files -c --exclude-standard --recurse-submodules
+		git ls-files -o --exclude-standard
 	else
 		_fzf_compgen_helper . 'f'
 	fi

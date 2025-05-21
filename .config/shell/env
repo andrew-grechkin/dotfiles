@@ -37,4 +37,9 @@ append_path "${DIRS[@]}"
 
 export FZF_DEFAULT_OPTS_FILE="$XDG_CONFIG_HOME/fzfrc"
 
+if [[ -z "${FNM_DIR:-}" && -x $(command -v fnm) ]]; then
+	export FNM_DIR="$XDG_STATE_HOME/fnm"
+	eval "$(fnm env --shell bash)"
+fi
+
 export PATH

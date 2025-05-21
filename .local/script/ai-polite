@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+req='Just return the answer without any additional code examples.
+Only wording without quotes and your greeting message.
+Do not add anything from you.
+Keep all provided urls and other links.
+Rephrase the following phrase in a polite form'
+
+if [[ ! -t 0 ]]; then
+	echo "$req: $(</dev/stdin)"
+elif [[ -n "$*" ]]; then
+	echo "$req: $*"
+else
+	echo "$req: $(clippaste)"
+fi | ai-request | perl -gpE 's/(\R)+$/$1/' | tee >(clipcopy)
+
+&>/dev/null notify-send -i dialog-infomation 'AI request finished' 'Generated polite response' || true

@@ -137,73 +137,89 @@ function _fzf_complete_kubectl_post() {
 
 # => git completion ----------------------------------------------------------------------------------------------- {{{1
 
-function fzf-bks-clusters-widget()       LBUFFER+=$(bks --tui)
-function fzf-bks-namespaces-widget()     LBUFFER+=$(bks --tui --mode namespaces | lines2args)
-function fzf-git-branches-widget()       LBUFFER+=$(fzf-git-branches --all      | lines2args)
-function fzf-git-files-changed-widget()  LBUFFER+=$(fzf-git-files-changed       | lines2args)
-function fzf-git-files-widget()          LBUFFER+=$(fzf-git-files               | lines2args)
-function fzf-git-hashes-all-widget()     LBUFFER+=$(fzf-git-hashes-all          | lines2args)
-function fzf-git-hashes-widget()         LBUFFER+=$(fzf-git-log-branch-graph    | lines2args)
-function fzf-git-log-all-graph-widget()  LBUFFER+=$(fzf-git-log-all-graph       | lines2args)
-function fzf-git-remotes-widget()        LBUFFER+=$(fzf-git-remotes             | lines2args)
-function fzf-git-search-file-widget()    LBUFFER+=$(fzf-git-search-file         | lines2args)
-function fzf-git-search-message-widget() LBUFFER+=$(fzf-git-search-message      | lines2args)
-function fzf-git-search-widget()         LBUFFER+=$(fzf-git-search              | lines2args)
-function fzf-git-tags-widget()           LBUFFER+=$(fzf-git-tags                | lines2args)
-function open-current-script-widget() {
-    local tokens
-    tokens=("${(@f)$( args2lines <<< "$LBUFFER" )}")
+function widget-fzf-bks-clusters()       LBUFFER+=$(unset REPORTTIME; bks --tui)
+function widget-fzf-bks-namespaces()     LBUFFER+=$(unset REPORTTIME; bks --tui --mode namespaces | lines2args)
+function widget-fzf-git-branches()       LBUFFER+=$(unset REPORTTIME; fzf-git-branches --all      | lines2args)
+function widget-fzf-git-files-changed()  LBUFFER+=$(unset REPORTTIME; fzf-git-files-changed       | lines2args)
+function widget-fzf-git-files()          LBUFFER+=$(unset REPORTTIME; fzf-git-files               | lines2args)
+function widget-fzf-git-hashes-all()     LBUFFER+=$(unset REPORTTIME; fzf-git-hashes-all          | lines2args)
+function widget-fzf-git-hashes()         LBUFFER+=$(unset REPORTTIME; fzf-git-log-branch-graph    | lines2args)
+function widget-fzf-git-log-all-graph()  LBUFFER+=$(unset REPORTTIME; fzf-git-log-all-graph       | lines2args)
+function widget-fzf-git-remotes()        LBUFFER+=$(unset REPORTTIME; fzf-git-remotes             | lines2args)
+function widget-fzf-git-search-file()    LBUFFER+=$(unset REPORTTIME; fzf-git-search-file         | lines2args)
+function widget-fzf-git-search-message() LBUFFER+=$(unset REPORTTIME; fzf-git-search-message      | lines2args)
+function widget-fzf-git-search()         LBUFFER+=$(unset REPORTTIME; fzf-git-search              | lines2args)
+function widget-fzf-git-tags()           LBUFFER+=$(unset REPORTTIME; fzf-git-tags                | lines2args)
+function widget-open-current-script() {
+	local tokens
+	tokens=("${(@f)$( args2lines <<< "$LBUFFER" )}")
 
-    if [[ -n "${tokens[-1]}" ]]; then
-        local files file real_path
-        files=( "${tokens[-1]}" "$(command -v ${tokens[-1]})")
+	if [[ -n "${tokens[-1]}" ]]; then
+		local files file real_path
 
-        for file in "${files[@]}"; do
-            if [[ -r "$file" ]]; then
-                real_path=$(realpath "$file")
-                if [[ "$(file -bi "$real_path" | sed 's|.*charset=||')" != "binary" ]]; then
-                    "$VISUAL" "$file"
-                else
-                    show-file "$file" | "${PAGER:-less}"
-                fi
-            fi
-        done
-    fi
+		if tp="$(type "${tokens[-1]}")"; then
+			if echo "$tp" | grep -F 'reserved word' &>/dev/null; then
+				echo "$tp" | "${PAGER:-less}"
+				return
+			elif echo "$tp" | grep -F 'alias for' &>/dev/null; then
+				echo "$tp" | "${PAGER:-less}"
+				return
+			elif echo "$tp" | grep -F 'shell function' &>/dev/null; then
+				{ echo "$tp"; which "${tokens[-1]}"; } | "${PAGER:-less}"
+				return
+			fi
+		fi
+
+		files=( "${tokens[-1]}" "$(command -v ${tokens[-1]})")
+
+		for file in "${files[@]}"; do
+			if [[ -r "$file" ]]; then
+				real_path=$(realpath "$file")
+				if [[ "$(file -bi "$real_path" | sed 's|.*charset=||')" != "binary" ]]; then
+					"$VISUAL" "$file"
+					break
+				else
+					show-file "$file" | "${PAGER:-less}"
+					break
+				fi
+			fi
+		done
+	fi
 }
 
-zle -N fzf-bks-clusters-widget
-zle -N fzf-bks-namespaces-widget
-zle -N fzf-git-branches-widget
-zle -N fzf-git-files-changed-widget
-zle -N fzf-git-files-widget
-zle -N fzf-git-hashes-all-widget
-zle -N fzf-git-hashes-widget
-zle -N fzf-git-log-all-graph-widget
-zle -N fzf-git-remotes-widget
-zle -N fzf-git-search-file-widget
-zle -N fzf-git-search-message-widget
-zle -N fzf-git-search-widget
-zle -N fzf-git-tags-widget
-zle -N open-current-script-widget
+zle -N widget-fzf-bks-clusters
+zle -N widget-fzf-bks-namespaces
+zle -N widget-fzf-git-branches
+zle -N widget-fzf-git-files-changed
+zle -N widget-fzf-git-files
+zle -N widget-fzf-git-hashes-all
+zle -N widget-fzf-git-hashes
+zle -N widget-fzf-git-log-all-graph
+zle -N widget-fzf-git-remotes
+zle -N widget-fzf-git-search-file
+zle -N widget-fzf-git-search-message
+zle -N widget-fzf-git-search
+zle -N widget-fzf-git-tags
+zle -N widget-open-current-script
 
-bindkey ';;'  fzf-git-files-widget
-bindkey ';H'  fzf-git-hashes-all-widget
-bindkey ';c'  fzf-bks-clusters-widget
-bindkey ';f'  fzf-git-files-changed-widget
-bindkey ';g'  fzf-git-log-all-graph-widget
-bindkey ';h'  fzf-git-hashes-widget
-bindkey ';j'  fzf-git-branches-widget
-bindkey ';n'  fzf-bks-namespaces-widget
-bindkey ';o'  open-current-script-widget
-bindkey ';r'  fzf-git-remotes-widget
-bindkey ';sf' fzf-git-search-file-widget
-bindkey ';sm' fzf-git-search-message-widget
-bindkey ';ss' fzf-git-search-widget
-bindkey ';t'  fzf-git-tags-widget
+bindkey ';;'  widget-fzf-git-files
+bindkey ';H'  widget-fzf-git-hashes-all
+bindkey ';c'  widget-fzf-bks-clusters
+bindkey ';f'  widget-fzf-git-files-changed
+bindkey ';g'  widget-fzf-git-log-all-graph
+bindkey ';h'  widget-fzf-git-hashes
+bindkey ';j'  widget-fzf-git-branches
+bindkey ';n'  widget-fzf-bks-namespaces
+bindkey ';o'  widget-open-current-script
+bindkey ';r'  widget-fzf-git-remotes
+bindkey ';sf' widget-fzf-git-search-file
+bindkey ';sm' widget-fzf-git-search-message
+bindkey ';ss' widget-fzf-git-search
+bindkey ';t'  widget-fzf-git-tags
 
 # => context completion ------------------------------------------------------------------------------------------- {{{1
 
-function fzf-detect-widget() {
+function widget-fzf-detect() {
 	setopt local_options ksh_glob
 	case "$LBUFFER" in
 		git+( )@(show)*( ))
@@ -261,10 +277,10 @@ function fzf-detect-widget() {
 	fi
 }
 
-zle -N fzf-detect-widget
+zle -N widget-fzf-detect
 
 # bind to alt-space
-bindkey '^[ ' fzf-detect-widget
+bindkey '^[ ' widget-fzf-detect
 
 # => completion overrides ----------------------------------------------------------------------------------------- {{{1
 

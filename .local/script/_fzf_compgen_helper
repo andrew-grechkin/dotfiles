@@ -2,17 +2,17 @@
 
 set -Euo pipefail
 
-WD="${1/#\~/$HOME}"
+wd="${1/#\~/$HOME}"
 
-IGNORE_FILE=$(mktemp -u)
+ignore_file=$(mktemp -u)
 
 function finish {
-	rm -f "$IGNORE_FILE"
+	rm -f "$ignore_file"
 }
 trap finish EXIT
 
-cat ~/.config/fd/ignore >> "$IGNORE_FILE"
-cat >> "$IGNORE_FILE" <<END
+cat ~/.config/fd/ignore >> "$ignore_file"
+cat >> "$ignore_file" <<EO_IGNORE
 **/.build/
 **/.cache/
 **/.cargo/
@@ -37,13 +37,13 @@ cat >> "$IGNORE_FILE" <<END
 **/share/virtualenv/
 **/slib/
 **/venv/
-END
+EO_IGNORE
 
 {
-	CMD1=(fd -Lapu --type "$2" --ignore-file="$IGNORE_FILE" --search-path="$WD")
-	CMD2=(find "$WD" -type "$2" -printf '%P\n')
-	FILT=(grep -v -F '.git/')
+	cmd1=(fd -Lapu --type "$2" --ignore-file="$ignore_file" --search-path="$wd")
+	cmd2=(find "$wd" -type "$2" -printf '%P\n')
+	filt=(grep -v -F '.git/')
 
-	"${CMD1[@]}" \
-		|| "${CMD2[@]}" | "${FILT[@]}"
+	"${cmd1[@]}" \
+		|| "${cmd2[@]}" | "${filt[@]}"
 } 2>/dev/null

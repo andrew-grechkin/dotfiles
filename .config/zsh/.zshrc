@@ -50,9 +50,9 @@ DIRSTACK['size']=20
 # https://thevaluable.dev/zsh-completion-guide-examples/
 fpath=("$ZDOTDIR/completion" "${fpath[@]}")
 
-FILES+=("$ZDOTDIR/lib"/*.zsh)
-FILES+=("$ZDOTDIR/lib"/**/*.plugin.zsh)
-FILES+=("$ZDOTDIR/lib"/**/*.theme.zsh)
+FILES+=("$ZDOTDIR/lib"/*.zsh(N))
+FILES+=("$ZDOTDIR/lib"/**/*.plugin.zsh(N))
+FILES+=("$ZDOTDIR/lib"/**/*.theme.zsh(N))
 
 [[ -d "$XDG_DATA_HOME/3rdparty" ]] && [[ -n "$(find -H $XDG_DATA_HOME/3rdparty -maxdepth 3 -name '*.plugin.zsh' -print -quit)" ]] && {
 	FILES+=("$XDG_DATA_HOME/3rdparty"/**/*.plugin.zsh)

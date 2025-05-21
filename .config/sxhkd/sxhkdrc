@@ -44,10 +44,10 @@ f + super + ctrl + shift
 {h,j,k,l} + super
 	bspc node -f {west,south,north,east}
 # preselect the direction
-{h,j,k,l} + super + shift
+{h,j,k,l} + super + ctrl
 	bspc node -p {west,south,north,east}
 # move the node in the given direction
-{h,j,k,l} + super + ctrl
+{h,j,k,l} + super + shift
 	bspc node -s {west,south,north,east}
 k + super + ctrl + shift
 	xkill
@@ -58,7 +58,7 @@ l + super + ctrl + shift
 z + super + ctrl
 	bspc node -t "~fullscreen"
 x + super + ctrl
-	xprop > /tmp/xprop.log
+	xprop > "${XDG_RUNTIME_DIR}/xprop.log"
 # # swap the current node and the biggest window
 # b + super + ctrl
 # 	bspc node -s biggest.window

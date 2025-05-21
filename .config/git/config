@@ -84,10 +84,12 @@
 	bname = branch --show-current
 	; brname        = !"f(){ git rname \"${@:-HEAD}\" 2>/dev/null | grep -Po \"(?<=\\bremotes/).+$\"; }; f"
 
-	# detect current remote name by branch in .git/config
-	current-remote   = !"f(){ git config --local --get \"branch.$(git pbranch \"${@:-HEAD}\").remote\" 2>/dev/null; }; f"
 	# print upstream
-	current-upstream = rev-parse --abbrev-ref --symbolic-full-name @{upstream}
+	current-upstream = rev-parse --symbolic-full-name @{upstream}
+	# detect current remote name by current upstream
+	current-remote   = !"f(){ git current-upstream | perl -pE 's{^refs\\/remotes\\/(.+?)\\/.+}{\\1}x'; }; f"
+	; # detect current remote name by branch in .git/config
+	; current-remote   = !"f(){ git config --local --get \"branch.$(git pbranch \"${@:-HEAD}\").remote\" 2>/dev/null; }; f"
 
     author-date = show -s --format=%aI
     commit-date = show -s --format=%cI

@@ -65,10 +65,11 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 			--bind="alt-c:become(klipper-items-clear)"
 			--bind="alt-enter:become(klipper-item-get {1} | jq -j | primarycopy)"
 			--bind="alt-i:execute(klipper-item-get {1} | jq -j | bat --color always --style numbers,grid --paging always --wrap never)"
+			--bind="alt-r:become(klipper-item-get {1} | jq -j | setsid -f ai-polite &>/dev/null)"
 			--bind="alt-s:become(klipper-item-get {1} | jq -j | secondarycopy)"
 			--bind="ctrl-m:become(klipper-item-get {1} | jq -j | clipcopy)"
 			--bind="ctrl-y:become(klipper-item-get {1} | jq -j | clipcopy)"
-			--header='A-c:clear A-i:inspect Enter:select A-p:preview C-l:reload'
+			--header='A-c:clear A-i:inspect A-r:polite Enter:select A-p:preview C-l:reload'
 			--preview-window="right:40%:border-left:nowrap:nohidden"
 			--preview="klipper-item-get {1} | jq -j | bat --color always --style plain"
 			--prompt="clipboard history > "

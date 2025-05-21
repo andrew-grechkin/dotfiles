@@ -5,7 +5,7 @@ set -Eeuo pipefail
 fzf_cmd=(
 	fzf
 	--ansi
-	--bind="enter:become(exec 2>>/tmp/$(basename "$0").log; echo \</dev/null {2..} | tee -a /dev/stderr | bash)"
+	--bind="enter:become(exec 2>>${XDG_RUNTIME_DIR}/$(basename "$0").log; echo \</dev/null {2..} | tee -a /dev/stderr | bash)"
 	--bind='ctrl-y:execute-silent(echo -n {2..} | clipcopy)'
 	--delimiter=$'\u0009'
 	--no-multi

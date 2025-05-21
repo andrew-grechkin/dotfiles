@@ -49,12 +49,15 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 			--preview="if [[ {3} == 'installed' ]]; then cat <(pacman -Qi {1}) <(pacman -Ql {1} | awk '{print \$2}'); else cat <(pacman -Si {1}) <(pacman -Fl {1} | awk '{print \$2}'); fi"
 			--preview-window="right:50%:border-left:wrap:nohidden,<55(hidden)"
 			--prompt="pacman > "
+			--with-nth="3.."
 		)
 		"$0" | fzf-exec-multi "${fzf_args[@]}"
 	else
 		source "$HOME/.local/lib/shell/data-processing.bash"
 
 		jq_fields=(
+			"_id;\(.name)"
+			'_url;\("https://aur.archlinux.org/packages/\(.name)")'
 			"name;\(.name)"
 			"explicit;\(if .explicit then \"explicit\" else \"\" end);yellow"
 			"installed;\(if .installed then \"installed\" else \"\" end);purple"

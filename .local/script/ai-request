@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+if [[ -t 0 && -z "$*" ]]; then
+	echo "Pass a request to AI as a first option" >&2
+	exit 1
+fi
+
+markdown='auto'
+
+args=$(getopt --name="$0" --options 'f:m' --longoptions 'file:,markdown' -- "$@")
+eval set -- "$args"
+
+chat_args=(--silent)
+
+while ((1)); do
+	case "$1" in
+		-f | --file) chat_args+=(--context-file="$2"); shift 2 ;;
+		-m | --markdown) markdown="always"; shift ;;
+		--) shift; break ;;
+	esac
+done
+
+# if [[ -x "$(command -v ollama)" ]] && ollama ps | grep 'codellama' &>/dev/null; then
+# 	cat | { lines-join; echo; } | tee -a /dev/stderr | ollama run codellama
+# 	exit
+# fi
+
+if [[ -t 0 ]]; then
+	cody chat "${chat_args[@]}" -m "$*" 2>/dev/null
+else
+	cody chat "${chat_args[@]}" --stdin 2>/dev/null
+fi \
+	| if [[ "$markdown" == "always" ]] || [[ "$markdown" == "auto" && -t 1 ]]; then
+	glow -p
+else
+	cat
+fi

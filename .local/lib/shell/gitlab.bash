@@ -124,7 +124,7 @@ function gl-branches-get() {
 		gl-http-request "/projects/$(url_encode "$1")/repository/branches/$(url_encode "$2")" \
 			| jq '[.]'
 	else
-		gl-http-request "/projects/$(url_encode "$1")/repository/branches?per_page=$GL_PER_PAGE"
+		gl-http-get-all-pages "/projects/$(url_encode "$1")/repository/branches?per_page=$GL_PER_PAGE"
 	fi
 }
 

@@ -2,17 +2,17 @@
 
 set -Eeuo pipefail
 
-[[ -r "$1" ]] && exit 1
+[[ -r "$1" ]] || {
+	{
+		echo '#!/usr/bin/env -S perl -CALS'
+		echo
+		echo 'use v5.40;'
+		echo 'use experimental qw(class declared_refs defer refaliasing);'
+		echo
+		echo '__END__'
+	} >> "$1"
 
-{
-	echo '#!/usr/bin/env -S perl -CALS'
-	echo
-	echo 'use v5.40;'
-	echo 'use experimental qw(class declared_refs defer refaliasing);'
-	echo
-	echo '__END__'
-} >> "$1"
-
-chmod a+x "$1"
+	chmod a+x "$1"
+}
 
 "${VISUAL:-vim}" "$1"
