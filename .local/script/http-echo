@@ -22,7 +22,7 @@ use Getopt::Long qw(:config auto_version bundling no_ignore_case);
 use Mojo::JSON           qw(encode_json);
 use Mojo::Server::Daemon qw();
 
-use constant {'DEFAULT_PORT' => 3456};
+use constant { 'DEFAULT_PORT' => 3456 };
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1
 
@@ -32,17 +32,19 @@ my $repeat = $ENV{'HTTP_ECHO_REPEAT'} // 0;
 my $port   = $ENV{'HTTP_ECHO_PORT'}   // DEFAULT_PORT();
 
 GetOptions(
-    'port|p=s' => \$port,                                                      # listening port
-    'repeat|r' => \$repeat,                                                    # continue listening after first request processed
+    'port|p=s' => \$port,      # listening port
+    'repeat|r' => \$repeat,    # continue listening after first request processed
 ) or die "Unable to process command line options\n";
+
+use constant { 'STATUS_REDIRECT' => 301 };
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1
 
 sub main() {
-    my $daemon = Mojo::Server::Daemon->new(listen => ["http://*:$port"], silent => 1);
+    my $daemon = Mojo::Server::Daemon->new( listen => ["http://*:$port"], silent => 1 );
 
     $daemon->unsubscribe('request')->on(
-        request => sub ($daemon, $tx) {
+        request => sub ( $daemon, $tx ) {
             $tx->on(
                 finish => sub ($tx) {
                     unless ($repeat) {
@@ -54,22 +56,39 @@ sub main() {
 
             my $req = $tx->req;
 
-            my $data = {
+            my %data = (
                 body    => $req->json || $req->body_params->to_hash,
                 headers => $req->headers->to_hash,
                 method  => $req->method,
                 path    => $req->url->path->to_string,
                 query   => $req->url->query->to_hash,
-            };
+            );
 
-            my $body = encode_json($data);
+            if ( $data{path} =~ m{/redirect$}x ) {
+                my $location = '/redirected';
+                say {*STDOUT} encode_json(
+                    {
+                        message  => 'redirecting to',
+                        status   => STATUS_REDIRECT(),
+                        location => $location,
+                    },
+                );
+                $tx->res->code( STATUS_REDIRECT() );
+                $tx->res->headers->location($location);
+            } else {
+                if ( $data{path} =~ m{/error (?:/ ([45]\d{2}) )? $}x ) {
+                    $data{status}         = int( $1 // 500 );
+                    $data{status_message} = $tx->res->default_message( $data{status} );
+                }
 
-            say {*STDOUT} $body;
+                # Response
+                my $body = encode_json( \%data );
+                say {*STDOUT} $body;
 
-            # Response
-            $tx->res->code(200);
-            $tx->res->headers->content_type('application/json');
-            $tx->res->body($body);
+                $tx->res->code( $data{status} // 200 );
+                $tx->res->headers->content_type('application/json');
+                $tx->res->body($body);
+            }
 
             # Resume transaction
             $tx->resume;

@@ -314,3 +314,12 @@ function gl-groups-list() {
 	# https://docs.gitlab.com/ee/api/projects.html#search-for-projects-by-name
 	gl-http-request "/groups/$(url_encode "$1")/projects?per_page=$GL_PER_PAGE&include_subgroups=true&simple=true&order_by=id&sort=asc"
 }
+
+# => repos -------------------------------------------------------------------------------------------------------- {{{1
+
+function gl-search-text() {
+	# https://docs.gitlab.com/api/search/#scope-blobs-2
+	uri="/projects/$(url_encode "$1")/search?per_page=$GL_PER_PAGE&scope=blobs&search=$(url_encode "$2")"
+	[[ -n "${3:-}" ]] && uri+="%20path:$(url_encode "$3")"
+	gl-http-request "$uri"
+}
