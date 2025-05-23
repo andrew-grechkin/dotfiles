@@ -2,6 +2,9 @@
 # Based on https://github.com/robbyrussell/oh-my-zsh
 # https://thevaluable.dev/zsh-completion-guide-examples/
 
+# support bash completion
+autoload -U +X bashcompinit && bashcompinit
+
 zmodload -i zsh/complist
 
 unsetopt FLOW_CONTROL

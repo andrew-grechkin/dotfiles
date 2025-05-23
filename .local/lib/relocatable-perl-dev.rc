@@ -2,35 +2,29 @@
 # shellcheck shell=bash
 
 # usage:
-#   source "$(git rev-parse --show-toplevel)/dev.rc"
 #   source dev.rc
+#   source "$(git rev-parse --show-toplevel)/dev.rc"
 
 # => environment -------------------------------------------------------------------------------------------------- {{{1
 
 PERL_VERSION_REQUIRED="${PERL_VERSION_REQUIRED:-5.40.2}"
 
+# detect git repo root or use dir of the script
 if command git rev-parse HEAD &>/dev/null; then
 	workdir="$(git rev-parse --show-toplevel)"
 else
-	script=$(realpath -s "$0")
-	workdir=$(dirname "$script")
+	script="$(realpath -s "${BASH_SOURCE:-$0}")"
+	workdir="$(dirname "$script")"
 fi
-workdir=$(realpath -m --relative-base="$PWD" "$workdir")
+workdir_rel=$(realpath -m --relative-base="$PWD" "$workdir")
 
+# enforce local .perlcriticrc if it exists
 perlcritic_path="$workdir/.perlcriticrc"
 if [[ -r "$perlcritic_path" ]]; then
 	export PERLCRITIC="$perlcritic_path"
 fi
 
 export perl_root="$workdir/.perlenv-$PERL_VERSION_REQUIRED"
-
-export PATH="$workdir/bin:$workdir/script:$perl_root/bin:$PATH"
-export PERL5LIB="$workdir/lib:$HOME/.local/lib/perl5:./lib"
-
-# disable current Perl environment if it's activated
-unset PERL_LOCAL_LIB_ROOT
-unset PERL_MB_OPT
-unset PERL_MM_OPT
 
 # => install default perl and library ----------------------------------------------------------------------------- {{{1
 
@@ -71,22 +65,41 @@ function maybe_install_perl() {
 			>&2 "Failed to install perl"
 			return 1
 		fi
-
-		if [[ "$SHELL" =~ zsh ]]; then
-			rehash
-		fi
 	fi
+
+	# make perl from virtual environment the default one in the current terminal session
+	PATH="$perl_root/bin:$PATH"
+	[[ -d "$workdir/script" ]] && ! grep -F ":$workdir/script:" <<<":$PATH:" &>/dev/null && PATH=":$workdir/script:$PATH"
+	[[ -d "$workdir/bin"    ]] && ! grep -F ":$workdir/bin:"    <<<":$PATH:" &>/dev/null && PATH=":$workdir/bin:$PATH"
+
+	PERL5LIB="$HOME/.local/lib/perl5:./lib"
+	[[ -d "$workdir/lib"   ]] && ! grep -F ":$workdir/lib:"   <<<":$PERL5LIB:" &>/dev/null && PERL5LIB="$workdir/lib:$PERL5LIB"
+	[[ -d "$workdir/perl5" ]] && ! grep -F ":$workdir/perl5:" <<<":$PERL5LIB:" &>/dev/null && PERL5LIB="$workdir/perl5:$PERL5LIB"
+
+	export PATH PERL5LIB
+
 	return 0
 }
 
 function maybe_install_modules() {
-	if [[ -r "$workdir/cpanfile" ]]; then
-		if [[ ! -f "$perl_root/finished" || "$perl_root/finished" -ot "$workdir/cpanfile" ]]; then
-			echo "Installing required modules from '$workdir/cpanfile', this may take a while..."
-			nice cpanm -nq --installdeps "$workdir" 2>&1 | grep -vF 'LIBARCHIVE.xattr'
-			touch "$perl_root/finished"
+	# necesary for the case when perlbrew or another perl virtual env is activated in current session to deactivate it
+	unset PERL_LOCAL_LIB_ROOT
+	unset PERL_MB_OPT
+	unset PERL_MM_OPT
+
+	{
+		if [[ -r "$workdir/cpanfile" ]] && [[ ! -f "$perl_root/finished" || "$perl_root/finished" -ot "$workdir/cpanfile" ]]; then
+			echo "Installing required modules from '$workdir_rel/cpanfile', this may take a while..."
+			nice cpanm -nq --installdeps "$workdir" && touch "$perl_root/finished"
 		fi
-	fi
+
+		if [[ -r "$workdir/t/cpanfile" ]] && [[ ! -f "$perl_root/finished-t" || "$perl_root/finished-t" -ot "$workdir/t/cpanfile" ]]; then
+			echo "Installing required modules from '$workdir_rel/t/cpanfile', this may take a while..."
+			nice cpanm -nq --installdeps "$workdir/t" && touch "$perl_root/finished-t"
+		fi
+		# filter out warnings about archives created on alien systems with unknown extensions
+	} 2>&1 | grep -Ev 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)'
+
 	return 0
 }
 

@@ -2,7 +2,7 @@
 Description=Fetch Bing picture of the day and set as a wallpaper
 
 [Timer]
-OnCalendar=hourly
+OnCalendar=*:0/15
 Persistent=true
 AccuracySec=1s
 RandomizedDelaySec=30s

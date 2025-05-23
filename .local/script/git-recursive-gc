@@ -44,7 +44,7 @@ if [[ "$#" -eq "1" ]] && [[ "$1" =~ \.git/?$ ]]; then
 		nice git -C "$REPO" gc --prune=now --keep-largest-pack
 	fi
 else
-	fd -0uL -E 'bazel-*' -td -tf --prune '\.git\z' "${1:-$PWD}" | sort -z  {
+	fd -0uL -E 'bazel-*' -td -tf --prune '\.git\z' "${1:-$PWD}" | sort -z | {
 		if [[ -n "$(command -v parallel)" ]]; then
 			parallel -0j-50% --delay 0.3 "$0" "${pt_args[@]}" {}
 		else

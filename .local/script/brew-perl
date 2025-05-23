@@ -8,7 +8,7 @@ set -Eo pipefail
 
 # => environment -------------------------------------------------------------------------------------------------- {{{1
 
-site_location="$HOME/.local/lib/perl5"
+site_location="$HOME/.local/lib"
 
 # install required perl version and define environment variables
 # shellcheck disable=SC1091
@@ -16,17 +16,19 @@ source "$site_location/perlbrew-dev.rc"
 
 # install modules into specific library
 # shellcheck disable=SC1091
-echo "Installing required modules from '$site_location/cpanfile'"
+echo "Installing additional required modules from '$site_location/cpanfile'"
 
-source "$site_location/perlbrew-dev.rc" nice cpanm -nq --installdeps "$site_location" --with-develop --with-feature=mojo-extras 2>&1 | grep -vF 'LIBARCHIVE.xattr'
+{
+	nice perlbrew exec --with "$perlbrew_library_name" cpanm -nq --installdeps "$site_location" --with-develop --with-feature=mojo-extras
+} 2>&1 | grep -Ev 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)'
 
 # => switch to the library  --------------------------------------------------------------------------------------- {{{1
 
-echo "Switching to '$PERLBREW_LIBRARY_NAME'"
+echo "Switching to '$perlbrew_library_name'"
 (
 	# shellcheck disable=SC1091
 	source "$PERLBREW_ROOT/etc/bashrc"
-	rm -f "$PERLBREW_ROOT/init" && perlbrew switch "$PERLBREW_LIBRARY_NAME"
+	rm -f "$PERLBREW_ROOT/init" && perlbrew switch "$perlbrew_library_name"
 )
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1

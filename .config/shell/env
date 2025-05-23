@@ -8,38 +8,38 @@ export HOSTNAME="${HOSTNAME:-$(hostname)}"
 
 # => PATH --------------------------------------------------------------------------------------------------------- {{{1
 
-if ! declare -F 'append_path' > /dev/null; then
-	append_path () {
-		case ":$PATH:" in
-			*:"$1":*)
-				;;
-			*)
-				PATH="${PATH:+$PATH:}$1"
-		;; esac
-	}
-fi
+append_path () {
+	[[ -d "$1" ]] || return
+	case ":$PATH:" in
+		*:"$1":*) ;;
+		*) PATH="${PATH:+$PATH:}$1" ;;
+	esac
+}
 
-DIRS=(
-	"$HOME/.local/scripts-ext/private"
-	"$HOME/.local/scripts-ext/work-private"
-	"$HOME/.local/scripts-ext/work-public"
-	"$HOME/.local/script"
-	"$HOME/.local/usr/bin"
-	"$HOME/.local/bin"
+prepend_path () {
+	[[ -d "$1" ]] || return
+	case ":$PATH:" in
+		*:"$1":*) ;;
+		*) PATH="$1${PATH:+:$PATH}" ;;
+	esac
+}
+
+append_dirs=(
 	"$HOME/.cache/bin"
 	"$HOME/.cache/fzf/bin"
-	"$XDG_DATA_HOME/nvim/mason/bin"
-	"$XDG_DATA_HOME/npm/bin"
 	"$GOPATH/bin"
 )
+for p in "${append_dirs[@]}"; do append_path "$p"; done
+export PATH
 
-append_path "${DIRS[@]}"
-
-export FZF_DEFAULT_OPTS_FILE="$XDG_CONFIG_HOME/fzfrc"
-
-if [[ -z "${FNM_DIR:-}" && -x $(command -v fnm) ]]; then
-	export FNM_DIR="$XDG_STATE_HOME/fnm"
-	eval "$(fnm env --shell bash)"
-fi
-
+prepend_dirs=(
+	"$XDG_DATA_HOME/nvim/mason/bin"
+	"$HOME/.local/bin"
+	"$HOME/.local/usr/bin"
+	"$HOME/.local/script"
+	"$HOME/.local/scripts-ext/work-public"
+	"$HOME/.local/scripts-ext/work-private"
+	"$HOME/.local/scripts-ext/private"
+)
+for p in "${prepend_dirs[@]}"; do prepend_path "$p"; done
 export PATH

@@ -6,4 +6,4 @@ alias dt='deno task'
 alias dr='deno run'
 
 export DVM_DIR="$XDG_STATE_HOME/dvm"
-export PATH="$DVM_DIR/bin:$PATH"
+export PATH="$PATH:$DVM_DIR/bin"

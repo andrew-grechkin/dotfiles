@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-find "$@" -type d -empty -exec rmdir --ignore-fail-on-non-empty -p {} \+
+find "$@" -ignore_readdir_race -type d -empty -exec rmdir --ignore-fail-on-non-empty -p {} \+

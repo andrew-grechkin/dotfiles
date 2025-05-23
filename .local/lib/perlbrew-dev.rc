@@ -2,21 +2,29 @@
 # shellcheck shell=bash
 
 # usage:
-#   source "$(git rev-parse --show-toplevel)/dev.rc"
 #   source dev.rc
+#   source "$(git rev-parse --show-toplevel)/dev.rc"
 
 # => environment -------------------------------------------------------------------------------------------------- {{{1
 
 PERL_VERSION_REQUIRED="${PERL_VERSION_REQUIRED:-5.40.2}"
 
+# detect git repo root or use dir of the script
 if command git rev-parse HEAD &>/dev/null; then
-	repo_root="$(git rev-parse --show-toplevel)"
+	workdir="$(git rev-parse --show-toplevel)"
 	repo_url="$(git config --get remote.origin.url)"
 	repo_name="$(basename -s .git "$repo_url")"
 else
-	script="$(realpath -s "$0")"
-	repo_root="$(dirname "$script")"
+	script="$(realpath -s "${BASH_SOURCE:-$0}")"
+	workdir="$(dirname "$script")"
 	repo_name="${repo_name:-default}"
+fi
+workdir_rel=$(realpath -m --relative-base="$PWD" "$workdir")
+
+# enforce local .perlcriticrc if it exists
+perlcritic_path="$workdir/.perlcriticrc"
+if [[ -r "$perlcritic_path" ]]; then
+	export PERLCRITIC="$perlcritic_path"
 fi
 
 perl_name="perl-$PERL_VERSION_REQUIRED"
@@ -27,17 +35,12 @@ nproc=4
 	nproc="$(nproc)"
 }
 
-perlcritic_path="$repo_root/.perlcriticrc"
-if [[ -r "$perlcritic_path" ]]; then
-	export PERLCRITIC="$perlcritic_path"
-fi
-
 HOSTNAME="${HOSTNAME:-$(hostname)}"
 export PERLBREW_ROOT="${PERLBREW_ROOT:-$XDG_STATE_HOME/perlbrew/$HOSTNAME}"
 export PERLBREW_HOME="${PERLBREW_HOME:-$PERLBREW_ROOT}"
 
-export PATH="$repo_root/bin:$repo_root/script:$PATH:$PERLBREW_ROOT/bin"
-export PERL5LIB="$repo_root/lib:$HOME/.local/lib/perl5:./lib:${PERL5LIB:-}"
+export PATH="$workdir/bin:$workdir/script:$PATH:$PERLBREW_ROOT/bin"
+export PERL5LIB="$workdir/lib:$HOME/.local/lib/perl5:./lib:${PERL5LIB:-}"
 
 # => check prerequisites ------------------------------------------------------------------------------------------ {{{1
 
@@ -79,21 +82,29 @@ function maybe_install_modules() {
 	library="$PERLBREW_ROOT/libs/${perlbrew_library_name}"
 	finished="$library/finished"
 
-	if [[ ! -f "$finished" ]]; then
-		if ! grep -E "\s${perlbrew_library_name}\s*$" < <(perlbrew lib-list) &>/dev/null; then
-			echo "Creating Perl local dev library: $perlbrew_library_name"
-			perlbrew lib create "$perlbrew_library_name" || return 1
-			echo
+	{
+		if [[ ! -f "$finished" ]]; then
+			if ! grep -E "\s${perlbrew_library_name}\s*$" < <(perlbrew lib-list) &>/dev/null; then
+				echo "Creating Perl local dev library: $perlbrew_library_name"
+				perlbrew lib create "$perlbrew_library_name" || return 1
+				echo
+			fi
 		fi
-	fi
 
-	if [[ -r "$repo_root/cpanfile" ]]; then
-		if [[ -d "$library" ]] && [[ ! -f "$finished" || "$finished" -ot "$repo_root/cpanfile" ]]; then
-			echo "Installing required modules from '$repo_root/cpanfile', this may take a while..."
-			perlbrew exec --with "$perlbrew_library_name" nice cpanm -nq --installdeps "$repo_root" 2>&1
-			touch "$finished"
-		fi | grep -vF 'LIBARCHIVE.xattr'
-	fi
+		if [[ -r "$workdir/cpanfile" && -d "$library" ]] && [[ ! -f "$finished" || "$finished" -ot "$workdir/cpanfile" ]]; then
+			echo "Installing required modules from '$workdir_rel/cpanfile', this may take a while..."
+			nice perlbrew exec --with "$perlbrew_library_name" cpanm -nq --installdeps "$workdir" \
+				&& touch "$finished"
+		fi
+
+		if [[ -r "$workdir/t/cpanfile" && -d "$library" ]] && [[ ! -f "${finished}-t" || "${finished}-t" -ot "$workdir/t/cpanfile" ]]; then
+			echo "Installing required modules from '$workdir_rel/t/cpanfile', this may take a while..."
+			nice perlbrew exec --with "$perlbrew_library_name" cpanm -nq --installdeps "$workdir/t" \
+				&& touch "${finished}-t"
+		fi
+		# filter out warnings about archives created on alien systems with unknown extensions
+	} 2>&1 | grep -Ev 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)'
+
 	return 0
 }
 

@@ -5,7 +5,6 @@
 .config/lazygit/state.yml
 .config/nvim/.luarc.json
 .config/shell/*.work
-.config/systemd/user/*.service
 .config/systemd/user/*.wants/
 .config/systemd/user/git-maintenance*
 .config/systemd/user/plasma-kwin_x11.service

@@ -104,21 +104,13 @@ sub _process_image ($path, $descriptor) {
     $log->infof('Font family: %s', $family);
     $descriptor->{'copyright'} =~ s{'}{"}g;
     my @cmd = (
-        qw(convert -fill white -pointsize 28 -gravity NorthWest -draw),
-        "text 150,0 '$descriptor->{'copyright'}'",
-        '-family', $family, $path, $path,
+        'magick', $path, '-family', $family,
+        qw(-fill cyan -pointsize 28 -gravity NorthWest -draw),
+        "text 150,0 '$descriptor->{copyright}'", $path,
     );
     system(@cmd) == 0
         or die $log->fatal('Unable to process image');
     return;
-}
-
-sub _find_font_family ($text) {
-    my $charcodes = $text =~ s/(.)/sprintf '%04X ', ord $1/gre;
-    chomp(my @families = `fc-list --format '%{family[0]}\n' ':style=Regular:charset=$charcodes'`);
-    @families = sort {-exists(PREFERRED_FONTS()->{$a}) + exists(PREFERRED_FONTS()->{$b}) or $a cmp $b} uniq @families;
-
-    return $families[0];
 }
 
 sub _set_wallpaper ($path) {
@@ -151,6 +143,14 @@ sub _set_wallpaper ($path) {
         or croak('Unable to set wallpaper: ', $path);
 
     return;
+}
+
+sub _find_font_family ($text) {
+    my $charcodes = $text =~ s/(.)/sprintf '%04X ', ord $1/gre;
+    chomp(my @families = `fc-list --format '%{family[0]}\n' ':style=Regular:charset=$charcodes'`);
+    @families = sort {-exists(PREFERRED_FONTS()->{$a}) + exists(PREFERRED_FONTS()->{$b}) or $a cmp $b} uniq @families;
+
+    return $families[0];
 }
 
 exit main();

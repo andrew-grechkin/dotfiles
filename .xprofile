@@ -22,4 +22,12 @@ export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.ssh"
 
 # => use default Perl + modules globally -------------------------------------------------------------------------- {{{1
 
-source "$HOME/.local/lib/perl5/perlbrew-dev.rc"
+[[ -r "$HOME/.local/lib/relocatable-perl-dev.rc" ]] && source "$HOME/.local/lib/relocatable-perl-dev.rc"
+
+# => use default env ---------------------------------------------------------------------------------------------- {{{1
+
+[[ -r "$HOME/.config/shell/env" ]] && source "$HOME/.config/shell/env"
+
+# => use default Node --------------------------------------------------------------------------------------------- {{{1
+
+[[ -r "$HOME/.config/shell/node.env" ]] && source "$HOME/.config/shell/node.env"
