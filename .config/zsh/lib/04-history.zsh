@@ -80,8 +80,8 @@ function h-disable() {
 	fc -p "${XDG_RUNTIME_DIR}/temp-hist" "${HISTSIZE}" "${SAVEHIST}"
 	fc -R "$hf"
 
-	add-zsh-hook -d precmd _atuin_precmd
-	add-zsh-hook -d preexec _atuin_preexec
+	# add-zsh-hook -d precmd _atuin_precmd
+	# add-zsh-hook -d preexec _atuin_preexec
 }
 
 function h-reduce() {

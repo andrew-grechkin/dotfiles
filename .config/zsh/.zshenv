@@ -1,11 +1,11 @@
 # vim: filetype=zsh foldmethod=marker
 # shellcheck shell=bash
 
-# workaround for stupid zellij start shell as non-login 🤷
-if [[ "$ZELLIJ" == "0" ]] && [[ ! -o LOGIN ]] && [[ -o INTERACTIVE ]] && [[ -z "$LOGIN_SESSION_ENFORCED" ]]; then
-	export LOGIN_SESSION_ENFORCED=1
-	exec "$SHELL" -l
-fi
+# # workaround for stupid zellij start shell as non-login 🤷
+# if [[ "$ZELLIJ" == "0" ]] && [[ ! -o LOGIN ]] && [[ -o INTERACTIVE ]] && [[ -z "$LOGIN_SESSION_ENFORCED" ]]; then
+# 	export LOGIN_SESSION_ENFORCED=1
+# 	exec "$SHELL" -l
+# fi
 
 # opensuse has quite a lot of shit in /etc/zshrc so the only option is to disable global configs if this file exists
 if [[ "$IS_NAS" == "1" ]] || [[ -r /etc/zshrc && ! -d "/etc/boo""kings" ]]; then
