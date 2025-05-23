@@ -65,13 +65,13 @@ command cp -rf ".config/htop"                                ~/.config/ 2>/dev/n
 command cp -rf ".config/locale.conf"                         ~/.config/ 2>/dev/null
 
 if [[ "$USER" == "agrechkin" ]]; then
-	[[ -d ~/.config/atuin ]] && rm -rf ~/.config/atuin
+	# [[ -d ~/.config/atuin ]] && rm -rf ~/.config/atuin
 
-	ln -srf .config/atuin                                    ~/.config/
+	# ln -srf .config/atuin                                    ~/.config/
 	ln -srf .config/bspwm                                    ~/.config/
 	ln -srf .config/commitlintrc.yaml                        ~/.config/
 	ln -srf .config/containers                               ~/.config/
-	ln -srf .config/lazygit                                  ~/.config/
+	# ln -srf .config/lazygit                                  ~/.config/
 	ln -srf .config/luaformatter                             ~/.config/
 	ln -srf .config/markdownlint.yaml                        ~/.config/
 	ln -srf .config/nvim                                     ~/.config/
@@ -85,10 +85,10 @@ if [[ "$USER" == "agrechkin" ]]; then
 	ln -srf .config/wireplumber                              ~/.config/
 	ln -srf .config/yamllint                                 ~/.config/
 	ln -srf .config/zathura                                  ~/.config/
-	ln -srf .config/zellij                                   ~/.config/
-	[[ -f "$HOME/.config/npm" ]] || {
-		command cp -rf ".config/npm"                         ~/.config/
-	}
+	# ln -srf .config/zellij                                   ~/.config/
+	# [[ -f "$HOME/.config/npm" ]] || {
+	# 	command cp -rf ".config/npm"                         ~/.config/
+	# }
 	[[ -x "/volume1/local/arch/usr/bin/vim" ]] && {
 		ln -srfn .config/vim                                 ~/.vim
 	}
