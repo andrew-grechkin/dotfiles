@@ -4,8 +4,6 @@ package Log::Any::Adapter::Multiplex;
 
 use v5.40;
 use autodie;
-use open ':locale';
-use utf8;
 use warnings     qw(FATAL utf8);
 use parent       qw(Log::Any::Adapter::Base);
 use experimental qw(class declared_refs defer refaliasing);
