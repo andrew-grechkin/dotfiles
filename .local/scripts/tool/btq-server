@@ -1,0 +1,103 @@
+#!/usr/bin/env perl
+
+use v5.40;
+use autodie;
+use warnings     qw(FATAL utf8);
+use experimental qw(class declared_refs defer refaliasing);
+
+use File::Spec   qw();
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+use Pod::Usage   qw(pod2usage);
+
+use BTQueue::ServerApp qw();
+use BTQueue::Config    qw();
+
+use Future::AsyncAwait;
+
+use List::Util              qw(min);
+use Log::Any                qw($log);
+use Log::Any::Adapter       qw(Stderr), ('log_level' => 'notice');
+use Log::Any::Adapter::Util qw(NOTICE TRACE);
+
+use BTQueue::Server qw(server_check_running);
+
+## use IO::Async::Stream       qw();
+# use IO::Async::Timer::Countdown qw();
+
+async sub main() {
+    my %OPTIONS = (
+        foreground  => 0,
+        VERBOSITY   => 0,
+        config_dir  => $ENV{XDG_CONFIG_HOME} || File::Spec->catfile($ENV{HOME}, '.config', 'btq'),
+        runtime_dir => $ENV{XDG_RUNTIME_DIR} || File::Spec->tmpdir(),
+        temp_dir    => $ENV{XDG_STATE_HOME}  || File::Spec->tmpdir(),
+    );
+
+    GetOptions(
+        'foreground|f' => \$OPTIONS{'foreground'},
+        'help|h'       => sub {pod2usage(-exitval => 0, -verbose => 99)},
+        'verbose|v+'   => \$OPTIONS{'VERBOSITY'},
+    ) or die('Unable to process command line options');
+
+    Log::Any::Adapter->set(
+        'Multiplex',
+        'adapters' => {
+            'Syslog' => ['log_level' => 'warning', 'options' => 'pid,ndelay'],
+            'Stderr' => ['log_level' => min(TRACE(), NOTICE() + $OPTIONS{VERBOSITY})],
+        },
+    );
+
+    my $config = BTQueue::Config->new(%OPTIONS{qw(foreground config_dir runtime_dir temp_dir)});
+
+#     await server_check_running($loop, \%OPTIONS);
+
+    my $app = BTQueue::ServerApp->new(config => $config);
+
+    return $app->execute();
+
+#     $loop->add(
+#         IO::Async::Timer::Countdown->new(
+#             delay     => 10,
+#             on_expire => sub ($self) {
+#                 $log->notice('10 секунд have passed');
+#                 $self->start;
+#             },
+#         )->start,
+#     );
+#     $loop->add(IO::Async::Stream->new_for_stdin(
+#         on_read => sub($self, $buffref, $eof) {
+#             while ($$buffref =~ s/^(.*)\n//) {
+#                 print "You typed a line $1\n";
+#             }
+#             return 0;
+#         },
+#     ));
+}
+
+exit await main();
+
+__END__
+
+=head1 NAME
+
+name
+
+=head1 DESCRIPTION
+
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+=head1 SYNOPSIS
+
+name [options]
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--verbose>
+
+Increase verbosity
+
+=back
+
+=cut

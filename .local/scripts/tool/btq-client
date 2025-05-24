@@ -1,0 +1,129 @@
+#!/usr/bin/env perl
+
+use v5.40;
+use autodie;
+use warnings     qw(FATAL utf8);
+use experimental qw(class declared_refs defer refaliasing);
+
+use File::Spec   qw();
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+use Pod::Usage   qw(pod2usage);
+
+use List::Util              qw(min);
+use Log::Any::Adapter       qw(Stderr), ('log_level' => 'notice');
+use Log::Any::Adapter::Util qw(NOTICE TRACE);
+
+use BTQueue::ClientApp qw();
+use BTQueue::Config    qw();
+
+use Syntax::Keyword::Match;
+use Syntax::Operator::Equ;
+
+use Data::Printer;
+
+sub main() {
+    my %OPTIONS = (
+        VERBOSITY   => 0,
+        config_dir  => $ENV{XDG_CONFIG_HOME} || File::Spec->catfile($ENV{HOME}, '.config', 'btq'),
+        runtime_dir => $ENV{XDG_RUNTIME_DIR} || File::Spec->tmpdir(),
+        temp_dir    => $ENV{XDG_STATE_HOME}  || File::Spec->tmpdir(),
+    );
+
+    my (undef, undef, $file) = File::Spec->splitpath($0);
+    if ($file =~ m/^tsp?$/) {
+        ## task spooler compatible cli interface
+    } else {
+        GetOptions(
+            'help|h'     => sub {pod2usage(-exitval => 0, -verbose => 99)},
+            'verbose|v+' => \$OPTIONS{'VERBOSITY'},
+        ) or die("Unable to process command line options\n");
+    }
+
+    Log::Any::Adapter->set(
+        'Multiplex',
+        'adapters' => {
+            'Syslog' => ['log_level' => 'warning', 'options' => 'pid,ndelay'],
+            'Stderr' => ['log_level' => min(TRACE(), NOTICE() + $OPTIONS{VERBOSITY})],
+        },
+    );
+
+    my $config = BTQueue::Config->new(%OPTIONS{qw(config_dir runtime_dir temp_dir)});
+    my $app    = BTQueue::ClientApp->new(config => $config);
+
+    try_connecting($app->loop, $config);
+
+    if ($file =~ m/^tsp?$/) {
+        my @argv = @ARGV;
+
+        my $depends;
+
+        while (@argv) {
+            last if $argv[0] !~ m/^-\w/;
+
+            my $arg = shift @argv;
+            match($arg : eq) {
+                case ('-h') {return pod2usage(-exitval => 0, -verbose => 99)}
+                case ('-V') {say {*STDOUT} 'version'; exit 0}
+                case ('-K') {
+                    return $app->query({event => 'halt'}, sub {exit 0});
+                }
+                case ('-C') {
+                    return $app->query({event => 'clear'}, sub {exit 0});
+                }
+                case ('-l') {return $app->query({event => 'query'})}
+                case ('-S') {return}
+                case ('-t') {return}
+                case ('-c') {return}
+                case ('-p') {return $app->query({event => 'query',  what => shift(@argv), field => 'pid'})}
+                case ('-o') {return $app->query({event => 'query',  what => shift(@argv), field => 'out'})}
+                case ('-i') {return $app->query({event => 'query',  what => shift(@argv)})}
+                case ('-s') {return $app->query({event => 'query',  what => shift(@argv), field => 'status'})}
+                case ('-r') {return $app->query({event => 'remove', what => shift(@argv), field => undef})}
+                case ('-w') {return $app->query({event => 'wait',   what => shift(@argv), field => undef})}
+                case ('-k') {return $app->query({event => 'kill',   what => shift(@argv), field => undef})}
+                case ('-u') {return $app->query({event => 'urgent', what => shift(@argv), field => undef})}
+                case ('-B') {return}
+                case ('-U') {return}
+                case ('-V') {return}
+                case ('-d') {$depends = true}
+                case ('-D') {$depends = shift(@argv)}
+            };
+        }
+
+        if (@argv) {
+            return $app->execute(\@argv, $depends);
+        }
+    } else {
+
+#         match($command : equ) {
+#             case ('query')   {return $app->query()}
+#             case ('execute') {return $app->execute(\@args)}
+#         }
+    }
+
+    say {*STDERR} sprintf("unknown command: @{[@ARGV]}");
+    return 2;
+}
+
+sub try_connecting($loop, $options) {
+    $loop->connect(
+        addr => {
+            family   => 'unix',
+            socktype => 'stream',
+            path     => $options->socket_path,
+        },
+        on_connect_error => sub (@p) {
+            system('btq-server') == 0
+                or warn 'unable to start server';
+        },
+        on_connected => sub (@p) {
+            ## do nothing, server is listening
+        },
+    )->await();
+
+    return 0;
+}
+
+exit main();
+
+__END__
