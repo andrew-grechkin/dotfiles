@@ -2,13 +2,12 @@
 
 set -Eo pipefail
 
-# => support synology --------------------------------------------------------------------------------------------- {{{1
+UV_PYTHON="${UV_PYTHON:-3.13}"
 
-[[ -d "/volume1/local/arch/usr" ]] && export OPENSSL_PREFIX="/volume1/local/arch/usr"
+export UV_PYTHON
 
-# => -------------------------------------------------------------------------------------------------------------- {{{1
+uv python install
+uv python pin --no-project
 
-PYTHON_REQUIRED_VERSION="3.13.2"
-pyenv install -s "$PYTHON_REQUIRED_VERSION"
-pyenv global "$PYTHON_REQUIRED_VERSION"
-# pip install pynvim
+uv tool install sqlite-utils --force
+uv tool install datasette --force

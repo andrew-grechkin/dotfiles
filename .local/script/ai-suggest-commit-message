@@ -2,6 +2,8 @@
 
 set -Eeuo pipefail
 
+# ABSTRACT: ask ai to suggest a commit message by the changes in git index or in the latest commit
+
 request="Generate a proper commit message for the git diff provided below
 Add a line with following properties:
 - it must be a plain text, no formatted as markdown
