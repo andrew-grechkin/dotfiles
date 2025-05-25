@@ -2,6 +2,8 @@
 
 set -Eeuo pipefail
 
+# ABSTRACT: wrapper around Cody to make requests easier from terminal and other programs by providing sane defaults
+
 if [[ -t 0 && -z "$*" ]]; then
 	echo "Pass a request to AI as a first option" >&2
 	exit 1

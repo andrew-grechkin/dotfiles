@@ -541,11 +541,11 @@ filetype <text/plain>{*.txt}
 filextype {*.pro}
 	\ qtcreator %f:p %i &,
 
-filetype {cpanfile}
+filetype <text/plain>{cpanfile}
 	\ {Install Perl modules}
-	\ cpanm -nq --installdeps %d,
+	\ tsp cpanm -nq --installdeps %d 2>&1 | grep -Ev 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)',
 	\ {Install Perl modules (all)}
-	\ cpanm -nv --installdeps %d --with-develop --with-all-features,
+	\ tsp cpanm -nq --installdeps %d --with-develop --with-all-features 2>&1 | grep -Ev 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)',
 
 filetype {*.http}
 	\ {Request with http-pure}

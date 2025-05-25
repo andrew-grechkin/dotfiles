@@ -1,5 +1,7 @@
 #!/usr/bin/env perl
 
+# ABSTRACT: convert file in one of supported data formats (json, jsonl, yaml, perl) to another one
+
 use v5.40;
 use autodie;
 use open 'IO' => ':raw';

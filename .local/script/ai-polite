@@ -2,6 +2,8 @@
 
 set -Eeuo pipefail
 
+# ABSTRACT: ask ai to convert phrase provided as input or cmd line arguments to a polite form
+
 req='Just return the answer without any additional code examples.
 Only wording without quotes and your greeting message.
 Do not add anything from you.

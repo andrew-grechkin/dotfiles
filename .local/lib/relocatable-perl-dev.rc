@@ -29,7 +29,7 @@ export perl_root="$workdir/.perlenv-$PERL_VERSION_REQUIRED"
 # => install default perl and library ----------------------------------------------------------------------------- {{{1
 
 function maybe_install_perl() {
-	if [[ ! -e "$perl_root/bin/perl" ]]; then
+	if [[ ! -x "$perl_root/bin/perl" ]]; then
 		# curl -fsSL https://raw.githubusercontent.com/skaji/relocatable-perl/main/perl-install | bash -s "$perl_root"
 		[[ -x "$(command -v bsdtar)" ]] || {
 			>&2 echo "bsdtar is not found, please install it for your system"
@@ -61,7 +61,7 @@ function maybe_install_perl() {
 
 		>/dev/null mkdir -p "$perl_root"
 		curl -fsSL "$perl_url" | bsdtar -xf - --strip-components 1 -C "$perl_root"
-		if [[ ! -f $perl_root/bin/perl ]]; then
+		if [[ ! -x $perl_root/bin/perl ]]; then
 			>&2 "Failed to install perl"
 			return 1
 		fi

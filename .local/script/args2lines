@@ -2,6 +2,8 @@
 
 set -Eeuo pipefail
 
+# ABSTRACT: convert shell-encoded tokens provided via cmd line or stdin to lines without quotes
+
 if [[ -n "$*" ]]; then
 	echo "${*@Q}"
 elif [[ ! -t 0 ]]; then
