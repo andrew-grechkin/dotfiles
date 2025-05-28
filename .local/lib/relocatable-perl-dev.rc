@@ -8,6 +8,7 @@
 # => environment -------------------------------------------------------------------------------------------------- {{{1
 
 PERL_VERSION_REQUIRED="${PERL_VERSION_REQUIRED:-5.40.2}"
+PERL_VENV_DIR_SUFFIX="${PERL_VENV_DIR_SUFFIX:-}"
 
 # detect git repo root or use dir of the script
 if command git rev-parse HEAD &>/dev/null; then
@@ -24,7 +25,7 @@ if [[ -r "$perlcritic_path" ]]; then
 	export PERLCRITIC="$perlcritic_path"
 fi
 
-export perl_root="$workdir/.perlenv-$PERL_VERSION_REQUIRED"
+export perl_root="$workdir/.perlenv-${PERL_VERSION_REQUIRED}${PERL_VENV_DIR_SUFFIX}"
 
 # => install default perl and library ----------------------------------------------------------------------------- {{{1
 

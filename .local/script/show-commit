@@ -46,7 +46,8 @@ git-in-repo && {
 
 	if is_merge_commit "$ref"; then
 		if [[ "${mr_diff:-}" == "1" ]]; then
-			git --no-pager show "${show_args[@]}" --dd --minimal --patch "$ref" "$@"
+			echo -n 'Merge '
+			git --no-pager show "${show_args[@]}" --show-signature --dd --minimal --patch "$ref" "$@"
 		else
 			git --no-pager show "${show_args[@]}" --no-patch "$ref" "$@"
 			echo

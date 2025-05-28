@@ -103,13 +103,24 @@ sub _process_image ($path, $descriptor) {
     $log->infof('Applying:    %s', $descriptor->{'copyright'});
     $log->infof('Font family: %s', $family);
     $descriptor->{'copyright'} =~ s{'}{"}g;
+
     my @cmd = (
         'magick', $path, '-family', $family,
         qw(-fill cyan -pointsize 28 -gravity NorthWest -draw),
         "text 150,0 '$descriptor->{copyright}'", $path,
     );
-    system(@cmd) == 0
-        or die $log->fatal('Unable to process image');
+
+    system(@cmd) == 0 or do {
+        ## support magick v6
+        @cmd = (
+            qw(convert -fill white -pointsize 28 -gravity NorthWest -draw),
+            "text 150,0 '$descriptor->{'copyright'}'",
+            '-family', $family, $path, $path,
+        );
+        system(@cmd) == 0
+            or die $log->fatal('Unable to process image');
+    };
+
     return;
 }
 

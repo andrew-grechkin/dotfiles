@@ -50,12 +50,12 @@ if ($xprop =~ m/GlobalProtect/ms) {
     $output .= ' state=floating focus=off';
 } else {
     if ($xprop =~ m/_NET_WM_STATE_ABOVE/xms) {
-        $output .= ' state=floating';
+        $output .= ' layer=above state=floating';
     }
 
-    if ($xprop =~ m/_NET_WM_STATE_STAYS_ON_TOP/xms) {
-        $output .= ' state=floating focus=off sticky=on';
-    }
+#     if ($xprop =~ m/_NET_WM_STATE_STAYS_ON_TOP/xms) {
+#         $output .= ' focus=on sticky=on';
+#     }
 
     if ($xprop =~ m/_NAME.*?"Meeting"/ms) {
         $output .= ' sticky=off';

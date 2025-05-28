@@ -384,9 +384,6 @@ fileviewer <application/vnd.sqlite3>
 
 " => File associations: misc -------------------------------------------------------------------------------------- {{{1
 
-fileviewer {*-cert.pub}
-	\ ssh-keygen -Lf %c:p,
-
 filetype {*.oci.image,*.Dockerfile,Dockerfile}
 	\ {Build OCI image}
 	\ oci-build %c:p,
@@ -714,6 +711,14 @@ filetype {main.yaml}
 filetype {home-*.conf}
 	\ {Import wireguard config}
 	\ nmcli connection import type wireguard file %c:p
+
+" => File associations: ssh --------------------------------------------------------------------------------------- {{{1
+
+fileviewer {id_*-cert.pub}
+	\ ssh-keygen -Lf %c:p,
+
+fileviewer {id_ed25519*}
+	\ ssh-keygen -lf %c:p; echo; cat %c:p,
 
 " => File associations: gpg --------------------------------------------------------------------------------------- {{{1
 

@@ -3,7 +3,7 @@
 set -Eeuo pipefail
 
 VENDOR="${VENDOR:-0x090c}"
-PRODUCT="${VENDOR:-0x1000}"
+PRODUCT="${PRODUCT:-0x1000}"
 
 args=(
 	-audiodev "pa,id=snd0"
@@ -17,6 +17,7 @@ args=(
 	-k en-us
 	-m 4G
 	-nic "user,model=virtio-net-pci"
+	# -boot menu=on
 	-no-reboot
 	-smp 2
 	-vga virtio

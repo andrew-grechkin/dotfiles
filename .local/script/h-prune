@@ -12,36 +12,20 @@ function finish {
 trap finish EXIT
 
 fzf_args=(
-	--bind="change:reload(sort -u < '$file' | rg -Pa --color=always {q})"
-	--bind="ctrl-m:become(echo {q}; cat {+f})"
-	--bind="start:change-query()"
+	--bind="ctrl-m:become(cat {+f})"
 	--bind="tab:toggle-out,shift-tab:toggle-in,ctrl-a:toggle-all"
 	--multi
-	--phony
-	--print-query
-	--query="."
 	--reverse
+	--track
 )
 
-output="$(echo 'loading...' | fzf "${fzf_args[@]}")"
-regex="$(echo "$output" | head -n 1)"
-lines="$(echo "$output" | tail -n +2)"
+lines="$(sort < "$file" | fzf "${fzf_args[@]}")"
 
-if [[ -n "$regex" ]]; then
-	echo "Pruning history for regex: '$regex'"
-	cp -f "$file" "$file.prune.bak"
+echo "Pruning history for whole lines: $(wc -l <<< "$lines")"
+cp -f "$file" "$file.prune.bak"
 
-	echo "Lines before: $(wc -l < "$file")"
-	rg -Pav "$regex" "$file" > "$temp_file"
-	echo "Lines after: $(wc -l < "$temp_file")"
-	mv -f "$temp_file" "$file"
-elif [[ -n "$lines" ]]; then
-	echo "Pruning history for whole lines: $(wc -l <<< "$lines")"
-	cp -f "$file" "$file.prune.bak"
-
-	cp -f "$file" "$temp_file"
-	echo "Lines before: $(wc -l < "$temp_file")"
-	echo "$lines" | perl -i -nlE 'INIT {%r = map {chomp; $_ => undef} <STDIN>} print unless exists $r{$_}' "$temp_file"
-	echo "Lines after: $(wc -l < "$temp_file")"
-	mv -f "$temp_file" "$file"
-fi
+cp -f "$file" "$temp_file"
+echo "Lines before: $(wc -l < "$temp_file")"
+grep -vaxF -f <(echo "$lines") "$temp_file" | sponge "$temp_file"
+echo "Lines after: $(wc -l < "$temp_file")"
+mv -f "$temp_file" "$file"
