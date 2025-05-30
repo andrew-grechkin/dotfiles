@@ -120,6 +120,7 @@ command! tail    tail -f %c:p
 command! clip    clipcopy %c:p %i &
 command! ghist   git fh -- %c:p %n || true
 command! hdlinks sudo hardlinks-for %f:p | $PAGER
+command! sparse  fallocate -d %c:p %i &
 
 " not clear is how to escape or quote possible new lines in files
 command! flat    :!fd -H0t f %a | perl -plE 'INIT { $/ = "\0"}; s/\R/\\n/g' | sort %%U
@@ -137,6 +138,7 @@ command! make   !!make %a
 
 " info
 command! df     df -h %m
+command! du     du -sh %d/* %m
 command! mime   xdg-mime query filetype %f %m
 
 " compare
@@ -540,6 +542,8 @@ filextype {*.pro}
 
 filetype <text/plain>{cpanfile}
 	\ {Install Perl modules}
+	\ cpanm -nq --installdeps %d 2>&1 | grep -Ev 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)',
+	\ {Install Perl modules (background)}
 	\ tsp cpanm -nq --installdeps %d 2>&1 | grep -Ev 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)',
 	\ {Install Perl modules (all)}
 	\ tsp cpanm -nq --installdeps %d --with-develop --with-all-features 2>&1 | grep -Ev 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)',
@@ -578,6 +582,8 @@ filetype <application/vnd.efi.iso,application/x-iso9660-image>
 filetype <application/x-qemu-disk>
 	\ {Run with qemu}
 	\ setsid -f qcow-run %c:p %i,
+	\ {Convert qcow2 -> raw}
+	\ tsp qemu-img convert %c:p %c:p:r.raw %i &,
 	\ {Mount qcow2}
 	\ setsid -f qcow-mount %c:p %i,
 filetype *.raw

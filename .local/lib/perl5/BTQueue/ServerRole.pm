@@ -174,8 +174,8 @@ class BTQueue::ServerRole {
                 $descriptor->{status} = 'running';
                 $log->debugf('executing process: %s', $descriptor->{id});
                 $descriptor->{socket}->write($json->encode({event => 'execute'}) . "\n");
+                last;
             }
-
         } else {
             $log->tracef('there are no empty slots available: %d/%d', scalar @running, $slots);
         }

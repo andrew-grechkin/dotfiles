@@ -41,7 +41,7 @@ else
 	QCOW_NAME="${ISO_NAME/.iso/}.$type.qcow2"
 	QCOW_PATH="$ISO_DIR/$QCOW_NAME"
 	[[ -f "$QCOW_PATH" ]] || {
-		qemu-img create -f qcow2 "$QCOW_PATH" 128G
+		qemu-img create -f qcow2 "$QCOW_PATH" 100G
 	}
 	OPTIONS+=(
 		-drive "file=$QCOW_PATH,if=virtio,index=0,media=disk,format=qcow2"
