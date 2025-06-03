@@ -3,7 +3,7 @@ Description=Fetch Bing picture archive
 
 [Service]
 Type=oneshot
-WorkingDirectory=/media/nfs/home/public/photo/bing
+WorkingDirectory=/volumes/media/photo/bing
 ExecStart=/usr/bin/bash -c 'source "%h/.local/lib/relocatable-perl-dev.rc"; "%h/.local/script/bing-wallpaper-archive-download"'
 
 [Install]

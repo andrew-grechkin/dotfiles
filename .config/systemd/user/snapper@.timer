@@ -1,0 +1,11 @@
+[Unit]
+Description=Trigger snapshoting of %i via snapper
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+AccuracySec=1s
+RandomizedDelaySec=5s
+
+[Install]
+WantedBy=timers.target

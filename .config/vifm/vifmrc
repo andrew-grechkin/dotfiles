@@ -126,7 +126,7 @@ command! flat    :!fd -H0t f %a | perl -plE 'INIT { $/ = "\0"}; s/\R/\\n/g' | so
 command! flat!   :!fd -H0t d %a | perl -plE 'INIT { $/ = "\0"}; s/\R/\\n/g' | sort %%U
 
 " create
-command! take    :mkdir %a | cd %a
+command! take    :mkdir %a | cd ./%a
 command! ln      ln %f:p %D
 command! cp      tsp cp -av --sparse=auto --reflink=auto -- %f:p %D/ %i &
 command! cpl     tsp cp -av --link                       -- %f:p %D/ %i &
@@ -140,8 +140,8 @@ command! df     df -h %m
 command! mime   xdg-mime query filetype %f %m
 
 " compare
-command! diff   vimdiff   %c:p %C
-command! ddiff  diff-dirs %c:p %C %m
+command! diff   vimdiff   %c:p %C:p
+command! ddiff  dirs-diff %c:p %C:p %m
 
 " search
 command! vgrep  vim "+grep %a"
@@ -540,6 +540,8 @@ filextype {*.pro}
 
 filetype <text/plain>{cpanfile}
 	\ {Install Perl modules}
+	\ cpanm -nq --installdeps %d 2>&1 | grep -Ev 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)',
+	\ {Install Perl modules (background)}
 	\ tsp cpanm -nq --installdeps %d 2>&1 | grep -Ev 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)',
 	\ {Install Perl modules (all)}
 	\ tsp cpanm -nq --installdeps %d --with-develop --with-all-features 2>&1 | grep -Ev 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)',
@@ -834,6 +836,7 @@ nnoremap <c-@> :sync<CR>
 nnoremap [t    :tabprev<CR>
 nnoremap ]t    :tabnext<CR>
 
+nnoremap <silent> rd :!tsp rsync-diff                            %c:p %D/ %i &<CR>
 nnoremap <silent> rp :!tsp rsync-copy --info=name1               %f:p %D/ %i &<CR>
 vnoremap <silent> rp :!tsp rsync-copy --info=name1               %f:p %D/ %i &<CR>
 nnoremap <silent> ru :!tsp rsync-copy --info=name1 -u            %f:p %D/ %i &<CR>
@@ -845,7 +848,7 @@ vnoremap <silent> rP :!tsp rsync-move --info=name1 %f:p %D/ && tsp -d rmdir-recu
 
 nnoremap RD :!rsync-diff --checksum                     %f:p %D/ %i &<CR>
 vnoremap RD :!rsync-diff --checksum                     %f:p %D/ %i &<CR>
-nnoremap Rd :!rsync-diff                                %f:p %D/ %i &<CR>
+nnoremap Rd :!rsync-diff                                %f:p %D/ %m<CR>
 vnoremap Rd :!rsync-diff                                %f:p %D/ %i &<CR>
 nnoremap Rp :!rsync-copy --info=progress2               %f:p %D/ %i &<CR>
 vnoremap Rp :!rsync-copy --info=progress2               %f:p %D/ %i &<CR>

@@ -198,7 +198,7 @@
 	templatedir = ~/.config/git/init-template
 
 [help]
-	autocorrect = 1
+	autocorrect = prompt
 
 [http]
 	sslVerify = true

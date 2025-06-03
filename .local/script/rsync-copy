@@ -11,4 +11,10 @@ rsync_params=(
 	"${RSYNC_COPY_PARAMS[@]}"
 )
 
+if [[ -t 1 ]]; then
+	rsync_params+=("${RSYNC_INFO_TTY[@]}")
+else
+	rsync_params+=("${RSYNC_INFO_FILE[@]}")
+fi
+
 exec rsync "${rsync_params[@]}" "$@"

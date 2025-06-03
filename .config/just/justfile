@@ -6,6 +6,52 @@
 	just --list --justfile {{justfile()}}
 
 [no-cd]
+prepare-btrfs-partition device label prefix:
+	#!/usr/bin/env bash
+	set -Eeuo pipefail
+
+	if [[ $EUID > 0 ]]; then
+		echo 'This operation will destroy data on {{device}}'
+	    exec sudo -k "$0" "$@"
+	fi
+
+	umask '0022'
+	trap 'umount -R "/mnt-{{label}}"; rmdir "/mnt-{{label}}"' EXIT
+	mkdir                              '/mnt-{{label}}'
+
+	wipefs -a                 '{{device}}'
+	mkfs.btrfs -L '{{label}}' '{{device}}'
+
+	current='/mnt-{{label}}/{{prefix}}/.snapshots/current'
+
+	mount -L '{{label}}' -o subvolid=5 '/mnt-{{label}}'
+	mkdir -p                           '/mnt-{{label}}/{{prefix}}'
+	btrfs subvolume create             '/mnt-{{label}}/{{prefix}}/.snapshots'
+	mkdir -p                           "$current"
+	btrfs subvolume create             "$current/snapshot"
+
+	if [[ {{label}} =~ ^var ]]; then
+		chattr +C "$current/snapshot"
+	fi
+
+	chmod a+rX,g+ws                    "$current/snapshot"
+	mkdir  -p                          "$current/snapshot/.snapshots"
+
+	# cat <<HEREDOC > "$current/info.xml"
+	# <?xml version="1.0"?>
+	# <snapshot>
+	#   <type>single</type>
+	#   <num>1</num>
+	#   <date>$(/usr/bin/date --rfc-3339=seconds)</date>
+	#   <description>first root filesystem</description>
+	# </snapshot>
+	# HEREDOC
+
+	if [[ {{prefix}} = "@" ]]; then
+		btrfs subvolume set-default  "$current/snapshot"
+	fi
+
+[no-cd]
 @init-nodejs:
 	rsync-copy ~/.local/share/skel/nodejs/ ./
 

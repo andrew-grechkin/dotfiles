@@ -28,7 +28,7 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 		source "$HOME/.local/lib/shell/fzf.bash"
 
 		fzf_args=(
-			# --bind="alt-A:execute-silent(cmd={7}; tsp -L {6} \$cmd)"
+            --bind="alt-A:execute-silent(cd \$(tsp -i {1} | jq -r .cwd) && tsp \$(tsp -i {1} | jq -r .cmd[]))+reload($FZF_RELOAD_CMD)"
 			# --bind="alt-C:execute-silent(fzf-run-reload <<< \"echo Cleaning up finished tasks...; $0 -j | jq -r '.[].output' | xargs -r rm -f; tsp -C\")"
 			# --bind="alt-R:execute-silent(fzf-run-reload --  echo 'Killing task' {1}; tsp -k {1})"
 			--bind="alt-i:execute( { tsp -i {1}; echo; echo Output:; cat \$(tsp -o {1}); } | \$PAGER)"

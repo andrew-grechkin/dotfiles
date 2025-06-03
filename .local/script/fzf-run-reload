@@ -21,25 +21,29 @@ done
 if [[ -n "${FZF_PORT:-}" && -n "${FZF_RELOAD_CMD:-}" ]]; then
 	reload="$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
 	printf "reload(%s)\n" "$FZF_RELOAD_CMD" >"$reload"
-	reloading=$(cat <<-EO_RELOADING
+	reloading=$(cat <<EO_RELOADING
 		>&2 echo
 		>&2 echo reloading fzf...
 		>&2 curl -s -XPOST localhost:${FZF_PORT:-} --data "@$reload"
-		EO_RELOADING
+EO_RELOADING
 	)
 fi
 
 exec_script="$(mktemp --suffix=-fzf-run-reload --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
+
 if [[ -z "${keep:-}" ]]; then
-	trap 'rm -f "$exec_script"' EXIT
+	cat >> "$exec_script" <<-EO_CLEANUP
+		trap 'rm -f "$exec_script"' EXIT
+
+	EO_CLEANUP
 fi
 
-cat > "$exec_script" <<EO_HEADER
+cat >> "$exec_script" <<EO_HEADER
 function footer() {
 	if [[ "\$1" == "0" ]]; then
 		sleep 1
 
-		${reloading:-}
+${reloading:-}
 
 		sleep $timeout
 	else
