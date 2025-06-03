@@ -64,7 +64,7 @@ ln -srf .local/share/skel                                    ~/.local/share/
 command cp -rf ".config/htop"                                ~/.config/ 2>/dev/null
 command cp -rf ".config/locale.conf"                         ~/.config/ 2>/dev/null
 
-if [[ "$USER" == "agrechkin" ]]; then
+if [[ "$USER" == "agrechkin" || "$USER" == "worker" ]]; then
 	# [[ -d ~/.config/atuin ]] && rm -rf ~/.config/atuin
 
 	# ln -srf .config/atuin                                    ~/.config/

@@ -2,32 +2,43 @@
 
 set -Euo pipefail
 
-source "$HOME/.local/lib/shell/rsync.bash"
-
-rsync_params=(
-	"${RSYNC_DEFAULT_PARAMS[@]}"
-	"${RSYNC_COPY_PARAMS[@]}"
-	"${RSYNC_NAS_PARAMS_COMMON[@]}"
-	-P
-)
 operation="Copying"
+if [[ -x "$(command -v tsp)" ]]; then
+	background="1"
+fi
 
-args=$(getopt --name="$0" --options 'cs' --longoptions 'checksum,sync' -- "$@")
+args=$(getopt --name="$0" --options 'cfs' --longoptions 'checksum,foreground,sync' -- "$@")
 eval set -- "$args"
 
 while ((1)); do
 	case "$1" in
 		-c | --checksum) rsync_params+=(--checksum); shift ;;
+		-f | --foreground) background="0"; shift ;;
 		-s | --sync) rsync_params+=(--delete); operation="Synchronizing"; shift ;;
 		--) shift; break ;;
 	esac
 done
 
-src=${src:-"home.ams::"}
-dst=${dst:-"./"}
+source "$HOME/.local/lib/shell/rsync.bash"
+
+rsync_params+=(
+	"${RSYNC_DEFAULT_PARAMS[@]}"
+	"${RSYNC_COPY_PARAMS[@]}"
+	"${RSYNC_NAS_PARAMS_COMMON[@]}"
+)
+
+if [[ "${background:-1}" == "0" && -t 1 ]]; then
+	rsync_params+=("${RSYNC_INFO_TTY[@]}")
+else
+	runner=(tsp)
+	rsync_params+=("${RSYNC_INFO_FILE[@]}")
+fi
+
+src="${src:-"home.ams::"}"
+dst="${dst:-"./"}"
 
 if [[ $# -eq 0 ]]; then
-	mapfile -t dirs < <(fd --no-hidden -t d -d 1)
+	mapfile -t dirs < <(fd --no-hidden -t d -d 1 | sed 's|/$||')
 else
 	dirs=("$@")
 fi
@@ -37,5 +48,5 @@ source "$HOME/.local/lib/shell/color.bash"
 for dir in "${dirs[@]}"; do
 	echo -e "${FG[olive]}$operation $dir from ${src}...${FX[reset]}"
 
-	rsync "${rsync_params[@]}" "${src}${dir}/" "${dst}${dir}/"
+	"${runner[@]}" rsync "${rsync_params[@]}" "${src}${dir}/" "${dst}${dir}/"
 done

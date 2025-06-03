@@ -9,6 +9,12 @@ if [[ "$XDG_CURRENT_DESKTOP" != "ubuntu:GNOME" ]] \
 		&& ! [[ "${SSH_CLIENT}" =~ /::1/ ]]       \
 		&& ! [[ "${SSH_CLIENT}" =~ /127.0.0/ ]]   \
 		&& [[ -x "$(command -v tmux)" ]]; then
+
+	# the same logic as in .xprofile should be here to make sure remote sessions having proper env
+	[[ -r "$HOME/.local/lib/relocatable-perl-dev.rc" ]] && source "$HOME/.local/lib/relocatable-perl-dev.rc"
+	[[ -r "$HOME/.config/shell/env" ]] && source "$HOME/.config/shell/env"
+	[[ -r "$HOME/.config/shell/node.env" ]] && source "$HOME/.config/shell/node.env"
+
 	exec tmux new-session -s ssh-auto -A
 fi
 

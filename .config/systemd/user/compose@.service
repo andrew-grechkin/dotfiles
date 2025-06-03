@@ -1,0 +1,19 @@
+[Unit]
+Description=%i service with docker compose
+Documentation=man:systemd.unit(5)
+Requires=podman.socket
+Wants=network-online.target
+
+[Service]
+#Type=oneshot
+#RemainAfterExit=true
+Type=simple
+Restart=on-failure
+RestartSec=30
+Environment=DOCKER_HOST=unix://%t/podman/podman.sock
+WorkingDirectory=%h/git/private/compose/%i
+ExecStart=docker-compose up --remove-orphans
+#ExecStop=docker-compose down
+
+[Install]
+WantedBy=default.target

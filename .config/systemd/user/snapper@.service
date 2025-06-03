@@ -1,0 +1,8 @@
+[Unit]
+Description=Take a snapshot of %i via snapper
+Documentation=man:snapper(8)
+
+[Service]
+Type=oneshot
+RemainAfterExit=false
+ExecStart=snapper -c %i create --cleanup-algorithm=timeline --description=timeline

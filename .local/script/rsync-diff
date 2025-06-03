@@ -7,6 +7,13 @@ source "$HOME/.local/lib/shell/rsync.bash"
 rsync_params=(
 	"${RSYNC_DEFAULT_PARAMS[@]}"
 	"${RSYNC_DIFF_PARAMS[@]}"
+	--info=stats
 )
+
+if [[ -t 1 ]]; then
+	rsync_params+=(--omit-dir-times)
+else
+	rsync_params+=()
+fi
 
 exec rsync "${rsync_params[@]}" "$@"
