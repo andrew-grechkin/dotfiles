@@ -1,3 +1,7 @@
 #!/usr/bin/env bash
 
-find "$@" -ignore_readdir_race -type d -empty -exec rmdir --ignore-fail-on-non-empty -p {} \+
+# shellcheck disable=SC2185
+
+# filter out all files
+perl -E 'BEGIN{$\ = "\0"} for (@ARGV) { print $_ if -d $_ }' "$@" \
+	| find -files0-from - -ignore_readdir_race -type d -empty -exec rmdir --ignore-fail-on-non-empty -vp {} \+

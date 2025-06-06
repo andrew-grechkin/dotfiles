@@ -11,6 +11,14 @@ rsync_params=(
 	"${RSYNC_COPY_PARAMS[@]}"
 )
 
+current_script="$(basename "$0")"
+if [[ "$current_script" =~ -sync$ ]]; then
+	rsync_params+=(
+		--update
+		--info=skip
+	)
+fi
+
 if [[ -t 1 ]]; then
 	rsync_params+=("${RSYNC_INFO_TTY[@]}")
 else

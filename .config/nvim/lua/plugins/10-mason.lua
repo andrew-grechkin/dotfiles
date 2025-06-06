@@ -2,7 +2,7 @@ return {
     { -- https://github.com/williamboman/mason.nvim
         'williamboman/mason.nvim',
         cmd = {'Mason'},
-        opts = {},
+        opts = {install_root_dir = vim.fs.joinpath(vim.fn.stdpath('cache'), 'mason')},
     },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     { -- https://github.com/WhoIsSethDaniel/mason-tool-installer.nvim

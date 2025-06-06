@@ -26,7 +26,6 @@ prepend_path () {
 
 append_dirs=(
 	"$HOME/.cache/bin"
-	"$HOME/.cache/fzf/bin"
 	"$GOPATH/bin"
 )
 for p in "${append_dirs[@]}"; do append_path "$p"; done

@@ -23,8 +23,8 @@ source "$HOME/.local/lib/shell/rsync.bash"
 
 rsync_params+=(
 	"${RSYNC_DEFAULT_PARAMS[@]}"
-	"${RSYNC_COPY_PARAMS[@]}"
 	"${RSYNC_NAS_PARAMS_COMMON[@]}"
+	"${RSYNC_COPY_PARAMS[@]}"
 )
 
 if [[ "${background:-1}" == "0" && -t 1 ]]; then
@@ -46,7 +46,7 @@ fi
 source "$HOME/.local/lib/shell/color.bash"
 
 for dir in "${dirs[@]}"; do
-	echo -e "${FG[olive]}$operation $dir from ${src}...${FX[reset]}"
+	echo -e "${FG[olive]}$operation ${dst}$dir from ${src}...${FX[reset]}"
 
 	"${runner[@]}" rsync "${rsync_params[@]}" "${src}${dir}/" "${dst}${dir}/"
 done

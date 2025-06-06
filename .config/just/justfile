@@ -11,7 +11,7 @@ prepare-btrfs-partition device label prefix:
 	set -Eeuo pipefail
 
 	if [[ $EUID > 0 ]]; then
-		echo 'This operation will destroy data on {{device}}'
+		echo 'This operation will destroy data on {{device}}' >&2
 	    exec sudo -k "$0" "$@"
 	fi
 
@@ -50,6 +50,31 @@ prepare-btrfs-partition device label prefix:
 	if [[ {{prefix}} = "@" ]]; then
 		btrfs subvolume set-default  "$current/snapshot"
 	fi
+
+[no-cd]
+prepare-btrfs-cache user:
+	#!/usr/bin/env bash
+	set -Eeuo pipefail
+
+	cache=~{{user}}/.cache
+	u="$(id -un {{user}})"
+	g="$(id -gn {{user}})"
+
+	if [[ -e "$cache" ]]; then
+		echo "Cache already exists: $cache" >&2
+		exit 1
+	fi
+
+	if [[ $EUID > 0 ]]; then
+	    exec sudo "$0" "$@"
+	fi
+
+	umask '0002'
+
+	btrfs subvolume create     "$cache"
+	chown "$u:$g"          -Rc "$cache"
+	chmod a+rX,ug+w,g+s    -Rc "$cache"
+	chattr +C              -R  "$cache"
 
 [no-cd]
 @init-nodejs:

@@ -1,12 +1,1 @@
-#!/usr/bin/env bash
-
-set -Eeuo pipefail
-
-source "$HOME/.local/lib/shell/rsync.bash"
-
-rsync_params=(
-	"${RSYNC_DEFAULT_PARAMS[@]}"
-	"${RSYNC_DIFF_PARAMS_CS[@]}"
-)
-
-exec rsync "${rsync_params[@]}" "$@"
+rsync-diff

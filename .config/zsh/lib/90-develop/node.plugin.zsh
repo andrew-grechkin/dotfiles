@@ -136,13 +136,13 @@ alias npr='npm run'
 
 # => install (if necessary) --------------------------------------------------------------------------------------- {{{1
 
-if [[ ! -x "$HOME/.cache/bin/fnm" ]]; then
-	1>&2 echo "> first run installing fnm to $HOME/.cache/bin (one time initialization)..."
+if [[ ! -x "$HOME/.local/bin/fnm" ]]; then
+	1>&2 echo "> first run installing fnm to $HOME/.local/bin (one time initialization)..."
 	url="https://github.com/Schniz/fnm/releases/latest/download/fnm-linux.zip"
 
 	curl -Lsf "$url"                        \
-		| zcat      >"$HOME/.cache/bin/fnm" \
-		&& chmod a+x "$HOME/.cache/bin/fnm"
+		| zcat      >"$HOME/.local/bin/fnm" \
+		&& chmod a+x "$HOME/.local/bin/fnm"
 
 	rehash
 fi
