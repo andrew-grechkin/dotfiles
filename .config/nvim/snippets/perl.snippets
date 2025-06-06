@@ -273,6 +273,12 @@ snippet head38 "Header: pragmas v5.38" b
 
 	${0}
 
+snippet head36 "Header: pragmas v5.36" b
+	use v5.36;
+	use experimental qw(builtin declared_refs defer for_list refaliasing try);
+
+	${0}
+
 snippet useas "Header: use Carp::Assert" b
     use Carp::Assert       qw(DEBUG);
     use Carp::Assert::More qw(assert_is);

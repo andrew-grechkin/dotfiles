@@ -6,24 +6,28 @@ RSYNC_DEFAULT_PARAMS=(
 	--exclude="#snapshot"
 	--exclude=".Trash-*"
 	--exclude="@eaDir"
+	--hard-links
+	--human-readable
+	--info=stats
+	--open-noatime
 	--sparse
 )
 
 RSYNC_COPY_PARAMS=(
+	--archive
+	--one-file-system
 	--partial
-	-HahXx
+	--xattrs
 )
 
 RSYNC_MOVE_PARAMS=(
-	--partial
+	"${RSYNC_COPY_PARAMS[@]}"
 	--remove-source-files
-	-HahXx
 )
 
 RSYNC_NAS_PARAMS_COMMON=(
 	--no-group
 	--no-owner
-	--omit-dir-times
 	--rsh=ssh
 )
 
@@ -32,24 +36,26 @@ RSYNC_INFO_TTY=(
 )
 
 RSYNC_INFO_FILE=(
-	-i
-	--info=stats
+	--itemize-changes
 )
 
 RSYNC_DIFF_PARAMS_COMMON=(
 	--delete
 	--dry-run
-	-i
+	--itemize-changes
+	--one-file-system
+	--recursive
+	--links
 )
 
 RSYNC_DIFF_PARAMS=(
 	"${RSYNC_DIFF_PARAMS_COMMON[@]}"
-	-HhrtlDXx
+	--times
+	--omit-dir-times
 )
 
 RSYNC_DIFF_PARAMS_CS=(
 	"${RSYNC_DIFF_PARAMS_COMMON[@]}"
 	--checksum
 	--ignore-times
-	-hrlDXx
 )

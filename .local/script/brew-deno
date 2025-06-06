@@ -2,13 +2,13 @@
 
 set -Eeuo pipefail
 
-if [[ ! -x "$HOME/.cache/bin/dvm" ]]; then
-	1>&2 echo "> installing dvm to $HOME/.cache/bin..."
+if [[ ! -x "$HOME/.local/bin/dvm" ]]; then
+	1>&2 echo "> installing dvm to $HOME/.local/bin..."
 	url="https://github.com/justjavac/dvm/releases/download/v1.9.3/dvm-x86_64-unknown-linux-gnu.zip"
 
 	curl -Lsf "$url"                        \
-		| bsdtar -xf- -C "$HOME/.cache/bin" \
-		&& chmod a+x "$HOME/.cache/bin/dvm"
+		| bsdtar -xf- -C "$HOME/.local/bin" \
+		&& chmod a+x "$HOME/.local/bin/dvm"
 fi
 
-"$HOME/.cache/bin/dvm" use latest
+"$HOME/.local/bin/dvm" use latest

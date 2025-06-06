@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+renice -n 5 "$$" > /dev/null
+
+fd --one-file-system -u -t f -x chmod -c a-x,g-s --

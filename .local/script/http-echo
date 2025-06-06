@@ -2,12 +2,12 @@
 
 # ABSTRACT: Simple HTTP server to echo every incoming request to STDOUT as a JSON
 
-use v5.40;
+use v5.36;
 use autodie;
 use open ':locale';
 use utf8;
 use warnings     qw(FATAL utf8);
-use experimental qw(class declared_refs defer refaliasing);
+use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
 # this is accessed at compile time so it must be in begin block
 BEGIN {
@@ -57,12 +57,16 @@ sub main() {
             my $req = $tx->req;
 
             my %data = (
-                body    => $req->json || $req->body_params->to_hash,
                 headers => $req->headers->to_hash,
                 method  => $req->method,
                 path    => $req->url->path->to_string,
                 query   => $req->url->query->to_hash,
             );
+
+            my $req_body = $req->json || $req->body_params->to_hash;
+            if ( $req->method ne 'GET' && $req_body && ( ref $req_body eq 'HASH' && $req_body->%* ) ) {
+                $data{body} = $req_body;
+            }
 
             if ( $data{path} =~ m{/redirect$}x ) {
                 my $location = '/redirected';

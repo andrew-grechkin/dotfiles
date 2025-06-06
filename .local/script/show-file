@@ -23,7 +23,7 @@ function header() {
 function body() {
 	mime=$(file -bi "$1")
 	echo "  FILE: $mime"
-	echo "  MIME: $(xdg-mime query filetype "$1")"
+	echo "  MIME: $([[ -n "$SSH_CLIENT" ]] && unset DISPLAY; xdg-mime query filetype "$1")"
 	echo
 
 	file=$(basename "$1")

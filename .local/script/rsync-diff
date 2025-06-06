@@ -2,18 +2,23 @@
 
 set -Eeuo pipefail
 
+[[ -n "${1:-}" ]] || exit 1
+
 source "$HOME/.local/lib/shell/rsync.bash"
 
 rsync_params=(
 	"${RSYNC_DEFAULT_PARAMS[@]}"
-	"${RSYNC_DIFF_PARAMS[@]}"
-	--info=stats
 )
 
-if [[ -t 1 ]]; then
-	rsync_params+=(--omit-dir-times)
+current_script="$(basename "$0")"
+if [[ "$current_script" =~ -cs$ ]]; then
+	rsync_params+=(
+		"${RSYNC_DIFF_PARAMS_CS[@]}"
+	)
 else
-	rsync_params+=()
+	rsync_params+=(
+		"${RSYNC_DIFF_PARAMS[@]}"
+	)
 fi
 
 exec rsync "${rsync_params[@]}" "$@"

@@ -470,7 +470,7 @@ fileviewer {*.pem,*.crt}
 	\ openssl x509 -inform PEM -text -in %c:p
 
 fileviewer {*.key}
-	\ openssl rsa -check -text -noout -in %c:p
+	\ openssl rsa -check -text -noout -in %c:p || openssl ec -check -text -noout -in %c:p
 
 fileviewer {*.csr,*.req}
 	\ openssl req -verify -text -noout -in %c:p
@@ -836,26 +836,33 @@ nnoremap <c-@> :sync<CR>
 nnoremap [t    :tabprev<CR>
 nnoremap ]t    :tabnext<CR>
 
-nnoremap <silent> rd :!tsp rsync-diff                            %c:p %D/ %i &<CR>
-nnoremap <silent> rp :!tsp rsync-copy --info=name1               %f:p %D/ %i &<CR>
-vnoremap <silent> rp :!tsp rsync-copy --info=name1               %f:p %D/ %i &<CR>
-nnoremap <silent> ru :!tsp rsync-copy --info=name1 -u            %f:p %D/ %i &<CR>
-vnoremap <silent> ru :!tsp rsync-copy --info=name1 -u            %f:p %D/ %i &<CR>
-nnoremap <silent> rs :!tsp rsync-copy --info=name1 -uXx --delete %f:p %D/ %i &<CR>
-vnoremap <silent> rs :!tsp rsync-copy --info=name1 -uXx --delete %f:p %D/ %i &<CR>
-nnoremap <silent> rP :!tsp rsync-move --info=name1 %f:p %D/ && tsp -d rmdir-recursive %f %i &<CR>
-vnoremap <silent> rP :!tsp rsync-move --info=name1 %f:p %D/ && tsp -d rmdir-recursive %f %i &<CR>
+nnoremap <silent> rD :!tsp rsync-diff-cs                -- %f:p %D:p/ %i &<CR>
+vnoremap <silent> rD :!tsp rsync-diff-cs                -- %f:p %D:p/ %i &<CR>
+nnoremap <silent> rP :!tsp rsync-move                   -- %f:p %D:p/ && tsp -d rmdir-recursive %f:p %i &<CR>
+vnoremap <silent> rP :!tsp rsync-move                   -- %f:p %D:p/ && tsp -d rmdir-recursive %f:p %i &<CR>
+nnoremap <silent> rS :!tsp rsync-sync --xattrs --delete -- %f:p %D:p/ %i &<CR>
+vnoremap <silent> rS :!tsp rsync-sync --xattrs --delete -- %f:p %D:p/ %i &<CR>
 
-nnoremap RD :!rsync-diff --checksum                     %f:p %D/ %i &<CR>
-vnoremap RD :!rsync-diff --checksum                     %f:p %D/ %i &<CR>
-nnoremap Rd :!rsync-diff                                %f:p %D/ %m<CR>
-vnoremap Rd :!rsync-diff                                %f:p %D/ %i &<CR>
-nnoremap Rp :!rsync-copy --info=progress2               %f:p %D/ %i &<CR>
-vnoremap Rp :!rsync-copy --info=progress2               %f:p %D/ %i &<CR>
-nnoremap Ru :!rsync-copy --info=progress2 -u            %f:p %D/ %i &<CR>
-vnoremap Ru :!rsync-copy --info=progress2 -u            %f:p %D/ %i &<CR>
-nnoremap Rs :!rsync-copy --info=progress2 -uXx --delete %f:p %D/ %i &<CR>
-vnoremap Rs :!rsync-copy --info=progress2 -uXx --delete %f:p %D/ %i &<CR>
+nnoremap <silent> rd :!tsp rsync-diff                   -- %f:p %D:p/ %i &<CR>
+vnoremap <silent> rd :!tsp rsync-diff                   -- %f:p %D:p/ %i &<CR>
+nnoremap <silent> rp :!tsp rsync-copy                   -- %f:p %D:p/ %i &<CR>
+vnoremap <silent> rp :!tsp rsync-copy                   -- %f:p %D:p/ %i &<CR>
+nnoremap <silent> rs :!tsp rsync-sync                   -- %f:p %D:p/ %i &<CR>
+vnoremap <silent> rs :!tsp rsync-sync                   -- %f:p %D:p/ %i &<CR>
+
+nnoremap          RC :!rsync-copy --checksum            -- %f:p %D:p/ %m<CR>
+vnoremap          RC :!rsync-copy --checksum            -- %f:p %D:p/ %m<CR>
+nnoremap          RD :!rsync-diff-cs                    -- %f:p %D:p/ %m<CR>
+vnoremap          RD :!rsync-diff-cs                    -- %f:p %D:p/ %m<CR>
+nnoremap          RS :!rsync-sync --xattrs --delete     -- %f:p %D:p/ %m<CR>
+vnoremap          RS :!rsync-sync --xattrs --delete     -- %f:p %D:p/ %m<CR>
+
+nnoremap          Rd :!rsync-diff                       -- %f:p %D:p/ %m<CR>
+vnoremap          Rd :!rsync-diff                       -- %f:p %D:p/ %m<CR>
+nnoremap          Rp :!rsync-copy                       -- %f:p %D:p/ %m<CR>
+vnoremap          Rp :!rsync-copy                       -- %f:p %D:p/ %m<CR>
+nnoremap          Rs :!rsync-sync                       -- %f:p %D:p/ %m<CR>
+vnoremap          Rs :!rsync-sync                       -- %f:p %D:p/ %m<CR>
 
 " => fzf integration (ctrl-t, ctrl-p) ----------------------------------------------------------------------------- {{{1
 
@@ -901,11 +908,13 @@ mark c ~/git/private/dotfiles                    .config
 mark d ~/git/private/dotfiles/submodules/private ssh
 mark h ~
 mark m /media/nfs/home
+mark n ~/git/private/dotfiles/.config/nvim       init.lua
 mark r \/
 mark s ~/.local/share
 mark t ~/.local/state
 mark u $XDG_RUNTIME_DIR
-mark v ~/git/private/dotfiles/.config/nvim       init.lua
+mark v /volumes
+mark q /volumes/var/torrent                      finished
 
 " => file icons --------------------------------------------------------------------------------------------------- {{{1
 

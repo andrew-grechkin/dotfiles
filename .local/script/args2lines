@@ -4,8 +4,15 @@ set -Eeuo pipefail
 
 # ABSTRACT: convert shell-encoded tokens provided via cmd line or stdin to lines without quotes
 
+current_script="$(basename "$0")"
+if [[ "$current_script" =~ 0$ ]]; then
+	delim='\0'
+else
+	delim='\n'
+fi
+
 if [[ -n "$*" ]]; then
-	echo "${*@Q}"
+	printf '%s'"$delim" "$@"
 elif [[ ! -t 0 ]]; then
-	cat
-fi | xargs -rn1 echo
+	cat | xargs -r printf '%b'"$delim"
+fi

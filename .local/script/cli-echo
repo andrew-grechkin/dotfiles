@@ -3,7 +3,8 @@
 source "$HOME/.local/lib/shell/color.bash"
 
 echo -e "i'am: ${FG[blue]}'$0'${FX[reset]}"
-echo "passed args [$#]: ${*@Q}"
+echo "passed args [$#]:"
+printf '%s\n' "$@"
 
 if [[ /dev/stdin -ef /dev/null ]]; then
 	echo -e "${FG[olive]}STDIN  is a ${FX[reset]}/dev/null"

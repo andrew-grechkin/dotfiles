@@ -2,22 +2,28 @@
 
 set -Euo pipefail
 
-source "$HOME/.local/lib/shell/rsync.bash"
+operation="Comparing"
+if [[ -x "$(command -v tsp)" ]]; then
+	background="1"
+fi
 
-rsync_params=(
-	"${RSYNC_DEFAULT_PARAMS[@]}"
-	"${RSYNC_NAS_PARAMS_COMMON[@]}"
-)
-
-args=$(getopt --name="$0" --options 'cs' --longoptions 'checksum,sync' -- "$@")
+args=$(getopt --name="$0" --options 'cf' --longoptions 'checksum,foreground' -- "$@")
 eval set -- "$args"
 
 while ((1)); do
 	case "$1" in
 		-c | --checksum) checksum="1"; shift ;;
+		-f | --foreground) background="0"; shift ;;
 		--) shift; break ;;
 	esac
 done
+
+source "$HOME/.local/lib/shell/rsync.bash"
+
+rsync_params+=(
+	"${RSYNC_DEFAULT_PARAMS[@]}"
+	"${RSYNC_NAS_PARAMS_COMMON[@]}"
+)
 
 if [[ "${checksum:-}" == "1" ]]; then
 	rsync_params+=("${RSYNC_DIFF_PARAMS_CS[@]}")
@@ -25,11 +31,11 @@ else
 	rsync_params+=("${RSYNC_DIFF_PARAMS[@]}")
 fi
 
-src=${src:-"home.ams::"}
-dst=${dst:-"./"}
+src="${src:-"home.ams::"}"
+dst="${dst:-"./"}"
 
 if [[ $# -eq 0 ]]; then
-	mapfile -t dirs < <(fd --no-hidden -t d -d 1)
+	mapfile -t dirs < <(fd --no-hidden -t d -d 1 | sed 's|/$||')
 else
 	dirs=("$@")
 fi
@@ -37,7 +43,7 @@ fi
 source "$HOME/.local/lib/shell/color.bash"
 
 for dir in "${dirs[@]}"; do
-	echo -e "${FG[olive]}Comparing ${dst}${dir} with ${src}...${FX[reset]}"
+	echo -e "${FG[olive]}$operation ${dst}${dir} with ${src}...${FX[reset]}"
 
-	rsync "${rsync_params[@]}" "${src}${dir}/" "${dst}${dir}/"
+	"${runner[@]}" rsync "${rsync_params[@]}" "${src}${dir}/" "${dst}${dir}/"
 done
