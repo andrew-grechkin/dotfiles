@@ -64,7 +64,7 @@ ln -srf .local/share/skel                                    ~/.local/share/
 command cp -rf ".config/htop"                                ~/.config/ 2>/dev/null
 command cp -rf ".config/locale.conf"                         ~/.config/ 2>/dev/null
 
-if [[ "$USER" == "agrechkin" || "$USER" == "worker" ]]; then
+if [[ "$USER" == "agrechkin" ]]; then
 	# [[ -d ~/.config/atuin ]] && rm -rf ~/.config/atuin
 
 	# ln -srf .config/atuin                                    ~/.config/
@@ -86,9 +86,6 @@ if [[ "$USER" == "agrechkin" || "$USER" == "worker" ]]; then
 	ln -srf .config/yamllint                                 ~/.config/
 	ln -srf .config/zathura                                  ~/.config/
 	# ln -srf .config/zellij                                   ~/.config/
-	[[ -f "$HOME/.config/npm" ]] || {
-		command cp -rf ".config/npm"                         ~/.config/
-	}
 	[[ -x "/volume1/local/arch/usr/bin/vim" ]] && {
 		ln -srfn .config/vim                                 ~/.vim
 	}
@@ -111,6 +108,10 @@ if [[ "$USER" == "agrechkin" || "$USER" == "worker" ]]; then
 else
 	ln -srfn .config/vim                                     ~/.config/nvim
 fi
+
+[[ -f "$HOME/.config/npm" ]] || {
+	command cp -rf ".config/npm"                             ~/.config/
+}
 
 [[ -d "$HOME/.config/kdedefaults" ]] || {
 	command cp -rf ".config/kdedefaults"                     ~/.config/

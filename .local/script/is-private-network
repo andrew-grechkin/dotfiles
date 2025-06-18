@@ -3,5 +3,5 @@
 set -Eeo pipefail
 
 {
-	ip route | grep -E '192\.168\.168\.0/24'
+	ip route | grep -E -e '192\.168\.168\.0/24' -e '192\.168\.100\.0/24'
 } &>/dev/null

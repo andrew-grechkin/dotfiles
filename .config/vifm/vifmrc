@@ -176,6 +176,8 @@ command! sign    tsp gpg-sign    %f %i &
 " processing
 command! hardlinker tsp hardlinker -ar %f %i &
 
+command! avault     avault-edit %c
+
 " => File associations -------------------------------------------------------------------------------------------- {{{1
 
 " The file type is for the default programs to be used with a file extension.
@@ -603,7 +605,7 @@ fileviewer <application/x-tar,application/x-*compressed-tar,application/vnd.efi.
 filetype <application/x-tar,application/x-*compressed-tar,application/vnd.efi.img>,
 	\<application/x-cpio*,application/x-rpm>,
 	\<application/epub+zip,application/vnd.rar,application/x-7z-compressed,application/java-archive,application/zip>,
-	\<application/x-zip-compressed-fb2>,
+	\<application/x-zip-compressed-fb2>,<application/vnd.ms-cab-compressed>,<application/x-windows-themepack>,
 	\<application/vnd.debian.binary-package>
 	\ {Archive mount with fuse3-p7zip}
 	\ FUSE_MOUNT|fuse3-p7zip %SOURCE_FILE %DESTINATION_DIR,
@@ -616,7 +618,7 @@ filetype <application/x-tar,application/x-*compressed-tar,application/vnd.efi.im
 fileviewer <application/x-tar,application/x-*compressed-tar,application/vnd.efi.img>,
 	\<application/x-cpio*,application/x-rpm>,
 	\<application/epub+zip,application/vnd.rar,application/x-7z-compressed,application/java-archive,application/zip>,
-	\<application/x-zip-compressed-fb2>,
+	\<application/x-zip-compressed-fb2>,<application/vnd.ms-cab-compressed>,<application/x-windows-themepack>,
 	\<application/vnd.debian.binary-package>
 	\ 7z l %c:p,
 

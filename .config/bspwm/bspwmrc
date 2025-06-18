@@ -27,7 +27,7 @@ bspc config border_width            2
 bspc config borderless_monocle      true
 bspc config bottom_padding          42
 bspc config center_pseudo_tiled     false
-bspc config focus_follows_pointer   true
+bspc config focus_follows_pointer   false
 bspc config gapless_monocle         true
 bspc config honor_size_hints        true
 bspc config pointer_follows_focus   false
@@ -38,7 +38,7 @@ bspc config window_gap              0
 bspc rule -r '*'
 bspc config external_rules_command "$(realpath ~/.local/script/bspwm-external-rules)"
 bspc rule -a '*:*:Picture in Picture' state=floating sticky=on
-bspc rule -a 'TermFloatingSmall'      state=floating center=on rectangle=640x480+0+0
+bspc rule -a 'TermFloatingSmall'      state=floating center=on rectangle=1024x576+0+0
 bspc rule -a 'TermFloating'           state=floating center=on rectangle=1280x720+0+0
 bspc rule -a 'floating'               state=floating center=on rectangle=1280x720+0+0
 bspc rule -a 'gpclient'               state=floating sticky=on

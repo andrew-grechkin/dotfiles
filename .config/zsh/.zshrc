@@ -83,7 +83,7 @@ fi
 
 export PATH
 
-WORDCHARS=${WORDCHARS/\/}
+WORDCHARS="${WORDCHARS/\/}:+"
 
 # => Use zsh help search ------------------------------------------------------------------------------------------ {{{1
 

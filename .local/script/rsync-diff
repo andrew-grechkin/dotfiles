@@ -4,7 +4,8 @@ set -Eeuo pipefail
 
 [[ -n "${1:-}" ]] || exit 1
 
-source "$HOME/.local/lib/shell/rsync.bash"
+# make it relative to work under sudo
+source "$(dirname "$0")/../lib/shell/rsync.bash"
 
 rsync_params=(
 	"${RSYNC_DEFAULT_PARAMS[@]}"

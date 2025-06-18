@@ -50,7 +50,7 @@ if ($xprop =~ m/GlobalProtect/ms) {
     $output .= ' state=floating focus=off';
 } else {
     if ($xprop =~ m/_NET_WM_STATE_ABOVE/xms) {
-        $output .= ' layer=above state=floating';
+        $output .= ' layer=above state=floating center=off follow=on';
     }
 
 #     if ($xprop =~ m/_NET_WM_STATE_STAYS_ON_TOP/xms) {

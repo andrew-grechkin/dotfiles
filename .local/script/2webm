@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+# ABSTRACT: convert provided video files to webm container without re-encoding
+
+for file in "$@"; do
+	name="$(basename "$file")"
+	base="${name%.*}"
+	ext="${name##*.}"
+
+	[[ "$ext" == "mkv" || "$ext" == "avi" || "$ext" == "mp4" || "$ext" == "mov" || "$ext" == "mpg" || "$ext" == "3gp" ]] || continue
+
+	echo "converting: $file to $base.webm"
+	ffmpeg_args=(
+		-loglevel warning
+		-hide_banner
+		-fflags +genpts
+		-vaapi_device /dev/dri/renderD128
+		-i "$file"
+		-map 0
+		-ignore_unknown
+		-c:v vp9_vaapi
+		# -c:a copy
+		-sn
+		-movflags +faststart
+		-q:v 50
+		-bf -1
+		-vf 'format=nv12,hwupload'
+		-bsf:v 'vp9_raw_reorder,vp9_superframe'
+		"${base}.webm"
+	)
+	[[ -t 1 ]] || ffmpeg_args+=(-nostats)
+
+	ffmpeg "${ffmpeg_args[@]}"
+	touch -r "$file" "${base}.webm"
+done
