@@ -5,8 +5,9 @@ set -Eeuo pipefail
 # ABSTRACT: convert provided video files to mp4 container without re-encoding
 
 for file in "$@"; do
-	base="${file%.*}"
-	ext="${file##*.}"
+	name="$(basename "$file")"
+	base="${name%.*}"
+	ext="${name##*.}"
 
 	[[ "$ext" == "mkv" || "$ext" == "avi" || "$ext" == "webm" ]] || continue
 

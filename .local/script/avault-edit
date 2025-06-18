@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+git-in-repo && {
+	ansible-vault edit --vault-password-file="$(git root)/vault-pass" "$@"
+}

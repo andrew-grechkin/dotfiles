@@ -6,13 +6,82 @@
 	just --list --justfile {{justfile()}}
 
 [no-cd]
+backup-all:
+	#!/usr/bin/env bash
+
+	set -Eeuo pipefail
+
+	for volume in "home"; do
+		just --justfile {{justfile()}} backup "$volume"
+	done
+
+[no-cd]
+backup volume:
+	#!/usr/bin/env bash
+
+	set -Eeuo pipefail
+
+	declare -A targets=(
+		[home]='/volumes/backup/ssd4t'
+	)
+
+	volume="{{volume}}"
+	target="${targets[$volume]}"
+
+	selector='select(
+		.active == false
+		and .default == false
+		and .date != ""
+		and .type == "single"
+		and .cleanup == "number"
+		and has("userdata")
+		and (.userdata | has("important"))
+		and (.userdata | has("id"))
+		and (.userdata.important == "yes")
+	)'
+
+	history="$(snapper -c "$volume" --jsonout ls | jq -Sc ".$volume | sort_by(.date) | reverse | map($selector)")"
+	amount="$(jq -r '. | length' <<< "$history")"
+
+	if (( amount > 0 )); then
+		for i in $(seq 0 1 $(( amount - 1 ))); do
+			current="$(jq -r ".[$i]" <<< "$history")"
+			current_number="$(jq -r '.number' <<< "$current")"
+			current_id="$(jq -r '.userdata.id' <<< "$current")"
+			subvolume="$(jq -r '.subvolume' <<< "$current")"
+
+			if [[ -d "$target/$volume/$current_id/snapshot" ]]; then
+				parent=(-p "$subvolume/.snapshots/$current_number/snapshot")
+				break
+			fi
+		done
+
+		jq -SC <<< "$current"
+
+		target_id="$(date --universal --rfc-3339=seconds)"
+		if id=$(snapper -c "$volume" create -p -c "number"); then
+			mkdir -p "$target/$volume/$target_id"
+			sudo -S btrfs send "${parent[@]}" "$subvolume/.snapshots/$id/snapshot" \
+			| sudo -S btrfs receive "$target/$volume/$target_id/"
+			snapper -c "$volume" modify -d "backup" -u "important=yes,id=$target_id" "$id"
+			# | pv -Wba
+			exit 0
+		fi
+	else
+		snapper -c "$volume" create -p -c "number" -d "backup" -u important=yes
+		exit 0
+	fi
+
+	exit 1
+
+[no-cd]
 prepare-btrfs-partition device label prefix:
 	#!/usr/bin/env bash
 	set -Eeuo pipefail
 
-	if [[ $EUID > 0 ]]; then
+	if (( EUID > 0 )); then
 		echo 'This operation will destroy data on {{device}}' >&2
-	    exec sudo -k "$0" "$@"
+		exec sudo -k "$0" "$@"
 	fi
 
 	umask '0022'
@@ -65,7 +134,7 @@ prepare-btrfs-cache user:
 		exit 1
 	fi
 
-	if [[ $EUID > 0 ]]; then
+	if (( EUID > 0 )); then
 	    exec sudo "$0" "$@"
 	fi
 

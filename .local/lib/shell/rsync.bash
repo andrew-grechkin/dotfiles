@@ -6,11 +6,13 @@ RSYNC_DEFAULT_PARAMS=(
 	--exclude="#snapshot"
 	--exclude=".Trash-*"
 	--exclude="@eaDir"
+	--exclude=".local/share/containers"
 	--hard-links
 	--human-readable
 	--info=stats
 	--open-noatime
 	--sparse
+	--info=nonreg0
 )
 
 RSYNC_COPY_PARAMS=(
