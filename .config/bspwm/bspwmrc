@@ -35,15 +35,28 @@ bspc config pointer_follows_monitor true
 bspc config split_ratio             0.6
 bspc config window_gap              0
 
+tiny='854x480'
+small='1024x576'
+normal='1280x720'
+
+if res="$(xdpyinfo | grep -oP 'dimensions:\s+\d+x\K\S+' 2>/dev/null)"; then
+	if ((res >= 1920)); then
+		tiny='1024x576'
+		small='1280x720'
+		normal='1920x1080'
+	fi
+fi
+
 bspc rule -r '*'
 bspc config external_rules_command "$(realpath ~/.local/script/bspwm-external-rules)"
 bspc rule -a '*:*:Picture in Picture' state=floating sticky=on
-bspc rule -a 'TermFloatingSmall'      state=floating center=on rectangle=1024x576+0+0
-bspc rule -a 'TermFloating'           state=floating center=on rectangle=1280x720+0+0
-bspc rule -a 'floating'               state=floating center=on rectangle=1280x720+0+0
+bspc rule -a 'TermFloatingTiny'       state=floating center=on "rectangle=$tiny+0+0"
+bspc rule -a 'TermFloatingSmall'      state=floating center=on "rectangle=$small+0+0"
+bspc rule -a 'TermFloating'           state=floating center=on "rectangle=$normal+0+0"
+bspc rule -a 'floating'               state=floating center=on "rectangle=$normal+0+0"
 bspc rule -a 'gpclient'               state=floating sticky=on
 bspc rule -a 'kscreen_osd_service'    state=floating sticky=on
-bspc rule -a 'matplotlib'             state=floating center=on rectangle=1280x720+0+0
+bspc rule -a 'matplotlib'             state=floating center=on "rectangle=$normal+0+0"
 bspc rule -a 'mpv'                    state=floating sticky=on focus=off border=off
 bspc rule -a 'pinentry'               state=floating sticky=on
 
@@ -56,10 +69,10 @@ bspc rule -a 'Opera'                             desktop='2'
 bspc rule -a 'Qemu-system-x86_64'                desktop='5'
 bspc rule -a 'Screenkey'                         manage=off
 bspc rule -a 'Steam'                             desktop='6'
-bspc rule -a 'Sxiv'                              state=floating center=on rectangle=1280x720+0+0
+bspc rule -a 'Sxiv'                              state=floating center=on "rectangle=$normal+0+0"
 bspc rule -a 'VirtualBox Manager'                desktop='4'
 bspc rule -a 'VirtualBoxVM'                      desktop='5'
-bspc rule -a 'Zathura'                           state=floating center=on rectangle=1280x720+0+0
+bspc rule -a 'Zathura'                           state=floating center=on "rectangle=$normal+0+0"
 bspc rule -a 'crow-translate'                    state=floating
 bspc rule -a 'dolphin'                           desktop='4'
 bspc rule -a 'zoom_linux_float_video_window'     state=floating sticky=on

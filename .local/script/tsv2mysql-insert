@@ -5,8 +5,7 @@ set -Eeuo pipefail
 args="$(getopt --name="$0" --options 't:uz' --longoptions 'table:,update,gzip' -- "$@")"
 eval set -- "$args"
 
-# shellcheck disable=SC2078
-while [ : ]; do
+while ((1)); do
 	case "$1" in
 		-t | --table) table="$2"; shift 2 ;;
 		-u | --update) update="1"; shift ;;

@@ -43,7 +43,7 @@ my (undef, undef, $loc_x, $loc_y, $size_w, $size_h, $min_size_w, $min_size_h, $m
 if ($xprop =~ m/_KDE_NET_WM_WINDOW_TYPE_ON_SCREEN_DISPLAY/xms) {
     $output = 'layer=above center=on manage=on focus=off';
 } elsif (defined $loc_x && defined $loc_y && defined $size_w && defined $size_h && ($size_h || $size_w)) {
-    $output = "center=off rectangle=${size_w}x${size_h}+${loc_x}+${loc_y}";
+##     $output = "center=off rectangle=${size_w}x${size_h}+${loc_x}-2+${loc_y}-2";
 }
 
 if ($xprop =~ m/GlobalProtect/ms) {

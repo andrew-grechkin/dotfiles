@@ -6,4 +6,5 @@ if (( EUID > 0 )); then
 	exec sudo "$0" "$@"
 fi
 
-fd --one-file-system -u -t f -x chmod -c a-x,g-s --
+chmod -R a+rX,ug+w,g-s,o-w .
+find . -type d -exec chmod g+s {} \+

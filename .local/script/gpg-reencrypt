@@ -5,8 +5,7 @@ set -Eeuo pipefail
 args="$(getopt --name="$0" --options='d' --longoptions='detect-recipients' -- "$@")"
 eval set -- "$args"
 
-# shellcheck disable=SC2078
-while [ : ]; do
+while ((1)); do
 	case "$1" in
 		-d | --detect-recipients) detect='1'; shift ;;
 		--) shift; break ;;

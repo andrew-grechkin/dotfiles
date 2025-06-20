@@ -56,8 +56,8 @@ fi
 
 lower_bound="0"
 upper_bound="0"
-# shellcheck disable=SC2078
-while [[ : ]]; do
+
+while ((1)); do
 	upper_bound=$((upper_bound + STEP))
 	if probe "$upper_bound"; then
 		lower_bound="$upper_bound"
@@ -67,8 +67,7 @@ while [[ : ]]; do
 	fi
 done
 
-# shellcheck disable=SC2078
-while [[ : ]]; do
+while ((1)); do
 	mid=$(( lower_bound + (upper_bound - lower_bound) / 2 ))
 	if [[ "$mid" == "$lower_bound" ]]; then
 		MTU="$mid"
