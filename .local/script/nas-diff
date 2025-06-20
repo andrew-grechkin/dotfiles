@@ -18,6 +18,8 @@ while ((1)); do
 	esac
 done
 
+export IS_NAS="1"
+
 source "$HOME/.local/lib/shell/rsync.bash"
 
 rsync_params+=(
@@ -31,8 +33,15 @@ else
 	rsync_params+=("${RSYNC_DIFF_PARAMS[@]}")
 fi
 
-src="${src:-"home.ams::"}"
-dst="${dst:-"./"}"
+if [[ "${background:-1}" == "0" && -t 1 ]]; then
+	rsync_params+=("${RSYNC_INFO_TTY[@]}")
+else
+	runner=(tsp)
+	rsync_params+=("${RSYNC_INFO_FILE[@]}")
+fi
+
+src="${src:-"./"}"
+dst="${dst:-"home3.ams::"}"
 
 if [[ $# -eq 0 ]]; then
 	mapfile -t dirs < <(fd --no-hidden -t d -d 1 | sed 's|/$||')
@@ -43,7 +52,7 @@ fi
 source "$HOME/.local/lib/shell/color.bash"
 
 for dir in "${dirs[@]}"; do
-	echo -e "${FG[olive]}$operation ${dst}${dir} with ${src}...${FX[reset]}"
+	echo -e "${FG[olive]}$operation ${src}$dir with ${dst}$dir...${FX[reset]}"
 
-	"${runner[@]}" rsync "${rsync_params[@]}" "${src}${dir}/" "${dst}${dir}/"
+	"${runner[@]}" rsync "${rsync_params[@]}" "${src}$dir/" "${dst}$dir/"
 done

@@ -26,8 +26,7 @@ fi
 args="$(getopt --name="$0" --options 'i:e:s:t:h' --longoptions 'instance:,engine:,source:,target:,help' -- "$@")"
 eval set -- "$args"
 
-# shellcheck disable=SC2078
-while [ : ]; do
+while ((1)); do
 	case "$1" in
 		-e | --engine) engine="$2"; shift 2 ;;
 		-i | --instance) instance="$2"; shift 2 ;;

@@ -2,9 +2,9 @@
 
 set -Eeuo pipefail
 
-cat << EOF | fzf-execute-no-abort
-Touchpad toggle		$HOME/.local/script/touchpad-toggle
-QR code to clipboard	$HOME/.local/script/qrcode2text
-Screen to clipboard	$HOME/.local/script/screen2text
+cat << EOF | fzf-execute
+Touchpad toggle		$HOME/.local/script/exec-detached $HOME/.local/script/touchpad-toggle
+QR code to clipboard	$HOME/.local/script/exec-detached $HOME/.local/script/qrcode2text
+Screen to clipboard	$HOME/.local/script/exec-detached $HOME/.local/script/screen2text
 Generage password	$HOME/.local/script/passgen
 EOF

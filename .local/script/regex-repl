@@ -17,8 +17,7 @@ eval set -- "$args"
 
 query='.'
 
-# shellcheck disable=SC2078
-while [ : ]; do
+while ((1)); do
 	case "$1" in
 		-q | --query) query="$2"; shift 2 ;;
 		--) shift; break ;;

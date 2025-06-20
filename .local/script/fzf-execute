@@ -7,8 +7,7 @@ eval set -- "$args"
 
 column='2'
 
-# shellcheck disable=SC2078
-while [ : ]; do
+while ((1)); do
 	case "$1" in
 		-c | --column) column="$2"; shift 2 ;;
 		--) shift; break ;;
@@ -16,15 +15,17 @@ while [ : ]; do
 done
 
 fzf_cmd=(
-	fzf
 	--ansi
-	--bind="enter:become(exec 2>>${XDG_RUNTIME_DIR}/$(basename "$0").log; echo \>/dev/null \</dev/null nohup {${column}..} \& disown\; sleep 0.2 | tee -a /dev/stderr | bash)"
+	# --bind="enter:become(exec 2>>${XDG_RUNTIME_DIR}/$(basename "$0").log; echo \>/dev/null \</dev/null nohup {${column}..} \& disown\; sleep 0.2 | tee -a /dev/stderr | bash)"
+	--bind="ctrl-m:become(exec 2>>${XDG_RUNTIME_DIR}/$(basename "$0").log; eval {${column}..})"
 	--bind="ctrl-y:execute-silent(echo -n {${column}..} | clipcopy)"
 	--delimiter=$'\u0009'
+	--header="Enter:execute"
 	--no-multi
+	--preview-window="right:60%:border-left:wrap:hidden"
 	--preview="echo {${column}..}"
 	--reverse
 	--with-nth="..$((column - 1))"
 )
 
-exec "${fzf_cmd[@]}" "$@"
+FZF_DEFAULT_OPTS_FILE="" exec fzf "${fzf_cmd[@]}" "$@"

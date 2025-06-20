@@ -10,10 +10,15 @@ RSYNC_DEFAULT_PARAMS=(
 	--hard-links
 	--human-readable
 	--info=stats
-	--open-noatime
 	--sparse
-	--info=nonreg0
 )
+
+if [[ "${IS_NAS:-}" != "1" ]]; then
+	RSYNC_DEFAULT_PARAMS+=(
+		--open-noatime
+		--info=nonreg0
+	)
+fi
 
 RSYNC_COPY_PARAMS=(
 	--archive

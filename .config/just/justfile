@@ -16,6 +16,16 @@ backup-all:
 	done
 
 [no-cd]
+backup-all-to-nas host="home3.ams":
+	#!/usr/bin/env bash
+
+	set -Eeuo pipefail
+
+	for volume in "home" "srv"; do
+		just --justfile {{justfile()}} backup-to-nas '{{host}}' "$volume"
+	done
+
+[no-cd]
 backup volume:
 	#!/usr/bin/env bash
 
@@ -36,39 +46,99 @@ backup volume:
 		and .cleanup == "number"
 		and has("userdata")
 		and (.userdata | has("important"))
-		and (.userdata | has("id"))
 		and (.userdata.important == "yes")
 	)'
 
 	history="$(snapper -c "$volume" --jsonout ls | jq -Sc ".$volume | sort_by(.date) | reverse | map($selector)")"
 	amount="$(jq -r '. | length' <<< "$history")"
 
-	if (( amount > 0 )); then
-		for i in $(seq 0 1 $(( amount - 1 ))); do
-			current="$(jq -r ".[$i]" <<< "$history")"
-			current_number="$(jq -r '.number' <<< "$current")"
-			current_id="$(jq -r '.userdata.id' <<< "$current")"
-			subvolume="$(jq -r '.subvolume' <<< "$current")"
+	if (( amount == 0 )); then
+		snapper -c "$volume" create -c "number" -d "backup" -u important="yes"
+		echo "Initial snapshot created"
+		exit 0
+	fi
 
-			if [[ -d "$target/$volume/$current_id/snapshot" ]]; then
-				parent=(-p "$subvolume/.snapshots/$current_number/snapshot")
-				break
-			fi
-		done
+	for i in $(seq 0 1 $(( amount - 1 ))); do
+		current="$(jq -r ".[$i]" <<< "$history")"
+		current_number="$(jq -r '.number' <<< "$current")"
+		current_id="$(jq -r '.userdata.id' <<< "$current")"
+		subvolume="$(jq -r '.subvolume' <<< "$current")"
 
-		jq -SC <<< "$current"
-
-		target_id="$(date --universal --rfc-3339=seconds)"
-		if id=$(snapper -c "$volume" create -p -c "number"); then
-			mkdir -p "$target/$volume/$target_id"
-			sudo -S btrfs send "${parent[@]}" "$subvolume/.snapshots/$id/snapshot" \
-			| sudo -S btrfs receive "$target/$volume/$target_id/"
-			snapper -c "$volume" modify -d "backup" -u "important=yes,id=$target_id" "$id"
-			# | pv -Wba
-			exit 0
+		if [[ -d "$target/$volume/$current_id/snapshot" ]]; then
+			parent=(-p "$subvolume/.snapshots/$current_number/snapshot")
+			break
 		fi
-	else
-		snapper -c "$volume" create -p -c "number" -d "backup" -u important=yes
+	done
+
+	jq -SC <<< "$current"
+
+	target_id="$(date --universal --rfc-3339=seconds)"
+	if id=$(snapper -c "$volume" create -p -c "number"); then
+		mkdir -p "$target/$volume/$target_id"
+		sudo -S btrfs send "${parent[@]}" "$subvolume/.snapshots/$id/snapshot" \
+			| sudo -S btrfs receive "$target/$volume/$target_id/"
+		snapper -c "$volume" modify -d "backup" -u "important=yes,id=$target_id" "$id"
+		exit 0
+	fi
+
+	exit 1
+
+[no-cd]
+backup-to-nas host volume:
+	#!/usr/bin/env bash
+
+	set -Eeuo pipefail
+
+	declare -A targets=(
+		[home]='/volume1/backup-home'
+		[srv]='/volume1/backup-srv'
+	)
+
+	volume="{{volume}}"
+	target="${targets[$volume]}"
+
+	selector='select(
+		.active == false
+		and .default == false
+		and .date != ""
+		and .type == "single"
+		and .cleanup == "number"
+		and (.description == "backup" or .description == "remote-backup")
+		and has("userdata")
+		and (.userdata | has("important"))
+		and (.userdata.important == "yes")
+	)'
+
+	history="$(snapper -c "$volume" --jsonout ls | jq -Sc ".$volume | sort_by(.date) | reverse | map($selector)")"
+	amount="$(jq -r '. | length' <<< "$history")"
+
+	if (( amount == 0 )); then
+		snapper -c "$volume" create -c "number" -d "remote-backup" -u important="yes"
+		echo "Initial snapshot created"
+		exit 0
+	fi
+
+	for i in $(seq 0 1 $(( amount - 1 ))); do
+		current="$(jq -r ".[$i]" <<< "$history")"
+		current_number="$(jq -r '.number' <<< "$current")"
+		current_id="$(jq -r '.userdata.id' <<< "$current")"
+		subvolume="$(jq -r '.subvolume' <<< "$current")"
+
+		if [[ -n "$current_id" ]] && ssh -Tx '{{host}}' bash -s <<< "test -d '$target/$current_id/snapshot'"; then
+			parent=(-p "$subvolume/.snapshots/$current_number/snapshot")
+			break
+		fi
+	done
+
+	jq -SC <<< "$current"
+
+	target_id="$(date --universal --rfc-3339=seconds)"
+	if id=$(snapper -c "$volume" create -p -c "number" -d "ongoing backup to {{host}}"); then
+		ssh -Tx '{{host}}' bash -s <<< "mkdir -p '$target/$target_id'"
+		sudo btrfs send "${parent[@]}" "$subvolume/.snapshots/$id/snapshot" \
+			| pv -Wbat \
+			| ssh -Tx '{{host}}' "bash -c \"sudo -S btrfs receive -v '$target/$target_id/'\""
+		snapper -c "$volume" modify -d "remote-backup" -u "important=yes,id=$target_id" "$id"
 		exit 0
 	fi
 
@@ -205,3 +275,14 @@ films-list dir="/media/nfs/home/video":
 			echo -e "$line\tmpv --quiet -- \"{{dir}}/$line\""
 		done < <(fd -t file -e webm -e mkv -e avi -e mp4 -e ts --relative-path)
 	} | sort
+
+test-ssh-speed host="localhost":
+	#!/usr/bin/env bash
+	set -Euo pipefail
+
+	for i in `ssh -Q cipher`; do
+		dd if=/dev/urandom bs=1M count=100 2> /dev/null \
+		| ssh -Tx -c $i '{{host}}' "(/usr/bin/env time -p cat) > /dev/null" 2>&1 \
+		| grep real \
+		| awk '{print "'$i': "100 / $2" MB/s" }'
+	done
