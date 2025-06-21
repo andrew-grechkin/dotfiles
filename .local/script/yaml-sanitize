@@ -13,6 +13,8 @@ use Scalar::Util qw(looks_like_number);
 
 use YAML::XS qw();
 
+$YAML::XS::ForceSequenceIndent = 1; ## no critic [Variables::ProhibitPackageVars]
+
 my %options = ('INPLACE' => 0);
 
 # carefull! All comments will be gone
