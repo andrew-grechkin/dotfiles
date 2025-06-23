@@ -423,7 +423,9 @@ fileviewer <application/x-ndjson>,{*.jsonl}
 
 filetype <application/json>
 	\ {View}
-	\ jq -S --indent 2 < %c:p | bat -l JSON --paging=always,
+	\ jq -S --indent 2 < %c:p | colored-json --paging=always,
+	\ {View as yaml}
+	\ json2yaml < %c:p | colored-yaml --paging=always,
 	\ {Repl jq}
 	\ jq-repl %c:p,
 	\ {Reformat json}
@@ -435,7 +437,7 @@ filetype <application/json>
 
 filetype <application/yaml>
 	\ {View}
-	\ yaml-sanitize %c:p | bat -l yaml --paging=always,
+	\ yaml-sanitize %c:p | colored-yaml --paging=always,
 	\ {Repl jq}
 	\ yaml2json %c:p | jq-repl,
 	\ {Sanitize yaml}

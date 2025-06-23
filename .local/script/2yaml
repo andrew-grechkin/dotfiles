@@ -96,6 +96,8 @@ class ParserYAML {
 
     field $type : reader = 'yaml';
 
+    $YAML::XS::ForceSequenceIndent = 1; ## no critic [Variables::ProhibitPackageVars]
+
     method parse($reader) {
         ##         local $YAML::XS::Boolean = 'JSON::PP'; ## no critic [Variables::ProhibitPackageVars]
         my @decoded = YAML::XS::Load($reader->doc);
