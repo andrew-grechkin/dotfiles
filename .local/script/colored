@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+current_script="$(basename "$0")"
+if [[ "$current_script" =~ ya?ml$ ]]; then
+	args=(-l YAML)
+elif [[ "$current_script" =~ json$ ]]; then
+	args=(-l JSON)
+else
+	args=()
+fi
+
+PATH=${PATH//"$(dirname "$0"):"/}
+
+exec bat --paging=never --decorations=never "${args[@]}" "$@"

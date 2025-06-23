@@ -23,7 +23,7 @@ requires "String::ShellQuote";
 requires "Syntax::Keyword::Match";
 requires "Syntax::Operator::Equ";
 requires "Time::Moment";
-requires "YAML::XS";
+# requires "YAML::XS"; # my repo has fixes for sequence indentation
 
 requires "Chipcard::PCSC::Card"; # for pcsc_scan
 
