@@ -92,6 +92,7 @@ function maybe_install_modules() {
 		fi
 
 		if [[ -r "$workdir/cpanfile" && -d "$library" ]] && [[ ! -f "$finished" || "$finished" -ot "$workdir/cpanfile" ]]; then
+			nice cpanm -nq "https://github.com/andrew-grechkin/yaml-libyaml-pm/archive/refs/heads/master.zip"
 			echo "Installing required modules from '$workdir_rel/cpanfile', this may take a while..."
 			nice perlbrew exec --with "$perlbrew_library_name" cpanm -nq --installdeps "$workdir" \
 				&& touch "$finished"

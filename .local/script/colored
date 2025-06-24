@@ -7,6 +7,8 @@ if [[ "$current_script" =~ ya?ml$ ]]; then
 	args=(-l YAML)
 elif [[ "$current_script" =~ json$ ]]; then
 	args=(-l JSON)
+elif [[ "$current_script" =~ tsv ]]; then
+	args=(-l TSV)
 else
 	args=()
 fi
