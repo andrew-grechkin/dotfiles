@@ -36,7 +36,7 @@ GetOptions(
     'repeat|r' => \$repeat,    # continue listening after first request processed
 ) or die "Unable to process command line options\n";
 
-use constant { 'STATUS_REDIRECT' => 301 };
+use constant { 'STATUS_OK' => 200, 'STATUS_REDIRECT' => 301, 'STATUS_SERVER_ERROR' => 500 };
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1
 
@@ -68,20 +68,22 @@ sub main() {
                 $data{body} = $req_body;
             }
 
-            if ( $data{path} =~ m{/redirect$}x ) {
-                my $location = '/redirected';
+            if ( $data{path} =~ m{/redirect (?:/ (30[1-8]) )? $}x ) {
+                my $status = int( $1 // $data{query}{status} // STATUS_REDIRECT() );
+                my $url    = $data{query}{url} // '/redirected';
+
+                $data{status} = sprintf '[%d] %s', $status, $tx->res->default_message($status);
                 say {*STDOUT} encode_json(
                     {
-                        message  => 'redirecting to',
-                        status   => STATUS_REDIRECT(),
-                        location => $location,
+                        location => $url,
+                        %data,
                     },
                 );
-                $tx->res->code( STATUS_REDIRECT() );
-                $tx->res->headers->location($location);
+                $tx->res->code($status);
+                $tx->res->headers->location($url);
             } else {
                 if ( $data{path} =~ m{/error (?:/ ([45]\d{2}) )? $}x ) {
-                    $data{status}         = int( $1 // 500 );
+                    $data{status}         = int( $1 // STATUS_SERVER_ERROR() );
                     $data{status_message} = $tx->res->default_message( $data{status} );
                 }
 
@@ -89,7 +91,7 @@ sub main() {
                 my $body = encode_json( \%data );
                 say {*STDOUT} $body;
 
-                $tx->res->code( $data{status} // 200 );
+                $tx->res->code( $data{status} // STATUS_OK() );
                 $tx->res->headers->content_type('application/json');
                 $tx->res->body($body);
             }
