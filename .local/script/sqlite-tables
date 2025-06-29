@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+sqlite-utils tables "$1" | jq -r '.[].table' | grep -v '^mojo_migrations'

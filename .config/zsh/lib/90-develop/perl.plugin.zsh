@@ -73,6 +73,7 @@ function export-perl5lib() {
 	typeset -gUT PERL5LIB perl5lib
 	perl5lib=("$HOME/.local/lib/perl5"       ${perl5lib[@]})
 	perl5lib=("./lib"                        ${perl5lib[@]})
+	perl5lib=("./app/lib"                    ${perl5lib[@]})
 }
 
 # => main --------------------------------------------------------------------------------------------------------- {{{1

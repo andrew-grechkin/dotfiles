@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 
-# sqlite-utils is not good at importing tsv directly, can loose quotes for example
+set -Eeuo pipefail
 
 if [[ -n "${1:-}" && -t 0 && -r "$1" ]]; then
 	name="$(basename -- "$1")"
 	base="${name%.*}"
-	tsv2jsonl "$1" | sqlite-utils insert --nl "$base.db" "$base" -
+
+	exec sqlite-utils insert --alter --nl -- "$base.db" "$base" "$name"
 elif [[ -n "${1:-}" && ! -t 0 ]]; then
-	tsv2jsonl | sqlite-utils insert --nl "$1.db" "$1" -
+	exec sqlite-utils insert --alter --nl -- "$1.db" "$1" -
 else
 	>&2 echo provide a file or STDIN and a table name
 fi
