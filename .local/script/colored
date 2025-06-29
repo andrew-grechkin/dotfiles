@@ -15,4 +15,4 @@ fi
 
 PATH=${PATH//"$(dirname "$0"):"/}
 
-exec bat --paging=never --decorations=never "${args[@]}" "$@"
+exec bat --paging=never --decorations=never --theme=OneHalfDark "${args[@]}" "$@"

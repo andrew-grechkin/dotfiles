@@ -320,6 +320,10 @@ filextype <audio/midi>,{*.kar,*.mid,*.midi}
 
 " => File associations: HTML -------------------------------------------------------------------------------------- {{{1
 
+filetype <text/html>{*.ep}
+	\ {Edit in vim}
+	\ vi %c:p %n,
+
 filextype <text/html>,{*.html,*.htm}
 	\ {Open with default browser}
 	\ xdg-open %c:p %i &,
@@ -374,11 +378,11 @@ fileviewer <application/vnd.sqlite3>{*.sqlar,.*.sqlar}
 
 filetype <application/vnd.sqlite3>
 	\ {View}
-	\ sqlite-utils rows %c:p %c:r --nl | json2tsv | tsv-show | less --header=1,
+	\ sqlite-utils rows %c:p "$(sqlite-tables %c:p | head -1)" --nl | json2tsv | tsv-show | less --header=1,
 	\ {Browse}
 	\ datasette %c:p -o,
 	\ {Dump}
-	\ sqlite-utils rows %c:p %c:r --nl > %c:r.jsonl %i,
+	\ sqlite-utils rows %c:p "$(sqlite-tables %c:p | head -1)" --nl | jq -c >%c:r.jsonl %i,
 	\ {Repl}
 	\ dbui-add-connection %c:r sqlite:%c:p; nvim -c 'DBUIToggle' -c '/%c:r' -c 'execute "normal \<CR>"' -c '/Tables' -c 'execute "normal \<CR>"',
 fileviewer <application/vnd.sqlite3>
@@ -415,9 +419,9 @@ filetype <application/x-ndjson>,{*.jsonl}
 	\ {View}
 	\ json2tsv %c:p | tsv-show --paging=always,
 	\ {Convert -> sqlite}
-	\ sqlite-utils insert --nl %c:r.db %c:r %c:p,
-	\ {Compact json}
-	\ jq -c < %c:p | sponge %c:p,
+	\ json2sqlite %c:p,
+	\ {Clean json}
+	\ json-clean <%c:p | sponge %c:p
 fileviewer <application/x-ndjson>,{*.jsonl}
 	\ head -30 %c:p | json2tsv,
 
@@ -455,8 +459,7 @@ filetype <text/tab-separated-values>
 	\ {Dump}
 	\ tsv2jsonl %c:p > %c:r.jsonl %i,
 	\ {Convert -> sqlite}
-	\ tsv2jsonl %c:p | sqlite-utils insert --nl %c:r.db %c:r -,
-" sqlite-utils is not good at importing tsv, can loose quotes for example
+	\ tsv2sqlite %c:p,
 
 filetype <text/plain>/[.]md5sum$/
 	\ {Check MD5 hash sum}
@@ -709,6 +712,12 @@ filetype !<inode/directory>
 	\ less %c:p %n,
 	\ {Show file}
 	\ show-file %c:p | $PAGER,
+
+" => File associations: misc -------------------------------------------------------------------------------------- {{{1
+
+filetype <text/plain>{*.rec}
+	\ {Convert -> sqlite}
+	\ grep '\*' %c:p | lines-split '(?=\{)' -r | json2sqlite %c:r,
 
 " => File associations: ansible role ------------------------------------------------------------------------------ {{{1
 

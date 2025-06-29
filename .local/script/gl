@@ -215,7 +215,7 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 				"mr.id;$GL_MR"
 				"pipeline.id;\(.pipeline.id)"
 			)
-			"${fetcher[@]}" -j | json-array-to-tsv "sort_by(.pipeline.id, .pipeline.source, .name)" "${jq_fields[@]}"
+			"${fetcher[@]}" -j | json-array-to-tsv "sort_by(.pipeline.id, .pipeline.source, .id)" "${jq_fields[@]}"
 		fi
 	fi
 fi

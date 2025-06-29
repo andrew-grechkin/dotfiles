@@ -24,7 +24,8 @@ cmd=(
 if [[ "$paging" != 'never' ]] && [[ "$paging" == 'always' || -t 1 ]]; then
 	LESS="${LESS:-"-x4 -iRSw --mouse"}"
 	LESS+=' --header=1'
-	[[ "$paging" == 'always' ]] || LESS+=' -F'
+	# the below condition disables arrow scrolling for some reason
+	# [[ "$paging" == 'always' ]] || LESS+=' --quit-if-one-screen'
 	"${cmd[@]}" | colored-tsv --color=always | less || true
 elif [[ "$color" == "always" ]]; then
 	"${cmd[@]}" | colored-tsv --color=always

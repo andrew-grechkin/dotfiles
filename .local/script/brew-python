@@ -11,3 +11,11 @@ uv python pin --no-project
 
 uv tool install sqlite-utils --force
 uv tool install datasette --force
+
+datasette install datasette-cluster-map
+datasette install datasette-create-view
+datasette install datasette-explain
+datasette install datasette-jq
+datasette install datasette-pretty-json
+datasette install datasette-render-binary
+datasette install datasette-yaml

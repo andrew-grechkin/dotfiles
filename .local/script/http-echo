@@ -9,7 +9,7 @@ use utf8;
 use warnings     qw(FATAL utf8);
 use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
-# this is accessed at compile time so it must be in begin block
+# these are accessed at compile time so it must be in begin block
 BEGIN {
     ## no critic [Variables::RequireLocalizedPunctuationVars]
     # $ENV{MOJO_EVENTEMITTER_DEBUG} = 1;
@@ -22,21 +22,16 @@ use Getopt::Long qw(:config auto_version bundling no_ignore_case);
 use Mojo::JSON           qw(encode_json);
 use Mojo::Server::Daemon qw();
 
-use constant { 'DEFAULT_PORT' => 3456 };
+use constant { 'DEFAULT_PORT' => 3456, 'STATUS_OK' => 200, 'STATUS_REDIRECT' => 301, 'STATUS_SERVER_ERROR' => 500 };
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1
 
 local $OUTPUT_AUTOFLUSH = 1;
 
-my $repeat = $ENV{'HTTP_ECHO_REPEAT'} // 0;
-my $port   = $ENV{'HTTP_ECHO_PORT'}   // DEFAULT_PORT();
-
 GetOptions(
-    'port|p=s' => \$port,      # listening port
-    'repeat|r' => \$repeat,    # continue listening after first request processed
+    'port|p=s' => \( my $port   = $ENV{'HTTP_ECHO_PORT'}   // DEFAULT_PORT() ),    # listening port
+    'repeat|r' => \( my $repeat = $ENV{'HTTP_ECHO_REPEAT'} // 0 ),    # continue listening after first request processed
 ) or die "Unable to process command line options\n";
-
-use constant { 'STATUS_OK' => 200, 'STATUS_REDIRECT' => 301, 'STATUS_SERVER_ERROR' => 500 };
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1
 
@@ -101,7 +96,7 @@ sub main() {
         },
     );
 
-    say {*STDERR} "Web application available at http://127.0.0.1:$port";
+    say {*STDERR} "HTTP echo server is available at http://127.0.0.1:$port";
     $daemon->run;
 
     return 0;
