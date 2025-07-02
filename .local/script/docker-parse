@@ -1,0 +1,37 @@
+#!/usr/bin/env perl
+
+use v5.40;
+use experimental qw(declared_refs refaliasing);
+
+use English qw(-no_match_vars);
+
+## no critic [RegularExpressions::ProhibitComplexRegexes, RegularExpressions::ProhibitEscapedMetacharacters]
+
+use constant {
+    'QR_ARTIFACT' => qr{
+            \A
+            (?<uri>
+                (?<domain>
+                    (?: (?<repository> [^\.]+?)[.] )?
+                    [^:\/]+)
+                (?: :  (?<port> [[:digit:]]{1,5}) )?
+                (?: \/ (?<path> [[:alnum:]\-\/_.]*) )
+            )
+            (?: (?: @(?=sha256:) | :) (?<revision> [[:graph:]]+ ) )?
+            \z
+        }x,
+};
+
+sub match_artifact ($str) {
+    if ($str && $str =~ QR_ARTIFACT()) {
+        my %result = %LAST_PAREN_MATCH;                                        # need to copy LAST_PAREN_MATCH as this is a tied var
+        return \%result;
+    }
+
+    die sprintf("Unable to match artifact string: '%s'\n", $str // 'undef');
+}
+
+my $artifact = match_artifact($ARGV[0]);
+for my $key (sort keys $artifact->%*) {
+    say "$key=$artifact->{$key}";
+}

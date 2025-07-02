@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+function token-print() {
+	local name="$1"
+	local token="$2"
+	local flag="$3"
+
+	if [[ "$flag" == '--shell' ]]; then
+		echo "$name=$token"
+	else
+		echo "$token"
+	fi
+}
+
+if token="$(pass show "$1" 2>/dev/null | head -1)"; then
+	token-print "$1" "$token" "${2:-}"
+elif [[ -r .env ]] && token="$(grep -F "$1=" < .env 2>/dev/null | sed "s|$1=||")"; then
+	token-print "$1" "$token" "${2:-}"
+fi

@@ -1,0 +1,5 @@
+#!/usr/bin/env -S jq --null-input -c --from-file
+
+def products: .[0][] as $x | .[1][] as $y | {lhs: $x, rhs: $y};
+
+[ input, input ] | products

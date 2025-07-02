@@ -271,7 +271,7 @@ filextype <video/*>
 	\ mpv %c:p %i &,
 filetype <video/*>
 	\ {Video play using mpv True color terminal}
-	\ mpv %c:p --really-quiet -vo tct 2>/dev/null,
+	\ mpv %c:p --really-quiet --ao=pulse --hwdec=no -vo tct 2>/dev/null,
 filextype <video/*>
 	\ {Video play using ffplay}
 	\ ffplay -fs -autoexit %c:p %i &,

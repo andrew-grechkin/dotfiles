@@ -15,6 +15,8 @@ requires "Data::Printer";
 requires "DateTime::TimeZone";
 requires "File::Map";
 requires "IO::Async";
+# requires "IO::Async::Loop::Mojo";
+# requires "Mojo::Reactor::IOAsync";
 # requires "LWP::Protocol::https";
 requires "Log::Any";
 requires "Path::Tiny";
@@ -22,6 +24,14 @@ requires "Regexp::Debugger";
 requires "String::ShellQuote";
 requires "Syntax::Keyword::Match";
 requires "Syntax::Operator::Equ";
+requires "Syntax::Operator::Eqr";
+requires "Syntax::Operator::In";
+requires "Syntax::Operator::Is";
+# requires "Syntax::Operator::Zip";
+# requires "Sublike::Extended";
+# requires "Signature::Attribute::Checked";
+# requires "Object::Pad::FieldAttr::Checked";
+# requires "Object::Pad::FieldAttr::Isa";
 requires "Time::Moment";
 # requires "YAML::XS"; # my repo has fixes for sequence indentation
 
