@@ -277,15 +277,17 @@ strict = 0
 [Freenode::DollarAB]
 extra_pair_functions = reduce
 
-[Modules::RequireExplicitPackage]
+[-Modules::RequireExplicitPackage]
 # No point requiring "package main"
-exempt_scripts = 1
+; exempt_scripts = 1
 
 [Moose::ProhibitMultipleWiths]
 equivalent_modules = Moo Moo::Role
 
 [Moose::ProhibitNewMethod]
 equivalent_modules = Moo Moo::Role
+
+[-Subroutines::RequireFinalReturn]
 
 [TestingAndDebugging::ProhibitNoWarnings]
 allow = experimental
@@ -485,6 +487,8 @@ add_packages = Carp Test::Builder
 # allow TODO in comments
 [Bangs::ProhibitFlagComments]
 keywords = XXX FIXME BUG REVIEW
+
+[-CodeLayout::RequireFinalSemicolon]
 
 [ControlStructures::ProhibitPostfixControls]
 # Debugging statements go here (DEBUG), etc.

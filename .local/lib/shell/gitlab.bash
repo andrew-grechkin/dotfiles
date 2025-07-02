@@ -94,10 +94,11 @@ function gl-http-request() {
 
 function gl-http-get-all-pages() {
 	local uri headers pages max_pages
-	max_pages="3"
 	uri="$1"
+	max_pages="3"
 	headers=$(gl-http-request HEAD "$uri" --print=h | headers_to_json)
-	pages=$(jq -r '."x-total-pages"' <<<"$headers")
+	# for some reason there is no x-total-pages when listing pipelines
+	pages=$(jq -r '."x-total-pages" // ."x-next-page" // 1' <<<"$headers")
 	seq "$((pages > max_pages ? max_pages : pages))" \
 		| xargs -rI{} -P0 bash -c "gl-http-request '${uri}&page={}' | jq -cS '.[]' | mbuffer -q" \
 		| jq -cn '[inputs]'

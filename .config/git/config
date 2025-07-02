@@ -121,6 +121,8 @@
 
 	### experimental ---------------------------------------------------------------------------------------------------
 
+    add-main-if-master-is-required = !"git symbolic-ref refs/heads/main refs/heads/master && git symbolic-ref refs/remotes/origin/main refs/remotes/origin/master"
+    add-main-if-trunk-is-required = !"git symbolic-ref refs/heads/main refs/heads/trunk && git symbolic-ref refs/remotes/origin/main refs/remotes/origin/trunk"
 	add-mr-refs  = config --local --add remote.origin.fetch '+refs/merge-requests/*/head:refs/remotes/origin/merge-requests/*/head'
 	make-shallow = !"git fetch --prune-tags --prune; git tag -d \"$(git tag -l)\"; git reflog expire --expire=all --all; git gc --prune=all"
 
