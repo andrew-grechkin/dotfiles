@@ -1,0 +1,23 @@
+{
+  "amp.notifications.enabled": true,
+  "amp.mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "@modelcontextprotocol/server-filesystem",
+        "/path/to/allowed/dir"
+      ]
+    }
+  },
+  "amp.tools.disable": [
+    "browser_navigate",
+    "builtin:edit_file"
+  ],
+  "amp.commands.allowlist": [
+    "git status",
+    "ls -la",
+    "npm run build"
+  ],
+  "amp.commands.strict": false,
+  "amp.dangerouslyAllowAll": false
+}
