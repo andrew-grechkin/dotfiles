@@ -7,7 +7,7 @@
 
 # => environment -------------------------------------------------------------------------------------------------- {{{1
 
-PERL_VERSION_REQUIRED="${PERL_VERSION_REQUIRED:-5.40.2}"
+PERL_VERSION_REQUIRED="${PERL_VERSION_REQUIRED:-5.42.0}"
 
 # detect git repo root or use dir of the script
 if command git rev-parse HEAD &>/dev/null; then

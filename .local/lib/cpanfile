@@ -15,32 +15,25 @@ requires "Data::Printer";
 requires "DateTime::TimeZone";
 requires "File::Map";
 requires "IO::Async";
-# requires "IO::Async::Loop::Mojo";
-# requires "Mojo::Reactor::IOAsync";
-# requires "LWP::Protocol::https";
 requires "Log::Any";
 requires "Path::Tiny";
 requires "Regexp::Debugger";
 requires "String::ShellQuote";
 requires "Syntax::Keyword::Match";
-requires "Syntax::Operator::Equ";
 requires "Syntax::Operator::Eqr";
+requires "Syntax::Operator::Equ";
 requires "Syntax::Operator::In";
 requires "Syntax::Operator::Is";
-# requires "Syntax::Operator::Zip";
-# requires "Sublike::Extended";
-# requires "Signature::Attribute::Checked";
-# requires "Object::Pad::FieldAttr::Checked";
-# requires "Object::Pad::FieldAttr::Isa";
 requires "Time::Moment";
 # requires "YAML::XS"; # my repo has fixes for sequence indentation
 
-requires "Chipcard::PCSC::Card"; # for pcsc_scan
+requires "Chipcard::PCSC::Card"; # for pcsc_scan, may fail
 
 requires "Neovim::Ext";
 requires "Text::CSV";
 
 on 'develop' => sub {
+    requires "Devel::Trace";
     requires "MetaCPAN::Client";
     requires "Perl::Critic";
     requires "Perl::Critic::Pulp";
@@ -57,6 +50,9 @@ feature 'develop' => sub {
 feature 'mojo-extras' => sub {
     requires "EV";
     requires "Mojo::Run3";
+    requires "Mojo::SQLite";
+    # requires "IO::Async::Loop::Mojo";
+    # requires "Mojo::Reactor::IOAsync";
 };
 
 feature 'mojo-openapi' => sub {
@@ -82,6 +78,11 @@ feature 'misc' => sub {
 
 feature 'experiment' => sub {
     requires "List::UtilsBy";
+    requires "Object::Pad::FieldAttr::Checked";
+    requires "Object::Pad::FieldAttr::Isa";
+    requires "Signature::Attribute::Checked";
+    requires "Sublike::Extended";
+    requires "Syntax::Operator::Zip";
     requires "assign";
 };
 
