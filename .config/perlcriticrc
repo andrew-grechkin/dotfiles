@@ -505,16 +505,16 @@ equivalent_modules = Moo Moo::Role
 [ValuesAndExpressions::ProhibitLongChainsOfMethodCalls]
 max_chain_length = 8
 
-[ValuesAndExpressions::ProhibitMagicNumbers]
-allowed_values = -3 -2 -1 0 1 2 3 4 5 6 7 8 9 10 20 24 30 32 42 50 60 64 80 90 100 128 180 200 256 270 301 302 303 308 360 400 401 404 443 500 512 1000 1024 3600 8080
+[-ValuesAndExpressions::ProhibitMagicNumbers]
+#allowed_values = -3 -2 -1 0 1 2 3 4 5 6 7 8 9 10 20 24 30 32 42 50 60 64 80 90 100 128 180 200 256 270 301 302 303 308 360 400 401 404 443 500 512 1000 1024 3600 8080
 # Kind of literals to allow.
 # Valid values: Binary, Exp, Float, Hex, Octal.
 # allowed_types = Float
 # Should anything to the right of a "=>" be allowed?.
-allow_to_the_right_of_a_fat_comma = 1
+#allow_to_the_right_of_a_fat_comma = 1
 # Names of subroutines that create constants.
 # Values that are always included: Readonly, Readonly::Array, Readonly::Hash, Readonly::Scalar, const.
-constant_creator_subroutines = constant
+#constant_creator_subroutines = constant
 
 [Variables::ProhibitPunctuationVars]
 # Values that are always included: $1, $2, $3, $4, $5, $6, $7, $8, $9, $], $_, @_, _.
