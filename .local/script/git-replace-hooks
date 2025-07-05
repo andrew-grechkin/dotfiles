@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+git-in-repo && {
+	git_work_tree="$(git rev-parse --show-toplevel)"
+	git_dir="$(git rev-parse --git-dir)"
+
+	if [[ -d "$git_work_tree/hooks" ]]; then
+		mv "$git_dir/hooks" "$git_dir/hooks-$(date --universal --iso-8601=seconds)"
+		ln -srf "$git_work_tree/hooks" "$git_dir/hooks"
+	elif [[ -d "$XDG_CONFIG_HOME/git/init-template/hooks" ]]; then
+		mv "$git_dir/hooks" "$git_dir/hooks-$(date --universal --iso-8601=seconds)"
+		ln -sf "$XDG_CONFIG_HOME/git/init-template/hooks" "$git_dir/hooks"
+	fi
+}
