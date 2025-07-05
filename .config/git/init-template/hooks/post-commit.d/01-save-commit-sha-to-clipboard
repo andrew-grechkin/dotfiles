@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -Euo pipefail
+
+git log -1 --format=format:%h | clipcopy
+
+exit 0

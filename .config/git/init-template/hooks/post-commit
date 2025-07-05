@@ -1,6 +1,1 @@
-#!/usr/bin/env bash
-
-set -Eeuo pipefail
-
-# save commit message to the clipboard
-git log -1 --format=format:%h | clipcopy
+pre-commit
