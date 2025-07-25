@@ -9,3 +9,4 @@ root="$(git -C "$dir" rev-parse --show-superproject-working-tree --show-toplevel
 
 set -x
 docker build --rm -t "$tag" -f "$1" "$root"
+docker build --rm --squash-all -t "registry.gitlab.com/andrew-grechkin/dotfiles/$tag" -f <(echo FROM "$tag") "$root"

@@ -5,7 +5,7 @@
 	behind       = !"f(){ mu=\"$(git main-upstream)\"; echo \"Behind $mu:\" >&2; git log --oneline \"${1:-HEAD}..$mu\" | wc -l; }; f"
 	branches     = !"git branch --list --no-column --format='%(refname:lstrip=2)'"
 	browse       = !"git-browse"
-	brs          = !"gl --mode branches"
+	brs          = !"gitlab brs"
 	bush         = !"f(){ while true; do git push && break; git pull --no-tags --rebase || break; done }; f"
 	cl           = clone --filter=blob:none
 	commit-again = !"git commit -eF \"$(git root)/.git/COMMIT_EDITMSG\""
@@ -39,7 +39,7 @@
 	m-dt         = !"f(){ git difftool --ignore-space-change -t vimdiff     `git m-span .. $@`; }; f"
 	m-log        = !"f(){ git log                            --color=always `git m-span .. $@`; }; f"
 	m-span       = !"git-merge-span"
-	mrs          = !"gl"
+	mrs          = !"gitlab mrs"
 	mt           = mergetool
 	mt4          = mergetool --tool=nvimdiff4
 	mtg          = mergetool --gui
@@ -116,8 +116,9 @@
 	remove-remote-head  = !"f(){ git remote set-head -d     \"${@:-$(git current-remote)}\"; }; f"
 	restore-remote-head = !"f(){ git remote set-head --auto \"${@:-$(git current-remote)}\"; }; f"
 
-	rewrite-history       = rebase -i --committer-date-is-author-date --force --no-update-refs --empty=keep --exec 'git-x-amend -rd'
-	rewrite-history-as-me = rebase -i --committer-date-is-author-date --force --no-update-refs --empty=keep --exec 'git-x-amend -rdA'
+    rewrite               = rebase -i --autosquash --committer-date-is-author-date --empty=drop --force --no-update-refs --rebase-merges
+	rewrite-history       = rebase -i --autosquash --committer-date-is-author-date --empty=drop --force --no-update-refs --exec 'git-x-amend -rd'
+	rewrite-history-as-me = rebase -i --autosquash --committer-date-is-author-date --empty=drop --force --no-update-refs --exec 'git-x-amend -rdA'
 
 	### experimental ---------------------------------------------------------------------------------------------------
 
