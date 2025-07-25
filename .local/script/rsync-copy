@@ -9,6 +9,7 @@ source "$HOME/.local/lib/shell/rsync.bash"
 rsync_params=(
 	"${RSYNC_DEFAULT_PARAMS[@]}"
 	"${RSYNC_COPY_PARAMS[@]}"
+	"${RSYNC_INFO[@]}"
 )
 
 current_script="$(basename "$0")"
@@ -17,12 +18,6 @@ if [[ "$current_script" =~ -sync$ ]]; then
 		--update
 		--info=skip
 	)
-fi
-
-if [[ -t 1 ]]; then
-	rsync_params+=("${RSYNC_INFO_TTY[@]}")
-else
-	rsync_params+=("${RSYNC_INFO_FILE[@]}")
 fi
 
 exec rsync "${rsync_params[@]}" "$@"
