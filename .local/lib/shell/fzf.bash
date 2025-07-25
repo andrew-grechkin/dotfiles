@@ -26,6 +26,7 @@ function fzf-exec() {
 		--bind="ctrl-m:execute-silent(true)"
 		--bind="ctrl-w:backward-kill-word,esc:cancel"
 		--bind="ctrl-y:execute-silent(echo -n {1} | clipcopy)"
+		--bind="esc:become(true)"
 		--delimiter="\t"
 		--header-lines=1
 		--header="$DEFAULT_FZF_KEYS"
