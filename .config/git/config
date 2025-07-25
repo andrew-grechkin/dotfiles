@@ -116,8 +116,9 @@
 	remove-remote-head  = !"f(){ git remote set-head -d     \"${@:-$(git current-remote)}\"; }; f"
 	restore-remote-head = !"f(){ git remote set-head --auto \"${@:-$(git current-remote)}\"; }; f"
 
-	rewrite-history       = rebase -i --committer-date-is-author-date --force --no-update-refs --empty=keep --exec 'git-x-amend -rd'
-	rewrite-history-as-me = rebase -i --committer-date-is-author-date --force --no-update-refs --empty=keep --exec 'git-x-amend -rdA'
+    rewrite               = rebase -i --autosquash --committer-date-is-author-date --empty=drop --force --no-update-refs --rebase-merges
+	rewrite-history       = rebase -i --autosquash --committer-date-is-author-date --empty=drop --force --no-update-refs --exec 'git-x-amend -rd'
+	rewrite-history-as-me = rebase -i --autosquash --committer-date-is-author-date --empty=drop --force --no-update-refs --exec 'git-x-amend -rdA'
 
 	### experimental ---------------------------------------------------------------------------------------------------
 
