@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+d="${1?delimiter must be provided}"
+shift
+
+exec perl -aF"$d" -lnE 'say foreach @F' "$@"
