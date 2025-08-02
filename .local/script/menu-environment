@@ -14,7 +14,6 @@ fzf_args=(
 	--bind="alt-i:execute(bash -c 'echo -n {}=; $preview_quoted' | ${PAGER:-less})"
 	--bind="ctrl-m:become(bash -c '$preview' | tee >(trim-whole | clipcopy))"
 	--bind="ctrl-y:execute-silent(bash -c 'echo -n {}=; $preview_quoted' | clipcopy)"
-	--header-lines=0
 	--preview-window="right:60%:border-left:wrap:nohidden"
 	--preview="bash -c '$preview'"
 )
