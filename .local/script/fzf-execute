@@ -20,7 +20,7 @@ fzf_cmd=(
 	--bind="ctrl-m:become(exec 2>>${XDG_RUNTIME_DIR}/$(basename "$0").log; eval {${column}..})"
 	--bind="ctrl-y:execute-silent(echo -n {${column}..} | clipcopy)"
 	--delimiter=$'\u0009'
-	--header="Enter:execute"
+	--footer="enter:execute"
 	--no-multi
 	--preview-window="right:60%:border-left:wrap:hidden"
 	--preview="echo {${column}..}"

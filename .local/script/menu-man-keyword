@@ -18,7 +18,6 @@ source "$HOME/.local/lib/shell/fzf.bash"
 fzf_args=(
 	--bind="change:reload(q={q}; man -wK --regex \"\$q\" | head -1000)"
 	--bind="ctrl-m:become(echo -n {})"
-	--header-lines=0
 	--phony
 	--preview="echo {} | 2>/dev/null xargs -r man"
 	--prompt="man keyword > "
