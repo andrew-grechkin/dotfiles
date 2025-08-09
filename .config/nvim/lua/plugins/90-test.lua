@@ -40,7 +40,7 @@ return {
             },
         },
         enabled = not IS_KVM,
-        -- init = function() require('which-key').add({{'<leader>a', group = 'Test'}}) end,
+        init = function() require('which-key').add({{'<leader>a', group = 'Test'}}) end,
         keys = {
             group = 'Test',
             {
