@@ -204,11 +204,11 @@ zle -N widget-fzf-git-search
 zle -N widget-fzf-git-tags
 zle -N widget-open-current-script
 
-bindkey ';;'  widget-fzf-git-files
+bindkey ';;'  widget-fzf-git-files-changed
 bindkey ';H'  widget-fzf-git-hashes-all
 bindkey ';c'  widget-fzf-bks-clusters
 bindkey ';d'  widget-fzf-bks-docker
-bindkey ';f'  widget-fzf-git-files-changed
+bindkey ';f'  widget-fzf-git-files
 bindkey ';g'  widget-fzf-git-log-all-graph
 bindkey ';h'  widget-fzf-git-hashes
 bindkey ';j'  widget-fzf-git-branches
