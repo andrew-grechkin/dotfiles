@@ -477,11 +477,8 @@ filetype <text/plain>/[.]sha512sum$/
 	\ {Check SHA512 hash sum}
 	\ sha512sum -c %c:p %m,
 
-fileviewer {*.pem,*.crt}
-	\ openssl x509 -inform PEM -text -in %c:p
-
-fileviewer {*.key}
-	\ openssl rsa -check -text -noout -in %c:p || openssl ec -check -text -noout -in %c:p
+fileviewer <application/pkix-cert>,{*.pem,*.crt}
+	\ openssl verify -- %c:p; openssl x509 -inform PEM -text -noout -in %c:p
 
 fileviewer {*.csr,*.req}
 	\ openssl req -verify -text -noout -in %c:p
@@ -491,7 +488,7 @@ filetype {*.key}
 	\ certtool --to-p12 --empty-password --load-privkey %c:p --outfile %c:r.p12,
 
 fileviewer {*.key}
-	\ openssl x509 -inform PEM -in %c:p -text
+	\ openssl pkey -check -text -noout -in %c:p
 
 filetype {*.p12}
 	\ {Convert to PEM}
