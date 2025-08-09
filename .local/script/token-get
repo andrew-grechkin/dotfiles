@@ -18,11 +18,13 @@ function token-print() {
 	exit 0
 }
 
-if [[ -n "$org" ]] && token="$(pass show "org/$org" 2>/dev/null | grep -Pom 1 "$name=\K.*")"; then
+if [[ -r .env ]] && token="$(grep -F "$name=" < .env 2>/dev/null | sed "s|$name=||")"; then
+	token-print "$token" "${2:-}"
+elif [[ -n "$org" ]] && token="$(pass show "token/$org/$name" 2>/dev/null | head -1)"; then
+	token-print "$token" "${2:-}"
+elif [[ -n "$org" ]] && token="$(pass show "org/$org" 2>/dev/null | grep -Pom 1 "$name=\K.*")"; then
 	token-print "$token" "${2:-}"
 elif token="$(pass show "token/$name" 2>/dev/null | head -1)"; then
-	token-print "$token" "${2:-}"
-elif [[ -r .env ]] && token="$(grep -F "$name=" < .env 2>/dev/null | sed "s|$name=||")"; then
 	token-print "$token" "${2:-}"
 fi
 

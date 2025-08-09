@@ -45,13 +45,13 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 			--bind="alt-E:execute(fzf-run-reload -ft 1 -- sudo pacman -D --asexplicit {+1})"
 			--bind="alt-R:execute(fzf-run-reload -ft 1 -- sudo pacman -Rcs {+1})"
 			--bind="alt-U:execute(echo 'trizen -Syu --noconfirm --noedit --needed && sudo pacman -Fy' | fzf-run-reload -ft 1)"
-			--header="A-A:install A-C:clean A-D:asdep A-E:asexp A-R:remove A-U:upgrade $DEFAULT_FZF_KEYS"
+			--footer="A-A:install A-C:clean A-D:asdep A-E:asexp A-R:remove A-U:upgrade"
 			--preview="if [[ {5} == 'installed' ]]; then cat <(pacman -Qi {1}) <(pacman -Ql {1} | awk '{print \$2}'); else cat <(pacman -Si {1}) <(pacman -Fl {1} | awk '{print \$2}'); fi"
 			--preview-window="right:50%:border-left:wrap:nohidden,<55(hidden)"
 			--prompt="pacman > "
 			--with-nth="3.."
 		)
-		"$0" | fzf-exec-multi "${fzf_args[@]}"
+		"$0" | fzf-table-multi "${fzf_args[@]}"
 	else
 		source "$HOME/.local/lib/shell/data-processing.bash"
 

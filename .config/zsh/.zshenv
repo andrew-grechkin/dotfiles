@@ -12,6 +12,10 @@ if [[ "$IS_NAS" == "1" ]] || [[ -r /etc/zshrc && ! -d "/etc/boo""kings" ]]; then
 	unsetopt GLOBAL_RCS
 fi
 
+if [[ "$USER" == 'worker' ]]; then
+    umask 0002
+fi
+
 # => enable profiler ---------------------------------------------------------------------------------------------- {{{1
 
 # setopt SOURCE_TRACE

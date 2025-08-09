@@ -41,13 +41,13 @@ git-in-repo && {
 
 	git rev-parse --verify "$ref" &>/dev/null || return
 
-	log_args=(--color=always --ignore-space-change --pretty=fuller --stat --minimal --patch)
-	show_args=(--color=always --ignore-space-change --pretty=fuller --stat)
+	log_args=(--color=always --ignore-space-change --stat --minimal --patch)
+	show_args=(--color=always --ignore-space-change --stat)
 
 	if is_merge_commit "$ref"; then
 		if [[ "${mr_diff:-}" == "1" ]]; then
 			echo -n 'Merge '
-			git --no-pager show "${show_args[@]}" --show-signature --dd --minimal --patch "$ref" "$@"
+			git --no-pager show "${show_args[@]}" --dd --minimal --patch "$ref" "$@"
 		else
 			git --no-pager show "${show_args[@]}" --no-patch "$ref" "$@"
 			echo
@@ -80,6 +80,6 @@ git-in-repo && {
 			span="$ref"
 		fi
 
-		[[ -n "${span:-}" ]] && git --no-pager show "${show_args[@]}" --show-signature --dd --minimal --patch "$span" "$@"
+		[[ -n "${span:-}" ]] && git --no-pager show "${show_args[@]}" --dd --minimal --patch "$span" "$@"
 	fi
 } 2>/dev/null | "${pager[@]}"

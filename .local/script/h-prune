@@ -16,6 +16,7 @@ fzf_args=(
 	--bind="tab:toggle-out,shift-tab:toggle-in,ctrl-a:toggle-all"
 	--multi
 	--reverse
+	--tiebreak="begin,chunk"
 	--track
 )
 
