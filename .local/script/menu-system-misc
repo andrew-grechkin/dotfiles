@@ -7,4 +7,5 @@ Touchpad toggle		$HOME/.local/script/exec-detached $HOME/.local/script/touchpad-
 QR code to clipboard	$HOME/.local/script/exec-detached $HOME/.local/script/qrcode2text
 Screen to clipboard	$HOME/.local/script/exec-detached $HOME/.local/script/screen2text
 Generage password	$HOME/.local/script/passgen
+Clear mpv cache	rm -f $HOME/.cache/mpv/*
 EOF
