@@ -1,0 +1,43 @@
+#!/usr/bin/env -S bash -Eeuo pipefail
+
+exec >&2
+
+[[ "${ALLOW_PUSH_WITHOUT_REBASE:-0}" == "0" ]] || exit 0
+
+remote="$1"
+
+help_message=$(cat << 'EO_HELP'
+To bypass this check:
+  ALLOW_PUSH_WITHOUT_REBASE=1 git push
+
+Or skip this hook once:
+  git push --no-verify
+EO_HELP
+)
+
+while read -r local_ref local_sha _remote_ref _remote_sha; do
+    [[ "$local_sha" =~ ^0+$ ]] && continue # deleting branch on remote
+
+    branch="$(git rev-parse --abbrev-ref "$local_ref")"
+
+    # force pushing main branch
+    remote_main_branch="$(git rev-parse --abbrev-ref "$remote/HEAD")"
+    [[ "$remote_main_branch" == "$remote/$branch" ]] && continue
+
+    # comparing with remote main
+    git fetch "$remote" HEAD --quiet 2>/dev/null || true
+    remote_head_sha="$(git rev-parse "$remote_main_branch" 2>/dev/null)"
+    merge_base=$(git merge-base "$local_sha" "$remote_head_sha")
+
+    if [[ "$merge_base" != "$remote_head_sha" ]]; then
+        commits_behind=$(git rev-list --count "$merge_base..$remote_head_sha")
+        echo "WARNING: Branch '$branch' is not based on latest $remote/HEAD"
+        echo "  your branch is $commits_behind commits behind remote HEAD"
+        echo "  consider: git rebase -i $remote/HEAD"
+        echo
+        echo "$help_message"
+        exit 1
+    fi
+done
+
+exit 0

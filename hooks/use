@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+git-in-repo && {
+	hooks="$(dirname "$0")"
+	git_dir="$(git rev-parse --git-dir)"
+
+	[[ -e "$git_dir/hooks" ]] && mv "$git_dir/hooks" "$git_dir/hooks-$(date --universal --iso-8601=seconds)"
+
+	if [[ "${1:-}" == '--copy' ]]; then
+		cp -r "$hooks" "$git_dir/hooks"
+	else
+		ln -srf "$hooks" "$git_dir/hooks"
+	fi
+}

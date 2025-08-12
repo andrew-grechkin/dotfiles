@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+if git diff --cached --name-only -z --diff-filter=AMR | grep -qz '^hooks/' 2>/dev/null; then
+    cd hooks
+    if res=$(gpg --verify -q "sha256sum.txt.asc" "sha256sum.txt" 2>&1); then
+        ! grep ": FAILED$" <(sha256sum --check "sha256sum.txt") || {
+            >&2 echo "> hint: you might need to run 'hooks/sign' to sign updated hooks"
+            exit 1
+        }
+    else
+        echo "$res"
+        exit 1
+    fi
+fi
