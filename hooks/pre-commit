@@ -1,0 +1,22 @@
+#!/usr/bin/env -S bash -Eeuo pipefail
+
+dir=$(dirname "$0")
+name=$(basename "$0")
+
+source "$dir/.common.bash"
+
+if [[ "$name" == "pre-commit" ]]; then
+    message='> validating index (pre-commit): '
+elif [[ "$name" == "commit-msg" ]]; then
+    message='> checking commit message:       '
+elif [[ "$name" == "post-checkout" ]]; then
+    message='> checking out worktree:         '
+elif [[ "$name" == "post-commit" ]]; then
+    message='> validating new commit:         '
+elif [[ "$name" == "pre-push" ]]; then
+    message='> validating push (pre-push):    '
+else
+    message="> running $name: "
+fi
+
+dispatch "$dir" "$name" "$message" "$@"

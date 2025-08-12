@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+git-in-repo && {
+	git_work_tree="$(git rev-parse --show-toplevel)"
+	git_dir="$(git rev-parse --git-dir)"
+
+	if [[ -d "$git_work_tree/hooks" ]]; then
+		[[ -e "$git_dir/hooks" ]] && mv "$git_dir/hooks" "$git_dir/hooks-$(date --universal --iso-8601=seconds)"
+
+		if [[ "${1:-}" == '--copy' ]]; then
+			cp -r "$git_work_tree/hooks" "$git_dir/hooks"
+		else
+			ln -srf "$git_work_tree/hooks" "$git_dir/hooks"
+		fi
+	elif [[ -d "$HOME/git/private/dotfiles/hooks" ]]; then
+		[[ -e "$git_dir/hooks" ]] && mv "$git_dir/hooks" "$git_dir/hooks-$(date --universal --iso-8601=seconds)"
+
+		if [[ "${1:-}" == '--copy' ]]; then
+			cp -r "$HOME/git/private/dotfiles/hooks" "$git_dir/hooks"
+		else
+			ln -sf "$HOME/git/private/dotfiles/hooks" "$git_dir/hooks"
+		fi
+	fi
+}
