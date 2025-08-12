@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+command docker run --rm -it -v '.:/mnt:ro' -e TERM --env-merge 'PATH=${PATH}:/mnt' -h "$1" "$@"
