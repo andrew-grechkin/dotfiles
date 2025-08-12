@@ -1,0 +1,11 @@
+#!/usr/bin/env -S bash -Eeuo pipefail
+
+dir=$(dirname "$0")
+name=$(basename "$0")
+
+source "$dir/.common.bash"
+
+# post-index-change reports whether the worktree was updated; skip index-only writes
+[[ "${1:-}" == '1' ]] || exit 0
+
+dispatch "$dir" "$name" '> validating worktree update:    ' "$@"

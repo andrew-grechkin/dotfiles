@@ -1,0 +1,8 @@
+#!/usr/bin/env -S bash -Eeuo pipefail
+
+# Keep the zsh configuration free of group/other write bits so compaudit stays quiet after worktree updates.
+
+for path in "$GIT_WORK_TREE/.config" "$GIT_WORK_TREE/.local"; do
+    [[ -e "$path" ]] || continue
+    chmod -R go-w -- "$path"
+done

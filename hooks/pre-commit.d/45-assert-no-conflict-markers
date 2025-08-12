@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+if git rev-parse --verify HEAD >/dev/null 2>&1; then
+    against=HEAD
+else
+    against=$(git hash-object -t tree /dev/null)
+fi
+
+patterns=$(cat << 'EO_PATTERNS'
+^<<<<<<<
+^=======$
+^>>>>>>>
+EO_PATTERNS
+)
+
+ecode='0'
+while IFS= read -r -d '' path; do
+    if output=$(grep -En --color=always -f <(echo "$patterns") "$path" 2>/dev/null); then
+        echo "Error: Merge conflict marker found in: $path"
+        echo "$output"
+        ecode='1'
+    fi
+done < <(git diff --cached --name-only -z --diff-filter=AMR "$against")
+
+[[ "$ecode" == '0' ]] || cat << 'EO_HELP'
+
+Merge conflict markers detected in staged files.
+Please resolve all conflicts before committing.
+
+Or skip this hook once:
+  git commit --no-verify
+EO_HELP
+
+exit "$ecode"
