@@ -9,5 +9,6 @@
 --header="Enter:view A-p:preview C-n/p:p-move C-y:yank"
 --listen
 --preview-window="right:60%:border-left:wrap:hidden"
+--preview='{ show-dir {} || show-file {}; } 2>&1'
 --scroll-off=4
 --tabstop=4
