@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+branch=$(git rev-parse --abbrev-ref HEAD)
+
+# Allow commits if configured for this branch
+[[ "$(git config --bool "hooks.allowcommit.$branch" || echo false)" == "true" ]] && exit 0
+
+# protected branches (configurable via hooks.protectedbranches)
+# Set with: git config --add hooks.protectedbranches main
+#           git config --add hooks.protectedbranches develop
+mapfile -t protected_branches < <(git config --get-all hooks.protectedbranches || echo $'main\nmaster\ndevelop\ntrunk')
+
+help_message=$(cat << 'EO_HELP'
+Please create a feature branch:
+  git checkout -b feature/my-feature
+
+To allow commits to this branch permanently:
+  git config hooks.allowcommit.<branch> true
+
+To configure protected branches:
+  git config --add hooks.protectedbranches main
+  git config --add hooks.protectedbranches develop
+
+Or skip this hook once:
+  git commit --no-verify
+EO_HELP
+)
+
+for protected_branch in "${protected_branches[@]}"; do
+    [[ "$branch" == "$protected_branch" ]] || continue
+    echo "Error: Direct commits to protected branch '$branch' are not allowed."
+    echo
+    echo "$help_message"
+    exit 1
+done
+
+exit 0

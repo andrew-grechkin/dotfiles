@@ -190,14 +190,14 @@
 	patternType    = perl
 
 [gpg "ssh"]
-	allowedSignersFile = ~/.config/git/allowed_signers
+	allowedSignersFile = ~/.config/git/allowed-signers
 
 [gui]
 	encoding = utf-8
 
 [init]
 	defaultBranch = main
-	templatedir = ~/.config/git/init-template
+	templatedir   = ~/.config/git/init-template
 
 [help]
 	autocorrect = prompt

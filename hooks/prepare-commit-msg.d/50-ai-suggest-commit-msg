@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+# Git hook to automatically suggest commit messages using AI
+# This hook runs before the commit message editor is opened
+
+# Arguments: $1 = commit message file, $2 = commit source (optional), $3 = commit SHA (optional)
+commit_source="${2:-}"
+
+# Only run for normal commits (not merge, squash, etc.)
+[[ -z "$commit_source" ]] || exit 1
+
+[[ -x "$(command -v ai-suggest-commit-msg)" ]] || exit 2
+
+git diff --cached --quiet 2>/dev/null && exit 1
+
+echo "> generating commit msg:   $0" >&2
+
+ai-suggest-commit-msg 2>/dev/null
