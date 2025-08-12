@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+dir="$(dirname "$0")"
+name="$(basename "$0")"
+source "$dir/env.bash"
+
+[[ -d "$GIT_DIR/hooks/$name.d" ]] || exit 0
+
+current_message="$(< "$1")"
+for hook in "$GIT_DIR/hooks/$name.d"/*; do
+    [[ -x "$hook" ]] || continue
+    generated_message=$("$hook" "$@") || continue
+    {
+        echo "$generated_message"
+        echo
+        perl -lpE 's/^/# / unless /^#/' <<< "$current_message"
+    } > "$1"
+    break
+done
+
+exit 0
