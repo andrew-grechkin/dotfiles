@@ -16,6 +16,6 @@ elif [[ -n "$*" ]]; then
 	echo "$req: $*"
 else
 	echo "$req: $(clippaste)"
-fi | ai-request | perl -gpE 's/(\R)+$/$1/' | tee >(clipcopy)
+fi | ai | perl -gpE 's/(\R)+$/$1/' | tee >(clipcopy)
 
 &>/dev/null notify-send -i dialog-infomation 'AI request finished' 'Generated polite response' || true

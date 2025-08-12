@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+[[ -r "$1" ]] || {
+	{
+		echo '#!/usr/bin/env python3'
+		echo
+		echo 'import logging'
+		echo 'from pprint import pprint'
+		echo
+		echo 'logging.basicConfig(format="%(asctime)s " + logging.BASIC_FORMAT, level=logging.DEBUG)'
+	} >> "$1"
+
+	chmod a+x "$1"
+}
+
+"${VISUAL:-vim}" "$1"
