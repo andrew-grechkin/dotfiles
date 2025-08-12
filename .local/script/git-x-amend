@@ -31,14 +31,14 @@ if [[ "${keep_dates:-}" == "1" || "${keep_author_date:-}" == "1" ]]; then
 		GIT_COMMITTER_DATE="$(git commit-date "$source")"
 
 		if [[ "$message_generate" == '1' ]]; then
-			ai-suggest-commit-message > "$message"
+			ai-suggest-commit-msg > "$message"
 			amend_params+=(-F "$message")
 		fi
 
 		# echo "Restoring date for: $source"
 		# echo "            author: $GIT_AUTHOR_DATE"
 		# if [[ "${keep_dates:-}" == "1" ]]; then
-		# 	echo "            commit: $GIT_COMMITTER_DATE"
+		# echo "            commit: $GIT_COMMITTER_DATE"
 		# fi
 	else
 		GIT_AUTHOR_DATE="$(git author-date "${dates_from:-HEAD}")"
@@ -56,7 +56,7 @@ if [[ "${keep_dates:-}" == "1" || "${keep_author_date:-}" == "1" ]]; then
 fi
 
 if [[ "$message_generate" == '1' && ! -s "$message" ]]; then
-	ai-suggest-commit-message HEAD > "$message"
+	ai-suggest-commit-msg HEAD > "$message"
 	amend_params+=(-F "$message")
 fi
 

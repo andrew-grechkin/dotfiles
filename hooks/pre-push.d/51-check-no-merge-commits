@@ -1,0 +1,48 @@
+#!/usr/bin/env -S bash -Eeuo pipefail
+
+# Enforce linear history by blocking merge commits in feature branches.
+# Use 'git rebase' to keep feature branches updated, not 'git merge'.
+
+exec >&2
+
+remote="$1"
+
+while read -r local_ref local_sha _remote_ref remote_sha; do
+    [[ "$local_sha" =~ ^0+$ ]] && continue # deleting branch on remote
+
+    branch="$(git rev-parse --abbrev-ref "$local_ref")"
+
+    # skip main branch
+    remote_main_branch="$(git rev-parse --abbrev-ref "$remote/HEAD")"
+    [[ "$remote_main_branch" == "$remote/$branch" ]] && continue
+
+    # find merge commits (commits with 2+ parents)
+    # Only check commits in the local branch, not those already in main
+    if [[ "$remote_sha" =~ ^0+$ ]]; then
+        # new branch: check commits not in main
+        merge_commits=$(git rev-list --merges "$local_sha" --not "$remote_main_branch")
+    else
+        # existing branch: check new commits, excluding those in main
+        merge_commits=$(git rev-list --merges "$local_sha" --not "$remote_sha" "$remote_main_branch")
+    fi
+
+    if [[ -n "$merge_commits" ]]; then
+        count=$(echo "$merge_commits" | wc -l)
+        echo "ERROR: Branch '$branch' contains merge commit(s): $count"
+        echo
+        echo "WHY LINEAR HISTORY MATTERS:"
+        echo "  1. Clarity - Each commit represents one logical change"
+        echo "  2. Bisectability - 'git bisect' works cleanly without half-merged states"
+        echo "  3. Cherry-picking - Linear commits are self-contained and portable"
+        echo "  4. Code review - Simpler to review focused commits vs tangled branches"
+        echo "  5. History archaeology - 'git log' and 'git blame' tell a clear story"
+        echo
+        echo "Merge commits found:"
+        echo "$merge_commits" | head -5 | xargs git log --oneline --no-walk
+        echo
+        echo "Fix with: git rebase $remote_main_branch"
+        exit 1
+    fi
+done
+
+exit 0

@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+[[ -x "$(command -v yamllint)" ]] || exit 0
+
+ecode='0'
+while IFS= read -r -d '' path; do
+    if [[ ! -d "$path" && "$path" =~ \.ya?ml$ ]]; then
+        if ! yamllint -s "$path"; then
+            ecode='1'
+        fi
+    fi
+done < <(git diff --cached --name-only -z --diff-filter=AMR)
+
+[[ "$ecode" == '0' ]] || echo '^^^ issues found in yaml files ^^^'
+
+exit "$ecode"
