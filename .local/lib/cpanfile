@@ -1,3 +1,4 @@
+# Mojolicious and recommended deps
 requires "Cpanel::JSON::XS";
 requires "Future::AsyncAwait";
 requires "IO::Socket::SSL";
@@ -6,41 +7,34 @@ requires "Mojolicious";
 requires "Net::DNS::Native";
 requires "Role::Tiny";
 
+# Widely used modules
 requires "App::cpanminus";
 requires "Carp::Always";
 requires "Carp::Assert";
 requires "Carp::Assert::More";
 requires "Data::Dump";
 requires "Data::Printer";
-requires "DateTime::TimeZone";
 requires "File::Map";
+requires "HTML::Tagset";
 requires "IO::Async";
-# requires "IO::Async::Loop::Mojo";
-# requires "Mojo::Reactor::IOAsync";
-# requires "LWP::Protocol::https";
+requires "JSON::MaybeXS";
 requires "Log::Any";
 requires "Path::Tiny";
 requires "Regexp::Debugger";
 requires "String::ShellQuote";
 requires "Syntax::Keyword::Match";
-requires "Syntax::Operator::Equ";
 requires "Syntax::Operator::Eqr";
+requires "Syntax::Operator::Equ";
 requires "Syntax::Operator::In";
 requires "Syntax::Operator::Is";
-# requires "Syntax::Operator::Zip";
-# requires "Sublike::Extended";
-# requires "Signature::Attribute::Checked";
-# requires "Object::Pad::FieldAttr::Checked";
-# requires "Object::Pad::FieldAttr::Isa";
-requires "Time::Moment";
-# requires "YAML::XS"; # my repo has fixes for sequence indentation
-
-requires "Chipcard::PCSC::Card"; # for pcsc_scan
-
-requires "Neovim::Ext";
 requires "Text::CSV";
+requires "Time::Moment";
+# requires "DateTime::TimeZone::Zoneinfo", git => "https://github.com/andrew-grechkin/DateTime-TimeZone-Zoneinfo.git";
+# requires "DateTime::TimeZone"; dep-hell
+# requires "YAML::XS"; # my fork has fixes for sequence indentation
 
 on 'develop' => sub {
+    requires "Devel::Trace";
     requires "MetaCPAN::Client";
     requires "Perl::Critic";
     requires "Perl::Critic::Pulp";
@@ -54,9 +48,34 @@ feature 'develop' => sub {
     requires "Test2::Harness";
 };
 
+feature 'experiment' => sub {
+    requires "List::UtilsBy";
+    requires "Object::Pad::FieldAttr::Checked";
+    requires "Object::Pad::FieldAttr::Isa";
+    requires "Signature::Attribute::Checked";
+    requires "Sublike::Extended";
+    requires "Syntax::Operator::Zip";
+    requires "assign";
+};
+
+feature 'image' => sub {
+    requires "Image::ExifTool";
+    requires "Image::Hash";
+};
+
+feature 'misc' => sub {
+    requires "CHI";
+    requires "DateTime";
+    requires "Sereal";
+    requires "Sort::Naturally";
+};
+
 feature 'mojo-extras' => sub {
     requires "EV";
     requires "Mojo::Run3";
+    requires "Mojo::SQLite";
+    # requires "IO::Async::Loop::Mojo";
+    # requires "Mojo::Reactor::IOAsync";
 };
 
 feature 'mojo-openapi' => sub {
@@ -68,32 +87,20 @@ feature 'mojo-openapi' => sub {
     requires "Mojolicious::Plugin::SwaggerUI";
 };
 
-feature 'sqlite' => sub {
-    requires "DBD::SQLite";
-    requires "Mojo::SQLite";
-};
-
-feature 'misc' => sub {
-    requires "CHI";
-    requires "DateTime";
-    requires "Sereal";
-    requires "Sort::Naturally";
-};
-
-feature 'experiment' => sub {
-    requires "List::UtilsBy";
-    requires "assign";
-};
-
-feature 'image' => sub {
-    requires "Image::ExifTool";
-    requires "Image::Hash";
-};
-
 feature 'repl' => sub {
 #    requires "DBI::Shell"; dep-hell
 #    requires "Devel::IPerl"; dep-hell
     requires "Reply";
     requires "Term::ReadKey";
     requires "Term::ReadLine::Gnu";
+};
+
+feature 'sqlite' => sub {
+    requires "DBD::SQLite";
+    requires "Mojo::SQLite";
+};
+
+feature 'system' => sub {
+    requires "Chipcard::PCSC::Card"; # for pcsc_scan, may fail
+    requires "Neovim::Ext";
 };
