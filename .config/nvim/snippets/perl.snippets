@@ -47,7 +47,7 @@ snippet xif "Conditional one-line: if"
 	${1:expression} if ${2:condition};
 	${0}
 
-snippet xunl "Conditional one-line: unless"
+snippet xunless "Conditional one-line: unless"
 	${1:expression} unless ${2:condition};
 	${0}
 
@@ -205,7 +205,12 @@ snippet qrr{ "Regex: complex"
 		\A
 		${1:regex}
 		\z
-	}${0:x}
+	}x${0}
+
+snippet mwhile "Regex: global match while"
+	while ( ${1:\$str} =~ m/\\G(${2:.})/xg ) {
+		say \$1;
+	}
 
 # => Helpers ------------------------------------------------------------------------------------------------------ {{{1
 
@@ -229,7 +234,11 @@ snippet slurp "Helper: slurp" b
 	${0}
 
 snippet slurpd "Helper: slurp data" b
-	my (\$data, \$input, \$expected) = YAML::XS::Load(do {local \$/ = undef; <DATA>})->@{qw(data input expected)};
+	my (\%data) = YAML::XS::Load(do {local \$/ = undef; <DATA>});
+	${0}
+
+snippet slurpt "Helper: slurp tests from data" b
+	my (\%data, \%input, \%expected) = YAML::XS::Load(do {local \$/ = undef; <DATA>})->@{qw(data input expected)};
 	${0}
 
 snippet notimp "Helper: not implemented" b
@@ -252,17 +261,13 @@ snippet pvisit "Helper: path visit" b
 # => Headers ------------------------------------------------------------------------------------------------------ {{{1
 
 snippet head "Header: pragmas" b
-	use v5.40;
-	use experimental qw(class declared_refs defer refaliasing);
+	use v5.42;
+	use experimental qw(class declared_refs defer keyword_all keyword_any refaliasing);
 
 	${0}
 
-snippet headf "Header: pragmas full" b
+snippet head40 "Header: pragmas" b
 	use v5.40;
-	use autodie;
-	use open ':locale';
-	use utf8;
-	use warnings     qw(FATAL utf8);
 	use experimental qw(class declared_refs defer refaliasing);
 
 	${0}
@@ -279,15 +284,25 @@ snippet head36 "Header: pragmas v5.36" b
 
 	${0}
 
+snippet headf "Header: pragmas full" b
+	use v5.40;
+	use autodie;
+	use open ':locale';
+	use utf8;
+	use warnings     qw(FATAL utf8);
+	use experimental qw(class declared_refs defer refaliasing);
+
+	${0}
+
 snippet useas "Header: use Carp::Assert" b
-    use Carp::Assert       qw(DEBUG);
+    use Carp::Assert       qw(assert DEBUG);
     use Carp::Assert::More qw(assert_is);
 
 snippet useau "Header: use autoclean" b
 	use namespace::autoclean qw(-except import);
 
 snippet usecarp "Header: use Carp" b
-	use Carp qw(croak);
+	use Carp qw();
 
 snippet usecon "Header: use constant" b
 	use constant {
@@ -299,9 +314,6 @@ snippet usedd "Header: use Data::Dump" b
 
 snippet usedump "Header: use Data::Dumper" b
 	use Data::Dumper qw(Dumper);
-
-snippet usedp "Header: use Data::Printer" b
-	use Data::Printer;
 
 snippet usedt "Header: use DateTime" b
 	use DateTime                   qw();
@@ -324,9 +336,6 @@ snippet useeng "Header: use English" b
 
 snippet useerrno "Header: use Errno" b
 	use Errno qw(:POSIX);
-
-snippet useexpe "Header: use Experimental" b
-	use experimental qw(builtin class declared_refs defer for_list refaliasing try);
 
 snippet useexpo "Header: use Exporter" b
 	use Exporter qw(import);
@@ -358,12 +367,15 @@ snippet usemod "Header: use Module::Runtime" b
 	use Module::Runtime qw(use_module);
 
 snippet useover "Header: use overload" b
-    use overload
-        'bool'     => sub {return true},
-        'fallback' => true;
+	use overload
+		'bool'     => sub {return true},
+		'fallback' => true;
 
 snippet usepath "Header: use Path::Tiny" b
 	use Path::Tiny qw(path);
+
+snippet useprinter "Header: use Data::Printer" b
+	use Data::Printer;
 
 snippet userefu "Header: use Ref::Util" b
 	use Ref::Util qw(is_arrayref is_hashref);
@@ -382,8 +394,8 @@ snippet usetestbas "Header: use Test2::Tools::Basic" b
 	use Test2::Tools::Basic qw(todo);
 
 snippet usetime "Header: use Time::Moment" b
-	use DateTime::TimeZone qw();
-	use Time::Moment       qw();
+	use DateTime::TimeZone::Zoneinfo qw(timezone);
+	use Time::Moment                 qw();
 
 snippet usetimehr "Header: use Time::HiRes" b
 	use Time::HiRes qw(gettimeofday usleep);
@@ -455,48 +467,6 @@ snippet has "Class: Mojo attribute" b
 	has '${1:name}' => sub (\$self) {${2}};
 	${0}
 
-# => Classes (Moo/Moose) ------------------------------------------------------------------------------------------ {{{1
-
-snippet moo "Class: Moo/Moose" b
-	use ${1:Moo};
-	use namespace::autoclean qw();
-
-	${0}
-
-	__PACKAGE__->meta->make_immutable;
-
-snippet mhas "Class: attribute" b
-	has '${1:name}' => (
-		'is' => '${2:ro|rw}',
-	);
-	${0}
-
-snippet mhasbuild "Class: attribute with builder" b
-	has '${1:name}' => (
-		'is'      => '${2:ro|rw}',
-		'lazy'    => 1,
-		'builder' => '_build_${1}',
-	);
-	${0}
-
-	sub _build_${1} (\$self) {
-		${3:...}
-	}
-
-snippet mhasdefault "Class: attribute with defauld" b
-	has '${1:name}' => (
-		'is'      => '${2:ro|rw}',
-		'isa'     => '${3:Str|Int|HashRef|ArrayRef|etc}',
-		'lazy'    => 1,
-		'default' => sub {${4:default_value}},
-	);
-	${0}
-
-snippet moverride "Class: override" b
-	override ${1:name} => sub (${2:\$self}) {
-		${0}
-	};
-
 # => Tests -------------------------------------------------------------------------------------------------------- {{{1
 
 snippet testh "Header: test pragmas" b
@@ -555,30 +525,3 @@ snippet tests "Test: block" b
 	tests '${1:test name}' => sub {
 		${0}
 	};
-
-# => Pod ---------------------------------------------------------------------------------------------------------- {{{1
-
-snippet pod "POD: block"
-	__END__
-
-	=encoding UTF-8
-
-	=head1 NAME
-
-	${1:`(ps/current-package-name)`} -- ${0}
-
-	=head1 DESCRIPTION
-
-	=head1 SYNOPSIS
-
-	=cut
-
-snippet poda "POD: attributes"
-	=head1 ATTRIBUTES
-	${0}
-	=cut
-
-snippet podm "POD: methods"
-	=head1 METHODS
-	${0}
-	=cut

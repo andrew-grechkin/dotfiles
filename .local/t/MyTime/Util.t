@@ -9,6 +9,8 @@ use Test2::Tools::Spec;
 use experimental qw(class declared_refs defer refaliasing);
 
 use MyTime::Util qw(
+    from_epoch
+    from_string
     from_mysql_timestamp
     in_other_timezone
     overwrite_timezone
@@ -17,6 +19,8 @@ use MyTime::Util qw(
 
 my $tz1 = timezone('UTC');
 my $tz2 = timezone('Asia/Tehran');
+my $tz3 = timezone('Europe/Amsterdam');
+my $tz4 = timezone('Europe/Brussels');
 
 {                                                                              # experimental dynamic test
     my %tests = (
@@ -37,24 +41,34 @@ my $tz2 = timezone('Asia/Tehran');
 }
 
 tests 'MyTime::Util::from_mysql_timestamp' => sub {
-    is(from_mysql_timestamp('2021-02-01 00:00:00', $tz1), '2021-02-01T00:00:00Z',      "No DST @{[$tz1->name]}");
-    is(from_mysql_timestamp('2021-05-01 00:00:00', $tz1), '2021-05-01T00:00:00Z',      "   DST @{[$tz1->name]}");
-    is(from_mysql_timestamp('2021-02-01 00:00:00', $tz2), '2021-02-01T00:00:00+03:30', "No DST @{[$tz2->name]}");
-    is(from_mysql_timestamp('2021-05-01 00:00:00', $tz2), '2021-05-01T00:00:00+04:30', "   DST @{[$tz2->name]}");
+    is(from_mysql_timestamp('2021-02-01 00:00:00', $tz1), '2021-02-01T00:00:00Z', "Before    DST @{[$tz1->name]}");
+    is(from_mysql_timestamp('2021-05-01 00:00:00', $tz1), '2021-05-01T00:00:00Z', "          DST @{[$tz1->name]}");
+
+    is(from_mysql_timestamp('2021-02-01 00:00:00', $tz3),
+        '2021-02-01T00:00:00+01:00', "Before    DST @{[$tz3->name]}");
+    is(from_mysql_timestamp('2021-05-01 00:00:00', $tz3),
+        '2021-05-01T00:00:00+02:00', "          DST @{[$tz3->name]}");
+
+    is(from_mysql_timestamp('2021-02-01 00:00:00', $tz4),
+        '2021-02-01T00:00:00+01:00', "Before    DST @{[$tz4->name]}");
+    is(from_mysql_timestamp('2021-05-01 00:00:00', $tz4),
+        '2021-05-01T00:00:00+02:00', "          DST @{[$tz4->name]}");
 };
 
 tests 'MyTime::Util::in_other_timezone' => sub {
-    is(in_other_timezone('2021-02-01T22:00:00+01:00', $tz1),  '2021-02-01T21:00:00Z',      "No DST @{[$tz1->name]}");
-    is(in_other_timezone('2021-05-01 22:00:00+02:00', $tz1,), '2021-05-01T20:00:00Z',      "   DST @{[$tz1->name]}");
-    is(in_other_timezone('2021-02-01T22:00:00+01:00', $tz2),  '2021-02-02T00:30:00+03:30', "No DST @{[$tz2->name]}");
-    is(in_other_timezone('2021-05-01 22:00:00+02:00', $tz2,), '2021-05-02T00:30:00+04:30', "   DST @{[$tz2->name]}");
+    is(in_other_timezone('2021-02-01T22:00:00+01:00', $tz1), '2021-02-01T21:00:00Z',      "No DST @{[$tz1->name]}");
+    is(in_other_timezone('2021-05-01 22:00:00+02:00', $tz1), '2021-05-01T20:00:00Z',      "   DST @{[$tz1->name]}");
+    is(in_other_timezone('2021-02-01T22:00:00+01:00', $tz2), '2021-02-02T00:30:00+03:30', "No DST @{[$tz2->name]}");
+    is(in_other_timezone('2021-05-01 22:00:00+02:00', $tz2), '2021-05-02T00:30:00+04:30', "   DST @{[$tz2->name]}");
 };
 
 tests 'MyTime::Util::overwrite_timezone' => sub {
-    is(overwrite_timezone('2021-02-01T22:00:00+01:00', $tz1),  '2021-02-01T22:00:00Z',      "No DST @{[$tz1->name]}");
-    is(overwrite_timezone('2021-05-01 22:00:00+02:00', $tz1,), '2021-05-01T22:00:00Z',      "   DST @{[$tz1->name]}");
-    is(overwrite_timezone('2021-02-01T22:00:00+01:00', $tz2),  '2021-02-01T22:00:00+03:30', "No DST @{[$tz2->name]}");
-    is(overwrite_timezone('2021-05-01 22:00:00+02:00', $tz2,), '2021-05-01T22:00:00+04:30', "   DST @{[$tz2->name]}");
+    is(overwrite_timezone('2021-02-01T22:00:00+01:00', $tz1), '2021-02-01T22:00:00Z', "No DST @{[$tz1->name]}");
+    is(overwrite_timezone('2021-05-01 22:00:00+02:00', $tz1), '2021-05-01T22:00:00Z', "   DST @{[$tz1->name]}");
+    is(overwrite_timezone('2021-02-01T22:00:00+01:00', $tz2), '2021-02-01T22:00:00+03:30',
+        "No DST @{[$tz2->name]}");
+    is(overwrite_timezone('2021-05-01 22:00:00+02:00', $tz2), '2021-05-01T22:00:00+04:30',
+        "   DST @{[$tz2->name]}");
 };
 
 done_testing();
