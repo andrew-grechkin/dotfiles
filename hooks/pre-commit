@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+dir="$(dirname "$0")"
+name="$(basename "$0")"
+source "$dir/env.bash"
+
+if [[ "$name" == "pre-commit" ]]; then
+	message='> validating index:       '
+elif [[ "$name" == "commit-msg" ]]; then
+	message='> checking commit message:'
+elif [[ "$name" == "post-commit" ]]; then
+	message='> processing new commit:  '
+fi
+
+[[ -d "$GIT_DIR/hooks/$name.d" ]] || exit 0
+
+exec 1>&2
+
+ecode='0'
+for hook in "$GIT_DIR/hooks/$name.d"/*; do
+	if [[ -x "$hook" ]]; then
+		echo "$message $hook" >&2
+		if ! "$hook" "$@"; then
+			ecode='1'
+		fi
+	fi
+done
+
+exit "$ecode"

@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+ecode='0'
+while read -r path; do
+	[[ -d "$path" || "$path" =~ \.rec$ || "$path" =~ \.tsv$ ]] && continue
+
+	if grep -PIHn --color=always '[^\t\#]\t+' "$path"; then
+		ecode='1'
+	fi
+done < <(git diff --cached --name-only --diff-filter=CARM)
+
+[[ "$ecode" == '0' ]] || echo '^^^ tabs might be only at beginnings of lines ^^^'
+
+exit "$ecode"
