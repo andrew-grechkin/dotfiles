@@ -13,4 +13,4 @@ if [[ -t 0 ]]; then
 	echo "$*" | amp
 else
 	cat | amp
-fi
+fi | grep -vE -e '^>(\s|$)' -e '^Thread ID:' | perl -000 -lnE 'say "$_\n"'
