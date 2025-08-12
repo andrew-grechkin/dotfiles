@@ -55,9 +55,9 @@ function body() {
 		yaml_file="$base.yml"
 		[[ -r "$yaml_file" ]] && bat -l yaml "${bat_args[@]}" "$yaml_file"
 		(( size < 10000000 )) && {
-			cols=$(tput cols)
+			cols="${FZF_PREVIEW_COLUMNS:-$(tput cols)}"
 			cols=${cols:-120}
-			{ chafa --clear -c full --view-size "${cols}x${cols}" -f symbols --polite on "$1"; } || true
+			{ chafa --clear -c full --view-size "${cols}x" -f symbols --polite on "$1"; } || true
 		}
 		exit 0
 	elif [[ "$ext" == "conf" ]]; then
