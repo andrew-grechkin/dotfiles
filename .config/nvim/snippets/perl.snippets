@@ -252,6 +252,12 @@ snippet pvisit "Helper: path visit" b
 # => Headers ------------------------------------------------------------------------------------------------------ {{{1
 
 snippet head "Header: pragmas" b
+	use v5.42;
+	use experimental qw(class declared_refs defer keyword_all keyword_any refaliasing);
+
+	${0}
+
+snippet head40 "Header: pragmas" b
 	use v5.40;
 	use experimental qw(class declared_refs defer refaliasing);
 

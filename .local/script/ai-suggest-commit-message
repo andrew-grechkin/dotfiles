@@ -39,13 +39,9 @@ Here is the diff:"
 
 {
 	echo "$request";
-	if [[ -t 0 ]]; then
-		if (( "$(git diff --staged 2>/dev/null | wc -l)" > 0 )); then
-			git diff --staged -- . ':!submodules'
-		else
-			git show -- . ':!submodules'
-		fi
+	if (( "$(git diff --staged 2>/dev/null | wc -l)" > 0 )); then
+		git diff --staged -- . ':!submodules'
 	else
-		cat
+		git show -- . ':!submodules'
 	fi
 } | ai

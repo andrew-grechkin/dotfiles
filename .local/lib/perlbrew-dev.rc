@@ -7,24 +7,24 @@
 
 # => environment -------------------------------------------------------------------------------------------------- {{{1
 
-PERL_VERSION_REQUIRED="${PERL_VERSION_REQUIRED:-5.40.2}"
+PERL_VERSION_REQUIRED="${PERL_VERSION_REQUIRED:-5.42.0}"
 
 # detect git repo root or use dir of the script
 if command git rev-parse HEAD &>/dev/null; then
-	workdir="$(git rev-parse --show-toplevel)"
-	repo_url="$(git config --get remote.origin.url)"
-	repo_name="$(basename -s .git "$repo_url")"
+    workdir="$(git rev-parse --show-toplevel)"
+    repo_url="$(git config --get remote.origin.url)"
+    repo_name="$(basename -s .git "$repo_url")"
 else
-	script="$(realpath -s "${BASH_SOURCE:-$0}")"
-	workdir="$(dirname "$script")"
-	repo_name="${repo_name:-default}"
+    script="$(realpath -s "${BASH_SOURCE:-$0}")"
+    workdir="$(dirname "$script")"
+    repo_name="${repo_name:-default}"
 fi
 workdir_rel=$(realpath -m --relative-base="$PWD" "$workdir")
 
 # enforce local .perlcriticrc if it exists
 perlcritic_path="$workdir/.perlcriticrc"
 if [[ -r "$perlcritic_path" ]]; then
-	export PERLCRITIC="$perlcritic_path"
+    export PERLCRITIC="$perlcritic_path"
 fi
 
 perl_name="perl-$PERL_VERSION_REQUIRED"
@@ -32,95 +32,104 @@ perlbrew_library_name="${perl_name}@dev-$repo_name"
 
 nproc=4
 [[ -x "$(command -v nproc)" ]] && {
-	nproc="$(nproc)"
+    nproc="$(nproc)"
 }
 
 HOSTNAME="${HOSTNAME:-$(hostname)}"
 export PERLBREW_ROOT="${PERLBREW_ROOT:-$XDG_STATE_HOME/perlbrew/$HOSTNAME}"
 export PERLBREW_HOME="${PERLBREW_HOME:-$PERLBREW_ROOT}"
 
-export PATH="$workdir/bin:$workdir/script:$PATH:$PERLBREW_ROOT/bin"
+export PATH="$workdir/bin:$workdir/script:$PERLBREW_ROOT/bin:$PATH"
 export PERL5LIB="$workdir/lib:$HOME/.local/lib/perl5:./lib:${PERL5LIB:-}"
 
 # => check prerequisites ------------------------------------------------------------------------------------------ {{{1
 
 function check_prerequisites() {
-	if ! [[ -x "$(command -v perlbrew)" || -n "$PERLBREW" ]]; then
-		echo "perlbrew not found, installing it from https://perlbrew.pl"
-		curl -sL https://install.perlbrew.pl | bash
-	fi
+    if ! [[ -x "$(command -v perlbrew)" || -n "$PERLBREW" ]]; then
+        echo "perlbrew not found, installing it from https://perlbrew.pl"
+        ( # make sure system perl is injected in shebangs, not something else found in the PATH
+            export PATH="/usr/bin:$PATH"
+            curl -sL https://install.perlbrew.pl | bash
+            perlbrew install-cpanm
+        )
+    fi
 
-	if [[ ! -f "$PERLBREW_ROOT/etc/bashrc" ]]; then
-		perlbrew init
-		perlbrew self-install
-		perlbrew install-patchperl
-	fi
+    # perlbrew exists but directory never was initialized
+    if [[ ! -f "$PERLBREW_ROOT/etc/bashrc" ]]; then
+        perlbrew init
+        perlbrew self-install
+        perlbrew install-cpanm
+        perlbrew install-patchperl
+    fi
 
-	# shellcheck disable=SC1091
-	[[ -n "${PERLBREW_VERSION:-}" ]] || source "$PERLBREW_ROOT/etc/bashrc"
+    # shellcheck disable=SC1091
+    [[ -n "${PERLBREW_VERSION:-}" ]] || source "$PERLBREW_ROOT/etc/bashrc"
 
-	[[ -x "$(command -v cpanm)" ]] || { perlbrew install-cpanm || return 1; }
-	return 0
+    return 0
 }
 
 # => install default perl and library ----------------------------------------------------------------------------- {{{1
 
 function maybe_install_perl() {
-	if ! grep -E "\s${perl_name}\s*$" < <(perlbrew list) &>/dev/null; then
-		# https://raw.githubusercontent.com/Perl/perl5/blead/INSTALL
-		echo "Installing required perl: $perl_name (nproc: $nproc)"
-		nice perlbrew install -nf -j "$nproc" "$PERL_VERSION_REQUIRED" --as "$perl_name" \
-			-Dinc_version_list=none                                                      \
-			-Duserelocatableinc                                                          \
-			|| return 1
-		echo
-	fi
-	return 0
+    if ! grep -E "\s${perl_name}\s*$" < <(perlbrew list) &>/dev/null; then
+        # https://raw.githubusercontent.com/Perl/perl5/blead/INSTALL
+        echo "Installing required perl: $perl_name (nproc: $nproc)"
+        nice perlbrew install -nf -j "$nproc" "$PERL_VERSION_REQUIRED" --as "$perl_name" \
+            -Dinc_version_list=none                                                      \
+            -Duserelocatableinc                                                          \
+            || return 1
+        echo
+    fi
+    return 0
 }
 
 function maybe_install_modules() {
-	library="$PERLBREW_ROOT/libs/${perlbrew_library_name}"
-	finished="$library/finished"
+    library="$PERLBREW_ROOT/libs/${perlbrew_library_name}"
+    export PERL_CPANM_HOME="${PERL_CPANM_HOME:-${XDG_CACHE_HOME:-$HOME/.cache}/cpanm}"
 
-	{
-		if [[ ! -f "$finished" ]]; then
-			if ! grep -E "\s${perlbrew_library_name}\s*$" < <(perlbrew lib-list) &>/dev/null; then
-				echo "Creating Perl local dev library: $perlbrew_library_name"
-				perlbrew lib create "$perlbrew_library_name" || return 1
-				echo
-			fi
-		fi
+    finished="$library/finished"
 
-		if [[ -r "$workdir/cpanfile" && -d "$library" ]] && [[ ! -f "$finished" || "$finished" -ot "$workdir/cpanfile" ]]; then
-			nice cpanm -nq "https://github.com/andrew-grechkin/yaml-libyaml-pm/archive/refs/heads/master.zip"
-			echo "Installing required modules from '$workdir_rel/cpanfile', this may take a while..."
-			nice perlbrew exec --with "$perlbrew_library_name" cpanm -nq --installdeps "$workdir" \
-				&& touch "$finished"
-		fi
+    {
+        if [[ ! -f "$finished" ]]; then
+            if ! grep -E "\s${perlbrew_library_name}\s*$" < <(perlbrew lib-list) &>/dev/null; then
+                echo "Creating Perl local dev library: $perlbrew_library_name"
+                perlbrew lib create "$perlbrew_library_name" || return 1
+                echo
+            fi
+        fi
 
-		if [[ -r "$workdir/t/cpanfile" && -d "$library" ]] && [[ ! -f "${finished}-t" || "${finished}-t" -ot "$workdir/t/cpanfile" ]]; then
-			echo "Installing required modules from '$workdir_rel/t/cpanfile', this may take a while..."
-			nice perlbrew exec --with "$perlbrew_library_name" cpanm -nq --installdeps "$workdir/t" \
-				&& touch "${finished}-t"
-		fi
-		# filter out warnings about archives created on alien systems with unknown extensions
-	} 2>&1 | grep -Ev 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)'
+        if [[ -r "$workdir/cpanfile" && -d "$library" ]] && [[ ! -f "$finished" || "$finished" -ot "$workdir/cpanfile" ]]; then
+            nice perlbrew exec --with "$perlbrew_library_name" cpanm -fnq 'App::cpanminus'
+            nice perlbrew exec --with "$perlbrew_library_name" cpanm -fnq \
+                "https://github.com/andrew-grechkin/yaml-libyaml-pm/archive/refs/heads/master.zip"
+            echo "Installing required modules from '$workdir_rel/cpanfile', this may take a while..."
+            nice perlbrew exec --with "$perlbrew_library_name" cpanm -nq --installdeps "$workdir" \
+                && touch "$finished"
+        fi
 
-	return 0
+        if [[ -r "$workdir/t/cpanfile" && -d "$library" ]] && [[ ! -f "${finished}-t" || "${finished}-t" -ot "$workdir/t/cpanfile" ]]; then
+            echo "Installing required modules from '$workdir_rel/t/cpanfile', this may take a while..."
+            nice perlbrew exec --with "$perlbrew_library_name" cpanm -nq --installdeps "$workdir/t" \
+                && touch "${finished}-t"
+        fi
+        # filter out warnings about archives created on alien systems with unknown extensions
+    } 2>&1 | grep -Ev 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)'
+
+    return 0
 }
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1
 
 if check_prerequisites && maybe_install_perl && maybe_install_modules; then
-	# different actions if running as part of another script or directly in a user shell
-	if [[ -z "${PS1:-}" ]]; then
-		[[ -n "$*" ]] && perlbrew exec --with "$perlbrew_library_name" "$@"
-	else
-		# for interactive SHELL only
-		perlbrew use "$perlbrew_library_name"
-	fi
-	(exit 0)
+    # different actions if running as part of another script or directly in a user shell
+    if [[ -z "${PS1:-}" ]]; then
+        [[ -n "$*" ]] && perlbrew exec --with "$perlbrew_library_name" "$@"
+    else
+        # for interactive SHELL only
+        perlbrew use "$perlbrew_library_name"
+    fi
+    (exit 0)
 else
-	echo "Something went wrong" >&2
-	(exit 1)
+    echo "Something went wrong" >&2
+    (exit 1)
 fi
