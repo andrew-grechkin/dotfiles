@@ -2,7 +2,7 @@
 
 set -Eeuo pipefail
 
-args=$(getopt --name="$0" --options 'Aad:kr' --longoptions 'reset-author,keep-author-date,dates-from,keep-dates,in-rebase' -- "$@")
+args=$(getopt --name="$0" --options 'AaD:dMr' --longoptions 'reset-author,keep-author-date,dates-from,keep-dates,message-generate,in-rebase' -- "$@")
 eval set -- "$args"
 
 amend_params=()
@@ -11,18 +11,29 @@ while ((1)); do
 	case "$1" in
 		-A | --reset-author) amend_params+=(--reset-author); shift ;;
 		-a | --keep-author-date) keep_author_date='1'; shift ;;
-		-d | --dates-from) dates_from="$2"; shift 2 ;;
-		-k | --keep-dates) keep_dates='1'; shift ;;
+		-D | --dates-from) dates_from="$2"; shift 2 ;;
+		-d | --keep-dates) keep_dates='1'; shift ;;
+		-M | --message-generate) message_generate='1'; shift ;;
 		-r | --in-rebase) in_rebase='1'; shift ;;
 		--) shift; break ;;
 	esac
 done
 
+if [[ "${message_generate:=}" == '1' ]]; then
+	message="$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
+	trap 'rm -f "$message"' EXIT
+fi
+
 if [[ "${keep_dates:-}" == "1" || "${keep_author_date:-}" == "1" ]]; then
 	if [[ "${in_rebase:-}" == "1" ]]; then
-		read -r <<< "$(tail -n1 .git/rebase-merge/rewritten-list)" source target
+		read -r <<< "$(tail -n1 .git/rebase-merge/rewritten-list)" source _target
 		GIT_AUTHOR_DATE="$(git author-date "$source")"
 		GIT_COMMITTER_DATE="$(git commit-date "$source")"
+
+		if [[ "$message_generate" == '1' ]]; then
+			ai-suggest-commit-message > "$message"
+			amend_params+=(-F "$message")
+		fi
 
 		# echo "Restoring date for: $source"
 		# echo "            author: $GIT_AUTHOR_DATE"
@@ -42,6 +53,11 @@ if [[ "${keep_dates:-}" == "1" || "${keep_author_date:-}" == "1" ]]; then
 	# enforce author date via --date param
 	# GIT_AUTHOR_DATE variable is sufficient only if author is being reset
 	amend_params+=(--date="$GIT_AUTHOR_DATE")
+fi
+
+if [[ "$message_generate" == '1' && ! -s "$message" ]]; then
+	ai-suggest-commit-message HEAD > "$message"
+	amend_params+=(-F "$message")
 fi
 
 git commit --amend --allow-empty -nq --no-edit "${amend_params[@]}" "$@"
