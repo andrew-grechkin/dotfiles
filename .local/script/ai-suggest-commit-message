@@ -34,14 +34,21 @@ Requirements:
 - Details: bullet points with specific changes, no generic descriptions
 - Be descriptive and actionable, avoid vague terms like 'misc updates'
 - Focus on what functionality was added/changed/removed
+- Don't add any additional messages or something which would be outside of described format
+- Don't generate TODOs and don't print them
 
 Here is the diff:"
 
 {
 	echo "$request";
-	if (( "$(git diff --staged 2>/dev/null | wc -l)" > 0 )); then
-		git diff --staged -- . ':!submodules'
+	if [[ -n "${1:-}" ]]; then
+		git show "$1" -- . ':!submodules'
 	else
-		git show -- . ':!submodules'
+		if (( "$(git diff --staged 2>/dev/null | wc -l)" > 0 )); then
+			git diff --staged -- . ':!submodules'
+		else
+			git show -- . ':!submodules'
+		fi
 	fi
-} | ai
+	echo "> generating commit message ${1:+for $1}" >&2
+} | ai 2>/dev/null
