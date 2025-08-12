@@ -9,9 +9,11 @@ use utf8;
 use warnings     qw(FATAL utf8);
 use experimental qw(builtin declared_refs defer for_list refaliasing try);
 
+use Carp         qw(croak);
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
 use List::Util   qw(shuffle uniq);
 use Pod::Usage   qw(pod2usage);
+use Scalar::Util qw(looks_like_number);
 
 use Log::Any          qw($log);
 use Log::Any::Adapter qw(Stderr), ('log_level' => 'info');
@@ -25,6 +27,9 @@ use constant {
     'PREFERRED_FONTS' => {map {$_ => undef} 'DejaVu Serif', 'DejaVu Sans', 'Noto Sans CJK JP', 'Source Han Sans'},
     'UA'              => Mojo::UserAgent->new->max_redirects(2)->request_timeout(10)->tap(sub {$_->proxy->detect}),
     'URL'             => Mojo::URL->new('http://www.bing.com'),
+    'MARGIN'          => 150,
+    'POINTSIZE'       => 34,
+    'WEIGHT'          => 'Medium',
 };
 
 my %options = (
@@ -45,9 +50,10 @@ sub main() {
     ) or die $log->fatal('Unable to process command line options');
     $options{'OUTPUT_DIR'} = path($options{'OUTPUT_DIR'});
 
-    my $market = (shuffle split(m/,/, $options{'MARKET'}))[0];
-    my $info   = _fetch_info($market);
-    my $path   = _fetch_image($market, $info->{'images'}[0]);
+    my $market    = (shuffle split(m/,/, $options{'MARKET'}))[0];
+    my $info      = _fetch_info($market);
+    my $path      = _fetch_image($market, $info->{'images'}[0]);
+    my $processed = _process_image($path, $info->{'images'}[0]);
 
     if ($options{'SET'}) {
         if ($ENV{'XDG_CURRENT_DESKTOP'}) {
@@ -57,12 +63,17 @@ sub main() {
         }
     }
 
+    if (!$processed) {
+        $log->error('Image was downloaded, but the caption could not be applied');
+        return 1;
+    }
+
     return 0;
 }
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1
 
-sub _fetch_info ($market, $limit = 1, $skip = 0) {
+sub _fetch_info($market, $limit = 1, $skip = 0) {
     my $url = URL()->clone->path('HPImageArchive.aspx')->query(
         'format' => 'js',
         'idx'    => $skip,
@@ -79,7 +90,7 @@ sub _fetch_info ($market, $limit = 1, $skip = 0) {
         || croak("Failed to decode json: $! $@");
 }
 
-sub _fetch_image ($market, $descriptor) {
+sub _fetch_image($market, $descriptor) {
     $options{'OUTPUT_DIR'}->make_path;
     my $jpg_path = $options{'OUTPUT_DIR'}->child("image-of-the-day-$market.jpg");
 
@@ -93,38 +104,126 @@ sub _fetch_image ($market, $descriptor) {
 
     $response->save_to($jpg_path);
 
-    _process_image($jpg_path, $descriptor);
-
     return $jpg_path;
 }
 
-sub _process_image ($path, $descriptor) {
-    my $family = _find_font_family($descriptor->{'copyright'});
-    $log->infof('Applying:    %s', $descriptor->{'copyright'});
-    $log->infof('Font family: %s', $family);
-    $descriptor->{'copyright'} =~ s{'}{"}g;
+# Caption drawing is best-effort: the image is already downloaded and usable
+# without it. Returns false when processing failed, so the caller can report
+# the failure after the wallpaper has been set.
+sub _process_image($path, $descriptor) {
+    my $caption = _caption_text($descriptor);
+    my $family  = _find_font_family($caption);
 
-    my @cmd = (
-        'magick', $path, '-family', $family,
-        qw(-fill cyan -pointsize 28 -gravity NorthWest -draw),
-        "text 150,0 '$descriptor->{copyright}'", $path,
+    unless (defined $family) {
+        $log->errorf('Unable to find a suitable font for: %s', $caption);
+        return 0;
+    }
+
+    $caption =~ s{'}{"}g;
+    my $pointsize = _fit_pointsize($path, $family, $caption);
+    $log->infof('Applying:    %s', $caption);
+    $log->infof('Font family: %s, pointsize: %s', $family, $pointsize);
+
+    my $colors = _contrasting_colors($path);
+    $log->infof('Text color:  %s (shadow: %s)', @{$colors}{qw(fill shadow)})
+        if $colors;
+
+    my @draw = (
+        '-family', $family, '-weight', WEIGHT(), '-pointsize', $pointsize,
+        qw(-gravity NorthWest -stroke none),
     );
+    my @shadow = $colors ? ('-fill', $colors->{'shadow'}, '-draw', "text 152,2 '$caption'") : ();
+    my @text   = ('-fill', ($colors ? $colors->{'fill'} : 'white'), '-draw', "text 150,0 '$caption'");
+
+    my @cmd = ('magick', $path, @draw, @shadow, @text, $path);
 
     system(@cmd) == 0 or do {
-        ## support magick v6
-        @cmd = (
-            qw(convert -fill white -pointsize 28 -gravity NorthWest -draw),
-            "text 150,0 '$descriptor->{'copyright'}'",
-            '-family', $family, $path, $path,
-        );
-        system(@cmd) == 0
-            or die $log->fatal('Unable to process image');
+        $log->errorf('Unable to apply caption to image: %s', $path);
+        return 0;
     };
 
-    return;
+    return 1;
 }
 
-sub _set_wallpaper ($path) {
+# Combine the editorial title with the scene description, dropping the "(© ...)"
+# attribution from the latter.
+sub _caption_text($descriptor) {
+    my $location = $descriptor->{'copyright'} =~ s{\s*[(][^()]*©[^()]*[)]\s*\z}{}r;
+    $location = $descriptor->{'copyright'} unless length $location;
+    my $title = $descriptor->{'title'} // '';
+
+    return $title && $title !~ m/\binfo\b/i ? "$title - $location" : $location;
+}
+
+# Largest pointsize (up to the default) that keeps the caption between the left
+# and right margins, so long captions are not clipped on the right edge. Uses the
+# same family/weight/pointsize as the draw, since "label:" ignores weight.
+sub _fit_pointsize($path, $family, $text) {
+    my $width = _capture('magick', $path, '-format', '%w', 'info:');
+    return POINTSIZE() unless defined $width;
+    chomp $width;
+    return POINTSIZE() unless looks_like_number($width);
+
+    my $fit = _capture(
+        'magick',     '-size', (4 * $width) . 'x120', 'xc:none',
+        '-family',    $family,     '-weight',   WEIGHT(),
+        '-pointsize', POINTSIZE(), '-gravity',  'West',
+        '-fill',      'black',     '-annotate', '+0+0',
+        $text,        '-trim',     '-format',   '%w',
+        'info:',
+    );
+    return POINTSIZE() unless defined $fit;
+    chomp $fit;
+    return POINTSIZE() unless looks_like_number($fit);
+    return POINTSIZE() if $fit <= 0;
+
+    my $available = $width - 2 * MARGIN();
+    return POINTSIZE() if $fit <= $available;
+
+    my $pointsize = int(POINTSIZE() * $available / $fit);
+    return $pointsize > 0 ? $pointsize : 1;
+}
+
+# Measure the caption band and derive a saturated fill that contrasts with it.
+# The band hue is rotated 180 degrees and its lightness pushed to the opposite
+# end, while saturation is boosted. Returns undef when the measurement is
+# unavailable, so the caller can fall back to plain white text.
+sub _contrasting_colors($path) {
+    my @region = ('-crop', 'x40+150+0', '+repage');
+
+    my $brightness = _capture('magick', $path, @region, '-colorspace', 'Gray', '-format', '%[fx:mean]', 'info:');
+    return unless defined $brightness;
+    chomp $brightness;
+    return unless looks_like_number($brightness);
+
+    my $light     = $brightness > 0.5;
+    my $lightness = $light ? 25 : 75;
+    my $fill      = _capture(
+        'magick',   $path,           @region,           '-resize',
+        '1x1!',     '-colorspace',   'HSL',             '-channel',
+        'R',        '-evaluate',     'add',             '50%',
+        '-channel', 'G',             '-evaluate',       'set',
+        '90%',      '-channel',      'B',               '-evaluate',
+        'set',      "${lightness}%", '+channel',        '-colorspace',
+        'sRGB',     '-format',       '%[pixel:p{0,0}]', 'info:',
+    );
+    return unless defined $fill;
+    chomp $fill;
+
+    return {'fill' => $fill, 'shadow' => $light ? 'white' : 'black'};
+}
+
+sub _capture(@cmd) {
+    open my $fh, '-|', @cmd
+        or return;
+    local $/ = undef;
+    my $output = <$fh>;
+    close $fh
+        or return;
+    return $output;
+}
+
+sub _set_wallpaper($path) {
     if (lc $ENV{'XDG_CURRENT_DESKTOP'} eq 'kde') {
         my $script = <<~"END_KDE_SCRIPT";
         var Desktops = desktops();
@@ -156,7 +255,7 @@ sub _set_wallpaper ($path) {
     return;
 }
 
-sub _find_font_family ($text) {
+sub _find_font_family($text) {
     my $charcodes = $text =~ s/(.)/sprintf '%04X ', ord $1/gre;
     chomp(my @families = `fc-list --format '%{family[0]}\n' ':style=Regular:charset=$charcodes'`);
     @families = sort {-exists(PREFERRED_FONTS()->{$a}) + exists(PREFERRED_FONTS()->{$b}) or $a cmp $b} uniq @families;
