@@ -1,5 +1,7 @@
 FROM docker.io/library/alpine:latest
 
-RUN apk add --no-cache bash jq xh
+RUN <<'EO_INSTALL'
+apk add --no-cache bash jq xh
+EO_INSTALL
 
 ENTRYPOINT ["/usr/bin/xh"]

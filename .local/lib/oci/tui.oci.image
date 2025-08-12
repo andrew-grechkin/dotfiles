@@ -1,0 +1,13 @@
+FROM docker.io/library/alpine:latest
+
+RUN apk add --no-cache bash curl fzf git grep jq xh util-linux
+
+COPY .config/git      /root/.config/git
+COPY .local/lib/shell /root/.local/lib/shell
+COPY .local/script    /root/.local/script
+
+ENV LESS="-x4 -iRw"
+ENV PAGER=less
+ENV PATH=/root/.local/script:$PATH
+
+WORKDIR /mnt

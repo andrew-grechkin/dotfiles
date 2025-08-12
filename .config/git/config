@@ -9,7 +9,7 @@
 	bush         = !"f(){ while true; do git push && break; git pull --no-tags --rebase || break; done }; f"
 	cl           = clone --filter=blob:none
 	commit-again = !"git commit -eF \"$(git root)/.git/COMMIT_EDITMSG\""
-    date-copy    = !"f(){ git-x-amend -kd \"${1:-HEAD}\"; }; f"
+    date-copy    = !"f(){ git-x-amend -kD \"${1:-HEAD}\"; }; f"
 	d            = -c delta.side-by-side=true diff --ignore-space-change
 	dc           = -c delta.side-by-side=true diff --ignore-space-change --cached
 	dd           = -c delta.side-by-side=true diff
@@ -105,9 +105,9 @@
 	### care taking ----------------------------------------------------------------------------------------------------
 
     remove-gone  = !"git b | perl -alE 'm/: gone]/ && $F[0] ne q(*) && qx(git branch -D $F[0])'"
-	# remove all local brances which are removed upstream
+	# remove all local branches which are removed upstream
 	bleach       = !"git fall && git remove-gone"
-	# remove local brances and tags which are removed upstream for current remote
+	# remove local branches and tags which are removed upstream for current remote
 	fp           = !"git fetch --prune --prune-tags && git remove-gone"
 	# vacuum repo, clean reflog, compress packs
 	compress     = !"git-compress"
@@ -116,8 +116,8 @@
 	remove-remote-head  = !"f(){ git remote set-head -d     \"${@:-$(git current-remote)}\"; }; f"
 	restore-remote-head = !"f(){ git remote set-head --auto \"${@:-$(git current-remote)}\"; }; f"
 
-    rewrite-history       = rebase -i --committer-date-is-author-date --force --no-update-refs --empty=keep --exec 'git-x-amend -rk'
-    rewrite-history-as-me = rebase -i --committer-date-is-author-date --force --no-update-refs --empty=keep --exec 'git-x-amend -rkA'
+    rewrite-history       = rebase -i --committer-date-is-author-date --force --no-update-refs --empty=keep --exec 'git-x-amend -rd'
+    rewrite-history-as-me = rebase -i --committer-date-is-author-date --force --no-update-refs --empty=keep --exec 'git-x-amend -rdA'
 
 	### experimental ---------------------------------------------------------------------------------------------------
 

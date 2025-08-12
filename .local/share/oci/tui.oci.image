@@ -1,3 +1,0 @@
-FROM docker.io/library/alpine:latest
-
-RUN apk add --no-cache bash curl fzf jq xh util-linux
