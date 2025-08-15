@@ -1,15 +1,15 @@
 [alias]
 	aa           = add --all
-    amend        = commit --amend --reset-author
+	amend        = commit --amend --reset-author
 	b            = branch -vv
 	behind       = !"f(){ mu=\"$(git main-upstream)\"; echo \"Behind $mu:\" >&2; git log --oneline \"${1:-HEAD}..$mu\" | wc -l; }; f"
 	branches     = !"git branch --list --no-column --format='%(refname:lstrip=2)'"
 	browse       = !"git-browse"
-	brs          = !"gl --mode branches"
+	brs          = !"gitlab brs"
 	bush         = !"f(){ while true; do git push && break; git pull --no-tags --rebase || break; done }; f"
 	cl           = clone --filter=blob:none
 	commit-again = !"git commit -eF \"$(git root)/.git/COMMIT_EDITMSG\""
-    date-copy    = !"f(){ git-x-amend -kD \"${1:-HEAD}\"; }; f"
+	date-copy    = !"f(){ git-x-amend -kD \"${1:-HEAD}\"; }; f"
 	d            = -c delta.side-by-side=true diff --ignore-space-change
 	dc           = -c delta.side-by-side=true diff --ignore-space-change --cached
 	dd           = -c delta.side-by-side=true diff
@@ -39,7 +39,7 @@
 	m-dt         = !"f(){ git difftool --ignore-space-change -t vimdiff     `git m-span .. $@`; }; f"
 	m-log        = !"f(){ git log                            --color=always `git m-span .. $@`; }; f"
 	m-span       = !"git-merge-span"
-	mrs          = !"gl"
+	mrs          = !"gitlab mrs"
 	mt           = mergetool
 	mt4          = mergetool --tool=nvimdiff4
 	mtg          = mergetool --gui
@@ -49,8 +49,8 @@
 	puba         = !"git push -u origin \"$(git bname)\" -o merge_request.create -o merge_request.remove_source_branch -o merge_request.merge_when_pipeline_succeeds"
 	s            = !"fzf-git-search"
 	sf           = !"fzf-git-search-file"
-	sh           =                            show --show-signature --color=always --ignore-space-change --stat --pretty=fuller --dd --minimal --patch
-	shd          = -c delta.side-by-side=true show --show-signature --color=always --ignore-space-change --stat --pretty=fuller --dd --minimal --patch
+	sh           =                            show --color=always --ignore-space-change --stat --dd --minimal --patch
+	shd          = -c delta.side-by-side=true show --color=always --ignore-space-change --stat --dd --minimal --patch
 	sm           = !"fzf-git-search-message"
 	st           = status -b
 	unpub        = !"git push origin \":$(git bname)\""
@@ -59,7 +59,7 @@
 	wd           = !"f(){ git diff     --ignore-space-change --color=always \"$(git main-branch)...${1:-HEAD}\"; }; f"
 	wdt          = !"f(){ git difftool --ignore-space-change -t vimdiff     \"$(git main-branch)...${1:-HEAD}\"; }; f"
 	wf           = !"f(){ fzf-git-log-branch \"$(git main-branch)..${1:-HEAD}\"; }; f"
-	what         = whatchanged --show-signature
+	what         = whatchanged
 	wl           = !"f(){ git-log-branch \"$(git main-branch)..${1:-HEAD}\"; }; f"
 	wredo        = !"git rebase -i --autosquash --keep-base --committer-date-is-author-date --update-refs `git main-branch`"
 
@@ -69,15 +69,18 @@
 
 	main-branch   = !"git show-ref main master trunk | grep -Pom1 '(?:refs/heads/)\\K.*'"
 	main-head     = !"f(){ git show-ref HEAD | grep 'refs/remotes/'\"$(git main-remote)\" | grep -Po '(?<=\\brefs/remotes/).*' | sort -r | head -1; }; f"
+	main-location = !"f(){ IFS="@" read -r <<< "$(git get-url)" _ loc; echo "${loc%.git}"; }; f"
+	main-project  = !"f(){ IFS=":" read -r <<< "$(git get-url)" _ pth; echo "${pth%.git}"; }; f"
 	# detect main remote by main branch
-	main-remote   = !"f(){ git config --local --get \"branch.$(git main-branch).remote\" 2>/dev/null; }; f"
-	# detect main remote name by refs/remotes/.../HEAD
-	;main-remote   = !"git show-ref 2>/dev/null | grep -Po '(?<=\\brefs/remotes/)[^\\/]+(?=/HEAD\\b)' | sort -r | head -1"
+	main-remote   = !"f(){ b=\"$(git main-branch)\"; git config --local --get \"branch.$b.remote\" 2>/dev/null || git main-remote1; }; f"
+	# detect main remote name by refs/remotes/.../HEAD (when there is no branch, submodule for example)
+	main-remote1   = !"git show-ref 2>/dev/null | grep -Po '(?<=\\brefs/remotes/)[^\\/]+(?=/HEAD\\b)' | sort -r | head -1"
 	# detect main upstream branch
 	main-upstream = !"git pbranch \"$(git main-head)\""
+	get-url       = !"f(){ git config --local --get \"remote.${1:-$(git main-remote)}.url\" 2>/dev/null; }; f"
 
-    ant   =            name-rev --always --name-only --no-undefined --annotate-stdin        --exclude=HEAD --exclude='remotes/*'
-    ant2  =            name-rev --always --name-only --no-undefined --annotate-stdin        --exclude=HEAD
+	ant   =            name-rev --always --name-only --no-undefined --annotate-stdin        --exclude=HEAD --exclude='remotes/*'
+	ant2  =            name-rev --always --name-only --no-undefined --annotate-stdin        --exclude=HEAD
 	name  = !"f(){ git name-rev --always --name-only --no-undefined                         --exclude=HEAD ${@:-HEAD}; }; f"
 	rname = !"f(){ git name-rev --always --name-only --no-undefined --refs='refs/remotes/*' --exclude=HEAD ${@:-HEAD}; }; f"
 	# print current branch
@@ -91,8 +94,8 @@
 	; # detect current remote name by branch in .git/config
 	; current-remote   = !"f(){ git config --local --get \"branch.$(git pbranch \"${@:-HEAD}\").remote\" 2>/dev/null; }; f"
 
-    author-date = show -s --format=%aI
-    commit-date = show -s --format=%cI
+	author-date = show -s --format=%aI
+	commit-date = show -s --format=%cI
 	# print branch name
 	pbranch     = !"f(){ git rev-parse --verify --abbrev-ref \"${@:-HEAD}\" 2>/dev/null; }; f"
 	# print commit
@@ -104,7 +107,7 @@
 
 	### care taking ----------------------------------------------------------------------------------------------------
 
-    remove-gone  = !"git b | perl -alE 'm/: gone]/ && $F[0] ne q(*) && qx(git branch -D $F[0])'"
+	remove-gone  = !"git b | perl -alE 'm/: gone]/ && $F[0] ne q(*) && qx(git branch -D $F[0])'"
 	# remove all local branches which are removed upstream
 	bleach       = !"git fall && git remove-gone"
 	# remove local branches and tags which are removed upstream for current remote
@@ -116,13 +119,14 @@
 	remove-remote-head  = !"f(){ git remote set-head -d     \"${@:-$(git current-remote)}\"; }; f"
 	restore-remote-head = !"f(){ git remote set-head --auto \"${@:-$(git current-remote)}\"; }; f"
 
-    rewrite-history       = rebase -i --committer-date-is-author-date --force --no-update-refs --empty=keep --exec 'git-x-amend -rd'
-    rewrite-history-as-me = rebase -i --committer-date-is-author-date --force --no-update-refs --empty=keep --exec 'git-x-amend -rdA'
+	rewrite               = rebase -i --autosquash --committer-date-is-author-date --empty=drop --reset-author-date --no-update-refs --rebase-merges
+	rewrite-history       = rebase -i --autosquash --committer-date-is-author-date --empty=drop --force --no-update-refs --exec 'git-x-amend -rd'
+	rewrite-history-as-me = rebase -i --autosquash --committer-date-is-author-date --empty=drop --force --no-update-refs --exec 'git-x-amend -rdA'
 
 	### experimental ---------------------------------------------------------------------------------------------------
 
-    add-main-if-master-is-required = !"git symbolic-ref refs/heads/main refs/heads/master && git symbolic-ref refs/remotes/origin/main refs/remotes/origin/master"
-    add-main-if-trunk-is-required = !"git symbolic-ref refs/heads/main refs/heads/trunk && git symbolic-ref refs/remotes/origin/main refs/remotes/origin/trunk"
+	add-main-if-master-is-required = !"git symbolic-ref refs/heads/main refs/heads/master && git symbolic-ref refs/remotes/origin/main refs/remotes/origin/master"
+	add-main-if-trunk-is-required = !"git symbolic-ref refs/heads/main refs/heads/trunk && git symbolic-ref refs/remotes/origin/main refs/remotes/origin/trunk"
 	add-mr-refs  = config --local --add remote.origin.fetch '+refs/merge-requests/*/head:refs/remotes/origin/merge-requests/*/head'
 	make-shallow = !"git fetch --prune-tags --prune; git tag -d \"$(git tag -l)\"; git reflog expire --expire=all --all; git gc --prune=all"
 
@@ -149,6 +153,24 @@
 	tabwidth       = 4
 	untrackedcache = true
 	whitespace     = trailing-space,space-before-tab,blank-at-eol,blank-at-eof,cr-at-eol
+
+[credential]
+	helper      = cache --timeout 43200
+	interactive = false
+
+[credential "https://github.com"]
+	helper = libsecret
+	helper = oauth
+
+[credential "https://gitlab.com"]
+	helper = libsecret
+	helper = oauth
+
+[credential "https://app.harness.io"]
+	helper = pass
+
+[credential "https://app.terraform.io"]
+	helper = pass
 
 [diff]
 	algorithm       = minimal
@@ -179,7 +201,7 @@
 	writeCommitGraph = true
 
 [format]
-	pretty = commit %H%d %(describe:tags) %nAuthor: [%ai] %aN <%aE>%nCommit: [%ci] %cN <%cE>%n%n%B
+	pretty = %C(yellow)commit:  %H%C(reset)%n%C(dim white)author:  [%C(brightgreen)%ai%C(white)] %aN <%aE>%n%C(dim white)commit:  [%C(brightgreen)%ci%C(white)] %cN <%cE> %C(cyan)%G?%n%C(dim white)parents: %p%n%C(dim white)refs:%C(auto)%d%C(reset) %(describe:tags)%n%n%C(reset)%C(bold)%B%C(reset)
 
 [gc]
 	auto = 0
@@ -251,6 +273,9 @@
 [rerere]
 	autoUpdate = true
 	enabled    = true
+
+[safe]
+	directory = /home/git/*
 
 [status]
 	showStash = true
