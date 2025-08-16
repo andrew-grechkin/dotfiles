@@ -161,22 +161,22 @@ prepare-btrfs-partition device label prefix:
 	wipefs -a                 '{{device}}'
 	mkfs.btrfs -L '{{label}}' '{{device}}'
 
-	current='/mnt-{{label}}/{{prefix}}/.snapshots/current'
+	head='/mnt-{{label}}/{{prefix}}/.snapshots/head'
 
 	mount -L '{{label}}' -o subvolid=5 '/mnt-{{label}}'
 	mkdir -p                           '/mnt-{{label}}/{{prefix}}'
 	btrfs subvolume create             '/mnt-{{label}}/{{prefix}}/.snapshots'
-	mkdir -p                           "$current"
-	btrfs subvolume create             "$current/snapshot"
+	mkdir -p                           "$head"
+	btrfs subvolume create             "$head/snapshot"
 
 	if [[ {{label}} =~ ^var ]]; then
 		chattr +C "$current/snapshot"
 	fi
 
-	chmod a+rX,g+ws                    "$current/snapshot"
-	mkdir  -p                          "$current/snapshot/.snapshots"
+	chmod a+rX,g+ws                    "$head/snapshot"
+	mkdir  -p                          "$head/snapshot/.snapshots"
 
-	# cat <<HEREDOC > "$current/info.xml"
+	# cat <<HEREDOC > "$head/info.xml"
 	# <?xml version="1.0"?>
 	# <snapshot>
 	#   <type>single</type>
@@ -187,7 +187,7 @@ prepare-btrfs-partition device label prefix:
 	# HEREDOC
 
 	if [[ {{prefix}} = "@" ]]; then
-		btrfs subvolume set-default  "$current/snapshot"
+		btrfs subvolume set-default  "$head/snapshot"
 	fi
 
 [no-cd]

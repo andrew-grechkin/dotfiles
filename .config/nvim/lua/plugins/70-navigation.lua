@@ -9,7 +9,10 @@ return {
                     commits = {preview_pager = 'delta'},
                     status = {preview_pager = 'delta'},
                 },
-                winopts = {preview = {layout = 'flex'}},
+                winopts = {
+                    fullscreen = true,
+                    preview = {layout = 'vertical', vertical = 'down:35%'},
+                },
             })
             plugin.register_ui_select()
 
