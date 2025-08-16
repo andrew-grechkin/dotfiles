@@ -9,6 +9,10 @@ function install-distrobox() {
 	curl -s https://raw.githubusercontent.com/89luca89/distrobox/main/install | sh -s -- --prefix ~/.local
 }
 
+function login-as() {
+	sudo runuser -lPs "$SHELL" "${1?user name must be provided}"
+}
+
 # => proxy -------------------------------------------------------------------------------------------------------- {{{1
 
 function enable-proxy() {
@@ -29,4 +33,28 @@ function disable-proxy() {
 
 function remove-all-environment() {
 	unset $(env | cut -d= -f1 | grep -v '^PATH$' | grep -v '^HOME$' | grep -v '^PWD$' | grep -v '^USER$' | grep -v '^TERM$')
+}
+
+function export-var() {
+	script="$(cat <<-EO_SCRIPT
+		export ${1?variable name is required}='$(</dev/stdin)'
+	EO_SCRIPT
+	)"
+	eval "$script"
+}
+
+function export-personal-token() {
+	if [[ -z "${2:-}" ]]; then
+		if [[ "${1?host must be provided}" == 'gitlab.com' ]]; then
+			name='GITLAB_TOKEN'
+		elif [[ "$1" == 'app.harness.io' ]]; then
+			name='HARNESS_TOKEN'
+		elif [[ "$1" == 'app.terraform.io' ]]; then
+			name='TF_BEARER'
+		else
+			>&2 echo "token name must be provided"
+			return 1
+		fi
+	fi
+	pass show "token/${1}/${USER}/$name" | export-var "$name"
 }
