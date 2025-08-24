@@ -2,6 +2,8 @@
 
 set -Eeuo pipefail
 
+git-in-repo || exit 95
+
 CURRENT_SCRIPT="$(basename "$0")"
 
 # always include some refs into selection
@@ -13,6 +15,10 @@ refs=(
 
 # filter out empty elements
 readarray -t valid_refs < <(echo "${refs[@]}" | xargs -rn1 echo) || true
-fetch_data=("${CURRENT_SCRIPT#fzf-}" "${valid_refs[@]}" "$@")
+export FZF_RELOAD_CMD="${CURRENT_SCRIPT#fzf-} ${valid_refs[*]@Q} ${*@Q}"
 
-"${fetch_data[@]}" | FZF_RELOAD_CMD="${fetch_data[*]@Q}" fzf-git-log
+fzf_args=(
+	--prompt="$(git main-project) | log > "
+)
+
+eval "$FZF_RELOAD_CMD" | fzf-git-log "${fzf_args[@]}"

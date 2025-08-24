@@ -5,22 +5,23 @@ set -Eeuo pipefail
 file_path="$XDG_STATE_HOME/mpv/play.history.tsv"
 
 if [[ -t 1 ]]; then
-	fzf_cmd=(
-		fzf-execute2
-		--bind="alt-r:execute-silent(grep -vF {3} '$file_path' | sponge '$file_path')+reload($0)"
-		--bind="ctrl-l:reload($0)"
-		--header-lines=1
-		--with-nth=4..
-	)
+    fzf_cmd=(
+        fzf-execute2
+        --bind="alt-r:execute-silent(grep -vF {3} '$file_path' | sponge '$file_path')+reload($0)"
+        --bind="ctrl-l:reload($0)"
+        --header-lines=1
+        --prompt="mpv history > "
+        --with-nth=4..
+    )
 
-	"$0" | "${fzf_cmd[@]}" "$@"
+    "$0" | "${fzf_cmd[@]}" "$@"
 else
-	enforce_columns=(jq -c 'map({time: (.time // .localtime), type, title, misc, command, path: (.path | (fromjson? // .))})')
+    enforce_columns=(jq -c 'map({time: (.time // .localtime), type, title, misc, command, path: (.path | (fromjson? // .))})')
 
-	tsv2json "$file_path"                                                                \
-		| jq -c 'sort_by(.time) | reverse | unique_by(.command, .path) | sort_by(.time)' \
-		| tee >("${enforce_columns[@]}" | json2tsv | sponge "$file_path")                \
-		| jq -c 'reverse | map({command, path, time, type, title, misc})'                \
-		| json2tsv                                                                       \
-		| tsv-align
+    tsv2json "$file_path"                                                                \
+        | jq -c 'sort_by(.time) | reverse | unique_by(.command, .path) | sort_by(.time)' \
+        | tee >("${enforce_columns[@]}" | json2tsv | sponge "$file_path")                \
+        | jq -c 'reverse | map({command, path, time, type, title, misc})'                \
+        | json2tsv                                                                       \
+        | tsv-align
 fi

@@ -2,8 +2,17 @@
 
 set -Eeuo pipefail
 
-CURRENT_SCRIPT="$(basename "$0")"
-export FZF_RELOAD_CMD="${CURRENT_SCRIPT#fzf-}"
+git-in-repo || exit 95
 
-"$FZF_RELOAD_CMD" \
-	| fzf --multi --bind 'tab:toggle-out,shift-tab:toggle-in' --preview 'git show --color=always HEAD:{}'
+CURRENT_SCRIPT="$(basename "$0")"
+export FZF_RELOAD_CMD="${CURRENT_SCRIPT#fzf-} ${*@Q}"
+
+fzf_args=(
+    --bind="alt-o:execute(fzf-git-file-show-history -- {-1})"
+    --bind="alt-t:become(fzf-git-log-all-graph)"
+    --footer='F3:view F4:edit | alt-o:history alt-t:log | ctrl-a:all alt-p:preview'
+    --preview='echo previous change in:; git-log-branch --follow -1 -- {-1}; echo; colored --color=always {-1}'
+    --prompt="$(git get-url) | files > "
+)
+
+eval "$FZF_RELOAD_CMD" | fzf-files-multi "${fzf_args[@]}"
