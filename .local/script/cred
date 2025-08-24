@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+echo "$0" "$@" &>>"$XDG_RUNTIME_DIR/cred.log"
+
+# default to https protocol
+if [[ ! "${url:=${1?url must be provided}}" =~ \:\/\/ ]]; then
+    url="https://$url"
+fi
+
+# rewrite some urls to use the same token
+domain='boo''king'
+host_orig="$(git-parse-url "$url" | grep -Pom1 '^host=\K.+' 2>/dev/null)"
+if eval "[[ '$url' =~ prod\.$domain\.com ]]"; then
+    url="https://sso.prod.$domain.com"
+elif eval "[[ '$url' =~ dqs\.$domain\.com ]]"; then
+    url="https://sso.dqs.$domain.com"
+fi
+
+credentials="$(echo "url=$url" | git credential fill)"
+
+# expose input as environment
+while read -r line; do
+    IFS='=' read -r key value <<< "$line"
+    eval "$key='$value'"
+done <<< "$credentials"
+
+# simplistic check if approve can be called, no real usage of password
+# it's necessary because without approval oauth helper will re-authentify every call
+if [[ -n "${username:-}" && -n "${password:-}" ]]; then
+    echo "$credentials" | git credential approve
+fi >&2
+
+echo "$credentials" | grep -v '^host=' 2>/dev/null
+echo "host=$host_orig"
+
+if [[ -t 1 && -t 2 && -n "${password_expiry_utc:-}" ]]; then
+    >&2 echo -n 'password expires at: '
+    >&2 date -d "@$password_expiry_utc" --rfc-3339=seconds
+fi
