@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+host="$1"
+port="${2:-443}"
+
+</dev/null openssl s_client -connect "${host}:${port}" \
+	-verify_return_error -verify_quiet

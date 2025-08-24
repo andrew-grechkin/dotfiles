@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+export DELIMITER="${1?delimiter must be provided}"
+shift
+exec perl -E '@l=<<>>; chomp @l; say join($ENV{DELIMITER}, @l)' "$@"

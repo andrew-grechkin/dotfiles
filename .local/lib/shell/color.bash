@@ -43,6 +43,15 @@ BG=(
 	[silver]='\033[47m' [white]='\033[107m'
 )
 
+# reset sequence sgr0 for tmux-256color adds ^O at the end (^O is shift-in, switch to non-graphic character set)
+# less prints ^O by default even when -R arg is passed and this makes output ugly
+# this is most probably a bug in less itself because with -r flag less is not printing ^O symbols,
+# but unfortunatelly -r flag is unusable because it breaks text formatting (colums)
+# so there are 3 ways of solving this issue:
+# * process all ouptut with `sed 's/\x0f//g'` before passing it to less
+# * use terminal which doesn't add ^O as a part of reset sequence (xterm)
+# * use hardcoded reset (might be not portable but who cares)
+
 # use hardcoded sequences for now, not sure how portable is this
 # if tput sgr0 &>/dev/null; then
 # 	FX[reset]="'$(tput sgr0)'"   FX[normal]="'$(tput sgr0)'"

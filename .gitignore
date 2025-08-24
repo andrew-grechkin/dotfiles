@@ -3,6 +3,7 @@
 *.spl
 *.sug
 .config/lazygit/state.yml
+.config/mpv/scripts/*.so
 .config/nvim/.luarc.json
 .config/shell/*.work
 .config/systemd/user/*.wants/
