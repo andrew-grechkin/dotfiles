@@ -18,9 +18,9 @@ cd "$WORKDIR" || exit 1
 chmod -R u=rwX,go-rwxs .ssh
 
 [[ -r "$HOME/.config/user-dirs.dirs" ]] || {
-	mkdir -p ~/{desktop,documents,downloads,music,pictures,public,templates,videos}
-	command cp -rf ".config/user-dirs.dirs"                  ~/.config/
-	command cp -rf ".config/user-dirs.locale"                ~/.config/
+    mkdir -p ~/{desktop,documents,downloads,music,pictures,public,templates,videos}
+    command cp -rf ".config/user-dirs.dirs"                  ~/.config/
+    command cp -rf ".config/user-dirs.locale"                ~/.config/
 }
 
 ln -srf .bashrc                                              ~/
@@ -65,56 +65,53 @@ command cp -rf ".config/htop"                                ~/.config/ 2>/dev/n
 command cp -rf ".config/locale.conf"                         ~/.config/ 2>/dev/null
 
 if [[ "$USER" == "agrechkin" ]]; then
-	# [[ -d ~/.config/atuin ]] && rm -rf ~/.config/atuin
+    # [[ -d ~/.config/atuin ]] && rm -rf ~/.config/atuin
 
-	# ln -srf .config/atuin                                    ~/.config/
-	ln -srf .config/bspwm                                    ~/.config/
-	ln -srf .config/commitlintrc.yaml                        ~/.config/
-	ln -srf .config/containers                               ~/.config/
-	# ln -srf .config/lazygit                                  ~/.config/
-	ln -srf .config/luaformatter                             ~/.config/
-	ln -srf .config/markdownlint.yaml                        ~/.config/
-	ln -srf .config/nvim                                     ~/.config/
-	ln -srf .config/perlcriticrc                             ~/.config/
-	ln -srf .config/perlcriticrc                             ~/.perlcriticrc
-	ln -srf .config/perlimports                              ~/.config/
-	ln -srf .config/perltidyrc                               ~/.perltidyrc
-	ln -srf .config/redshift                                 ~/.config/
-	ln -srf .config/sql-formatter.json                       ~/.config/
-	ln -srf .config/sqlfluff                                 ~/.config/
-	ln -srf .config/wireplumber                              ~/.config/
-	ln -srf .config/yamllint                                 ~/.config/
-	ln -srf .config/zathura                                  ~/.config/
-	# ln -srf .config/zellij                                   ~/.config/
-	[[ -x "/volume1/local/arch/usr/bin/vim" ]] && {
-		ln -srfn .config/vim                                 ~/.vim
-	}
-	[[ -x "$(command -v delta)" ]] && {
-		ln -srfn .config/git/gitconfig.delta                 ~/.config/gitconfig.delta
-	}
+    # ln -srf .config/atuin                                    ~/.config/
+    ln -srf .config/bspwm                                    ~/.config/
+    ln -srf .config/commitlintrc.yaml                        ~/.config/
+    ln -srf .config/containers                               ~/.config/
+    # ln -srf .config/lazygit                                  ~/.config/
+    ln -srf .config/luaformatter                             ~/.config/
+    ln -srf .config/markdownlint.yaml                        ~/.config/
+    ln -srf .config/nvim                                     ~/.config/
+    ln -srf .config/perlcriticrc                             ~/.config/
+    ln -srf .config/perlcriticrc                             ~/.perlcriticrc
+    ln -srf .config/perlimports                              ~/.config/
+    ln -srf .config/perltidyrc                               ~/.perltidyrc
+    ln -srf .config/redshift                                 ~/.config/
+    ln -srf .config/sql-formatter.json                       ~/.config/
+    ln -srf .config/sqlfluff                                 ~/.config/
+    ln -srf .config/wireplumber                              ~/.config/
+    ln -srf .config/yamllint                                 ~/.config/
+    ln -srf .config/zathura                                  ~/.config/
+    # ln -srf .config/zellij                                   ~/.config/
+    [[ -x "/volume1/local/arch/usr/bin/vim" ]] && {
+        ln -srfn .config/vim                                 ~/.vim
+    }
 
-	ln -srf .local/share/vim-dict                            ~/.local/share/
-	ln -srf .local/share/vim-plug                            ~/.local/share/
-	ln -srf .local/share/wiki                                ~/.local/share/
+    ln -srf .local/share/vim-dict                            ~/.local/share/
+    ln -srf .local/share/vim-plug                            ~/.local/share/
+    ln -srf .local/share/wiki                                ~/.local/share/
 
-	[[ -x submodules/private/setup ]] && {
-		echo 'Executing private/setup'
-		(exec submodules/private/setup)
-	}
-	[[ -x submodules/secret/setup ]]  && {
-		echo 'Executing secret/setup'
-		(exec submodules/secret/setup)
-	}
+    [[ -x submodules/private/setup ]] && {
+        echo 'Executing private/setup'
+        (exec submodules/private/setup)
+    }
+    [[ -x submodules/secret/setup ]]  && {
+        echo 'Executing secret/setup'
+        (exec submodules/secret/setup)
+    }
 else
-	ln -srfn .config/vim                                     ~/.config/nvim
+    ln -srfn .config/vim                                     ~/.config/nvim
 fi
 
 [[ -f "$HOME/.config/npm" ]] || {
-	command cp -rf ".config/npm"                             ~/.config/
+    command cp -rf ".config/npm"                             ~/.config/
 }
 
 [[ -d "$HOME/.config/kdedefaults" ]] || {
-	command cp -rf ".config/kdedefaults"                     ~/.config/
+    command cp -rf ".config/kdedefaults"                     ~/.config/
 }
 
 exit 0
