@@ -2,20 +2,29 @@
 
 set -Eeuo pipefail
 
+name="$(basename "$1")"
+org="$(dirname "$1")"
+
 function token-print() {
-	local name="$1"
-	local token="$2"
-	local flag="$3"
+	local token="$1"
+	local flag="$2"
 
 	if [[ "$flag" == '--shell' ]]; then
 		echo "$name=$token"
 	else
 		echo "$token"
 	fi
+
+	exit 0
 }
 
-if token="$(pass show "$1" 2>/dev/null | head -1)"; then
-	token-print "$1" "$token" "${2:-}"
-elif [[ -r .env ]] && token="$(grep -F "$1=" < .env 2>/dev/null | sed "s|$1=||")"; then
-	token-print "$1" "$token" "${2:-}"
+if [[ -n "$org" ]] && token="$(pass show "org/$org" 2>/dev/null | grep -Pom 1 "$name=\K.*")"; then
+	token-print "$token" "${2:-}"
+elif token="$(pass show "token/$name" 2>/dev/null | head -1)"; then
+	token-print "$token" "${2:-}"
+elif [[ -r .env ]] && token="$(grep -F "$name=" < .env 2>/dev/null | sed "s|$name=||")"; then
+	token-print "$token" "${2:-}"
 fi
+
+echo "token is not found: $1" >&2
+exit 1
