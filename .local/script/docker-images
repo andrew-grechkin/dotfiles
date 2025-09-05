@@ -2,12 +2,13 @@
 
 set -Eeuo pipefail
 
-args=$(getopt --name="$0" --options 'j' --longoptions 'json' -- "$@")
+args=$(getopt --name="$0" --options 'jt' --longoptions 'json,tui' -- "$@")
 eval set -- "$args"
 
 while ((1)); do
 	case "$1" in
 		-j | --json) json='1'; shift ;;
+		-t | --tui) tui='1'; shift ;;
 		--) shift; break ;;
 	esac
 done
@@ -15,8 +16,9 @@ done
 fetcher=("$0")
 
 if [[ -n "${json:-}" ]]; then
-	docker images -a --format "{{json . }}" "$@" 2>/dev/null | jq -nRcS '[inputs | fromjson | with_entries( .key |= ascii_downcase )]'
-elif [[ -t 1 ]]; then
+	docker images -a --format "{{json . }}" "$@" 2>/dev/null \
+		| jq -nRcS '[inputs | fromjson | with_entries(.key |= ascii_downcase) | select(.repository != "<none>" or .dangling == true)]'
+elif [[ -t 1 || "${tui:-}" == "1" ]]; then
 	export FZF_RELOAD_CMD="${fetcher[*]@Q}"
 	source "$HOME/.local/lib/shell/fzf.bash"
 
@@ -31,8 +33,9 @@ elif [[ -t 1 ]]; then
 		--bind="alt-i:execute(docker inspect {1} | json-pretty -f {-1})"
 		--bind="ctrl-e:execute(docker run -it --rm -h \$(basename {3}) {-1})"
 		--bind="ctrl-m:execute(docker run -it --rm -h \$(basename {3}) --entrypoint bash {-1})"
+		--bind="ctrl-p:execute-silent(echo 'read -r -p image\ to\ pull:\  image; docker pull \$image' | fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -ft 1)"
 		--bind="ctrl-y:execute-silent(echo -n {+-1} | clipcopy)"
-		--header="A-R:remove A-S:push A-I:jq-repl A-c:clear A-g:pull A-i:inspect C-e:exec Enter:bash $DEFAULT_FZF_KEYS"
+		--header="A-R:remove A-S:push A-I:jq-repl A-c:clear A-g:pull A-i:inspect C-e:run C-p:pull Enter:bash $DEFAULT_FZF_KEYS"
 		--preview="docker inspect {-1} | json-pretty -C -f {-1}"
 		--prompt="docker images > "
 		--with-nth="..-2"

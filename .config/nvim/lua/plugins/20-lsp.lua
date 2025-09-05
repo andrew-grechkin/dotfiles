@@ -28,7 +28,8 @@ return {
                     which_key.add({
                         noremap = true,
                         {'<leader>l', group = 'LSP'},
-                        {'<leader>ll', '<cmd>LspInfo<CR>', desc = 'Info'},
+                        {'<leader>li', '<cmd>LspInfo<CR>', desc = 'Info'},
+                        {'<leader>ll', '<cmd>Telescope lsp_document_symbols<CR>', desc = 'symbols'},
 
                         {'<leader>lc', group = 'calls'},
                         {'<leader>lci', '<cmd>Telescope lsp_incoming_calls<CR>', desc = 'incoming'},
