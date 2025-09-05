@@ -138,6 +138,7 @@ function _fzf_complete_kubectl_post() {
 # => git completion ----------------------------------------------------------------------------------------------- {{{1
 
 function widget-fzf-bks-clusters()       LBUFFER+=$(unset REPORTTIME; bks --tui)
+function widget-fzf-bks-docker()         LBUFFER+=$(unset REPORTTIME; docker-images --tui)
 function widget-fzf-bks-namespaces()     LBUFFER+=$(unset REPORTTIME; bks --tui --mode namespaces | lines2args)
 function widget-fzf-git-branches()       LBUFFER+=$(unset REPORTTIME; fzf-git-branches --all      | lines2args)
 function widget-fzf-git-files-changed()  LBUFFER+=$(unset REPORTTIME; fzf-git-files-changed       | lines2args)
@@ -188,6 +189,7 @@ function widget-open-current-script() {
 }
 
 zle -N widget-fzf-bks-clusters
+zle -N widget-fzf-bks-docker
 zle -N widget-fzf-bks-namespaces
 zle -N widget-fzf-git-branches
 zle -N widget-fzf-git-files-changed
@@ -205,6 +207,7 @@ zle -N widget-open-current-script
 bindkey ';;'  widget-fzf-git-files
 bindkey ';H'  widget-fzf-git-hashes-all
 bindkey ';c'  widget-fzf-bks-clusters
+bindkey ';d'  widget-fzf-bks-docker
 bindkey ';f'  widget-fzf-git-files-changed
 bindkey ';g'  widget-fzf-git-log-all-graph
 bindkey ';h'  widget-fzf-git-hashes
@@ -294,5 +297,5 @@ bindkey '^_' _complete_help
 
 # Redefine your completion function referencing the original.
 # _ssh() {
-# 	FZF_COMPLETION_TRIGGER='' _fzf_complete_ssh
+#    FZF_COMPLETION_TRIGGER='' _fzf_complete_ssh
 # }

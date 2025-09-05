@@ -152,6 +152,14 @@ use constant {
             'level' => 2,
             'match' => qr{\A /var/tmp/ [\w-]* wallpaper [\w-]* /}x,
         },
+        'ollama' => {
+            'level' => 2,
+            'match' => qr{\A /var/lib/ollama/}x,
+        },
+        'dkms' => {
+            'level' => 2,
+            'match' => qr{\A /var/lib/dkms/}x,
+        },
         'colord' => {
             'level' => 2,
             'match' => qr{\A /var/lib/colord/}x,
