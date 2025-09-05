@@ -6,10 +6,10 @@ return {
                 nmap     <C-_>                         gcl
                 vmap     <C-_>                         gc
 
-                augroup SettingsVimCommentary
-                    autocmd!
-                    autocmd FileType perl,vim let b:commentary_startofline = 1
-                augroup END
+                "augroup SettingsVimCommentary
+                "    autocmd!
+                "    autocmd FileType perl,vim let b:commentary_startofline = 1
+                "augroup END
             ]]
         end,
         event = {'BufReadPost', 'BufNewFile'},
