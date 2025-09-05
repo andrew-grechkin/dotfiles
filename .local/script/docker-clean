@@ -2,31 +2,26 @@
 
 set -Eeuo pipefail
 
-[[ -t 1 && -t 2 ]] && >&2 echo "Cleaning docker images..."
+[[ -t 1 ]] && >&2 echo "Cleaning docker images..."
 
 if [[ "${1:-}" == "--force" ]]; then
-	mapfile -t RUNNING_CONTAINERS < <(command docker ps -q)
-	[[ -n "${RUNNING_CONTAINERS[*]}" ]] && {
-		[[ -t 1 && -t 2 ]] && >&2 echo "Stopping running contaiers: ${#RUNNING_CONTAINERS[@]}"
-		command docker kill "${RUNNING_CONTAINERS[@]}"
+	mapfile -t running_containers < <(command docker ps -q)
+	[[ -n "${running_containers[*]}" ]] && {
+		[[ -t 1 ]] && >&2 echo "Stopping running contaiers: ${#running_containers[@]}"
+		command docker kill "${running_containers[@]}"
 	}
 fi
 
-mapfile -t STOPPED_CONTAINERS < <(command docker ps --filter status=exited -q)
-[[ -n "${STOPPED_CONTAINERS[*]}" ]] && {
-	[[ -t 1 && -t 2 ]] && >&2 echo "Removing stopped contaiers: ${#STOPPED_CONTAINERS[@]}"
-	command docker rm "${STOPPED_CONTAINERS[@]}"
+mapfile -t stopped_containers < <(command docker ps --filter 'status=exited' -q)
+[[ -n "${stopped_containers[*]}" ]] && {
+	[[ -t 1 ]] && >&2 echo "Removing stopped contaiers: ${#stopped_containers[@]}"
+	command docker rm "${stopped_containers[@]}"
 }
 
-mapfile -t DANGLING_IMAGES < <(command docker images -f 'dangling=true' -q)
-[[ -n "${DANGLING_IMAGES[*]}" ]] && {
-	[[ -t 1 && -t 2 ]] && >&2 echo "Removing dangling images: ${#DANGLING_IMAGES[@]}"
-	command docker rmi -f "${DANGLING_IMAGES[@]}"
-	command docker rmi -f "${DANGLING_IMAGES[@]}"
+mapfile -t dangling_images < <(command docker images --filter 'dangling=true' -q)
+[[ -n "${dangling_images[*]}" ]] && {
+	[[ -t 1 ]] && >&2 echo "Removing dangling images: ${#dangling_images[@]}"
+	command docker rmi -f "${dangling_images[@]}"
 }
-
-docker-images -j \
-	| jq -rcS '.[] | select(.repository == "<none>") | .id' \
-	| xargs -r docker rmi -f
 
 exit 0
