@@ -31,7 +31,7 @@ my $line = <<>>;
 try {
     while (defined $line) {
         my $data = JSON()->decode($line);
-        print YAML_WITH_FOOTER()->dump($data);
+        print YAML()->dump($data);
         $line = <<>>;
     }
 } catch ($err) {
