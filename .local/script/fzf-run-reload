@@ -32,10 +32,7 @@ fi
 exec_script="$(mktemp --suffix=-fzf-run-reload --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
 
 if [[ -z "${keep:-}" ]]; then
-	cat >> "$exec_script" <<-EO_CLEANUP
-		trap 'rm -f "$exec_script"' EXIT
-
-	EO_CLEANUP
+	cleanup="rm -f '$exec_script'"
 fi
 
 cat >> "$exec_script" <<EO_HEADER
@@ -48,13 +45,17 @@ ${reloading:-}
 		sleep $timeout
 	else
 		echo "Script exitcode: \$(errno \$1)"
+		echo
 		echo "Press Enter to continue"
-		read -n 1 -s -r -p
+		read -n 1 -s -r
 	fi
 	if [[ -n "${reload:-}" ]]; then
 		rm -f "${reload:-}"
 	fi
-}; trap 'footer \$?' EXIT
+
+${cleanup:-}
+}
+trap 'footer \$?' EXIT
 
 EO_HEADER
 
