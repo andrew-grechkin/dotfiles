@@ -1,22 +1,26 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2016
 
 set -Eeuo pipefail
 
-export FZF_RELOAD_CMD="env | sort | sed 's/=.*//'"
+export FZF_RELOAD_CMD="env -0 | sort -z | sed -z 's/=.*//'"
 source "$HOME/.local/lib/shell/fzf.bash"
 
-# shellcheck disable=SC2016
 preview_quoted='echo -n "\"${}\""'
-# shellcheck disable=SC2016
-preview='echo "${}"'
+preview='echo "${}"
+if [[ "${}" =~ : ]]; then
+    echo
+    echo "${}" | text-split ":"
+fi
+'
 
 fzf_args=(
 	--bind="alt-i:execute(bash -c 'echo -n {}=; $preview_quoted' | ${PAGER:-less})"
 	--bind="ctrl-m:become(bash -c '$preview' | tee >(trim-whole | clipcopy))"
 	--bind="ctrl-y:execute-silent(bash -c 'echo -n {}=; $preview_quoted' | clipcopy)"
-	--header-lines=0
 	--preview-window="right:60%:border-left:wrap:nohidden"
 	--preview="bash -c '$preview'"
+	--read0
 )
 
 eval "$FZF_RELOAD_CMD" | fzf-exec "${fzf_args[@]}"
