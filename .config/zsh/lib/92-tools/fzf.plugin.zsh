@@ -97,51 +97,51 @@ function _fzf_complete_ssh() {
 
 # => docker ------------------------------------------------------------------------------------------------------- {{{1
 
-function _fzf_complete_docker() {
-	case "$1" in
-		docker*\ rmi\ * | docker*-f* | docker*\ run\ *)
-			_fzf_complete "--reverse $FZF_MULTI_OPTS" "$@" < <(docker-images)
-			;;
-		docker*start* | docker*stop* | docker*rm* | docker*exec* | docker*kill*)
-			_fzf_complete "--reverse $FZF_MULTI_OPTS" "$@" < <(docker-containers)
-			;;
-		docker\ )
-			_fzf_complete "--reverse" "$@" < <(docker-commands)
-			;;
-	esac
-}
+# function _fzf_complete_docker() {
+# 	case "$1" in
+# 		docker*\ rmi\ * | docker*-f* | docker*\ run\ *)
+# 			_fzf_complete "--reverse $FZF_MULTI_OPTS" "$@" < <(docker-images)
+# 			;;
+# 		docker*start* | docker*stop* | docker*rm* | docker*exec* | docker*kill*)
+# 			_fzf_complete "--reverse $FZF_MULTI_OPTS" "$@" < <(docker-containers)
+# 			;;
+# 		docker\ )
+# 			_fzf_complete "--reverse" "$@" < <(docker-commands)
+# 			;;
+# 	esac
+# }
 
-function _fzf_complete_docker_post() {
-	perl -aE '@F && print($F[0]) && (eof() or print " ")'
-}
+# function _fzf_complete_docker_post() {
+# 	perl -aE '@F && print($F[0]) && (eof() or print " ")'
+# }
 
 # => kubectl ------------------------------------------------------------------------------------------------------ {{{1
 
-function _fzf_complete_kubectl() {
-	case "$1" in
-		kubectl*\ exec\ *\ -c\ )
-			_fzf_complete "--reverse" "$@" < <(kubectl-containers)
-			;;
-		kubectl*\ exec\ *)
-			_fzf_complete "--reverse" "$@" < <(kubectl-pods)
-			;;
-		kubectl\ )
-			_fzf_complete "--reverse -n 1" "$@" < <(kubectl-commands)
-			;;
-	esac
-}
+# function _fzf_complete_kubectl() {
+# 	case "$1" in
+# 		kubectl*\ exec\ *\ -c\ )
+# 			_fzf_complete "--reverse" "$@" < <(kubectl-containers)
+# 			;;
+# 		kubectl*\ exec\ *)
+# 			_fzf_complete "--reverse" "$@" < <(kubectl-pods)
+# 			;;
+# 		kubectl\ )
+# 			_fzf_complete "--reverse -n 1" "$@" < <(kubectl-commands)
+# 			;;
+# 	esac
+# }
 
-function _fzf_complete_kubectl_post() {
-	_fzf_complete_docker_post
-}
+# function _fzf_complete_kubectl_post() {
+# 	_fzf_complete_docker_post
+# }
 
 # => git completion ----------------------------------------------------------------------------------------------- {{{1
 
-function widget-fzf-bks-clusters()       LBUFFER+=$(unset REPORTTIME; bks --tui)
-function widget-fzf-bks-docker()         LBUFFER+=$(unset REPORTTIME; docker-images --tui)
+function widget-fzf-bks-clusters()       LBUFFER+=$(unset REPORTTIME; bks --tui                   | lines2args)
+function widget-fzf-bks-docker()         LBUFFER+=$(unset REPORTTIME; docker-images --tui         | lines2args)
 function widget-fzf-bks-namespaces()     LBUFFER+=$(unset REPORTTIME; bks --tui --mode namespaces | lines2args)
 function widget-fzf-git-branches()       LBUFFER+=$(unset REPORTTIME; fzf-git-branches --all      | lines2args)
-function widget-fzf-git-files-changed()  LBUFFER+=$(unset REPORTTIME; fzf-git-files-changed       | lines2args)
+function widget-fzf-git-x-status()       LBUFFER+=$(unset REPORTTIME; fzf-git-x-status            | lines2args)
 function widget-fzf-git-files()          LBUFFER+=$(unset REPORTTIME; fzf-git-files               | lines2args)
 function widget-fzf-git-hashes-all()     LBUFFER+=$(unset REPORTTIME; fzf-git-hashes-all          | lines2args)
 function widget-fzf-git-hashes()         LBUFFER+=$(unset REPORTTIME; fzf-git-log-branch-graph    | lines2args)
@@ -152,13 +152,15 @@ function widget-fzf-git-search-message() LBUFFER+=$(unset REPORTTIME; fzf-git-se
 function widget-fzf-git-search()         LBUFFER+=$(unset REPORTTIME; fzf-git-search              | lines2args)
 function widget-fzf-git-tags()           LBUFFER+=$(unset REPORTTIME; fzf-git-tags                | lines2args)
 function widget-open-current-script() {
-	local tokens
-	tokens=("${(@f)$( args2lines <<< "$LBUFFER" )}")
+	local ltokens all_tokens token
+	ltokens=("${(@f)$( args2lines <<< "$LBUFFER" )}")
+	all_tokens=("${(@f)$( args2lines <<< "$BUFFER" )}")
+    token="${all_tokens[ ${#ltokens[@]} ]}"
 
-	if [[ -n "${tokens[-1]}" ]]; then
+	if [[ -n "$token" ]]; then
 		local files file real_path
 
-		if tp="$(type "${tokens[-1]}")"; then
+		if tp="$(type "$token")"; then
 			if echo "$tp" | grep -F 'reserved word' &>/dev/null; then
 				echo "$tp" | "${PAGER:-less}"
 				return
@@ -166,12 +168,15 @@ function widget-open-current-script() {
 				echo "$tp" | "${PAGER:-less}"
 				return
 			elif echo "$tp" | grep -F 'shell function' &>/dev/null; then
-				{ echo "$tp"; which "${tokens[-1]}"; } | "${PAGER:-less}"
+				{ echo "$tp"; which "$token"; } | "${PAGER:-less}"
+				return
+			elif echo "$tp" | grep -F 'shell builtin' &>/dev/null; then
+				{ echo "$tp"; } | "${PAGER:-less}"
 				return
 			fi
 		fi
 
-		files=( "${tokens[-1]}" "$(command -v ${tokens[-1]})")
+		files=( "$token" "$(command -v "$token")")
 
 		for file in "${files[@]}"; do
 			if [[ -r "$file" ]]; then
@@ -192,7 +197,7 @@ zle -N widget-fzf-bks-clusters
 zle -N widget-fzf-bks-docker
 zle -N widget-fzf-bks-namespaces
 zle -N widget-fzf-git-branches
-zle -N widget-fzf-git-files-changed
+zle -N widget-fzf-git-x-status
 zle -N widget-fzf-git-files
 zle -N widget-fzf-git-hashes-all
 zle -N widget-fzf-git-hashes
@@ -204,21 +209,22 @@ zle -N widget-fzf-git-search
 zle -N widget-fzf-git-tags
 zle -N widget-open-current-script
 
-bindkey ';;'  widget-fzf-git-files
-bindkey ';H'  widget-fzf-git-hashes-all
-bindkey ';c'  widget-fzf-bks-clusters
-bindkey ';d'  widget-fzf-bks-docker
-bindkey ';f'  widget-fzf-git-files-changed
-bindkey ';g'  widget-fzf-git-log-all-graph
-bindkey ';h'  widget-fzf-git-hashes
-bindkey ';j'  widget-fzf-git-branches
-bindkey ';n'  widget-fzf-bks-namespaces
-bindkey ';o'  widget-open-current-script
-bindkey ';r'  widget-fzf-git-remotes
-bindkey ';sf' widget-fzf-git-search-file
-bindkey ';sm' widget-fzf-git-search-message
-bindkey ';ss' widget-fzf-git-search
-bindkey ';t'  widget-fzf-git-tags
+# F1=\eOP F2=\eOQ F3=\eOR F4=\eOS F5=\e[15~ F6=\e[17~ F7=\e[18~ F8=\e[19~ F9=\e[20~ F10=\e[21~ F12=\e[24~
+bindkey ';;'   widget-fzf-git-x-status
+bindkey ';H'   widget-fzf-git-hashes-all
+bindkey ';c'   widget-fzf-bks-clusters
+bindkey ';d'   widget-fzf-bks-docker
+bindkey ';f'   widget-fzf-git-files
+bindkey ';g'   widget-fzf-git-log-all-graph
+bindkey ';h'   widget-fzf-git-hashes
+bindkey ';j'   widget-fzf-git-branches
+bindkey ';n'   widget-fzf-bks-namespaces
+bindkey '\eOS' widget-open-current-script
+bindkey ';r'   widget-fzf-git-remotes
+bindkey ';sf'  widget-fzf-git-search-file
+bindkey ';sm'  widget-fzf-git-search-message
+bindkey ';ss'  widget-fzf-git-search
+bindkey ';t'   widget-fzf-git-tags
 
 # => context completion ------------------------------------------------------------------------------------------- {{{1
 
@@ -287,6 +293,7 @@ bindkey '^[ ' widget-fzf-detect
 
 # => completion overrides ----------------------------------------------------------------------------------------- {{{1
 
+# bind to ctrl-/
 bindkey '^_' _complete_help
 
 # Call the function to make sure that it is loaded.
