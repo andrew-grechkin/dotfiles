@@ -2,7 +2,9 @@
 **/autoload/plug.vim
 *.spl
 *.sug
+.config/git/config.d/override
 .config/lazygit/state.yml
+.config/mpv/scripts/*.so
 .config/nvim/.luarc.json
 .config/shell/*.work
 .config/systemd/user/*.wants/
