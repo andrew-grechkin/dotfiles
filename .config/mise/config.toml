@@ -1,0 +1,89 @@
+[tools]
+argc = "latest"
+delta = "latest"
+deno = "latest"
+eza = "latest"
+fzf = "latest"
+gemini-cli = "latest"
+jq = "latest"
+lazydocker = "latest"
+lazyjournal = "latest"
+neovim = "latest"
+node = "lts"
+oauth2c = "latest"
+perl = "5.42.0"
+ripgrep-all = "latest"
+ruby = "latest"
+usage = "latest"
+uv = "latest"
+yq = "latest"
+
+[tools.bat]
+postinstall = '''
+    mkdir -p $XDG_DATA_HOME/completion $XDG_DATA_HOME/man/man1
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/autocomplete/bat.zsh $XDG_DATA_HOME/completion/_bat
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/*.1 $XDG_DATA_HOME/man/man1
+'''
+version = "latest"
+
+[tools.fd]
+postinstall = '''
+    mkdir -p $XDG_DATA_HOME/completion $XDG_DATA_HOME/man/man1
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/autocomplete/_* $XDG_DATA_HOME/completion
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/*.1 $XDG_DATA_HOME/man/man1
+'''
+version = "latest"
+
+[tools.glow]
+postinstall = '''
+    mkdir -p $XDG_DATA_HOME/completion $XDG_DATA_HOME/man/man1
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/completions/glow.zsh $XDG_DATA_HOME/completion/_glow
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/manpages/*.1.gz $XDG_DATA_HOME/man/man1
+'''
+version = "latest"
+
+[tools.gum]
+postinstall = '''
+    mkdir -p $XDG_DATA_HOME/completion $XDG_DATA_HOME/man/man1
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/completions/gum.zsh $XDG_DATA_HOME/completion/_gum
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/manpages/*.1.gz $XDG_DATA_HOME/man/man1
+'''
+version = "latest"
+
+[tools.hurl]
+postinstall = '''
+    mkdir -p $XDG_DATA_HOME/completion $XDG_DATA_HOME/man/man1
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/completions/_hurl* $XDG_DATA_HOME/completion
+'''
+version = "latest"
+
+[tools.hwatch]
+postinstall = '''
+    mkdir -p $XDG_DATA_HOME/completion $XDG_DATA_HOME/man/man1
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/completion/zsh/* $XDG_DATA_HOME/completion
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/man/* $XDG_DATA_HOME/man/man1
+'''
+version = "latest"
+
+[tools.just]
+postinstall = '''
+    mkdir -p $XDG_DATA_HOME/completion $XDG_DATA_HOME/man/man1
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/completions/just.zsh $XDG_DATA_HOME/completion/_just
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/*.1 $XDG_DATA_HOME/man/man1
+'''
+version = "latest"
+
+[tools.step]
+postinstall = '''
+    mkdir -p $XDG_DATA_HOME/completion $XDG_DATA_HOME/man/man1
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/autocomplete/zsh_autocomplete $XDG_DATA_HOME/completion/_step
+'''
+version = "latest"
+
+[tools.xh]
+postinstall = '''
+    mkdir -p $XDG_DATA_HOME/completion $XDG_DATA_HOME/man/man1
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/completions/_xh $XDG_DATA_HOME/completion/
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/doc/*.1 $XDG_DATA_HOME/man/man1
+'''
+version = "latest"
