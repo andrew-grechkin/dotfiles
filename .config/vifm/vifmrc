@@ -339,7 +339,7 @@ fileviewer <text/html>,{*.html,*.htm}
 
 filextype <application/x-mimearchive>,{*.mhtml,*.mht}
 	\ {Open with default browser}
-	\ python3 -mwebbrowser %c:p %i &,
+	\ git web--browse %c:p %i &,
 filetype <application/x-mimearchive>,{*.mhtml,*.mht}
 	\ {Extract}
 	\ mhtml-parse %c:p,
