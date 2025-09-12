@@ -84,4 +84,5 @@ else
 	[[ -z "${focus:-}" ]] && tmux_args+=(-d)
 
 	tmux split-window "${tmux_args[@]}" "${tmux_envs[@]}" "$BASH $exec_script"
+	# tmux display-popup -EE -w '100%' -y "50%" "${tmux_envs[@]}" "$BASH $exec_script"
 fi
