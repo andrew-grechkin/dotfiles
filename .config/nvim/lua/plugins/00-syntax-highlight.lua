@@ -1,6 +1,7 @@
 return {
     { -- https://github.com/nvim-treesitter/nvim-treesitter
         'nvim-treesitter/nvim-treesitter',
+        branch = 'main',
         cmd = {'TSUpdate'},
         config = function()
             local ok, plugin = pcall(require, 'nvim-treesitter.configs')
@@ -73,6 +74,7 @@ return {
 
             local config = {
                 ensure_installed = ensure_installed,
+                sync_install = true, -- breaks if too many things downloaded at once
                 highlight = {
                     additional_vim_regex_highlighting = false,
                     enable = true,
