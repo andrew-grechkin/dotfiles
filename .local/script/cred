@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+echo "$0" "$@" &>>"$XDG_RUNTIME_DIR/cred.log"
+
+# default to https protocol
+if [[ ! "${url:=${1?url must be provided}}" =~ \:\/\/ ]]; then
+    url="https://$url"
+fi
+
+# rewrite some urls to use the same token
+domain='boo''king'
+host_orig="$(git-parse-url "$url" | grep -Pom1 '^host=\K.+' 2>/dev/null)"
+if eval "[[ '$url' =~ prod\.$domain\.com ]]"; then
+    host_rewrite="sso.prod.$domain.com"
+    url="https://$host_rewrite"
+elif eval "[[ '$url' =~ dqs\.$domain\.com ]]"; then
+    host_rewrite="sso.dqs.$domain.com"
+    url="https://$host_rewrite"
+fi
+
+credentials="$(git credential fill <<< "url=$url")"
+
+# expose std input lines as key=value variables
+# source <(cat) approach is not working because it fails if space is in values
+while read -r line; do
+    IFS='=' read -r key value <<< "$line"
+    eval "$key='$value'"
+done <<< "$credentials"
+
+# simplistic check if approve can be called, no real usage of password
+# it's necessary because without approval auth and refresh token will not be saved in cache
+# and oauth helper will try to re-authentify every call
+if [[ -n "${username:-}" && -n "${password:-}" ]]; then
+    git credential approve <<< "$credentials"
+fi >&2
+
+current_script="$(basename "$0")"
+if [[ "$current_script" =~ p$ ]]; then
+    <<< "$credentials" grep -Pom1 '^password=\K.+' 2>/dev/null || true
+else
+    # rewrite host back if it was rewritten before
+    if [[ -n "${host_rewrite:-}" ]]; then
+        grep -v '^host=' <<< "$credentials" 2>/dev/null
+        echo "host=$host_orig"
+    else
+        echo "$credentials"
+    fi
+fi
+
+# nice to know when password will expire in a human readable form (print only if tty)
+if [[ -t 1 && -t 2 && -n "${password_expiry_utc:-}" ]]; then
+    >&2 echo -n '> password expires at: '
+    >&2 date -d "@$password_expiry_utc" --rfc-3339=seconds
+    if [[ -x "$(command -v datediff)" ]]; then
+        >&2 echo -n '> password expires in: '
+        >&2 datediff now "@$password_expiry_utc" -f "%H:%M:%S"
+    fi
+fi

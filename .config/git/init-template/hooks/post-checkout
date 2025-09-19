@@ -15,35 +15,36 @@ hooks_dir="hooks"
 default_branch="$(git config get init.defaultBranch || echo 'main')"
 
 if [[ "${1:-}" == '0000000000000000000000000000000000000000' && "${3:-}" == '1' ]]; then # clone
-	# this hook is always executed with cwd of cloned repo root
-	echo "> post clone setup: $0" >&2
+    # this hook is always executed with cwd of cloned repo root
+    echo "> post clone setup: $0" >&2
 
-	remote_branch="$(git rev-parse --verify --abbrev-ref '@{upstream}' --symbolic-full-name)"
-	IFS="/" read -r <<< "$remote_branch" remote branch
+    if remote_branch="$(git rev-parse --verify --abbrev-ref '@{upstream}' --symbolic-full-name 2>/dev/null)"; then
+        IFS="/" read -r <<< "$remote_branch" remote branch
 
-	if [[ "$branch" != "$default_branch" ]]; then
-		echo "> the main branch is '$branch', setting up alias for it as '$default_branch'" >&2
-		git symbolic-ref "refs/heads/$default_branch" "refs/heads/$branch"
-		git symbolic-ref "refs/remotes/$remote/$default_branch" "refs/remotes/$remote/$branch"
-	fi
+        if [[ "$branch" != "$default_branch" ]]; then
+            echo "> the main branch is '$branch', setting up alias for it as '$default_branch'" >&2
+            git symbolic-ref "refs/heads/$default_branch" "refs/heads/$branch"
+            git symbolic-ref "refs/remotes/$remote/$default_branch" "refs/remotes/$remote/$branch"
+        fi
+    fi
 
-	if [[ -d "$GIT_WORK_TREE/$hooks_dir" && -e "$GIT_WORK_TREE/$hooks_dir/autoinstall" ]]; then
-		operation="$(< "$GIT_WORK_TREE/$hooks_dir/autoinstall")"
-		if [[ "$operation" == 'replace' ]]; then
-			echo "> repo provides own hooks, replacing default hooks with them" >&2
-			rm -rf "$GIT_DIR/hooks"
-			if ! ln -srf "$GIT_WORK_TREE/$hooks_dir" "$GIT_DIR/hooks"; then
-				echo "> error: failed to replace hooks" >&2
-			fi
-		else
-			echo "> repo provides own hooks, merging them with default hooks" >&2
-			for it in "$GIT_WORK_TREE/$hooks_dir"/*; do
-				if [[ ! "$it" =~ autoinstall$ ]]; then
-					if ! ln -srf "$it" "$GIT_DIR/hooks/"; then
-						echo "> error: failed to install hook: $(basename "$it")" >&2
-					fi
-				fi
-			done
-		fi
-	fi
+    if [[ -d "$GIT_WORK_TREE/$hooks_dir" && -e "$GIT_WORK_TREE/$hooks_dir/autoinstall" ]]; then
+        operation="$(< "$GIT_WORK_TREE/$hooks_dir/autoinstall")"
+        if [[ "$operation" == 'replace' ]]; then
+            echo "> repo provides own hooks, replacing default hooks with them" >&2
+            rm -rf "$GIT_DIR/hooks"
+            if ! ln -srf "$GIT_WORK_TREE/$hooks_dir" "$GIT_DIR/hooks"; then
+                echo "> error: failed to replace hooks" >&2
+            fi
+        else
+            echo "> repo provides own hooks, merging them with default hooks" >&2
+            for it in "$GIT_WORK_TREE/$hooks_dir"/*; do
+                if [[ ! "$it" =~ autoinstall$ ]]; then
+                    if ! ln -srf "$it" "$GIT_DIR/hooks/"; then
+                        echo "> error: failed to install hook: $(basename "$it")" >&2
+                    fi
+                fi
+            done
+        fi
+    fi
 fi
