@@ -2,49 +2,72 @@
 
 set -Eeuo pipefail
 
-# ABSTRACT: wrapper around Amp/Cody to make requests easier from terminal and other programs by providing sane defaults
+[[ -x "$(command -v argc)" ]] || {
+    echo "'argc' helper is required. Please install from https://github.com/sigoden/argc" >&2
+    exit 2
+}
 
-if [[ -t 0 && -z "$*" ]]; then
-	echo "Pass a request to AI as a first option" >&2
-	exit 1
+# @describe wrapper around gemini/amp/cody to make requests easier from terminal and other programs by providing sane defaults
+
+# @meta version 1.0.0
+# @meta combine-shorts
+# @meta require-tools grep
+
+# @arg    prompt*                             Prompt
+# @flag   -m --markdown                       Force markdown output
+# @flag   -y --yolo                           Give access to current dir recursively
+# @flag   -g --gemini                         Force gemini usage
+# @option -f --file                           Pass a file as a context
+
+eval "$(argc --argc-eval "$0" "$@")"
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+# shellcheck disable=SC2154
+if [[ -t 0 && "${#argc__positionals[@]}" -eq 0 ]]; then
+    echo "Pass a request to AI via argv or stdin" >&2
+    exit 1
 fi
 
-if [[ -x "$(command -v amp)" ]]; then
-	if [[ -t 0 ]]; then
-		echo "$*" | amp
-	else
-		cat | amp
-	fi | grep -vE -e '^>(\s|$)' -e '^Thread ID:' | perl -000 -lnE 'say "$_\n"'
-elif [[ -x "$(command -v cody)" ]]; then
-	markdown='auto'
+if [[ -x "$(command -v cody)" ]]; then
+    args=(--silent)
+    if [[ -n "${argc_markdown:-}" ]]; then
+        args+=(-m)
+    fi
 
-	args=$(getopt --name="$0" --options 'f:m' --longoptions 'file:,markdown' -- "$@")
-	eval set -- "$args"
+    if [[ -t 0 ]]; then
+        cody chat "${args[@]}" "${argc__positionals[*]}"
+    else
+        cody chat "${args[@]}" --stdin
+    fi
+elif [[ -x "$(command -v gemini)" ]]; then
+    # gemini is a good example how you should NOT write cli interface
+    [[ -n "${argc_yolo:-}" ]] && args+=(-y)
+    if [[ -t 1 ]]; then
+        if [[ "${#argc__positionals[@]}" -eq 0 ]]; then
+            args+=(-i "$(xargs -r)")
+        else
+            args+=(-i "${argc__positionals[*]}")
+        fi
+        </dev/tty gemini "${args[@]}" 2> >(grep -vFx 'Loaded cached credentials.' >&2)
+    else
+        if [[ "${#argc__positionals[@]}" -ne 0 ]]; then
+            args+=(-p "${argc__positionals[*]}")
+        fi
 
-	chat_args=(--silent)
-
-	while ((1)); do
-		case "$1" in
-			-f | --file) chat_args+=(--context-file="$2"); shift 2 ;;
-			-m | --markdown) markdown="always"; shift ;;
-			--) shift; break ;;
-		esac
-	done
-
-	if [[ -t 0 ]]; then
-		cody chat "${chat_args[@]}" -m "$*" 2>/dev/null
-	else
-		cody chat "${chat_args[@]}" --stdin 2>/dev/null
-	fi \
-		| if [[ "$markdown" == "always" ]] || [[ "$markdown" == "auto" && -t 1 ]]; then
-		glow -p
-	else
-		cat
-	fi
+        gemini "${args[@]}" 2> >(grep -vFx 'Loaded cached credentials.' >&2) \
+            | grep -vFx 'Data collection is disabled.'
+    fi
+elif [[ -x "$(command -v amp)" ]]; then
+    if [[ -t 0 ]]; then
+        echo "$*" | amp
+    else
+        cat | amp
+    fi | grep -vE -e '^>(\s|$)' -e '^Thread ID:' | perl -000 -lnE 'say "$_\n"'
 else
-	# if [[ -x "$(command -v ollama)" ]] && ollama ps | grep 'codellama' &>/dev/null; then
-	#   cat | { lines-join; echo; } | tee -a /dev/stderr | ollama run codellama
-	#   exit
-	# fi
-	:
+    # if [[ -x "$(command -v ollama)" ]] && ollama ps | grep 'codellama' &>/dev/null; then
+    #   cat | { lines-join; echo; } | tee -a /dev/stderr | ollama run codellama
+    #   exit
+    # fi
+    :
 fi

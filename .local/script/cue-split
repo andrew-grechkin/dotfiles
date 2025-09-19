@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+# frontend for:            cuetools, shntool, mp3splt
+# optional dependencies:   flac, mac, wavpack, ttaenc
+
+dir="${1:-$PWD}"
+
+cd "$dir" || exit 1
+
+for cue in *.cue; do
+	filename="$(grep -Pom1 'FILE\s+"\K[^"]+' "$cue")"
+	extension="${filename##*.}"
+	stem="${filename%.*}"
+	case "$extension" in
+		ape|flac|tta|wav|wv)
+			mkdir "$stem"
+			shnsplit -d "$stem" -f "$cue" -t '%n - %t' -o 'flac flac -V --best -o %f -' -- "$filename"
+			rm -f "$stem"/00*pregap*
+			cuetag.sh "$cue" "$stem"/*.flac ;;
+
+		mp3|ogg)
+			mp3splt -no "@n @p - @t ($stem)" -c "$cue" "$filename"
+			cuetag.sh "$cue" "$stem"/*."$extension" ;;
+
+		*)
+			echo 'fatal: found no files to split (ape, flac, mp3, ogg, tta, wav, wv)' >&2
+			exit 1 ;;
+	esac
+done
