@@ -7,10 +7,10 @@ INPUT="${2:-}"
 
 TMP_FILE=$(mktemp -u)
 function finish {
-	rm -f "$TMP_FILE"
+    rm -f "$TMP_FILE"
 }
 
-cat <<- EO_TMP_FILE > "$TMP_FILE"
+cat << EO_TMP_FILE > "$TMP_FILE"
 use v5.38;
 
 my \$str = '$INPUT';

@@ -4,7 +4,7 @@ return {
         event = {'BufReadPre', 'BufNewFile'},
         opts = {
             formatters = {
-                ['beautysh'] = {command = 'beautysh', args = {'--indent-size', '4', '--tab', '-'}},
+                ['beautysh'] = {command = 'beautysh', args = {'--indent-size', '4', '-'}},
                 -- ['eslint'] = {command = 'eslint-fix-stdout', args = '$FILENAME'},
                 ['jq-sort'] = {command = 'jq', args = {'-S', '--indent', '2'}},
                 ['jq-sort-one-line'] = {command = 'jq', args = {'-S', '-c'}},
