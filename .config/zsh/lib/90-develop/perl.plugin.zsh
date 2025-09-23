@@ -19,6 +19,7 @@ alias perlcarp='export PERL5OPT="-MCarp::Always $PERL5OPT"'
 alias perldebug='PERLDB_OPTS="RemotePort=localhost:9000" perl -I${PERL_LOCAL_LIB_ROOT}/lib/perl5/x86_64-linux-thread-multi/dbgp-helper -d '
 alias perlverbose='export PERL5OPT="-MCarp=verbose $PERL5OPT"'
 alias repl='rlwrap perl -dE1'
+alias perld='perl -MO=Deparse'
 
 # => functions ---------------------------------------------------------------------------------------------------- {{{1
 

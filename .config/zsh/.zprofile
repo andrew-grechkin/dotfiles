@@ -20,6 +20,10 @@ fi
 
 # => SSH agent check and start ------------------------------------------------------------------------------------ {{{1
 
+if [[ -z "${SSH_CONNECTION:-}" ]] && [[ -n "${DISPLAY:-}" || -n "${WAYLAND_DISPLAY:-}" ]]; then
+    export SSH_ASKPASS_REQUIRE=force
+fi
+
 #SSH_AGENTS=(
 #	"${XDG_RUNTIME_DIR}/keyring/ssh"           # Gnome keyring agent
 #	"${XDG_RUNTIME_DIR}/S.ssh-agent"           # OpenSSH agent
