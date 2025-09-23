@@ -138,5 +138,6 @@
 [include]
     path = config.d/alias
     path = config.d/credential
+    path = config.d/credential.private
     path = config.d/delta
     path = config.d/override

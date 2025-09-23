@@ -14,43 +14,44 @@ eval set -- "$args"
 full='0'
 
 while ((1)); do
-	case "$1" in
-		-f | --full) full='1'; pt_args+=(-f); shift ;;
-		--) shift; break ;;
-	esac
+    case "$1" in
+        -f | --full) full='1'; pt_args+=(-f); shift ;;
+        --) shift; break ;;
+    esac
 done
 
 
 if [[ "$#" -eq "1" ]] && [[ "$1" =~ \.git/?$ ]]; then
-	if [[ "$1" =~ /\.git/?$ ]]; then
-		REPO=$(dirname "$1")
-	else
-		if [[ -d "$1" ]]; then
-			REPO="$1"
-		else
-			if ! grep '^gitdir' &>/dev/null; then
-				exit 0
-			fi
-			REPO="$1"
-		fi
-	fi
+    if [[ "$1" =~ /\.git/?$ ]]; then
+        REPO=$(dirname "$1")
+    else
+        if [[ -d "$1" ]]; then
+            REPO="$1"
+        else
+            if ! grep '^gitdir' &>/dev/null; then
+                exit 0
+            fi
+            REPO="$1"
+        fi
+    fi
 
-	echo -e "$FG[olive]Gc (full=$full) $REPO$FX[reset]"
+    echo -e "$FG[olive]Gc (full=$full) $REPO$FX[reset]"
 
-	if [[ "$full" == '1' ]]; then
-		git -C "$REPO" reflog expire --all --expire=now --expire-unreachable=now \
-			&& nice git -C "$REPO" gc --prune=now
-	else
-		nice git -C "$REPO" gc --prune=now --keep-largest-pack
-	fi
+    umask "$(umask -S),g+rwx"
+    if [[ "$full" == '1' ]]; then
+        git -C "$REPO" reflog expire --all --expire=now --expire-unreachable=now \
+            && nice git -C "$REPO" gc --prune=now
+    else
+        nice git -C "$REPO" gc --prune=now --keep-largest-pack
+    fi
 else
-	fd -0uL -E 'bazel-*' -td -tf --prune '\.git\z' "${1:-$PWD}" | sort -z | {
-		if [[ -n "$(command -v parallel)" ]]; then
-			parallel -0j-50% --delay 0.3 "$0" "${pt_args[@]}" {}
-		else
-			xargs -0rn1 "$0" "${pt_args[@]}"
-		fi
-	}
+    fd -0uL -E 'bazel-*' -td -tf --prune '\.git\z' "${1:-$PWD}" | sort -z | {
+        if [[ -n "$(command -v parallel)" ]]; then
+            parallel -0j-50% --delay 0.3 "$0" "${pt_args[@]}" {}
+        else
+            xargs -0rn1 "$0" "${pt_args[@]}"
+        fi
+    }
 fi
 
 exit 0
