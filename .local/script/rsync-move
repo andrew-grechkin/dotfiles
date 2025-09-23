@@ -9,12 +9,7 @@ source "$HOME/.local/lib/shell/rsync.bash"
 rsync_params=(
 	"${RSYNC_DEFAULT_PARAMS[@]}"
 	"${RSYNC_MOVE_PARAMS[@]}"
+	"${RSYNC_INFO[@]}"
 )
-
-if [[ -t 1 ]]; then
-	rsync_params+=("${RSYNC_INFO_TTY[@]}")
-else
-	rsync_params+=("${RSYNC_INFO_FILE[@]}")
-fi
 
 exec rsync "${rsync_params[@]}" "$@"

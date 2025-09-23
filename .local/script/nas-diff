@@ -33,11 +33,11 @@ else
 	rsync_params+=("${RSYNC_DIFF_PARAMS[@]}")
 fi
 
-if [[ "${background:-1}" == "0" && -t 1 ]]; then
-	rsync_params+=("${RSYNC_INFO_TTY[@]}")
-else
+if [[ "${background:-1}" == "1" ]]; then
 	runner=(tsp)
 	rsync_params+=("${RSYNC_INFO_FILE[@]}")
+else
+	rsync_params+=("${RSYNC_INFO[@]}")
 fi
 
 src="${src:-"./"}"
