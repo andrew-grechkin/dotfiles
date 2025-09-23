@@ -81,3 +81,54 @@ BUF_ONLY = function()
         end
     end
 end
+
+-- local function create_scratch_buffer(title, lines)
+--     local bufnr = vim.api.nvim_create_buf(false, true)
+
+--     vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+--     vim.api.nvim_buf_set_name(bufnr, title)
+
+--     vim.cmd('vsplit')
+--     vim.api.nvim_set_current_buf(bufnr)
+-- end
+
+vim.api.nvim_create_user_command('Ai', function(opts)
+    local start_line = vim.api.nvim_buf_get_mark(0, '<')[1]
+    local end_line = vim.api.nvim_buf_get_mark(0, '>')[1]
+    if start_line < 1 then start_line = 1 end
+    if end_line < 1 then end_line = -1 end
+
+    local selected_lines = vim.api.nvim_buf_get_lines(0, start_line - 1, end_line, true)
+    local input = table.concat(selected_lines, '\n') .. '\n'
+
+    local cmd = ('echo request: "%s"; echo; tee >(%s %s)'):format(opts.args, 'gemini-api streamed-prompt', opts.args)
+    if end_line == -1 then
+        cmd = ('echo request: "%s"; echo; cat | %s %s'):format(opts.args, 'gemini-api streamed-prompt', opts.args)
+    end
+
+    vim.cmd('vsplit')
+    local bufnr = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_buf_set_name(bufnr, ('gemini-api streamed-prompt %s'):format(os.time()))
+    -- vim.api.nvim_win_set_buf(0, bufnr)
+    vim.api.nvim_set_current_buf(bufnr)
+    local job = vim.fn.jobstart(cmd, {
+        on_stdout = function(_, data)
+            if data then
+                vim.api.nvim_buf_set_lines(bufnr, -1, -1, false, data)
+                -- vim.api.nvim_win_set_cursor(output_winnr, {
+                --     vim.api.nvim_buf_line_count(output_bufnr),
+                --     0,
+                -- })
+                -- vim.bo[output_bufnr].modified = false
+            end
+        end,
+        on_stderr = function(_, data) if data then vim.api.nvim_buf_set_lines(bufnr, -1, -1, false, data) end end,
+    })
+    vim.fn.chansend(job, input)
+    vim.fn.chanclose(job, 'stdin')
+end, {
+    desc = 'Pipes visual selection to a command and shows output in quickfix.',
+    bang = false,
+    range = true,
+    nargs = '*',
+})
