@@ -4,7 +4,8 @@ Description=Fetch archive
 [Service]
 Type=oneshot
 WorkingDirectory=%h/pictures/.stage/peapix
-ExecStart=/usr/bin/bash -c 'source "%h/.local/lib/relocatable-perl-dev.rc"; "%h/.local/scripts-ext/peapix/peapix-wallpaper-archive-download"'
+ExecStart=/usr/bin/bash -c 'source "%h/.local/lib/relocatable-perl-dev.rc"; ./peapix-wallpaper-archive-download'
+UMask=0002
 
 [Install]
 WantedBy=default.target
