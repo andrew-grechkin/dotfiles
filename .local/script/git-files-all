@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-
-set -Eeuo pipefail
-
-git-in-repo && {
-	git -C "$(git root)" ls-files -co --exclude-standard
-}
