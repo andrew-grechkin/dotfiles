@@ -5,9 +5,9 @@
 
 TMUX_SHARED_SOCKET="/tmp/tmux-shared-socket-$USER"
 if [[ -S "$TMUX_SHARED_SOCKET" ]]; then
-	chmod go+rw "$TMUX_SHARED_SOCKET"
+    chmod go+rw "$TMUX_SHARED_SOCKET"
 fi
 
 if [[ -r /etc/motd ]]; then
-	cat /etc/motd
+    cat /etc/motd
 fi
