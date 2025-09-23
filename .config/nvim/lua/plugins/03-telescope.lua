@@ -14,10 +14,10 @@ return {
             local config = {
                 defaults = {
                     layout_config = {
-                        height = 0.96,
+                        height = 0.999,
                         preview_cutoff = 120,
                         prompt_position = 'top',
-                        width = 0.96,
+                        width = 0.999,
                     },
                     mappings = {
                         i = {
