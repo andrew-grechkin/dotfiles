@@ -9,6 +9,10 @@ function install-distrobox() {
 	curl -s https://raw.githubusercontent.com/89luca89/distrobox/main/install | sh -s -- --prefix ~/.local
 }
 
+function run-as() {
+    sudo -u "${1?user name must be provided}" -i
+}
+
 # => proxy -------------------------------------------------------------------------------------------------------- {{{1
 
 function enable-proxy() {
