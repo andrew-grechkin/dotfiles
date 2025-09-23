@@ -55,6 +55,7 @@ vim.o.wildignore = '*.a,*.o,*.obj,.git,*~,*.pyc,*.so,*.swp,*.zip,*.exe,tmp/**,no
 vim.o.wildignorecase = true
 vim.o.wildoptions = 'pum,tagfile'
 vim.o.writebackup = false
+vim.go.winborder = 'rounded'
 
 vim.cmd.colorscheme 'molokai-grand'
 

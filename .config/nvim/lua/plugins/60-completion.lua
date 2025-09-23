@@ -1,4 +1,15 @@
 return {
+    {
+        'folke/lazydev.nvim',
+        ft = 'lua', -- only load on lua files
+        opts = {
+            library = {
+                -- See the configuration section for more details
+                -- Load luvit types when the `vim.uv` word is found
+                {path = '${3rd}/luv/library', words = {'vim%.uv'}},
+            },
+        },
+    },
     { -- https://github.com/hrsh7th/nvim-cmp
         'hrsh7th/nvim-cmp',
         dependencies = {
@@ -49,6 +60,11 @@ return {
         config = function()
             local ok, plugin = pcall(require, 'cmp')
             if not ok then return end
+
+            -- cmp-nvim-lsp only registers its sources when `.setup()` is called
+            -- (it installs an InsertEnter autocmd that maps attached LSP clients to cmp).
+            local cmp_lsp_ok, cmp_lsp = pcall(require, 'cmp_nvim_lsp')
+            if cmp_lsp_ok then cmp_lsp.setup() end
 
             -- let g:loaded_completion = 1
             -- vim.api.nvim_set_var('loaded_completion', true)
@@ -159,9 +175,9 @@ return {
                 },
                 sources = {
                     {name = 'vim-dadbod-completion'},
-                    buffer_conf,
-                    {name = 'cody'},
+                    -- {name = 'cody'},
                     {name = 'luasnip', keyword_length = 2},
+                    buffer_conf,
                     {name = 'nvim_lsp'},
                     {name = 'nvim_lua'},
                     {name = 'path'},

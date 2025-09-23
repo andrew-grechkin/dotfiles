@@ -83,7 +83,9 @@ return {
                 {'<leader><leader>u', ':Lazy install<CR>', desc = 'plugins: open'},
                 {'<leader><leader>v', ':tabedit $MYVIMRC<CR>', desc = 'init.vim'},
 
-                {'<leader><CR>', '!!bash<CR>', desc = 'execute line in shell'},
+                {'<leader>!', '!!bash<CR>', desc = 'execute line and replace'},
+                {'<leader><leader><CR>', '"zyy"zPj!!bash<CR>', desc = 'execute line and keep copy'},
+                {'<leader><CR>', ':.Filter bash<CR>', desc = 'execute line in new window'},
                 -- ['<leader>c'] = {'<cmd>Bdelete!<CR>', 'Close Buffer'},
                 -- ['<leader>h'] = {'<cmd>nohlsearch<CR>', 'No Highlight'},
                 {'<leader>P', '"+P', desc = 'paste from clipboard'},
@@ -124,7 +126,9 @@ return {
 
             which_key.add({
                 mode = {'v'},
-                {'<leader><CR>', ':!bash<CR>', desc = 'execute lines in shell'},
+                {'<leader>!', ':!bash<CR>', desc = 'execute lines and replace'},
+                {'<leader><leader><CR>', '"zy"zPgv:!bash<CR>', desc = 'execute lines and keep copy'},
+                {'<leader><CR>', ':Filter bash<CR>', desc = 'execute lines in new window'},
                 {'<leader>d', '"_d', desc = 'delete to black hole'},
                 {'<leader>P', '"+P:let @"=@0<CR>', desc = 'paste clip, replace without copying it'},
                 {'<leader>p', '"+p:let @"=@0<CR>', desc = 'paste clip, replace without copying it'},
