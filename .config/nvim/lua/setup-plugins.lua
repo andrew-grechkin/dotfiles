@@ -18,10 +18,10 @@ if not ok then return end
 local concurrency = nil
 local url_format = 'https://github.com/%s.git'
 
-if not IS_KVM then
-    concurrency = (vim.loop.available_parallelism() / 2) or nil
-    url_format = 'git@github.com:%s.git'
-end
+-- if not IS_KVM then
+--     concurrency = (vim.loop.available_parallelism() / 2) or nil
+--     url_format = 'git@github.com:%s.git'
+-- end
 
 plugin.setup('plugins', {
     ---@type number|nil limit the maximum amount of concurrent tasks
