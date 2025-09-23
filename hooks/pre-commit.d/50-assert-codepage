@@ -3,10 +3,10 @@
 set -Eeuo pipefail
 
 if git rev-parse --verify HEAD >/dev/null 2>&1; then
-	against=HEAD
+    against=HEAD
 else
-	# Initial commit: diff against an empty tree object
-	against=$(git hash-object -t tree /dev/null)
+    # Initial commit: diff against an empty tree object
+    against=$(git hash-object -t tree /dev/null)
 fi
 
 # If you want to allow non-ASCII filenames set this variable to true.
@@ -20,18 +20,19 @@ if [[ "$allownonascii" != "true" ]] &&
 # even required, for portability to Solaris 10's /usr/bin/tr), since
 # the square bracket bytes happen to fall in the designated range.
 test "$(git diff --cached --name-only --diff-filter=A -z "$against" | LC_ALL=C tr -d '[ -~]\0' | wc -c)" != 0; then
-	cat <<-'EOM'
-		Error: Attempt to add a non-ASCII file name.
+    cat << 'EOM'
+Error: Attempt to add a non-ASCII file name.
 
-		This can cause problems if you want to work with people on other platforms.
+This can cause problems if you want to work with people on other platforms.
 
-		To be portable it is advisable to rename the file.
+To be portable it is advisable to rename the file.
 
-		If you know what you are doing you can disable this check using:
+If you know what you are doing you can disable this check using:
 
-		git config hooks.allownonascii true
-		EOM
-	exit 1
+git config hooks.allownonascii true
+EOM
+
+    exit 1
 fi
 
 exit 0

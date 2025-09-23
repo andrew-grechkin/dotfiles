@@ -8,48 +8,48 @@ export PERLBREW_HOME="$PERLBREW_ROOT"
 # shellcheck source=/dev/null
 [[ -r "$PERLBREW_ROOT/etc/bashrc" ]] && source "$PERLBREW_ROOT/etc/bashrc"
 
-SCRIPT=$(cat <<- 'EOSCRIPT'
-	use List::Util qw(none);
+SCRIPT=$(cat << 'EOSCRIPT'
+use List::Util qw(none);
 
-	my %sections = (
-	   '1'     => '1',
-       '2'     => '2',
-       '3'     => '3',
-       '4'     => '4',
-       '5'     => '5',
-       '6'     => '6',
-       '7'     => '7',
-       '8'     => '8',
-       '1perl' => '1perl',
-       '1p'    => '1p',
-       '1ssl'  => '1ssl',
-       '7ssl'  => '7ssl',
-	);
+my %sections = (
+   '1'     => '1',
+   '2'     => '2',
+   '3'     => '3',
+   '4'     => '4',
+   '5'     => '5',
+   '6'     => '6',
+   '7'     => '7',
+   '8'     => '8',
+   '1perl' => '1perl',
+   '1p'    => '1p',
+   '1ssl'  => '1ssl',
+   '7ssl'  => '7ssl',
+);
 
-	my %section_names = (
-	   '1'     => '(1     User commands)',
-       '2'     => '(2     System calls)',
-       '3'     => '(3     Library calls)',
-       '4'     => '(4     Special files/devices)',
-       '5'     => '(5     File formats and configuration files)',
-       '6'     => '(6     Games)',
-       '7'     => '(7     Overview, conventions, and miscellaneous)',
-       '8'     => '(8     System management commands)',
-       '1perl' => '(1perl Perl commands)',
-       '1p'    => '(1p    Posix commands)',
-       '1ssl'  => '(1ssl  SSL commands)',
-       '7ssl'  => '(7ssl  SSL implementation)',
-	);
+my %section_names = (
+   '1'     => '(1     User commands)',
+   '2'     => '(2     System calls)',
+   '3'     => '(3     Library calls)',
+   '4'     => '(4     Special files/devices)',
+   '5'     => '(5     File formats and configuration files)',
+   '6'     => '(6     Games)',
+   '7'     => '(7     Overview, conventions, and miscellaneous)',
+   '8'     => '(8     System management commands)',
+   '1perl' => '(1perl Perl commands)',
+   '1p'    => '(1p    Posix commands)',
+   '1ssl'  => '(1ssl  SSL commands)',
+   '7ssl'  => '(7ssl  SSL implementation)',
+);
 
-	($n, $s, $t) = m/\A(.+?) \s+ [(] (\d+.*) [)] \s+ - \s+ (.+) \z/xx;
+($n, $s, $t) = m/\A(.+?) \s+ [(] (\d+.*) [)] \s+ - \s+ (.+) \z/xx;
 
-	$m = '\":nnoremap <buffer> q :quitall<CR>\"';
+$m = '\":nnoremap <buffer> q :quitall<CR>\"';
 
-	if ($n && none {$s eq $_} (2, 3, '3ssl', '3caca', '3x', '7ssl')) {
-		$r{"$n/$s"} = sprintf(qq{%-40s (%s) %s\texport MANPAGER="nvim +Man! -c $m"; man -s $s $n}, $n, $sections{$s} // $s, $t);
-	}
+if ($n && none {$s eq $_} (2, 3, '3ssl', '3caca', '3x', '7ssl')) {
+	$r{"$n/$s"} = sprintf(qq{%-40s (%s) %s\texport MANPAGER="nvim +Man! -c $m"; man -s $s $n}, $n, $sections{$s} // $s, $t);
+}
 
-	END { say $r{$_} foreach sort keys %r }
+END { say $r{$_} foreach sort keys %r }
 EOSCRIPT
 )
 
