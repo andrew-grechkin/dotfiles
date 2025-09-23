@@ -4,7 +4,7 @@
     whitespace = fix
 
 [blame]
-    ignoreRevsFile      = ~/.config/git/global-blame-ignore-revs
+    ; ignoreRevsFile      = ~/.config/git/global-blame-ignore-revs
     markUnblamableLines = true
     ; ignoreRevsFile = .git-blame-ignore-revs
 
@@ -138,5 +138,6 @@
 [include]
     path = config.d/alias
     path = config.d/credential
+    path = config.d/credential.override
     path = config.d/delta
     path = config.d/override
