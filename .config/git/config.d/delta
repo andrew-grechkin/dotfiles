@@ -1,19 +1,5 @@
 # vim: filetype=gitconfig
 
-[core]
-    pager = delta
-
-[interactive]
-    diffFilter = delta --color-only --features=interactive
-
-[pager]
-    blame  = delta
-    diff   = delta
-    log    = delta
-    reflog = delta
-    sh     = delta
-    show   = delta
-
 [delta]
     features                      = decorations line-numbers navigate
     hyperlinks                    = false
