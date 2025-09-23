@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+source ../lib/shell/color.bash
+
+echo "--- Testing 'color' function with named colors ---"
+echo "This should be red: $(color red 'This is red text')"
+echo "This should be lime: $(color lime 'This is lime text')"
+echo "This should be bold: $(color bold 'This is bold text')"
+echo
+
+echo "--- Testing 'color256' function ---"
+echo "This should be orange (color 208): $(color256 208 'This is a nice orange color.')"
+echo
+
+echo "--- Testing 'color_rgb' function ---"
+echo "This should be BlueViolet (138 43 226): $(colorRGB 138 43 226 'This is a BlueViolet color.')"
+echo
