@@ -1,5 +1,16 @@
 local f = vim.api.nvim_create_user_command
 
+-- Make command to always run silently and auto-open quickfix
+vim.api.nvim_create_user_command('Make', function(opts)
+    vim.cmd('silent! make ' .. opts.args)
+    vim.cmd('redraw!')
+    local qflist = vim.fn.getqflist()
+    if #qflist > 0 then vim.cmd('copen') end
+end, {nargs = '*', bang = true, complete = 'file'})
+
+-- Override :make with Make
+vim.cmd([[cabbrev make Make]])
+
 f('DecodeUtf16', ':edit! ++enc=utf-16le | set fileformat=unix | set fileencoding=utf-8', {
     bang = true,
 })

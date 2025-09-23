@@ -23,8 +23,11 @@ endif
 " :lua vim.notify(require'nvim-treesitter.ts_utils'.get_node_at_cursor():__tostring())
 " :lua vim.notify(vim.inspect(getmetatable(require'nvim-treesitter.ts_utils'.get_node_at_cursor(0))))
 
+" man: syntax
 if &termguicolors ==# 1
+	hi Added                                  guibg=#203020
 	hi Boolean                  guifg=#AE81F0
+	hi Changed                                guibg=#303020
 	hi Character                guifg=#E6DB74
 	hi Comment                  guifg=#777777
 	hi Conditional              guifg=#F92672                             gui=bold
@@ -38,6 +41,7 @@ if &termguicolors ==# 1
 	hi Function                 guifg=#A6E22E
 	hi Identifier               guifg=#FD971F
 	hi Ignore                   guifg=#808080 guibg=bg
+	hi Include                  guifg=#A6E22E
 	hi Keyword                  guifg=#F92672                             gui=bold
 	hi Label                    guifg=#45B2B4                             gui=NONE
 	hi Macro                    guifg=#C4BE89                             gui=italic
@@ -45,6 +49,7 @@ if &termguicolors ==# 1
 	hi Operator                 guifg=#F92672
 	hi PreCondit                guifg=#A6E22E                             gui=bold
 	hi PreProc                  guifg=#A6E22E
+	hi Removed                  guifg=#960050 guibg=#302020
 	hi Repeat                   guifg=#F92672                             gui=bold
 	hi Special                  guifg=#66D9EF                             gui=bold
 	hi SpecialChar              guifg=#F92672                             gui=bold
@@ -57,10 +62,7 @@ if &termguicolors ==# 1
 	hi Todo                     guifg=#FFFFFF guibg=bg                    gui=bold
 	hi Type                     guifg=#66D9EF                             gui=NONE
 	hi Typedef                  guifg=#66D9EF
-
-	hi LspInlayHint             guifg=#808080
-	hi LspCodeLens              guifg=#808080
-	hi LspCodeLensSeparator     guifg=#808080
+	hi Underlined                                                         gui=underline
 
 	hi ColorColumn                            guibg=#232526
 	hi Cursor                   guifg=#000000 guibg=#F8F8F0
@@ -82,10 +84,7 @@ if &termguicolors ==# 1
 	hi MoreMsg                  guifg=#E6DB74
 	hi NonText                  guifg=#222023
 	hi Normal                                 guibg=NONE                                  ctermbg=NONE
-	hi manBold                                                            gui=bold
-	hi manItalic                                                          gui=italic
-	hi manUnderline                                                       gui=underline
-	hi Normal                   guifg=#D8D8D2 guibg=NONE
+	hi NormalFloat                            guibg=#293739
 	hi Pmenu                    guifg=#66D9EF guibg=#000000
 	hi PmenuSbar                              guibg=#080808
 	hi PmenuSel                               guibg=#808080
@@ -108,6 +107,14 @@ if &termguicolors ==# 1
 	hi VisualNOS                              guibg=#403D3D
 	hi WarningMsg               guifg=#FFFFFF guibg=#333333               gui=standout
 	hi WildMenu                 guifg=#66D9EF
+
+	hi manBold                                                            gui=bold
+	hi manItalic                                                          gui=italic
+	hi manUnderline                                                       gui=underline
+
+	" hi LspInlayHint             guifg=#808080
+	" hi LspCodeLens              guifg=#808080
+	" hi LspCodeLensSeparator     guifg=#808080
 
 	hi GitSignsCurrentLineBlame guifg=#605E66
 	hi NotifyBackground                       guibg=#000000
