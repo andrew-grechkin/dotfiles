@@ -3,8 +3,9 @@ Description=Fetch Bing picture archive
 
 [Service]
 Type=oneshot
-WorkingDirectory=/volumes/media/photo/bing
+WorkingDirectory=%h/pictures/bing
 ExecStart=/usr/bin/bash -c 'source "%h/.local/lib/relocatable-perl-dev.rc"; "%h/.local/script/bing-wallpaper-archive-download"'
+UMask=0002
 
 [Install]
 WantedBy=default.target
