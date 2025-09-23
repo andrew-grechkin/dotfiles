@@ -9,36 +9,44 @@ export HOSTNAME="${HOSTNAME:-$(hostname)}"
 # => PATH --------------------------------------------------------------------------------------------------------- {{{1
 
 append_path () {
-	[[ -d "$1" ]] || return
-	case ":$PATH:" in
-		*:"$1":*) ;;
-		*) PATH="${PATH:+$PATH:}$1" ;;
-	esac
+    [[ -d "$1" ]] || return
+    case ":$PATH:" in
+        *:"$1":*) ;;
+        *) PATH="${PATH:+$PATH:}$1" ;;
+    esac
 }
 
 prepend_path () {
-	[[ -d "$1" ]] || return
-	case ":$PATH:" in
-		*:"$1":*) ;;
-		*) PATH="$1${PATH:+:$PATH}" ;;
-	esac
+    [[ -d "$1" ]] || return
+    case ":$PATH:" in
+        *:"$1":*) ;;
+        *) PATH="$1${PATH:+:$PATH}" ;;
+    esac
 }
 
 append_dirs=(
-	"$HOME/.cache/bin"
-	"$GOPATH/bin"
+    "$HOME/.cache/bin"
+    "$GOPATH/bin"
 )
 for p in "${append_dirs[@]}"; do append_path "$p"; done
 export PATH
 
 prepend_dirs=(
-	"$XDG_DATA_HOME/nvim/mason/bin"
-	"$HOME/.local/bin"
-	"$HOME/.local/usr/bin"
-	"$HOME/.local/script"
-	"$HOME/.local/scripts-ext/work-public"
-	"$HOME/.local/scripts-ext/work-private"
-	"$HOME/.local/scripts-ext/private"
+    "$XDG_CACHE_HOME/nvim/mason/bin"
+    "$XDG_DATA_HOME/nvim/mason/bin"
+    "$HOME/.local/bin"
+    "$HOME/.local/usr/bin"
+    "$HOME/.local/script"
+    "$HOME/.local/scripts-ext/work-public"
+    "$HOME/.local/scripts-ext/work-private"
+    "$HOME/.local/scripts-ext/private"
 )
-for p in "${prepend_dirs[@]}"; do prepend_path "$p"; done
+for dir in "$HOME/.local/scripts"/*; do
+    prepend_dirs+=("$dir")
+done
+
+for p in "${prepend_dirs[@]}"; do
+    prepend_path "$p"
+done
+
 export PATH
