@@ -60,7 +60,7 @@ local function next_chapter_or_item(direction)
         log.info(('set chapter: %s'):format(chapter + direction + 1))
         mp.command('write-watch-later-config')
         mp.commandv('add', 'chapter', direction)
-        mp.commandv('script-message', 'osc-chapterlist')
+        mp.commandv('script-message', 'show-text ${chapter-list}')
     end
 end
 
