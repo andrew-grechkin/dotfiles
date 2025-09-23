@@ -34,8 +34,8 @@ vim.api.nvim_create_autocmd('BufReadPost', {
             -- end
         end
 
-        local ok, plugin = pcall(require, 'dap.ext.vscode')
-        if ok then pcall(plugin.load_launchjs, nil) end -- load launch.json
+        -- local ok, plugin = pcall(require, 'dap.ext.vscode')
+        -- if ok then pcall(plugin.load_launchjs, nil) end -- load launch.json
     end,
 })
 
