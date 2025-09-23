@@ -5,15 +5,13 @@ Requires=podman.socket
 Wants=network-online.target
 
 [Service]
-#Type=oneshot
-#RemainAfterExit=true
 Type=simple
 Restart=on-failure
 RestartSec=30
 Environment=DOCKER_HOST=unix://%t/podman/podman.sock
 WorkingDirectory=%h/git/private/compose/%i
 ExecStart=docker-compose up --remove-orphans
-#ExecStop=docker-compose down
+UMask=0002
 
 [Install]
 WantedBy=default.target

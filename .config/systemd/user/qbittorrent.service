@@ -8,6 +8,7 @@ Type=simple
 Restart=on-failure
 RestartSec=30
 ExecStart=/usr/bin/qbittorrent-nox
+UMask=0002
 
 [Install]
 WantedBy=default.target
