@@ -40,11 +40,18 @@ RSYNC_NAS_PARAMS_COMMON=(
 
 RSYNC_INFO_TTY=(
 	--info=progress2
+	--itemize-changes
 )
 
 RSYNC_INFO_FILE=(
 	--itemize-changes
 )
+
+if [[ -t 1 ]]; then
+	RSYNC_INFO=("${RSYNC_INFO_TTY[@]}")
+else
+	RSYNC_INFO=("${RSYNC_INFO_FILE[@]}")
+fi
 
 RSYNC_DIFF_PARAMS_COMMON=(
 	--delete
