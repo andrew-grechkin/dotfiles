@@ -9,9 +9,3 @@ function tsv-header () {
 function tsv-but-header () {
 	tail -n +2 "$@"
 }
-
-# => completion --------------------------------------------------------------------------------------------------- {{{1
-
-if [[ -r ~/.config/tsv-utils/bash_completion/tsv-utils ]]; then
-	source ~/.config/tsv-utils/bash_completion/tsv-utils
-fi
