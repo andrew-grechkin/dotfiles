@@ -2,62 +2,76 @@
 
 set -Eeuo pipefail
 
-args=$(getopt --name="$0" --options 'AaD:dMr' --longoptions 'reset-author,keep-author-date,dates-from,keep-dates,message-generate,in-rebase' -- "$@")
-eval set -- "$args"
+[[ -x "$(command -v argc)" ]] || {
+    echo "'argc' helper command is required, install from https://github.com/sigoden/argc" >&2
+    exit 2
+}
 
-amend_params=()
+# @describe Amend commit wrapper with extended functionality
 
-while ((1)); do
-	case "$1" in
-		-A | --reset-author) amend_params+=(--reset-author); shift ;;
-		-a | --keep-author-date) keep_author_date='1'; shift ;;
-		-D | --dates-from) dates_from="$2"; shift 2 ;;
-		-d | --keep-dates) keep_dates='1'; shift ;;
-		-M | --message-generate) message_generate='1'; shift ;;
-		-r | --in-rebase) in_rebase='1'; shift ;;
-		--) shift; break ;;
-	esac
-done
+# @meta version 1.0.0
+# @meta combine-shorts
+# @meta require-tools mktemp
 
-if [[ "${message_generate:=}" == '1' ]]; then
-	message="$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
-	trap 'rm -f "$message"' EXIT
+# @flag   -A --reset-author                   Reset author to self
+# @flag   -a --keep-author-date               Keep author date
+# @flag   -d --keep-dates                     Keep both author and commit dates
+# @flag   -M --message-generate               Generate message via AI
+# @option -D --dates-from                     Copy dates from a reference
+
+eval "$(argc --argc-eval "$0" "$@")"
+
+args=()
+
+if [[ -n "${argc_reset_author:=}" ]]; then
+    args+=(--reset-author)
 fi
 
-if [[ "${keep_dates:-}" == "1" || "${keep_author_date:-}" == "1" ]]; then
-	if [[ "${in_rebase:-}" == "1" ]]; then
-		read -r <<< "$(tail -n1 .git/rebase-merge/rewritten-list)" source _target
-		GIT_AUTHOR_DATE="$(git author-date "$source")"
-		GIT_COMMITTER_DATE="$(git commit-date "$source")"
-
-		if [[ "$message_generate" == '1' ]]; then
-			ai-suggest-commit-msg > "$message"
-			amend_params+=(-F "$message")
-		fi
-
-		# echo "Restoring date for: $source"
-		# echo "            author: $GIT_AUTHOR_DATE"
-		# if [[ "${keep_dates:-}" == "1" ]]; then
-		# echo "            commit: $GIT_COMMITTER_DATE"
-		# fi
-	else
-		GIT_AUTHOR_DATE="$(git author-date "${dates_from:-HEAD}")"
-		GIT_COMMITTER_DATE="$(git commit-date "${dates_from:-HEAD}")"
-	fi
-
-	export GIT_AUTHOR_DATE
-	if [[ "${keep_dates:-}" == "1" ]]; then
-		export GIT_COMMITTER_DATE
-	fi
-
-	# enforce author date via --date param
-	# GIT_AUTHOR_DATE variable is sufficient only if author is being reset
-	amend_params+=(--date="$GIT_AUTHOR_DATE")
+if [[ -n "${argc_message_generate:=}" ]]; then
+    message="$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
+    trap 'rm -f "$message"' EXIT
 fi
 
-if [[ "$message_generate" == '1' && ! -s "$message" ]]; then
-	ai-suggest-commit-msg HEAD > "$message"
-	amend_params+=(-F "$message")
+if [[ -n "${argc_keep_dates:=}" || -n "${argc_dates_from:-}" || -n "${argc_keep_author_date:-}" ]]; then
+    if [[ -n "${argc_dates_from:=}" ]]; then
+        reference="$argc_dates_from"
+    else
+        if [[ -s '.git/rebase-merge/rewritten-list' && -s '.git/rebase-merge/done' ]]; then
+            # read -r <<< "$(tail -n1 '.git/rebase-merge/rewritten-list')" _source result
+            # use sha of the last picked commit
+            reference="$(tac '.git/rebase-merge/done' | grep -Pom1 '^pick \K[[:xdigit:]]{40,}')"
+        else
+            reference="HEAD"
+        fi
+    fi
+
+    GIT_AUTHOR_DATE="$(git author-date "$reference")"
+    echo "Restoring author date for: $GIT_AUTHOR_DATE ($reference)" >&2
+    export GIT_AUTHOR_DATE
+    # enforce author date via --date param
+    # GIT_AUTHOR_DATE variable is sufficient only if author is being reset
+    args+=(--date="$GIT_AUTHOR_DATE")
+
+    if [[ -n "$argc_keep_dates" || -n "$argc_dates_from" ]]; then
+        GIT_COMMITTER_DATE="$(git commit-date "$reference")"
+        echo "Restoring commit date for: $GIT_COMMITTER_DATE ($reference)" >&2
+        export GIT_COMMITTER_DATE
+    fi
 fi
 
-git commit --amend --allow-empty -nq --no-edit "${amend_params[@]}" "$@"
+[[ -s '.git/rebase-merge/rewritten-list' || -s '.git/rebase-merge/done' ]] && {
+    in_rebase='1'
+    args+=(-nq)
+}
+
+if [[ -n "$argc_message_generate" && ! -s "$message" ]]; then
+    ai-suggest-commit-msg HEAD > "$message"
+    if [[ -n "${in_rebase:-}" ]]; then
+        args+=(-F "$message")
+    else
+        args+=(-t "$message")
+    fi
+fi
+
+# shellcheck disable=SC2154
+git commit --amend --allow-empty "${args[@]}" "${argc__positionals[@]}"
