@@ -2,7 +2,7 @@ return {
     { -- https://github.com/sourcegraph/sg.nvim
         'sourcegraph/sg.nvim',
         dependencies = {'nvim-lua/plenary.nvim'},
-        enabled = not IS_KVM,
+        enabled = false,
         keys = {
             'n',
             {
