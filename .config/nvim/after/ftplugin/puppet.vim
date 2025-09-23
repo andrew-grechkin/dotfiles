@@ -1,4 +1,4 @@
-setlocal expandtab smarttab shiftwidth=2 softtabstop=2 tabstop=2
+setlocal shiftwidth=2 softtabstop=2 tabstop=2
 
 function! PuppetGoToDefinition()
 	let isk_save = &l:isk
