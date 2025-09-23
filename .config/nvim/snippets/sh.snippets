@@ -9,9 +9,7 @@ snippet marker
 	$0
 
 snippet #!
-	#!/usr/bin/env bash
-
-	set -Eeuo pipefail
+	#!/usr/bin/env -S bash -Eeuo pipefail
 
 snippet if
 	if [[ $1 ]]; then
@@ -22,7 +20,7 @@ snippet elif
 	elif [[ $1 ]]; then
 		${0:${VISUAL}}
 
-snippet wh
+snippet while
 	while [[ $1 ]]; do
 		${0:${VISUAL}}
 	done
@@ -37,8 +35,8 @@ snippet fun
 		$0
 	}
 
-snippet wht
-	while true; do
+snippet loop
+	while (( 1 )); do
 		${0:${VISUAL}}
 	done
 
@@ -90,7 +88,7 @@ snippet getopt
 snippet root
 	if [ \$(id -u) -ne 0 ]; then exec sudo \$0; fi
 
-snippet fun
-	${1:function_name}() {
-		$0
-	}
+snippet vars
+	{
+		read -r ${1}
+	} < <(jq -r '[.${1}]|map(.//"")[]')

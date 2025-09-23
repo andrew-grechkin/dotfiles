@@ -37,6 +37,7 @@ command! -nargs=1 Perldoc :setlocal splitright
 	\| :setlocal buftype=nofile bufhidden=hide noswapfile
 	\| :execute ":r !doc-perldoc-wrapper '<args>'"
 	\| :Man!
+	\| :vertical resize 80
 	\| :norm gg
 
 nnoremap <silent> <buffer> gz         :!<C-R>=g:zeal_app<CR> "perl:<cword>"&<CR><CR>

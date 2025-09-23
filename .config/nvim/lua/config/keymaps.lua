@@ -53,3 +53,12 @@ vim.keymap.set('n', '<leader>tT', function()
         vim.treesitter.start()
     end
 end, {desc = ' treesitter highlight'})
+
+local path = require('utils.path')
+
+vim.keymap.set({'n', 'v'}, '<leader><leader>P', function() path.yank('p', 'absolute path', true) end,
+    {desc = 'yank absolute path'})
+vim.keymap.set({'n', 'v'}, '<leader><leader>p', function() path.yank('.', 'relative path') end,
+    {desc = 'yank relative path'})
+vim.keymap.set({'n', 'v'}, '<leader><leader>f', function() path.yank('t', 'filename') end,
+    {desc = 'yank filename'})

@@ -34,8 +34,8 @@ vim.api.nvim_create_autocmd('BufReadPost', {
             -- end
         end
 
-        local ok, plugin = pcall(require, 'dap.ext.vscode')
-        if ok then pcall(plugin.load_launchjs, nil) end -- load launch.json
+        -- local ok, plugin = pcall(require, 'dap.ext.vscode')
+        -- if ok then pcall(plugin.load_launchjs, nil) end -- load launch.json
     end,
 })
 
@@ -96,7 +96,7 @@ vim.api.nvim_create_autocmd('FileType', {
 })
 
 -- [[ close some filetypes with <q> ]]
-vim.api.nvim_create_autocmd('FileType', {
+vim.api.nvim_create_autocmd({'FileType'}, {
     group = augroup('CloseWithQ'),
     pattern = {
         'PlenaryTestPopup',
@@ -118,15 +118,25 @@ vim.api.nvim_create_autocmd('FileType', {
         'tsplayground',
     },
     callback = function(event)
+        local filetype = vim.bo[event.buf].filetype
+        local bufhidden = vim.api.nvim_get_option_value('bufhidden', {buf = event.buf})
+        local buftype = vim.api.nvim_get_option_value('buftype', {buf = event.buf})
+        vim.notify(string.format('FileType: buf=%d, bufhidden=%s, buftype=%s, ft=%s', event.buf, bufhidden, buftype,
+            filetype), vim.log.levels.DEBUG)
         vim.bo[event.buf].buflisted = false
         vim.keymap.set('n', 'q', '<cmd>bd<cr>', {buffer = event.buf, silent = true})
     end,
 })
-vim.api.nvim_create_autocmd({'BufEnter'}, {
+-- [[ close scratch/temporary buffers with <q> based on buftype/bufhidden ]]
+vim.api.nvim_create_autocmd({'BufWinEnter'}, {
     group = augroup('CloseWithQ2'),
     callback = function(event)
-        local buftype = vim.api.nvim_buf_get_option(event.buf, 'buftype')
-        if buftype == 'nofile' or buftype == 'loclist' then
+        local bufhidden = vim.api.nvim_get_option_value('bufhidden', {buf = event.buf})
+        local buftype = vim.api.nvim_get_option_value('buftype', {buf = event.buf})
+        local bufname = vim.api.nvim_buf_get_name(event.buf)
+        vim.notify(string.format('BufWinEnter: buf=%d, bufhidden=%s, buftype=%s, name=%s', event.buf, bufhidden,
+            buftype, bufname), vim.log.levels.DEBUG)
+        if bufhidden == 'wipe' or buftype == 'nofile' or buftype == 'loclist' then
             vim.bo[event.buf].buflisted = false
             vim.keymap.set('n', 'q', '<cmd>bd<cr>', {buffer = event.buf, silent = true})
         end
