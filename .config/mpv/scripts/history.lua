@@ -4,7 +4,7 @@ local utils = require 'mp.utils'
 
 RUN_QUOTE = 1
 
-local MPV_HIST_DIR = os.getenv('XDG_STATE_HOME') .. '/mpv';
+local MPV_HIST_DIR = os.getenv('XDG_DATA_HOME') .. '/mpv';
 local MPV_HIST_FILE = MPV_HIST_DIR .. '/play.history.tsv';
 os.execute('mkdir -p ' .. MPV_HIST_DIR)
 
@@ -66,8 +66,14 @@ local add_to_history = function(path)
 
     local ytdl = mp.get_property_native('ytdl-raw-options')
     if ytdl then
+        -- `pairs` order is unspecified, sort keys to keep the command deterministic
+        local keys = {}
+        for k in pairs(ytdl) do table.insert(keys, k) end
+        table.sort(keys)
+
         local params = {}
-        for k, v in pairs(ytdl) do
+        for _, k in ipairs(keys) do
+            local v = ytdl[k]
             if type == 'yt' and k == 'format' and v == 'ba/b' then type = 'yt-m' end
             table.insert(params, ([[%s="%s"]]):format(k, v))
         end
