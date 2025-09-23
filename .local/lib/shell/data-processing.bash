@@ -20,11 +20,12 @@ function json-array-to-tsv() {
 			IFS="${field:0:1}" read -r <<< "${field:1}" key value color
 		fi
 
-		col_names+=("$key")
 		if [[ -n "${color:-}" ]]; then
-			jq_filter+=("${FG[$color]}${value}${FX[reset]}")
+			col_names+=("${FG[$color]:?Unknown color: $color (${!FG[@]})}${key@P}${FX[reset]}")
+			jq_filter+=("${FG[$color]}${value@P}${FX[reset]}")
 		else
-			jq_filter+=("$value")
+			col_names+=("${key@P}")
+			jq_filter+=("${value@P}")
 		fi
 	done
 
