@@ -1,0 +1,46 @@
+# vim: filetype=systemd
+#
+# Load a key and its matching certificate into the OpenSSH agent.
+#
+# Why this workaround exists: ssh's AddKeysToAgent only adds the private key to the agent, not the matching -cert.pub.
+# Local authentication still works because ssh reads the certificate from disk, but a forwarded agent carries only what
+# is inside the agent, so the remote side cannot present the certificate. ssh-add does load both, so this unit runs
+# ssh-add once the session and keychain are ready. Upstream tracks this in openssh/openssh-portable PR #273, which is
+# still open.
+#
+# The instance name is the key path escaped with:
+#   systemd-escape --path /path/to/key
+#
+# Enable one instance per key:
+#   systemctl --user enable --now "load-ssh-agent-key@$(systemd-escape --path ~/.ssh/id_ed25519_sk)"
+#
+# Best effort: missing key, missing certificate, missing secret-ctl, missing keychain entry, or a failing ssh-add all
+# result in a skip or a non-failed unit, never a failed boot unit.
+#
+# Idempotent: if the key and its certificate are already present in the agent, the unit skips without running ssh-add.
+# Re-running ssh-add otherwise updates existing identities rather than adding duplicates. BindsTo= stops this unit with
+# the agent and WantedBy= pulls it back in when the agent starts, so the agent converges back to the desired state after
+# a restart.
+#
+# If key is resident (FIDO2) it will be not protected with password, which makes askpass unnecessary thus commented
+
+[Unit]
+Description=Load SSH key /%I and certificate into the OpenSSH agent
+Documentation=man:ssh-add(1)
+After=plasma-workspace.target ssh-agent.service
+Wants=ssh-agent.service
+BindsTo=ssh-agent.service
+ConditionPathExists=/%I
+ConditionPathExists=/%I-cert.pub
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+Environment=SSH_AUTH_SOCK=%t/ssh-agent.socket
+# Environment=SSH_ASKPASS=/usr/bin/ksshaskpass
+# Environment=SSH_ASKPASS_REQUIRE=force
+ExecCondition=/usr/bin/timeout 10 %h/.local/scripts/tool/check-ssh-agent-key /%I
+ExecStart=-/usr/bin/timeout 15 /usr/bin/ssh-add -q /%I
+
+[Install]
+WantedBy=plasma-workspace.target ssh-agent.service
