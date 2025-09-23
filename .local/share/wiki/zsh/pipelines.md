@@ -14,19 +14,19 @@
     ```
 - Pipe STDIN from heredoc (type end-word for stop reading)
     ```bash
-    clipcopy <<'END'
+    clipcopy << 'END'
     ```
 - Pipe STDIN from heredoc and strip leading tabs
     ```bash
-    clipcopy <<-'END'
+    clipcopy <<- 'END'
     ```
 - Pipe STDIN from heredoc with parameters expansion
     ```bash
-    clipcopy <<END
+    clipcopy << END
     ```
 - Pipe STDIN from a string (new line is added at the end)
     ```bash
-    clipcopy <<<'arbitrary string'
+    clipcopy <<< 'arbitrary string'
     ```
 - redirect STDERR to a file
     ```bash
