@@ -4,9 +4,8 @@
     whitespace = fix
 
 [blame]
-    ignoreRevsFile      = ~/.config/git/global-blame-ignore-revs
     markUnblamableLines = true
-    ; ignoreRevsFile = .git-blame-ignore-revs
+    ; ignoreRevsFile      = .git-blame-ignore-revs
 
 [clone]
     rejectShallow = true
@@ -16,11 +15,10 @@
     autocrlf       = false
     ; editor         = vi
     fsmonitor      = true
-    longpaths      = true
-    preloadindex   = true
-    quotepath      = false
+    preloadIndex   = true
+    quotePath      = false
     tabwidth       = 4
-    untrackedcache = true
+    untrackedCache = true
     whitespace     = trailing-space,space-before-tab,blank-at-eol,blank-at-eof,cr-at-eol
 
 [diff]
@@ -71,10 +69,10 @@
 [init]
     defaultBranch       = main
     defaultObjectFormat = sha256
-    templatedir         = ~/.config/git/init-template
+    templateDir         = ~/.config/git/init-template
 
 [help]
-    autocorrect = prompt
+    autoCorrect = prompt
 
 [http]
     sslVerify = true
@@ -86,7 +84,7 @@
     follow   = true
 
 [merge]
-    conflictstyle = zdiff3
+    conflictStyle = zdiff3
     guitool       = meld
     tool          = fugitive
 
@@ -138,5 +136,6 @@
 [include]
     path = config.d/alias
     path = config.d/credential
+    path = config.d/credential.override
     path = config.d/delta
     path = config.d/override

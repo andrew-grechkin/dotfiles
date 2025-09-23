@@ -17,13 +17,11 @@ for my $remote (uniq($current_remote, sort @remotes)) {
     chomp(my $git_remote_url = `git remote get-url $remote`);
 
     my $final_url;
-    if ($git_remote_url =~ m/^git@/ && $git_remote_url =~ m/gitlab([.]boo king)?[.]com/x) {
-        my $gitlab_remote_url = $git_remote_url =~ s/^git@ | [.]git$//grx;
-        $gitlab_remote_url =~ s{:}{/}gx;
+    if ($git_remote_url =~ m/(?:[@\/]) (gitlab(?:[.]boo king)?[.]com) [:\/] (.*?) (?:[.]git)?$/x) {
         if (@ARGV > 1) {
-            $final_url = sprintf 'https://%s/-/blob/%s/%s', $gitlab_remote_url, $ref, $ARGV[-1];
+            $final_url = sprintf 'https://%s/%s/-/blob/%s/%s', $1, $2, $ref, $ARGV[-1];
         } else {
-            $final_url = sprintf 'https://%s/-/commits/%s', $gitlab_remote_url, $ref;
+            $final_url = sprintf 'https://%s/%s/-/commits/%s', $1, $2, $ref;
         }
     } elsif ($git_remote_url =~ m/^git@/ && $git_remote_url =~ m/github[.]com/x) {
         my $github_remote_url = $git_remote_url =~ s/^git@ | [.]git$//grx;
