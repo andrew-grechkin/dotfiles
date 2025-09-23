@@ -4,9 +4,8 @@
     whitespace = fix
 
 [blame]
-    ignoreRevsFile      = ~/.config/git/global-blame-ignore-revs
     markUnblamableLines = true
-    ; ignoreRevsFile = .git-blame-ignore-revs
+    ; ignoreRevsFile      = .git-blame-ignore-revs
 
 [clone]
     rejectShallow = true
@@ -15,12 +14,11 @@
     ; abbrev         = 8
     autocrlf       = false
     ; editor         = vi
-    fsmonitor      = true
-    longpaths      = true
-    preloadindex   = true
-    quotepath      = false
+	fsmonitor      = false # 5 seconds delay on first dir entry on fresh versions of git. disabling so far
+    preloadIndex   = true
+    quotePath      = false
     tabwidth       = 4
-    untrackedcache = true
+    untrackedCache = true
     whitespace     = trailing-space,space-before-tab,blank-at-eol,blank-at-eof,cr-at-eol
 
 [diff]
@@ -70,11 +68,11 @@
 
 [init]
     defaultBranch       = main
-    defaultObjectFormat = sha256
-    templatedir         = ~/.config/git/init-template
+    ; defaultObjectFormat = sha256 # this breaks clone --depth=1 --revision=<sha>
+    templateDir         = ~/.config/git/init-template
 
 [help]
-    autocorrect = prompt
+    autoCorrect = prompt
 
 [http]
     sslVerify = true
@@ -86,9 +84,10 @@
     follow   = true
 
 [merge]
-    conflictstyle = zdiff3
-    guitool       = meld
-    tool          = fugitive
+    conflictStyle    = zdiff3
+    directoryRenames = false
+    guitool          = meld
+    tool             = fugitive
 
 [mergetool]
     keepBackup    = false
@@ -99,7 +98,8 @@
     cmd = vi -f -c "Gdiffsplit!" "$MERGED"
 
 [mergetool "meld"]
-    cmd = meld "$LOCAL" "$BASE" "$REMOTE" --output "$MERGED"
+    hasOutput    = true
+    useAutoMerge = true
 
 [mergetool "nvimdiff4"]
     cmd = nvim -d "$LOCAL" "$BASE" "$REMOTE" "$MERGED" -c 'windo setlocal nomodifiable' -c '$wincmd w' -c 'setlocal modifiable' -c 'wincmd J'
@@ -138,5 +138,8 @@
 [include]
     path = config.d/alias
     path = config.d/credential
+    path = config.d/credential.override
     path = config.d/delta
     path = config.d/override
+    path = config.d/delta.dynamic
+    path = config.d/fsmonitor.dynamic
