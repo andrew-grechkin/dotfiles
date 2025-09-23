@@ -14,6 +14,7 @@ command! -nargs=1 Pydoc :setlocal splitright
 	\| :setlocal buftype=nofile bufhidden=hide noswapfile
 	\| :execute ":r !doc-pydoc-wrapper '<args>'"
 	\| :Man!
+	\| :vertical resize 80
 	\| :norm gg
 
 nnoremap <silent> <buffer> gz         :!<C-R>=g:zeal_app<CR> "python:<cword>"&<CR><CR>

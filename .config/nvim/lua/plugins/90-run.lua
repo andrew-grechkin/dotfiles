@@ -17,6 +17,7 @@ return {
                     autocmd FileType just            nnoremap <F5> :Run<CR>G
                     autocmd FileType perl            nnoremap <F5> :Run<CR>G
                     autocmd FileType python          nnoremap <F5> :Run<CR>G
+                    autocmd FileType ruby            nnoremap <F5> :Run<CR>G
                     autocmd FileType sh              nnoremap <F5> :Run<CR>G
                     autocmd FileType typescript      nnoremap <F5> :Run<CR>G
                     autocmd FileType typescript.deno nnoremap <F5> :Run<CR>G

@@ -4,12 +4,11 @@ return {
         config = function()
             local plugin = require('fzf-lua')
             plugin.setup({
-                git = {
-                    bcommits = {preview_pager = 'delta'},
-                    commits = {preview_pager = 'delta'},
-                    status = {preview_pager = 'delta'},
+                git = {commits = {cmd = 'git l'}, bcommits = {cmd = 'git l -- {file}'}},
+                winopts = {
+                    fullscreen = true,
+                    preview = {layout = 'vertical', vertical = 'down:40%'},
                 },
-                winopts = {preview = {layout = 'flex'}},
             })
             plugin.register_ui_select()
 
@@ -52,10 +51,17 @@ return {
                 mode = {'n'},
                 desc = 'fzf: commits for buffer',
             },
+            {'<leader>rS', '<cmd>FzfLua git_stash<CR>', mode = {'n'}, desc = 'fzf: stashes'},
             {'<leader>rf', '<cmd>FzfLua git_files<CR>', mode = {'n'}, desc = 'fzf: files'},
             {'<leader>rr', '<cmd>FzfLua git_commits<CR>', mode = {'n'}, desc = 'fzf: commits'},
             {'<leader>rs', '<cmd>FzfLua git_status<CR>', mode = {'n'}, desc = 'fzf: status'},
-            {'<leader>rt', '<cmd>FzfLua git_stash<CR>', mode = {'n'}, desc = 'fzf: stashes'},
+            {'<leader>rt', '<cmd>FzfLua git_tags<CR>', mode = {'n'}, desc = 'fzf: tags'},
+            {
+                '<leader><leader>o',
+                '<cmd>FzfLua nvim_options<CR>',
+                mode = {'n'},
+                desc = 'fzf: nvim options',
+            },
         },
         lazy = false,
     },
