@@ -7,7 +7,7 @@ echo 'Executing setup'
 mkdir -p ~/.cache/bin
 mkdir -p ~/.config/fontconfig
 mkdir -p ~/.config/environment.d
-mkdir -p ~/.local/{bin,lib,scripts-ext,share,state}
+mkdir -p ~/.local/{bin,lib,scripts,scripts-ext,share,state}
 
 SCRIPT=$(realpath -s "$0")
 WORKDIR=$(dirname "$SCRIPT")
@@ -57,6 +57,7 @@ ln -srf .config/zsh                                          ~/.config/
 
 ln -srf .local/lib/*                                         ~/.local/lib/
 ln -srf .local/script                                        ~/.local/
+ln -srf .local/scripts/*                                     ~/.local/scripts/
 ln -srf .local/share/3rdparty                                ~/.local/share/
 ln -srf .local/share/distrobox                               ~/.local/share/
 ln -srf .local/share/skel                                    ~/.local/share/
