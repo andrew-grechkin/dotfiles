@@ -2,7 +2,10 @@
 **/autoload/plug.vim
 *.spl
 *.sug
+.config/git/config.d/credential.override
+.config/git/config.d/override
 .config/lazygit/state.yml
+.config/mpv/scripts/*.so
 .config/nvim/.luarc.json
 .config/shell/*.work
 .config/systemd/user/*.wants/
@@ -15,10 +18,11 @@
 .config/vim/spell
 .config/vim/view
 .config/zsh/.zcompdump
-.config/zsh/completion/_bk
+.config/zsh/completion/
 .gnupg/pubring.kbx~
 .gnupg/random_seed
 .local/bin
 .local/share/3rdparty/
 .ssh/authorized_keys
+.ssh/known_hosts.old
 worktrees/
