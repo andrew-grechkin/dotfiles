@@ -6,6 +6,7 @@
 -- end
 return {
     {'NoahTheDuke/vim-just'},
+    {'fatih/vim-go'},
     {'gianarb/vim-flux', enabled = not IS_KVM, ft = {'flux'}},
     {'mgrabovsky/vim-cuesheet', enabled = not IS_KVM, ft = {'cuesheet'}},
     {'pearofducks/ansible-vim', enabled = not IS_KVM, ft = {'ansible'}},

@@ -1,32 +1,50 @@
 return {
-    { -- https://github.com/sourcegraph/sg.nvim
-        'sourcegraph/sg.nvim',
-        dependencies = {'nvim-lua/plenary.nvim'},
-        enabled = not IS_KVM,
-        keys = {
-            'n',
-            {
-                '<leader><leader>c',
-                function()
-                    local chat = require('sg.cody.rpc.chat')
+    {
+        'aliqyan-21/wit.nvim',
+        keys = {{'gX', ':WitSearchVisual<CR>', mode = {'x'}, desc = 'google: selected'}},
+        opts = {
+            -- You can choose your preferred search engine from
+            -- the supported list: {google, bing, duckduckgo, ecosia, brave, perplexity}.
+            --
+            -- There's also the possibility of just specifying a custom
+            -- search engine URL by providing the base URL and the required search params.
+            -- EXAMPLE:
+            -- engine = "https://<your_preferred_search_engine>/search?q="
+            engine = 'google', -- search engine (default: "google")
 
-                    local last_chat = chat.get_last_chat()
-                    if last_chat then
-                        if vim.api.nvim_win_is_valid(last_chat.windows.history_win) then
-                            last_chat:close()
-                        else
-                            last_chat:reopen()
-                        end
-                    else
-                        chat.new({window_type = 'split'}, function(_, _) end)
-                    end
-                end,
-                desc = 'cody: toggle',
-            },
+            command_search = 'WitSearch', -- custom command to search (default: "WitSearch")
+            command_search_visual = 'WitSearchVisual', -- custom command to search visually (default: "WitSearchVisual")
+            command_search_wiki = 'WitSearchWiki', -- custom command to search wikipedia (default: "WitSearchWiki")
         },
-        lazy = false,
-        opts = {accept_tos = true},
     },
+    -- { -- https://github.com/sourcegraph/sg.nvim
+    --     'sourcegraph/sg.nvim',
+    --     dependencies = {'nvim-lua/plenary.nvim'},
+    --     enabled = false,
+    --     keys = {
+    --         'n',
+    --         {
+    --             '<leader><leader>c',
+    --             function()
+    --                 local chat = require('sg.cody.rpc.chat')
+
+    --                 local last_chat = chat.get_last_chat()
+    --                 if last_chat then
+    --                     if vim.api.nvim_win_is_valid(last_chat.windows.history_win) then
+    --                         last_chat:close()
+    --                     else
+    --                         last_chat:reopen()
+    --                     end
+    --                 else
+    --                     chat.new({window_type = 'split'}, function(_, _) end)
+    --                 end
+    --             end,
+    --             desc = 'cody: toggle',
+    --         },
+    --     },
+    --     lazy = false,
+    --     opts = {accept_tos = true},
+    -- },
     -- => --------------------------------------------------------------------------------------------------------- {{{1
     -- -- Flash enhances the built-in search functionality by showing labels
     -- -- at the end of each match, letting you quickly jump to a specific location.
