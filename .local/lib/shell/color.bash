@@ -11,37 +11,46 @@
 typeset -Ag FX FG BG
 
 FX=(
-	[reset]='\033[0m'     [normal]='\033[0m'
-	[bold]='\033[1m'      [no-bold]='\033[21m'
-	[dim]='\033[2m'       [no-dim]='\033[22m'
-	[italic]='\033[3m'    [no-italic]='\033[23m'
-	[underline]='\033[4m' [no-underline]='\033[24m'
-	[blink]='\033[5m'     [no-blink]='\033[25m'
-	[rapid]='\033[6m'     [no-rapid]='\033[25m'
-	[reverse]='\033[7m'   [no-reverse]='\033[27m'
-	[hide]='\033[8m'      [no-hide]='\033[28m'
-	[cross]='\033[9m'     [no-cross]='\033[29m'
+    [reset]=$'\e[0m'     [normal]=$'\e[0m'
+    [bold]=$'\e[1m'      [no-bold]=$'\e[21m'
+    [dim]=$'\e[2m'       [no-dim]=$'\e[22m'
+    [italic]=$'\e[3m'    [no-italic]=$'\e[23m'
+    [underline]=$'\e[4m' [no-underline]=$'\e[24m'
+    [blink]=$'\e[5m'     [no-blink]=$'\e[25m'
+    [rapid]=$'\e[6m'     [no-rapid]=$'\e[25m'
+    [reverse]=$'\e[7m'   [no-reverse]=$'\e[27m'
+    [hide]=$'\e[8m'      [no-hide]=$'\e[28m'
+    [cross]=$'\e[9m'     [no-cross]=$'\e[29m'
 )
 FG=(
-	[black]='\033[30m'  [gray]='\033[90m'
-	[maroon]='\033[31m' [red]='\033[91m'
-	[green]='\033[32m'  [lime]='\033[92m'
-	[olive]='\033[33m'  [yellow]='\033[93m'
-	[navy]='\033[34m'   [blue]='\033[94m'
-	[purple]='\033[35m' [magenta]='\033[95m'
-	[teal]='\033[36m'   [cyan]='\033[96m'     [aqua]='\033[96m'
-	[silver]='\033[37m' [white]='\033[97m'
+    [black]=$'\e[30m'  [gray]=$'\e[90m'
+    [maroon]=$'\e[31m' [red]=$'\e[91m'
+    [green]=$'\e[32m'  [lime]=$'\e[92m'
+    [olive]=$'\e[33m'  [yellow]=$'\e[93m'
+    [navy]=$'\e[34m'   [blue]=$'\e[94m'
+    [purple]=$'\e[35m' [magenta]=$'\e[95m'
+    [teal]=$'\e[36m'   [cyan]=$'\e[96m'     [aqua]=$'\e[96m'
+    [silver]=$'\e[37m' [white]=$'\e[97m'
 )
 BG=(
-	[black]='\033[40m'  [gray]='\033[100m'
-	[maroon]='\033[41m' [red]='\033[101m'
-	[green]='\033[42m'  [lime]='\033[102m'
-	[olive]='\033[43m'  [yellow]='\033[103m'
-	[navy]='\033[44m'   [blue]='\033[104m'
-	[purple]='\033[45m' [magenta]='\033[105m'
-	[teal]='\033[46m'   [cyan]='\033[106m'    [aqua]='\033[106m'
-	[silver]='\033[47m' [white]='\033[107m'
+    [black]=$'\e[40m'  [gray]=$'\e[100m'
+    [maroon]=$'\e[41m' [red]=$'\e[101m'
+    [green]=$'\e[42m'  [lime]=$'\e[102m'
+    [olive]=$'\e[43m'  [yellow]=$'\e[103m'
+    [navy]=$'\e[44m'   [blue]=$'\e[104m'
+    [purple]=$'\e[45m' [magenta]=$'\e[105m'
+    [teal]=$'\e[46m'   [cyan]=$'\e[106m'    [aqua]=$'\e[106m'
+    [silver]=$'\e[47m' [white]=$'\e[107m'
 )
+
+# reset sequence sgr0 for tmux-256color adds ^O at the end (^O is shift-in, switch to non-graphic character set)
+# less prints ^O by default even when -R arg is passed and this makes output ugly
+# this is most probably a bug in less itself because with -r flag less is not printing ^O symbols,
+# but unfortunatelly -r flag is unusable because it breaks text formatting (colums)
+# so there are 3 ways of solving this issue:
+# * process all ouptut with `sed 's/\x0f//g'` before passing it to less
+# * use terminal which doesn't add ^O as a part of reset sequence (xterm)
+# * use hardcoded reset (might be not portable but who cares)
 
 # use hardcoded sequences for now, not sure how portable is this
 # if tput sgr0 &>/dev/null; then
