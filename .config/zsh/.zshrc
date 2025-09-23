@@ -78,6 +78,7 @@ fi
 path=("$HOME/.local/scripts-ext"/*(-FN) "${path[@]}")
 
 if [[ -n "$HOSTNAME" && "$HOSTNAME" =~ king\.com$ ]]; then
+	[[ -d "$HOME/.cache/fzf/bin"                        ]] && path=("$HOME/.cache/fzf/bin" "${path[@]}")
 	[[ -d "$HOME/.local/nvim/bin"                       ]] && path=("$HOME/.local/nvim/bin" "${path[@]}")
 fi
 
