@@ -50,11 +50,15 @@ export LESS_TERMCAP_ue=$(tput rmul; tput sgr0)
 # LESS_TERMCAP_ue=$'\e[0m'
 # export LESS_TERMCAP_us=$(tput smul; tput bold; tput setaf 7)
 export GROFF_NO_SGR=1
+export LESS_TERMCAP_us=$'\e[92m'
+export LESS_TERMCAP_mb=$'\e[5;91m'
+export LESS_TERMCAP_md=$'\e[1;38;5;130m'
+export LESS_TERMCAP_so=$'\e[1;44;33m'
 
-function man() {
-	LESS_TERMCAP_us=$'\e[92m'         \
-	LESS_TERMCAP_mb=$'\e[5;91m'       \
-	LESS_TERMCAP_md=$'\e[1;38;5;130m' \
-	LESS_TERMCAP_so=$'\e[1;44;33m'    \
-	command man "$@"
-}
+# function man() {
+# 	LESS_TERMCAP_us=$'\e[92m'         \
+# 	LESS_TERMCAP_mb=$'\e[5;91m'       \
+# 	LESS_TERMCAP_md=$'\e[1;38;5;130m' \
+# 	LESS_TERMCAP_so=$'\e[1;44;33m'    \
+# 	command man "$@"
+# }
