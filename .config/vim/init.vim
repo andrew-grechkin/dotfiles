@@ -1,4 +1,4 @@
-﻿" Personal .vimrc file
+" Personal .vimrc file
 " Compatible with vim and neovim
 " Author: Andrew Grechkin
 
@@ -437,7 +437,7 @@ let &showbreak = '--->'                                                        "
 
 set autoindent smartindent                                                     " Copy indent from the previous line
 
-set noexpandtab smarttab shiftwidth=4 softtabstop=4 tabstop=4
+set expandtab smarttab shiftwidth=4 softtabstop=4 tabstop=4
 set noshiftround
 
 set formatoptions=tcqjl                                                        " More intuitive autoformatting
