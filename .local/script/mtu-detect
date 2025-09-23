@@ -5,80 +5,80 @@ set -Eeuo pipefail
 STEP="491" # optimize to quickly find if mtu is 1500 (the most common case)
 ICMP_PACKET_HEADER=28
 
-mapfile -t HOSTS < <(shuf - <<- EO_HOSTS
-	1.1.1.1
-	8.8.4.4
-	8.8.8.8
-	9.9.9.9
-	EO_HOSTS
+mapfile -t HOSTS < <(shuf - << EO_HOSTS
+1.1.1.1
+8.8.4.4
+8.8.8.8
+9.9.9.9
+EO_HOSTS
 )
 
 HOSTS=("$@" "${HOSTS[@]}")
 
 function probe() {
-	if [[ -n "$HOST" ]]; then
-		echo "Sending to '$HOST': $1 bytes"
+    if [[ -n "$HOST" ]]; then
+        echo "Sending to '$HOST': $1 bytes"
 
-		if ping -s "$1" -c "1" "$HOST" &>/dev/null; then
-			echo "----> Contiguous"
-			MTU_LASTGOOD="$1"
-			return 0
-		fi
+        if ping -s "$1" -c "1" "$HOST" &>/dev/null; then
+            echo "----> Contiguous"
+            MTU_LASTGOOD="$1"
+            return 0
+        fi
 
-		echo "----> Fragmented"
-	fi
+        echo "----> Fragmented"
+    fi
 
-	return 1
+    return 1
 }
 
 answer() {
-	echo
-	echo "It's reasonable to say that $MTU_LASTGOOD bytes is the largest contiguous packet size ($MTU includes $ICMP_PACKET_HEADER ICMP/IP Headers)"
-	echo
-	echo "MTU should be set to $MTU"
-	echo
+    echo
+    echo "It's reasonable to say that $MTU_LASTGOOD bytes is the largest contiguous packet size ($MTU includes $ICMP_PACKET_HEADER ICMP/IP Headers)"
+    echo
+    echo "MTU should be set to $MTU"
+    echo
 }
 
 # take the first hosts which is responding
 for HOST in "${HOSTS[@]}"; do
-	if probe 32; then
-		HOSTGOOD="1"
-		break
-	else
-		HOSTGOOD="0"
-	fi
+    if probe 32; then
+        HOSTGOOD="1"
+        break
+    else
+        HOSTGOOD="0"
+    fi
 done
 
 if [[ "$HOSTGOOD" != "1" ]]; then
-	echo "No reachable hosts"
-	exit 1
+    echo "No reachable hosts"
+    exit 1
 fi
 
 lower_bound="0"
 upper_bound="0"
 
 while ((1)); do
-	upper_bound=$((upper_bound + STEP))
-	if probe "$upper_bound"; then
-		lower_bound="$upper_bound"
-		continue
-	else
-		break
-	fi
+    upper_bound=$((upper_bound + STEP))
+    if probe "$upper_bound"; then
+        lower_bound="$upper_bound"
+        continue
+    else
+        break
+    fi
 done
 
 while ((1)); do
-	mid=$(( lower_bound + (upper_bound - lower_bound) / 2 ))
-	if [[ "$mid" == "$lower_bound" ]]; then
-		MTU="$mid"
-		break;
-	fi
+    mid=$(( lower_bound + (upper_bound - lower_bound) / 2 ))
+    if [[ "$mid" == "$lower_bound" ]]; then
+        MTU="$mid"
+        break;
+    fi
 
-	if probe "$mid"; then
-		lower_bound="$mid"
-	else
-		upper_bound="$mid"
-	fi
+    if probe "$mid"; then
+        lower_bound="$mid"
+    else
+        upper_bound="$mid"
+    fi
 done
 
 MTU=$(( MTU + ICMP_PACKET_HEADER ))
