@@ -1,0 +1,28 @@
+#!/usr/bin/env -S bash -Eeuo pipefail
+
+# exit without error if both key and cert are NOT present in ssh agent
+
+key=${1:?usage: ssh-agent-key-check <path-to-private-key>}
+cert="${key}-cert.pub"
+
+[[ -r "$key"  ]] || { echo "key doesn't exist: $key" >&2; exit 2; }
+[[ -r "$cert" ]] || { echo "cert doesn't exist: $cert" >&2; exit 2; }
+
+if ssh-add -T "${key}.pub" &>/dev/null && ssh-add -T "$cert" &>/dev/null; then
+    echo "key and cert already populated" >&2
+    exit 17
+fi
+
+if [[ "$key" =~ _sk$ ]]; then
+    # resident key, no need to check further
+    exit 0
+fi
+
+[[ -x "$(command -v secret-ctl)" ]] || { echo "secret-ctl is not available" >&2; exit 2; }
+
+secret-ctl list | jq -e --arg user "$key" >/dev/null '
+    any(.[];
+        .attributes.server == "ksshaskpass" and
+        .attributes.user == $user and
+        .attributes.type == "plaintext"
+    )'
