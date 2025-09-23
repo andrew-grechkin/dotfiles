@@ -31,13 +31,15 @@ local function copy_url_to_clipboard()
     end
 end
 
+local function save_position() mp.command('write-watch-later-config') end
+
 mp.register_script_message('save-position-next', function()
-    mp.command('write-watch-later-config')
+    save_position()
     mp.command('playlist-next')
 end)
 
 mp.register_script_message('save-position-prev', function()
-    mp.command('write-watch-later-config')
+    save_position()
     mp.command('playlist-prev')
 end)
 
@@ -48,24 +50,29 @@ local function next_chapter_or_item(direction)
     log.info(('chapter: "%s"'):format(chapter + 1))
     if chapter + direction < 0 then
         log.info('prev item')
-        mp.command('write-watch-later-config')
+        save_position()
         mp.command('playlist-prev')
         mp.commandv('script-message', 'osc-playlist')
     elseif chapter + direction >= chapters then
         log.info('next item')
-        mp.command('write-watch-later-config')
+        save_position()
         mp.command('playlist-next')
         mp.commandv('script-message', 'osc-playlist')
     else
         log.info(('set chapter: %s'):format(chapter + direction + 1))
-        mp.command('write-watch-later-config')
+        save_position()
         mp.commandv('add', 'chapter', direction)
-        mp.commandv('script-message', 'osc-chapterlist')
+        mp.commandv('script-message', 'show-text ${chapter-list}')
     end
 end
 
 mp.add_forced_key_binding('ctrl+q', 'disable_quit_key_bindings', disable_quit)
 mp.add_forced_key_binding('ctrl+y', 'copy-url-to-clipboard', copy_url_to_clipboard)
+
+mp.observe_property('pause', 'bool', function(_, _) save_position() end)
+
+mp.register_event('playback-restart', save_position)
+mp.register_event('start-file', save_position)
 
 mp.add_forced_key_binding('n', 'chapterplaylist-next', function() next_chapter_or_item(1) end)
 mp.add_forced_key_binding('p', 'chapterplaylist-prev', function() next_chapter_or_item(-1) end)
