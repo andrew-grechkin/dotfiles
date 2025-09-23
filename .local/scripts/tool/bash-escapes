@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+for i in {0..127}; do
+    printf -v var %02X "$i"
+    printf -v var %b \\x"$var"
+
+    sign=E
+    printf -v res %q "$var"
+    [[ $var == "$res" ]] && sign=-
+
+    printf '0x%02X %s %-*s %-*s\n' "$i" "$sign" $(( 31 < i && i < 96 ? 2 : 8)) "$res" $(( 31 < i && i < 96 ? 3 : 8)) "${var@Q}"
+done | pr -w100 --sep-string='' -t4 | sed 's/\o11\+/\o11/g'
