@@ -1,0 +1,49 @@
+# vim: filetype=sh
+# shellcheck shell=bash
+
+# usage:
+#   source dev.rc
+#   source "$(git rev-parse --show-toplevel)/dev.rc"
+
+# detect git repo root or use dir of the script
+if command git rev-parse HEAD &>/dev/null; then
+    wd=$(git rev-parse --show-toplevel)
+else
+    wd=$(dirname "$(realpath -s "${BASH_SOURCE:-$0}")")
+fi
+
+function maybe_install_modules() (
+    wd_rel=$(realpath -m --relative-base="$PWD" "$wd")
+    sitelib=$(perl -MConfig -E 'say $Config{sitelib}')
+
+    # NOTE: necesary for the case when perlbrew or other perl virtual env is active in current session to deactivate it
+    unset PERL_LOCAL_LIB_ROOT PERL_MB_OPT PERL_MM_OPT
+    # NOTE: cpanm has old JSON module built in and fails
+    unset PERL_JSON_BACKEND
+
+    export PERL_CPANM_HOME="${PERL_CPANM_HOME:-${XDG_CACHE_HOME:-$HOME/.cache}/cpanm}"
+
+    umask 022
+
+    if [[ -r "$wd/cpanfile" ]] && [[ ! -f "$sitelib/finished" || "$sitelib/finished" -ot "$wd/cpanfile" ]]; then
+        echo "workdir: $wd" >&2
+        echo "sitelib: $sitelib" >&2
+        nice cpanm -fnq "https://github.com/andrew-grechkin/DateTime-TimeZone-Zoneinfo/archive/refs/heads/main.tar.gz"
+        nice cpanm -fnq "https://github.com/andrew-grechkin/yaml-libyaml-pm/archive/refs/heads/master.tar.gz"
+        echo "Installing required modules from '$wd_rel/cpanfile', this may take a while..."
+        nice cpanm -nq --installdeps "$wd" && touch "$sitelib/finished"
+    fi
+
+    if [[ -r "$wd/t/cpanfile" ]] && [[ ! -f "$sitelib/finished-t" || "$sitelib/finished-t" -ot "$wd/t/cpanfile" ]]; then
+        echo "Installing required modules from '$wd_rel/t/cpanfile', this may take a while..."
+        nice cpanm -nq --installdeps "$wd/t" && touch "$sitelib/finished-t"
+    fi
+
+    return 0
+)
+
+# NOTE: filter out warnings about archives created on alien systems with unknown extensions
+maybe_install_modules 2>&1 | grep -vP 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)' --line-buffered
+
+unset wd
+unset -f maybe_install_modules

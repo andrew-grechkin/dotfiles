@@ -1,3 +1,41 @@
+function compaudit-detect() {
+    emulate -L zsh
+    setopt EXTENDED_GLOB
+    local my_uid=$UID
+    local dir parent file
+    local -A checked_parents
+
+    echo "=== Scanning \$fpath, parent dirs, and completion entries ==="
+
+    # The leading '-' in the qualifiers makes the tests operate on symlink
+    # targets instead of the symlinks themselves (which are always mode 777).
+    for dir in "${fpath[@]}"; do
+        [[ -d "$dir" ]] || continue
+
+        # 1. Check if the directory itself is group/world writable or owned by someone else
+        for item in "$dir"(N-^u0u"$my_uid",-W,-f:g+w:); do
+            echo "[OFFENDER] fpath dir: $item"
+            ls -ld "$item"
+        done
+
+        # 2. Check the immediate parent directory, like compaudit does
+        parent="${dir:h}"
+        if [[ -n "$parent" && -z "${checked_parents[$parent]}" ]]; then
+            checked_parents[$parent]=1
+            for item in "$parent"(N-^u0u"$my_uid",-W,-f:g+w:); do
+                echo "[OFFENDER] Parent dir: $item"
+                ls -ld "$item"
+            done
+        fi
+
+        # 3. Check all completion entries inside the directory
+        for file in "$dir"/*(N-^u0u"$my_uid",-W,-f:g+w:); do
+            echo "[OFFENDER] Entry inside fpath: $file"
+            ls -ld "$file"
+        done
+    done
+}
+
 function install-zsh-3rdparty() {
 	(
 		cd "$XDG_DATA_HOME/3rdparty" || exit
@@ -7,6 +45,10 @@ function install-zsh-3rdparty() {
 
 function install-distrobox() {
 	curl -s https://raw.githubusercontent.com/89luca89/distrobox/main/install | sh -s -- --prefix ~/.local
+}
+
+function run-as() {
+    sudo -u "${1?user name must be provided}" -i
 }
 
 # => proxy -------------------------------------------------------------------------------------------------------- {{{1

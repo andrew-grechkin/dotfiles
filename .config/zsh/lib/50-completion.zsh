@@ -7,6 +7,9 @@ autoload -U +X bashcompinit && bashcompinit
 
 zmodload -i zsh/complist
 
+# increase the limit of copletion suggestions without annoying `are you sure?` question
+LISTMAX=300
+
 unsetopt FLOW_CONTROL
 unsetopt LIST_BEEP
 unsetopt MENU_COMPLETE                                                         # do not autoselect the first completion entry

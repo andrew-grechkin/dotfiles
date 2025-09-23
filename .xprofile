@@ -9,6 +9,7 @@
 
 # => keyring-ssh-agent -------------------------------------------------------------------------------------------- {{{1
 
+# this doesn't exist any more since gnome-keyring 1:46.0-1
 # export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/keyring/ssh"
 
 # => gpg-agent-ssh ------------------------------------------------------------------------------------------------ {{{1
