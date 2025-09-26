@@ -1,50 +1,79 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2154
 
 set -Eeuo pipefail
 
-# ABSTRACT: wrapper around Amp/Cody to make requests easier from terminal and other programs by providing sane defaults
+# @describe wrapper around gemini/amp/cody to make requests easier from terminal and other programs by providing sane defaults
 
-if [[ -t 0 && -z "$*" ]]; then
-	echo "Pass a request to AI as a first option" >&2
-	exit 1
-fi
+# @meta version 1.0.0
+# @meta combine-shorts
+# @meta require-tools grep,xargs
 
-if [[ -x "$(command -v amp)" ]]; then
-	if [[ -t 0 ]]; then
-		echo "$*" | amp
-	else
-		cat | amp
-	fi | grep -vE -e '^>(\s|$)' -e '^Thread ID:' | perl -000 -lnE 'say "$_\n"'
-elif [[ -x "$(command -v cody)" ]]; then
-	markdown='auto'
+# @arg    prompt*       Prompt
+# @flag   -m --markdown Force markdown output
+# @flag   -y --yolo     Give access to current dir recursively
+# @flag   -g --gemini   Force gemini usage
+# @option -f --file     Pass a file as a context
 
-	args=$(getopt --name="$0" --options 'f:m' --longoptions 'file:,markdown' -- "$@")
-	eval set -- "$args"
+function fatal() {
+    echo "fatal: " "$@">&2
+    exit 1
+}
 
-	chat_args=(--silent)
+git-in-repo                   || fatal 'must be run in a git repo'
+[[ -x "$(command -v argc)" ]] || fatal "'argc' helper is required. Please install from https://github.com/sigoden/argc"
 
-	while ((1)); do
-		case "$1" in
-			-f | --file) chat_args+=(--context-file="$2"); shift 2 ;;
-			-m | --markdown) markdown="always"; shift ;;
-			--) shift; break ;;
-		esac
-	done
+eval "$(argc --argc-eval "$0" "$@")"
 
-	if [[ -t 0 ]]; then
-		cody chat "${chat_args[@]}" -m "$*" 2>/dev/null
-	else
-		cody chat "${chat_args[@]}" --stdin 2>/dev/null
-	fi \
-		| if [[ "$markdown" == "always" ]] || [[ "$markdown" == "auto" && -t 1 ]]; then
-		glow -p
-	else
-		cat
-	fi
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+[[ -t 0 && "${#argc__positionals[@]}" -eq 0 ]] && fatal 'pass a request to AI via argv or stdin'
+
+if [[ -x "$(command -v cody)" && -z "${argc_gemini:-}" ]]; then
+    args=(--silent)
+    if [[ -n "${argc_markdown:-}" ]]; then
+        args+=(-m)
+    fi
+
+    if [[ -t 0 ]]; then
+        cody chat "${args[@]}" "${argc__positionals[*]}"
+    else
+        cody chat "${args[@]}" --stdin
+    fi
+elif [[ -x "$(command -v gemini)" || -n "${argc_gemini:-}" ]]; then
+    # gemini is a good example how you should NOT write cli interface
+
+    if [[ -n "${argc_yolo:-}" ]] || status=$(git status --porcelain) && [[ -z "$status" ]]; then
+        # default to yolo if it's a git worktree and it's clean
+        # if AI would screw up - there is an easy way to undo everything
+        args+=(-y)
+    fi
+
+    if [[ -t 1 ]]; then # default to interactive if stdout is a tty
+        if [[ "${#argc__positionals[@]}" -eq 0 ]]; then
+            args+=(-i "$(cat)")
+        else
+            args+=(-i "${argc__positionals[*]}")
+        fi
+        </dev/tty gemini "${args[@]}" 2> >(grep -vFx 'Loaded cached credentials.' >&2)
+    else
+        if [[ "${#argc__positionals[@]}" -ne 0 ]]; then
+            args+=("${argc__positionals[@]}")
+        fi
+
+        gemini "${args[@]}" 2> >(grep -vFx 'Loaded cached credentials.' >&2) \
+            | grep -vFx 'Data collection is disabled.'
+    fi
+elif [[ -x "$(command -v amp)" ]]; then
+    if [[ -t 0 ]]; then
+        echo "$*" | amp
+    else
+        amp
+    fi | grep -vE -e '^>(\s|$)' -e '^Thread ID:' | perl -000 -lnE 'say "$_\n"'
 else
-	# if [[ -x "$(command -v ollama)" ]] && ollama ps | grep 'codellama' &>/dev/null; then
-	#   cat | { lines-join; echo; } | tee -a /dev/stderr | ollama run codellama
-	#   exit
-	# fi
-	:
+    # if [[ -x "$(command -v ollama)" ]] && ollama ps | grep 'codellama' &>/dev/null; then
+    #   { lines-join; echo; } | tee -a /dev/stderr | ollama run codellama
+    #   exit
+    # fi
+    :
 fi
