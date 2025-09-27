@@ -1,6 +1,7 @@
 return {
     { -- https://github.com/nvim-treesitter/nvim-treesitter
         'nvim-treesitter/nvim-treesitter',
+        branch = 'main',
         cmd = {'TSUpdate'},
         config = function()
             local ok, plugin = pcall(require, 'nvim-treesitter.configs')
@@ -17,7 +18,6 @@ return {
                 'json',
                 'jsonc',
                 'just',
-                'lua',
                 'make',
                 'regex',
                 'sql',
@@ -27,28 +27,19 @@ return {
 
             if not IS_KVM then
                 ensure_installed:append({
-                    'c',
-                    'cmake',
                     'comment',
-                    'cpp',
                     'css',
                     -- 'csv',
-                    'doxygen',
                     'git_config',
                     'gitattributes',
-                    'go',
                     'gpg',
-                    'graphql',
                     'html',
                     'http',
                     'javascript',
                     'jq',
                     'jsdoc',
                     'json5',
-                    'luadoc',
                     'markdown_inline',
-                    'objdump',
-                    'passwd',
                     'pem',
                     'perl',
                     'pod',
@@ -63,16 +54,12 @@ return {
                     'terraform',
                     'tsx',
                     'typescript',
-                    'vim',
-                    'vimdoc',
-                    'vue',
-                    'xml',
-                    -- 'markdown',
                 })
             end
 
             local config = {
                 ensure_installed = ensure_installed,
+                sync_install = true, -- breaks if too many things downloaded at once
                 highlight = {
                     additional_vim_regex_highlighting = false,
                     enable = true,
