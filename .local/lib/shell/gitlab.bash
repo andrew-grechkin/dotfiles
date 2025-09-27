@@ -1,11 +1,12 @@
 function gl-redefine-vars() {
+	export GL_PER_PAGE="${GL_PER_PAGE:-100}"
+
 	if [[ -z "${GL_JOBS:-}" ]]; then
 		GL_JOBS=4
 
 		[[ -x "$(command -v nproc)" ]] && { GL_JOBS="$(nproc)"; }
 		export GL_JOBS
 	fi
-	export GL_PER_PAGE=100
 
 	if git-in-repo; then
 		if [[ -z "${GL_ROOT:-}" ]]; then
@@ -27,16 +28,19 @@ function gl-redefine-vars() {
 				>&2 git remote -v
 				exit 1
 			fi
+
 			repo_url="$(git config --get "remote.${GL_REMOTE}.url")"
 			if [[ -z "$repo_url" ]]; then
 				>&2 echo "unable to detect repo url for remote: $GL_REMOTE"
 				exit 1
 			fi
+
 			IFS=":" read -r -a parts <<< "$repo_url"
 			[[ -z "${GL_HOST:-}" ]]    && GL_HOST="${parts[0]#*@}"
 			[[ -z "${GL_PROJECT:-}" ]] && GL_PROJECT="${parts[1]%.git}"
 			set -e
 		fi
+
 		export GL_HOST GL_PROJECT GL_REMOTE
 	fi
 }
@@ -45,28 +49,23 @@ function gl-required-vars() {
 	GL_API='api/v4'
 	export GL_HOST="${GL_HOST:-gitlab.com}"
 
-	if [[ -z "${GITLAB_PERSONAL_TOKEN:-}" ]]; then
-		if [[ -x "$(command -v pass)" ]]; then
-			if res=$(pass show "personal/${GL_HOST}" 2>/dev/null | head -1); then
-				GITLAB_PERSONAL_TOKEN="$res"
-			fi
+	if [[ -z "${GITLAB_TOKEN:-}" ]]; then
+		if res=$(token-get "$GL_HOST/$USER/GITLAB_TOKEN"); then
+			GITLAB_TOKEN="$res"
 		fi
 	fi
-	if [[ -z "${GITLAB_PERSONAL_TOKEN:-}" ]]; then
-		local token_file="${XDG_CONFIG_HOME:-~/.config}/gitlab/${GL_HOST}.token"
-		if [[ -r "$token_file" ]]; then
-			GITLAB_PERSONAL_TOKEN=$(cat "$token_file")
-		else
-			{
-				echo "Please provide gitlab token with 'api' permission as one of:"
-				echo "  - pass personal/${GL_HOST}"
-				echo "  - GITLAB_PERSONAL_TOKEN env variable"
-				echo "  - $token_file file"
-			} >&2
-			exit 1
-		fi
+
+	if [[ -z "${GITLAB_TOKEN:-}" ]]; then
+		{
+			echo "Please provide gitlab token with 'api' permission as one of:"
+			echo "  - pass 'token/$GL_HOST/$USER/GITLAB_TOKEN'"
+			echo "  - GITLAB_TOKEN env variable"
+			echo "  - GITLAB_TOKEN in .env file"
+		} >&2
+		exit 1
 	fi
-	export GITLAB_PERSONAL_TOKEN
+
+	export GITLAB_TOKEN
 }; [[ -n "${BASH:-}" ]] && export -f gl-required-vars
 
 function gl-http-request() {
@@ -84,7 +83,7 @@ function gl-http-request() {
 
 	local gl_common_xh_options=(
 		"accept: application/json"
-		"private-token: ${GITLAB_PERSONAL_TOKEN? is required to access ${GL_HOST?is required}}"
+		"private-token: ${GITLAB_TOKEN? is required to access ${GL_HOST?is required}}"
 		--check-status
 		--ignore-stdin
 		--no-follow
@@ -112,6 +111,30 @@ function headers_to_json() {
 	sort -u | grep -P '^[[:alnum:]_\-]+:\s' \
 		| jq -nR '[inputs | split(": ") | {key: (.[0] | ascii_downcase), value: .[1]}] | from_entries'
 }; [[ -n "${BASH:-}" ]] && export -f headers_to_json
+
+# => user --------------------------------------------------------------------------------------------------------- {{{1
+
+function gl-user-get() {
+	gl-http-request GET "/user"
+}
+
+# => tokens ------------------------------------------------------------------------------------------------------- {{{1
+
+function gl-tokens-list() {
+	# https://docs.gitlab.com/api/personal_access_tokens/#list-all-personal-access-tokens
+	gl-http-request GET "/personal_access_tokens"
+}
+
+function gl-token-get() {
+	# https://docs.gitlab.com/api/personal_access_tokens/#get-details-on-a-personal-access-token
+	gl-http-request GET "/personal_access_tokens/${1:-self}"
+}
+
+function gl-token-associations-list() {
+	# https://docs.gitlab.com/api/personal_access_tokens/#list-all-token-associations
+	gl-http-get-all-pages "/personal_access_tokens/self/associations?per_page=$GL_PER_PAGE&min_access_level=${1:-40}" \
+		| jq '[.[][]]'
+}
 
 # => branches ----------------------------------------------------------------------------------------------------- {{{1
 
@@ -144,7 +167,7 @@ function gl-branch-delete() {
 function gl-branch-diff() {
 	head=$(2>/dev/null git fetch --no-tags --porcelain "$GL_REMOTE" HEAD | perl -nal -E'say $F[2]')
 	>/dev/null git fetch --no-tags --porcelain "$GL_REMOTE" "$1"
-	git show --color=always --pretty=fuller --no-patch 'FETCH_HEAD'
+	git show --color=always --no-patch 'FETCH_HEAD'
 	echo
 	git diff --color=always --stat "$head...FETCH_HEAD"
 	git diff "$head...FETCH_HEAD"
@@ -160,7 +183,7 @@ function gl-approvals-get() {
 function gl-mr-diff() {
 	head=$(2>/dev/null git fetch --no-tags --porcelain "$GL_REMOTE" HEAD | perl -nal -E'say $F[2]')
 	if res=$(git fetch --no-tags --porcelain "$GL_REMOTE" "merge-requests/$1/head" 2>&1); then
-		git show --color=always --pretty=fuller --no-patch 'FETCH_HEAD'
+		git show --color=always --no-patch 'FETCH_HEAD'
 		echo
 		git diff --color=always --stat "$head...FETCH_HEAD"
 		git diff "$head...FETCH_HEAD"

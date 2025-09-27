@@ -1,0 +1,648 @@
+#!/usr/bin/env -S just -d . --one --justfile
+
+# ABSTRACT: Gitlab API wrapper
+
+# https://just.systems/man/en/
+# https://docs.gitlab.com/api/
+
+set unstable
+
+git := require('git')
+jq := require('jq') # https://jqlang.org/download/
+xh := require('xh') # https://github.com/ducaale/xh#installation
+
+export dry-run := env('GL_DRY_RUN', '')
+export GL_API := '/api/v4'
+export GL_MAX_PAGES := env('GL_MAX_PAGES', '3')
+export GL_PER_PAGE := env('GL_PER_PAGE', '100')
+export this := justfile()
+
+in-repo-errno := `git rev-parse HEAD &>/dev/null; echo $?`
+# these two must be lazy but now they are not as just don't support lazy constants.
+export GL_REMOTE  := if in-repo-errno == "0" { env('GL_REMOTE', '') || `git remote -v | perl -nE 'my ($remote) = m/(\w+)\s+(?:.*?gitlab)/; say $remote if $remote' | head -1` } else { "" }
+
+export GL_URL  := if in-repo-errno == "0" { env('GL_URL', '') || shell("""
+    git get-url "$1"
+""", GL_REMOTE) } else { "" }
+
+export GL_HOST := env('GL_HOST', '') || shell("""
+    git-parse-url "$1" | grep -Pom1 '^host=\\K.+'
+""", GL_URL)
+
+export GL_PROJECT := env('GL_PROJECT', '') || shell("""
+    git-parse-url "$1" | grep -Pom1 '^path=\\K.+'
+""", GL_URL)
+
+export GL_PID := encode_uri_component(GL_PROJECT)
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private]
+@default:
+    '{{this}}' --list
+
+# => archive ------------------------------------------------------------------------------------------------------ {{{1
+
+# https://docs.gitlab.com/api/repositories/#get-file-archive
+# download archive of a repo
+[group('archive')]
+download-archive *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    '{{this}}' http-request GET '/projects/{{GL_PID}}/repository/archive' --download {{argv}}
+
+# => branches ----------------------------------------------------------------------------------------------------- {{{1
+
+# clean all merged branches
+[group('branches')]
+@clean-branches: (http-request 'DELETE' '/projects' / GL_PID / 'repository/merged_branches')
+
+# https://docs.gitlab.com/ee/api/branches.html#list-repository-branches
+# list branches
+[group('branches')]
+@list-branches *argv: (http-request-all '/projects' / GL_PID / 'repository/branches' argv)
+
+# https://docs.gitlab.com/api/branches/#get-single-repository-branch
+# get branch
+[group('branches')]
+@get-branch branch: (http-request 'GET' '/projects' / GL_PID / 'repository/branches' / encode_uri_component(branch))
+
+# https://docs.gitlab.com/ee/api/branches.html#create-repository-branch
+# create branch pointing to ref
+[group('branches')]
+create-branch branch ref: \
+    (print 'Creating branch: '+branch+' pointing to '+ref) \
+    (http-request 'POST' '/projects' / GL_PID / 'repository/branches' 'branch=='+branch 'ref=='+ref)
+
+# https://docs.gitlab.com/ee/api/branches.html#delete-repository-branch
+# delete branch
+[group('branches')]
+delete-branch branch: \
+    (print 'Deleting branch: ' + branch) \
+    (http-request 'DELETE' '/projects' / GL_PID / 'repository/branches' / encode_uri_component(branch))
+
+# delete branches
+[group('branches')]
+delete-branches +argv: (print 'Deleting multiple branches: ' + argv)
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    for branch in {{argv}}; do
+        '{{this}}' delete-branch "$branch"
+    done
+
+# diff branch with HEAD
+[group('branches')]
+diff-branch branch: in-git-repo
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    head=$(git fetch --no-tags --porcelain '{{GL_REMOTE}}' HEAD | perl -nal -E'say $F[2]')
+    >/dev/null git fetch --no-tags --porcelain '{{GL_REMOTE}}' "{{branch}}"
+    git show --color=always --no-patch 'FETCH_HEAD'
+    echo
+    git diff --color=always --stat "$head...FETCH_HEAD"
+    git diff "$head...FETCH_HEAD"
+
+# => commits ------------------------------------------------------------------------------------------------------ {{{1
+
+# https://docs.gitlab.com/api/commits/#list-repository-commits
+# list commits
+[group('commits')]
+@list-commits: (http-request-all '/projects' / GL_PID / 'repository/commits')
+
+# https://docs.gitlab.com/api/commits/#get-a-single-commit
+# get commit
+[group('commits')]
+@get-commit ref: (http-request 'GET' '/projects' / GL_PID / 'repository/commits' / encode_uri_component(ref))
+
+# https://docs.gitlab.com/api/commits/#get-the-comments-of-a-commit
+# list comments for commit
+[group('commits')]
+@list-comments ref: (http-request 'GET' '/projects' / GL_PID / 'repository/commits' / encode_uri_component(ref) / 'comments')
+
+# https://docs.gitlab.com/ee/api/commits.html#create-a-commit-with-multiple-files-and-actions
+# create commit
+[group('commits')]
+create-commit gl_commit: (print 'Creating commit:')
+    (( "$(stat -c %s '{{gl_commit}}')" > 0 )) && \
+        '{{this}}' http-request 'POST' '/projects/{{GL_PID}}/repository/commits' '@{{gl_commit}}'
+
+# gitlab API commit from current repo stage
+[group('commits')]
+commit-from-stage message: in-git-repo
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    cd "$(git rev-parse --show-superproject-working-tree --show-toplevel | head -1)" >/dev/null
+
+    if ! changes="$(git status --porcelain | grep -P '^A|^D|^M')"; then
+        echo 'nothing to do' >&2
+        exit 0
+    fi
+
+    jq_convert=$(cat << 'EO_ACTION'
+        {
+            "action": (if $a == "A" then "create" elif $a == "D" then "delete" elif $a == "M" then "update" else "undef" end),
+            "file_path": $file,
+        } | if ($a != "D") then .content = $content end
+    EO_ACTION
+    )
+
+    if actions="$(echo "$changes" | xargs -rn2 bash -c '
+        set -e;
+        [[ "$0" == "D" || -r "$1" ]] || { echo file not found: "$1" >&2; exit 2; }
+        pth="$1"
+        [[ "$0" == "D" ]] && { pth=/dev/null; }
+        jq -nc --arg a "$0" --rawfile content "$pth" --arg file "$1" '\'"$jq_convert"\'
+    )"; then
+        branch=$(git rev-parse --verify --abbrev-ref HEAD 2>/dev/null)
+        echo "$actions" | jq -cnR --arg branch "$branch" --arg message "{{message}}" '{
+            branch: $branch,
+            commit_message: $message,
+            actions: [inputs | fromjson]
+        }'
+    fi
+
+# => groups ------------------------------------------------------------------------------------------------------- {{{1
+
+# https://docs.gitlab.com/api/groups/#list-all-groups
+# list groups
+[group('groups')]
+@list-groups: (http-request 'GET' '/groups')
+
+# https://docs.gitlab.com/api/groups/#get-a-single-group
+# get group
+[group('groups')]
+@get-group group: (http-request 'GET' '/groups' / encode_uri_component(group))
+
+# https://docs.gitlab.com/api/group_access_tokens/#list-all-group-access-tokens
+# list group tokens
+[group('groups')]
+list-group-tokens group *argv: (http-request 'GET' '/groups' / encode_uri_component(group) / 'access_tokens' argv)
+
+# https://docs.gitlab.com/api/group_access_tokens/#get-details-on-a-group-access-token
+# get group token
+[group('groups')]
+get-group-token group id *argv: (http-request 'GET' '/groups' / encode_uri_component(group) / 'access_tokens' / id argv)
+
+# https://docs.gitlab.com/api/group_access_tokens/#rotate-a-group-access-token
+# rotate group token
+[group('groups')]
+rotate-group-token group id expires=`date +%F --date='now +365 day'`:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    '{{this}}' http-request 'POST' '/groups/{{encode_uri_component(group)}}/access_tokens/{{id}}/rotate' 'expires_at=={{expires}}'
+
+# https://docs.gitlab.com/api/group_access_tokens/#revoke-a-group-access-token
+# revoke group token
+[group('groups')]
+revoke-group-token group id: (http-request 'DELETE' '/groups' / encode_uri_component(group) / 'access_tokens' / id)
+
+# https://docs.gitlab.com/api/group_access_tokens/#create-a-group-access-token
+# create group token
+[group('groups')]
+create-group-token group name description scopes='self_rotate,api' expires=`date +%F --date='now +365 day'`:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    args=(
+        'name={{name}}'
+        'description={{description}}'
+        "scopes:=$(jq -Rc 'split(",")' <<< '{{scopes}}')"
+        'expires_at={{expires}}'
+    )
+    '{{this}}' http-request 'POST' '/groups/{{encode_uri_component(group)}}/access_tokens' "${args[@]@Q}"
+
+# => images ------------------------------------------------------------------------------------------------------- {{{1
+
+# https://docs.gitlab.com/api/container_registry/#within-a-project
+# list project images
+[group('images')]
+list-project-images *argv: (http-request 'GET' '/projects' / GL_PID / 'registry/repositories' 'tags_count==true' argv)
+
+# https://docs.gitlab.com/api/container_registry/#get-details-of-a-single-repository
+# get project image
+[group('images')]
+get-project-image image *argv: (http-request 'GET' '/registry/repositories'/image 'tags_count==true' 'size==true' argv)
+
+# https://docs.gitlab.com/api/container_registry/#within-a-project-1
+# list project image tags
+[group('images')]
+list-project-image-tags repo *argv: (http-request 'GET' '/projects' / GL_PID / 'registry/repositories' / repo / 'tags' argv)
+
+# https://docs.gitlab.com/api/container_registry/#get-details-of-a-registry-repository-tag
+# get project image tag
+[group('images')]
+get-project-image-tag repo tag: (http-request 'GET' '/projects' / GL_PID / 'registry/repositories' / repo / 'tags' / tag)
+
+# https://docs.gitlab.com/api/container_registry/#delete-a-registry-repository-tag
+# delete project image tag
+[group('images')]
+delete-project-image-tag repo tag: (http-request 'DELETE' '/projects' / GL_PID / 'registry/repositories' / repo / 'tags' / tag)
+
+# => jobs --------------------------------------------------------------------------------------------------------- {{{1
+
+# https://docs.gitlab.com/ee/api/jobs.html#list-pipeline-jobs
+# stream jobs
+[group('jobs')]
+stream-jobs pipeline project=GL_PROJECT:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    '{{this}}' http-request 'GET' '/projects/{{encode_uri_component(project)}}/pipelines/{{pipeline}}/jobs' \
+        | jq -c '.[]'
+
+# https://docs.gitlab.com/ee/api/jobs.html#list-pipeline-trigger-jobs
+# stream bridges
+[group('jobs')]
+stream-bridges pipeline project=GL_PROJECT:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    '{{this}}' http-request 'GET' '/projects/{{encode_uri_component(project)}}/pipelines/{{pipeline}}/bridges' \
+        | jq -c '.[]'
+
+# recursively get all jobs including children pipelines
+[group('jobs')]
+_list-jobs pipeline project=GL_PROJECT: && (stream-jobs pipeline project)
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if bridges="$('{{this}}' stream-bridges '{{pipeline}}' '{{project}}')" && [[ -n "$bridges" ]]; then
+        echo "$bridges"
+        jq -r 'if .downstream_pipeline then .downstream_pipeline | "\(.id)/\(.project_id)" else empty end' <<< "$bridges" \
+            | xargs -rI% -P0 bash -c 'IFS="/" read -r -a parts <<< "%"; "{{source_file()}}" _list-jobs "${parts[@]}" | mbuffer -q'
+    fi
+
+# list jobs
+[group('jobs')]
+list-jobs pipeline project=GL_PROJECT: (print 'List all jobs recursively for pipeline: '+pipeline)
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    '{{this}}' _list-jobs '{{pipeline}}' '{{project}}' \
+        | jq -cn '[inputs] | sort_by(.pipeline.id, .created_at)'
+
+# https://docs.gitlab.com/ee/api/jobs.html#get-a-single-job
+# get job
+[group('jobs')]
+@get-job iid project=GL_PROJECT: (http-request 'GET' '/projects' / encode_uri_component(project) / 'jobs' / iid)
+
+# https://docs.gitlab.com/ee/api/jobs.html#cancel-a-job
+# cancel job
+[group('jobs')]
+@cancel-job iid project=GL_PROJECT: (http-request 'POST' '/projects' / encode_uri_component(project) / 'jobs' / iid / 'cancel')
+
+# https://docs.gitlab.com/ee/api/jobs.html#retry-a-job
+# retry job
+[group('jobs')]
+@retry-job iid project=GL_PROJECT: (http-request 'POST' '/projects' / encode_uri_component(project) / 'jobs' / iid / 'retry')
+
+# https://docs.gitlab.com/ee/api/jobs.html#run-a-job
+# run job
+[group('jobs')]
+@run-job iid project=GL_PROJECT: (http-request 'POST' '/projects' / encode_uri_component(project) / 'jobs' / iid / 'play')
+
+# https://docs.gitlab.com/ee/api/jobs.html#get-a-log-file
+# get logs
+[group('jobs')]
+get-job-logs iid project=GL_PROJECT: (print 'Fetching logs: '+iid)
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    '{{this}}' http-request 'GET' '/projects/{{encode_uri_component(project)}}/jobs/{{iid}}/trace' \
+        | perl -lpE 's/\r/\n/g'
+
+# https://docs.gitlab.com/ee/api/job_artifacts.html#get-job-artifacts
+# list logs
+[group('jobs')]
+download-job-artifacts iid: \
+    (print 'Downloading artifacts: '+iid) \
+    (http-request 'GET' '/projects' / GL_PID / 'jobs' / iid / 'artifacts' '--follow')
+
+# => mrs ---------------------------------------------------------------------------------------------------------- {{{1
+
+# https://docs.gitlab.com/ee/api/merge_requests.html#list-project-merge-requests
+# list mrs
+[group('mrs')]
+list-mrs *argv: (http-request-all '/projects' / GL_PID / 'merge_requests' argv)
+
+# https://docs.gitlab.com/ee/api/merge_requests.html#create-mr
+# create mr
+[group('mrs')]
+create-mr title source target: (print 'Creating MR: '+source+' -> '+target)
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    '{{this}}' http-request 'POST' '/projects/{{GL_PID}}/merge_requests' \
+        'title={{title}}' 'source_branch={{source}}' 'target_branch={{target}}' 'remove_source_branch=true'
+
+# approve multiple mrs
+[group('mrs')]
+approve-mrs +iids:
+    #!/usr/bin/env -S bash -Euo pipefail
+    for iid in {{iids}}; do
+        '{{this}}' approve-mr "$iid"
+    done
+
+# unapprove multiple mrs
+[group('mrs')]
+unapprove-mrs +iids:
+    #!/usr/bin/env -S bash -Euo pipefail
+    for iid in {{iids}}; do
+        '{{this}}' unapprove-mr "$iid"
+    done
+
+# merge multiple mrs
+[group('mrs')]
+merge-mrs +iids:
+    #!/usr/bin/env -S bash -Euo pipefail
+    for iid in {{iids}}; do
+        '{{this}}' merge-mr "$iid"
+        sleep 30;
+    done
+
+# rebase multiple mrs
+[group('mrs')]
+rebase-mrs +iids:
+    #!/usr/bin/env -S bash -Euo pipefail
+    for iid in {{iids}}; do
+        '{{this}}' rebase-mr "$iid"
+    done
+
+# https://docs.gitlab.com/ee/api/merge_request_approvals.html#merge-request-level-mr-approvals
+# list mr approvals
+[group('mrs')]
+@list-approvals iid: (http-request 'GET' '/projects' / GL_PID / 'merge_requests' / iid / 'approvals')
+
+# https://docs.gitlab.com/ee/api/notes.html#list-all-merge-request-notes
+# list mr notes
+[group('mrs')]
+@list-notes iid: (http-request 'GET' '/projects' / GL_PID / 'merge_requests' / iid / 'notes')
+
+# https://docs.gitlab.com/ee/api/merge_requests.html#get-single-mr
+# get mr
+[group('mrs')]
+@get-mr iid: (http-request 'GET' '/projects' / GL_PID / 'merge_requests' / iid)
+
+# diff mr with HEAD
+[group('mrs')]
+diff-mr iid: in-git-repo
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    head=$(git fetch --no-tags --porcelain '{{GL_REMOTE}}' HEAD | perl -lanE'say $F[2]')
+    if res=$(git fetch --no-tags --porcelain '{{GL_REMOTE}}' "merge-requests/{{iid}}/head" 2>&1); then
+        git show --color=always --no-patch 'FETCH_HEAD'
+        echo
+        git diff --color=always --stat "$head...FETCH_HEAD"
+        git diff "$head...FETCH_HEAD"
+    else
+        {
+          cat <<< "$res"
+          echo
+          echo "Unable to fetch MR branch: merge-requests/{{iid}}/head"
+          echo "    MR might be just empty"
+        } >&2
+    fi
+
+# https://docs.gitlab.com/ee/api/merge_request_approvals.html#approve-merge-request
+# approve mr
+[group('mrs')]
+@approve-mr iid: \
+    (print 'Approving MR: '+iid) \
+    (http-request 'POST' '/projects' / GL_PID / 'merge_requests' / iid / 'approve')
+
+# https://docs.gitlab.com/api/merge_request_approvals/#unapprove-a-merge-request
+# unapprove mr
+[group('mrs')]
+@unapprove-mr iid: \
+    (print 'Unapproving MR: '+iid) \
+    (http-request 'POST' '/projects' / GL_PID / 'merge_requests' / iid / 'unapprove')
+
+# https://docs.gitlab.com/ee/api/merge_requests.html#merge-a-merge-request
+# merge mr
+[group('mrs')]
+@merge-mr iid: \
+    (print 'Merging MR: '+iid) \
+    (http-request 'PUT' '/projects' / GL_PID / 'merge_requests' / iid / 'merge')
+
+# https://docs.gitlab.com/ee/api/merge_requests.html#rebase-a-merge-request
+# rebase mr
+[group('mrs')]
+@rebase-mr iid: \
+    (print 'Rebasing MR: '+iid) \
+    (http-request 'PUT' '/projects' / GL_PID / 'merge_requests' / iid / 'rebase')
+
+# => pipelines ---------------------------------------------------------------------------------------------------- {{{1
+
+# https://docs.gitlab.com/ee/api/pipelines.html#list-project-pipelines
+# https://docs.gitlab.com/ee/api/merge_requests.html#list-merge-request-pipelines
+# list pipelines
+[group('pipelines')]
+list-pipelines mr='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    [[ -n '{{mr}}' ]] && mr='/merge_requests/{{mr}}'
+    '{{this}}' http-request-all "/projects/{{GL_PID}}${mr:-}/pipelines" 'order_by==id' 'sort==desc'
+
+# https://docs.gitlab.com/ee/api/pipelines.html#get-a-single-pipeline
+# get pipeline
+[group('pipelines')]
+@get-pipeline iid: (http-request 'GET' '/projects' / GL_PID / 'pipelines' / iid)
+
+# https://docs.gitlab.com/ee/api/pipelines.html#cancel-a-pipelines-jobs
+# cancel pipeline
+[group('pipelines')]
+@cancel-pipeline iid: (http-request 'POST' '/projects' / GL_PID / 'pipelines' / iid / 'cancel')
+
+# https://docs.gitlab.com/ee/api/pipelines.html#retry-jobs-in-a-pipeline
+# retry pipeline
+[group('pipelines')]
+@retry-pipeline iid: (http-request 'POST' '/projects' / GL_PID / 'pipelines' / iid / 'retry')
+
+# => projects ----------------------------------------------------------------------------------------------------- {{{1
+
+# https://docs.gitlab.com/api/project_access_tokens/#list-all-project-access-tokens
+# list project tokens
+[group('projects')]
+list-project-tokens *argv: (http-request 'GET' '/projects' / GL_PID / 'access_tokens' argv)
+
+# https://docs.gitlab.com/api/project_access_tokens/#get-details-on-a-project-access-token
+# get project token
+[group('projects')]
+get-project-token id *argv: (http-request 'GET' '/projects' / GL_PID / 'access_tokens' / id argv)
+
+# https://docs.gitlab.com/api/project_access_tokens/#rotate-a-project-access-token
+# rotate project token
+[group('projects')]
+@rotate-project-token id expires=`date +%F --date='now +365 day'`:
+    '{{this}}' http-request 'POST' '/projects/{{GL_PID}}/access_tokens/{{id}}/rotate' 'expires_at=={{expires}}'
+
+# https://docs.gitlab.com/api/project_access_tokens/#revoke-a-project-access-token
+# revoke project token
+[group('projects')]
+revoke-project-token id: (http-request 'DELETE' '/projects' / GL_PID / 'access_tokens' / id)
+
+# https://docs.gitlab.com/api/project_access_tokens/#create-a-project-access-token
+# create project token
+[group('projects')]
+create-project-token name description scopes='api,self_rotate' expires=`date +%F --date='now +365 day'`:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    args=(
+        'name={{name}}'
+        'description={{description}}'
+        "scopes:=$(jq -Rc 'split(",")' <<< '{{scopes}}')"
+        'expires_at={{expires}}'
+    )
+    '{{this}}' http-request 'POST' '/projects/{{GL_PID}}/access_tokens' "${args[@]@Q}"
+
+# https://docs.gitlab.com/api/search/#scope-blobs-2
+# search projects
+[group('projects')]
+search-projects query path='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ -n '{{path}}' ]]; then
+        query='{{query}} path:{{path}}'
+    else
+        query='{{query}}'
+    fi
+    '{{this}}' http-request 'GET' '/projects/{{GL_PID}}/search' 'scope==blobs' "search==$query"
+
+# https://docs.gitlab.com/ee/api/projects.html#search-for-projects-by-name
+# search projects
+[group('projects')]
+@search-projects2: (http-request 'GET' '/projects' 'include_subgroups==true' 'simple==true' 'order_by==id' 'sort==asc')
+
+# => service accounts --------------------------------------------------------------------------------------------- {{{1
+
+# https://docs.gitlab.com/api/service_accounts/#list-all-instance-service-accounts
+# list instance service accounts
+[group('sa')]
+list-instance-sa *argv: (http-request 'GET' '/service_accounts' argv)
+
+# https://docs.gitlab.com/api/service_accounts/#list-all-group-service-accounts
+# list group service accounts
+[group('sa')]
+list-sa group *argv: (http-request 'GET' '/groups' / group / 'service_accounts' argv)
+
+# => tokens ------------------------------------------------------------------------------------------------------- {{{1
+
+# https://docs.gitlab.com/api/user_tokens/#create-a-personal-access-token
+# create token
+[group('tokens')]
+create-token name description scopes='k8s_proxy,self_rotate' expires=`date +%F --date='now +365 day'`:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    args=(
+        'name={{name}}'
+        'description={{description}}'
+        "scopes:=$(jq -Rc 'split(",")' <<< '{{scopes}}')"
+        'expires_at={{expires}}'
+    )
+    '{{this}}' http-request 'POST' '/user/personal_access_tokens' "${args[@]@Q}"
+
+# https://docs.gitlab.com/api/admin/token/#get-information-on-a-token
+# describe token
+[group('tokens')]
+@describe-token token:
+    '{{this}}' http-request 'POST' '/admin/token' "'token={{token}}'"
+
+# https://docs.gitlab.com/api/personal_access_tokens/#get-details-on-a-personal-access-token
+# get token (self or sibling)
+[group('tokens')]
+@get-token id='self': (http-request 'GET' '/personal_access_tokens' / id)
+
+# https://docs.gitlab.com/api/personal_access_tokens/#rotate-a-personal-access-token
+# rotate token (self or sibling)
+[group('tokens')]
+rotate-token id expires=`date +%F --date='now +365 day'`: \
+    (http-request 'POST' '/personal_access_tokens' / id / 'rotate' 'expires_at==' + expires)
+
+# https://docs.gitlab.com/api/personal_access_tokens/#revoke-a-personal-access-token
+# revoke token
+[group('tokens')]
+revoke-token id: (http-request 'DELETE' '/personal_access_tokens' / id)
+
+# https://docs.gitlab.com/api/personal_access_tokens/#list-all-token-associations
+# list self token associations
+[group('tokens')]
+@list-token-associations level='40':
+    '{{this}}' http-request-all '/personal_access_tokens/self/associations' 'min_access_level=={{level}}' \
+            | jq '[.[][]]'
+
+# https://docs.gitlab.com/api/personal_access_tokens/#list-all-personal-access-tokens
+# list tokens
+[group('tokens')]
+list-tokens *argv: (http-request 'GET' '/personal_access_tokens' argv)
+
+# => user --------------------------------------------------------------------------------------------------------- {{{1
+
+# get user (of current token)
+[group('users')]
+@get-user: (http-request 'GET' '/user')
+
+# => http --------------------------------------------------------------------------------------------------------- {{{1
+
+# generic http request to the configured service, provides diagnostics on failure
+[private, no-cd]
+[group('http')]
+http-request method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    xh_args=(
+        "$GL_HOST${GL_API}{{uri}}"
+        --https
+        --ignore-stdin
+        --no-follow
+        --auth-type=bearer
+        --auth="${GITLAB_TOKEN:-$(credp "$GL_HOST")}"
+    )
+
+    method='{{method}}'
+    if [[ "${method@U}" == 'GET' || "${method@U}" == 'HEAD' ]]; then
+        xh_args+=('per_page=={{GL_PER_PAGE}}')
+    fi
+
+    cmd=(xh "${method@U}" "${xh_args[@]}" {{argv}})
+    [[ -n "{{dry-run}}" ]] && exec >&2 args2log "${cmd[@]}"
+    [[ -t 1 ]] && exec "${cmd[@]}"
+
+    if [[ "${method@U}" == 'HEAD' || "${method@U}" == 'OPTIONS' ]]; then
+        args=(-qq --print=h)
+    else
+        args=(-qq --print=b)
+    fi
+
+    if res=$("${cmd[@]}" "${args[@]}"); then
+        echo "$res"
+    else
+        errno="$?"
+        >&2 args2log "${cmd[@]}"
+        >&2 "${cmd[@]}" --print=HB --offline
+        >&2 echo "$res"
+        exit "$errno"
+    fi
+
+# special http request to the configured service providing body via stdin (not for GET or HEAD)
+[private, no-cd]
+[group('http')]
+@http-request-body method uri *argv:
+    '{{this}}' http-request '{{method}}' '{{uri}}' --no-ignore-stdin {{argv}}
+
+[private, no-cd]
+[group('http')]
+http-request-all uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    function headers_to_json() {
+        sort -u | grep -P '^[[:alnum:]_\-]+:\s' \
+            | jq -nR '[inputs | split(": ") | {key: (.[0] | ascii_downcase), value: .[1]}] | from_entries'
+    }
+
+    if headers="$('{{this}}' http-request HEAD '{{uri}}' {{argv}} | headers_to_json)"; then
+        # for some reason there is no x-total-pages when listing pipelines
+        pages=$(jq -r '."x-total-pages" // ."x-next-page" // 1 | if . == "" then 1 end' <<<"$headers")
+        seq "$((pages > GL_MAX_PAGES ? GL_MAX_PAGES : pages))" \
+            | xargs -rI{} -P0 bash -c "'{{this}}' http-request GET '{{uri}}' 'per_page=={{GL_PER_PAGE}}' 'page=={}' {{argv}} | jq -cS '.[]' | mbuffer -q" \
+            | jq -cn '[inputs]'
+    else
+        echo '[]'
+    fi
+
+# => helpers ------------------------------------------------------------------------------------------------------ {{{1
+
+# ensure in git repo
+[group('helpers')]
+[private]
+@in-git-repo:
+    git rev-parse HEAD &>/dev/null
+
+[group('helpers')]
+[private]
+@print message:
+    [[ -t 1 ]] && >&2 echo '{{style("warning")}}{{message}}{{NORMAL}}' || true
+
+# login to docker repository
+[group('helpers')]
+@login-docker user:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    echo "$GITLAB_TOKEN" | docker login 'registry.gitlab.com' -u '{{user}}' --password-stdin
