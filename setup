@@ -7,6 +7,7 @@ echo 'Executing setup'
 mkdir -p ~/.cache/bin
 mkdir -p ~/.config/fontconfig
 mkdir -p ~/.config/environment.d
+mkdir -p ~/.config/mise
 mkdir -p ~/.local/{bin,lib,scripts,scripts-ext,share,state}
 
 SCRIPT=$(realpath -s "$0")
@@ -75,6 +76,7 @@ if [[ "$USER" == "agrechkin" ]]; then
     # ln -srf .config/lazygit                                  ~/.config/
     ln -srf .config/luaformatter                             ~/.config/
     ln -srf .config/markdownlint.yaml                        ~/.config/
+    ln -srf .config/mise/config                              ~/.config/mise/config.toml
     ln -srf .config/nvim                                     ~/.config/
     ln -srf .config/perlcriticrc                             ~/.config/
     ln -srf .config/perlcriticrc                             ~/.perlcriticrc
@@ -104,6 +106,7 @@ if [[ "$USER" == "agrechkin" ]]; then
         (exec submodules/secret/setup)
     }
 else
+    cp -f    .config/mise/config                             ~/.config/mise/config.toml
     ln -srfn .config/vim                                     ~/.config/nvim
 fi
 
