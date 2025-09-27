@@ -1,0 +1,4 @@
+# vim: filetype=toml
+
+[tools.yamllint]
+version = "latest"

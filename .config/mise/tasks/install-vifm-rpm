@@ -1,0 +1,38 @@
+#!/usr/bin/env -S bash -Eeuo pipefail
+
+#MISE description="Install vifm by extracting the EPEL 9 RPM into ~/.local/usr (deps expected on system)"
+#MISE sources=[]
+#USAGE flag "--version <version>" help="vifm upstream version" default="0.14.3"
+#USAGE flag "--release <release>" help="RPM release tag" default="1"
+#USAGE flag "--prefix <prefix>" help="Install prefix"
+
+# Requires: curl, rpm2archive
+
+version="${usage_version:-0.14.3}"
+release="${usage_release:-1}"
+prefix="${usage_prefix:-$HOME/.local/usr}"
+
+rpm_name="vifm-${version}-${release}.el9.x86_64.rpm"
+url="https://mirror.de.leaseweb.net/epel/9/Everything/x86_64/Packages/v/${rpm_name}"
+
+cache="${XDG_CACHE_HOME:-$HOME/.cache}/src/vifm-rpm"
+rpm_path="$cache/$rpm_name"
+
+umask 0022
+mkdir -p "$cache"
+
+if [[ ! -f "$rpm_path" ]]; then
+    curl -fsSL "$url" -o "$rpm_path.out"
+    mv -- "$rpm_path.out" "$rpm_path"
+fi
+
+tmpdir=$(mktemp -d --tmpdir="$XDG_RUNTIME_DIR")
+trap 'rm -rf "$tmpdir"' EXIT
+
+<"$rpm_path" rpm2archive - | tar -xz -C "$tmpdir" ./usr
+
+mkdir -p "$prefix"
+cp -r -- "$tmpdir/usr/." "$prefix/"
+
+echo "> installed vifm ${version}-${release} into ${prefix}" >&2
+"$prefix/bin/vifm" --version | head -n1
