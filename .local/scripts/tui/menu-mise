@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC2016
+
+# => header (source able) ----------------------------------------------------------------------------------------- {{{1
+
+function mise-items-get() {
+    local convert
+    convert=$(cat << 'EO_CONVERT'
+use constant {JSON_ONE_LINE => Cpanel::JSON::XS->new->canonical->utf8(0)->unblessed_bool([1])->pretty(0)->indent(0)};
+INIT {$e = JSON_ONE_LINE->decode(do {local $/ = undef; <<>>})}
+@F = split m/\s+/, $_, 2;
+push @r, {
+    name => $F[0],
+    url => ($F[1] =~ m{(https://\S+)}x && $1) || '',
+    description => $F[1] =~ s{(\s+https://\S+)}{}rx,
+    version => ($e->{$F[0]} && $e->{$F[0]}[0]{version} // ''),
+    installed => !!(delete $e->{$F[0]}),
+};
+END {
+	say JSON_ONE_LINE()->encode(\@r)
+}
+EO_CONVERT
+    )
+
+    mise search --no-header | perl -CALS -MCpanel::JSON::XS -lnE "$convert" <(mise ls --json --installed)
+}
+
+# => body (executable) -------------------------------------------------------------------------------------------- {{{1
+
+if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under condition to make file source able
+    set -Eeuo pipefail
+
+    args=$(getopt --name="$0" --options 'j' --longoptions 'json' -- "$@")
+    eval set -- "$args"
+
+    while ((1)); do
+        case "$1" in
+            -j | --json) json='1'; shift ;;
+            --) shift; break ;;
+        esac
+    done
+
+    if [[ -n "${json:-}" ]]; then
+        mise-items-get
+    elif [[ -t 1 ]]; then
+        export FZF_RELOAD_CMD="$0"
+        source "$HOME/.local/lib/shell/fzf.bash"
+
+        fzf_args=(
+            --bind="alt-A:execute(fzf-run-reload -ft 1 -- mise use -g {+1})"
+            --bind="alt-R:execute(fzf-run-reload -ft 1 -- mise remove -g {+1})"
+            --bind="alt-U:execute(fzf-run-reload -ft 1 -- mise upgrade {+1})"
+            --footer="A-A:install A-R:remove A-U:upgrade | A-b:browse A-p:preview"
+            --preview="echo name: {1}; echo description: {-1}; echo url: {2}; echo; echo versions:; mise ls-remote -q {1} | tac"
+            --preview-window="right:50%:border-left:wrap:nohidden,<55(hidden)"
+            --prompt="mise > "
+            --with-nth="3..-2"
+        )
+        "$0" | fzf-table-multi "${fzf_args[@]}"
+    else
+        source "$HOME/.local/lib/shell/data-processing.bash"
+
+        jq_fields=(
+            '_id;\(.name)'
+            '_url;\(.url)'
+            'name;\(if .installed then "" else "${FG[silver]}" end + .name)${FX[reset]}'
+            'installed;\(if .installed then "installed" else "" end);purple'
+            'version;\(if .installed then .version else "" end);yellow'
+            'description;\(.description)'
+        )
+
+        "$0" -j | json-array-to-tsv 'sort_by((.explicit | not), (.installed | not), .name)' "${jq_fields[@]}"
+    fi
+fi

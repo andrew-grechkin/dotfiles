@@ -1,0 +1,77 @@
+# vim: filetype=sh
+# shellcheck shell=bash
+
+# usage:
+#   source dev.rc
+#   source "$(git rev-parse --show-toplevel)/dev.rc"
+
+# => environment -------------------------------------------------------------------------------------------------- {{{1
+
+PERL_VERSION_REQUIRED="${PERL_VERSION_REQUIRED:-5.42.0}"
+PERL_VENV_DIR_SUFFIX="${PERL_VENV_DIR_SUFFIX:-$(hostname)}"
+
+# detect git repo root or use dir of the script
+if command git rev-parse HEAD &>/dev/null; then
+    workdir="$(git rev-parse --show-toplevel)"
+else
+    script="$(realpath -s "${BASH_SOURCE:-$0}")"
+    workdir="$(dirname "$script")"
+fi
+workdir_rel=$(realpath -m --relative-base="$PWD" "$workdir")
+echo "workdir: $workdir" >&2
+
+# enforce local .perlcriticrc if it exists
+perlcritic_path="$workdir/.perlcriticrc"
+if [[ -r "$perlcritic_path" ]]; then
+    export PERLCRITIC="$perlcritic_path"
+fi
+
+# => install default perl and library ----------------------------------------------------------------------------- {{{1
+
+function maybe_install_perl() {
+    mise install "perl@$PERL_VERSION_REQUIRED" || return 1
+
+    # make perl from virtual environment the default one in the current terminal session
+    [[ -d "$workdir/script" ]] && ! grep -F ":$workdir/script:" <<<":$PATH:" &>/dev/null && PATH=":$workdir/script:$PATH"
+    [[ -d "$workdir/bin"    ]] && ! grep -F ":$workdir/bin:"    <<<":$PATH:" &>/dev/null && PATH=":$workdir/bin:$PATH"
+
+    PERL5LIB="$HOME/.local/lib/perl5:./lib"
+    [[ -d "$workdir/lib"   ]] && ! grep -F ":$workdir/lib:"   <<<":$PERL5LIB:" &>/dev/null && PERL5LIB="$workdir/lib:$PERL5LIB"
+    [[ -d "$workdir/perl5" ]] && ! grep -F ":$workdir/perl5:" <<<":$PERL5LIB:" &>/dev/null && PERL5LIB="$workdir/perl5:$PERL5LIB"
+
+    export PATH PERL5LIB
+
+    return 0
+}
+
+function maybe_install_modules() {
+    # necesary for the case when perlbrew or another perl virtual env is activated in current session to deactivate it
+    unset PERL_LOCAL_LIB_ROOT
+    unset PERL_MB_OPT
+    unset PERL_MM_OPT
+
+    export PERL_CPANM_HOME="${PERL_CPANM_HOME:-${XDG_CACHE_HOME:-$HOME/.cache}/cpanm}"
+
+    site_lib="$(mise exec "perl@$PERL_VERSION_REQUIRED" -- perl -MConfig -E 'say $Config{sitelib}')"
+    echo "sitelib: $site_lib" >&2
+
+    {
+        if [[ -r "$workdir/cpanfile" ]] && [[ ! -f "$site_lib/finished" || "$site_lib/finished" -ot "$workdir/cpanfile" ]]; then
+            mise exec "perl@$PERL_VERSION_REQUIRED" -- nice cpanm -nq "https://github.com/andrew-grechkin/yaml-libyaml-pm/archive/refs/heads/master.zip"
+            echo "Installing required modules from '$workdir_rel/cpanfile', this may take a while..."
+            mise exec "perl@$PERL_VERSION_REQUIRED" -- nice cpanm -nq --installdeps "$workdir" && touch "$site_lib/finished"
+        fi
+
+        if [[ -r "$workdir/t/cpanfile" ]] && [[ ! -f "$site_lib/finished-t" || "$site_lib/finished-t" -ot "$workdir/t/cpanfile" ]]; then
+            echo "Installing required modules from '$workdir_rel/t/cpanfile', this may take a while..."
+            mise exec "perl@$PERL_VERSION_REQUIRED" -- nice cpanm -nq --installdeps "$workdir/t" && touch "$site_lib/finished-t"
+        fi
+        # filter out warnings about archives created on alien systems with unknown extensions
+    } 2>&1 | grep -Ev 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)'
+
+    return 0
+}
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+maybe_install_perl && maybe_install_modules

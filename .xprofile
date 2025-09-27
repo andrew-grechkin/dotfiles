@@ -20,14 +20,14 @@ export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.ssh"
 
 # export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/S.ssh-agent"
 
+# => activate mise shims globally --------------------------------------------------------------------------------- {{{1
+
+[[ -x "$(command -v mise)" ]] && eval "$(mise activate --shims)"
+
 # => use default Perl + modules globally -------------------------------------------------------------------------- {{{1
 
-[[ -r "$HOME/.local/lib/relocatable-perl-dev.rc" ]] && source "$HOME/.local/lib/relocatable-perl-dev.rc"
+[[ -r "$HOME/.local/lib/mise-perl-global.rc" ]] && source "$HOME/.local/lib/mise-perl-global.rc"
 
 # => use default env ---------------------------------------------------------------------------------------------- {{{1
 
 [[ -r "$HOME/.config/shell/env" ]] && source "$HOME/.config/shell/env"
-
-# => use default Node --------------------------------------------------------------------------------------------- {{{1
-
-[[ -r "$HOME/.config/shell/node.env" ]] && source "$HOME/.config/shell/node.env"

@@ -39,6 +39,7 @@ ln -srf .config/fzfrc                                        ~/.config/fzfrc
 ln -srf .config/git                                          ~/.config/
 ln -srf .config/just                                         ~/.config/
 ln -srf .config/luarocks                                     ~/.config/
+ln -srf .config/mise                                         ~/.config/
 ln -srf .config/mpv                                          ~/.config/
 ln -srf .config/picom.conf                                   ~/.config/
 ln -srf .config/ripgreprc                                    ~/.config/
