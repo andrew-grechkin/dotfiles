@@ -1,18 +1,18 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 
 set -Eeuo pipefail
 
-DIR=${PASSWORD_STORE_DIR:-${XDG_DATA_HOME}/password-store}
+dir="${PASSWORD_STORE_DIR:-${XDG_DATA_HOME}/password-store}"
+cd "$dir" || exit 1
 
 function list_files() {
-	# shopt -s nullglob globstar
-	setopt NULLGLOB
+	shopt -s nullglob globstar
 
-	password_files=("$DIR"/**/*.gpg)
-	password_files=("${password_files[@]#*"$DIR/"}")
-	password_files=("${password_files[@]%".gpg"*}")
-	for FILE in "${password_files[@]}"; do
-		printf "%s	pass2clipboard \"$DIR/%s\" &>/dev/null\n" "$FILE" "$FILE"
+	password_files=(**/*.gpg)
+	password_files=("${password_files[@]%.gpg*}")
+
+	for file in "${password_files[@]}"; do
+		printf $'%s\tpass2clipboard %s &>/dev/null\n' "$file" "${file@Q}"
 	done
 }
 

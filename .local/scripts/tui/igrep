@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+gpath="perl -F: -E 'say \$F[0]'"
+glnpt="perl -F: -E 'say \$F[1]; say \$F[0]'"
+
+fzf_args=(
+	--bind="F3:execute:echo {1} | $glnpt | xargs -r bash -c '</dev/tty ${PAGER:-less}           +\${0}g \$1'"
+	--bind="F4:execute:echo {1} | $glnpt | xargs -r bash -c '</dev/tty ${VISUAL:-${EDITOR:-vi}} +\${0}  \$1'"
+	--bind="change:reload:rg --color=always --line-number {q}"
+	--bind="ctrl-m:trigger:F4"
+	--bind="ctrl-x:become(cat {+f1} | $gpath | sort -u)"
+	--bind="start:change-query(${1:-})"
+	--footer='F3:view F4:edit ctrl-x:take | ctrl-a:all alt-p:diff'
+	--phony
+	--preview="echo {1} | $gpath | xargs -r colored --color=always"
+	--prompt='grep > '
+	--query="⁉"
+	--reverse
+)
+
+echo 'loading...' | fzf-exec-multi "${fzf_args[@]}"

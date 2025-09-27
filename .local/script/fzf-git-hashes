@@ -5,10 +5,8 @@ set -Eeuo pipefail
 CURRENT_SCRIPT="$(basename "$0")"
 export FZF_RELOAD_CMD="${CURRENT_SCRIPT#fzf-} ${*@Q}"
 
-fzf_cmd=(
-	fzf-git-log
+fzf_args=(
 	--bind="ctrl-m:become(grep -o '[[:xdigit:]]\{6,\}' {+f} | xargs -rn1 git pcommit)"
 )
 
-eval "$FZF_RELOAD_CMD" \
-	| "${fzf_cmd[@]}"
+eval "$FZF_RELOAD_CMD" | fzf-git-log "${fzf_args[@]}"

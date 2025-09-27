@@ -2,28 +2,27 @@
 
 set -Eeuo pipefail
 
-script=$(cat <<- 'EO_SCRIPT'
-	say {*STDERR} $_;
-	my ($p, $n, $s) = m/\A(.+\/) (.+?) [.](\d+) (?: (?:pm)? [.]gz)? \z/xx;
-	say {*STDERR} "path:    $p";
-	say {*STDERR} "name:    $n";
-	say {*STDERR} "section: $s";
-	$m1 = '\":nnoremap <buffer> q :quitall<CR>\"';
-	say sprintf(qq{export MANPAGER="nvim +Man! -c $m1"; man -s $s $n}) if $n && $s;
+script=$(cat << 'EO_SCRIPT'
+say {*STDERR} $_;
+my ($p, $n, $s) = m/\A(.+\/) (.+?) [.](\d+) (?: (?:pm)? [.]gz)? \z/xx;
+say {*STDERR} "path:    $p";
+say {*STDERR} "name:    $n";
+say {*STDERR} "section: $s";
+$m1 = '\":nnoremap <buffer> q :quitall<CR>\"';
+say sprintf(qq{export MANPAGER="nvim +Man! -c $m1"; man -s $s $n}) if $n && $s;
 EO_SCRIPT
 )
 
 source "$HOME/.local/lib/shell/fzf.bash"
 
 fzf_args=(
-	--bind="change:reload(q={q}; man -wK --regex \"\$q\" | head -1000)"
-	--bind="ctrl-m:become(echo -n {})"
-	--header-lines=0
-	--phony
-	--preview="echo {} | 2>/dev/null xargs -r man"
-	--prompt="man keyword > "
+    --bind="change:reload(q={q}; man -wK --regex \"\$q\" | head -1000)"
+    --bind="ctrl-m:become(echo -n {})"
+    --phony
+    --preview="echo {} | 2>/dev/null xargs -r man"
+    --prompt="man keyword > "
 )
 
 man -wK --regex "zsh" | head -1000 | fzf-exec "${fzf_args[@]}" \
-	| perl -nlE "$script"                                      \
-	| bash
+    | perl -nlE "$script"                                      \
+    | bash

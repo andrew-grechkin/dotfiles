@@ -49,7 +49,7 @@ fzf_cmd=(
 	--bind="home:preview-top"
 	--bind="page-down:preview-page-down,page-up:preview-page-up"
 	--disabled
-	--header='C-c:exit C-j:dn C-k:up C-x:dump C-y:yank Enter:view Esc:reset pgup,pgdn,home,end'
+	--footer='C-c:exit C-j:dn C-k:up C-x:dump C-y:yank enter:view esc:reset'
 	--preview-window='down:95%:border-top:wrap:nohidden'
 	--preview="perl -ngE $script '$input'; echo; cat '$input'"
 	--print-query

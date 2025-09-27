@@ -69,14 +69,14 @@ if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under conditi
 			--bind="alt-s:become(klipper-item-get {1} | jq -j | secondarycopy)"
 			--bind="ctrl-m:become(klipper-item-get {1} | jq -j | clipcopy)"
 			--bind="ctrl-y:become(klipper-item-get {1} | jq -j | clipcopy)"
-			--header='A-c:clear A-i:inspect A-r:polite Enter:select A-p:preview C-l:reload'
+			--footer='A-c:clear A-i:inspect A-r:polite enter:select | A-p:preview'
 			--preview-window="right:40%:border-left:nowrap:nohidden"
 			--preview="klipper-item-get {1} | jq -j | bat --color always --style plain"
 			--prompt="clipboard history > "
 			--with-nth="2.."
 		)
 
-		"$0" | fzf-exec "${fzf_args[@]}"
+		"$0" | fzf-table "${fzf_args[@]}"
 	else
 		echo $'id_\tbuffer'
 		"$0" -j | jq -r 'to_entries | map([.key, .value]).[] | select(.[1] | test("▨") | not) | @tsv'

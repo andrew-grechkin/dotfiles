@@ -3,5 +3,7 @@
 set -Eeuo pipefail
 
 git-in-repo && {
-	git ls-files -co --exclude-standard
+    git -C "$(git root)" ls-files -co --exclude-standard -z \
+        | sort -z \
+        | paths-rebase0 "$(git rev-parse --show-toplevel)"
 }
