@@ -1,0 +1,117 @@
+# vim: filetype=toml
+
+[tools]
+argc = "latest"
+bats = "latest"
+delta = "latest"
+deno = "latest"
+eza = "latest"
+fzf = "latest"
+jq = "latest"
+neovim = "latest"
+oauth2c = "latest"
+opencode = "latest"
+rg = "latest"
+usage = "latest"
+uv = "latest"
+yq = "latest"
+
+[tools.bat]
+postinstall = '''
+    umask 022
+    mkdir -p $XDG_DATA_HOME/completion $XDG_DATA_HOME/man/man1
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/autocomplete/bat.zsh $XDG_DATA_HOME/completion/_bat
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/*.1 $XDG_DATA_HOME/man/man1
+'''
+version = "latest"
+
+[tools.fd]
+postinstall = '''
+    umask 022
+    mkdir -p $XDG_DATA_HOME/completion $XDG_DATA_HOME/man/man1
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/autocomplete/_* $XDG_DATA_HOME/completion
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/*.1 $XDG_DATA_HOME/man/man1
+'''
+version = "latest"
+
+[tools.gum]
+postinstall = '''
+    umask 022
+    mkdir -p $XDG_DATA_HOME/completion $XDG_DATA_HOME/man/man1
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/completions/gum.zsh $XDG_DATA_HOME/completion/_gum
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/manpages/*.1.gz $XDG_DATA_HOME/man/man1
+'''
+version = "latest"
+
+[tools.hurl]
+postinstall = '''
+    umask 022
+    mkdir -p $XDG_DATA_HOME/completion $XDG_DATA_HOME/man/man1
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/completions/_hurl* $XDG_DATA_HOME/completion
+'''
+version = "latest"
+
+[tools.hwatch]
+postinstall = '''
+    umask 022
+    mkdir -p $XDG_DATA_HOME/completion $XDG_DATA_HOME/man/man1
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/completion/zsh/* $XDG_DATA_HOME/completion
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/man/* $XDG_DATA_HOME/man/man1
+'''
+version = "latest"
+
+[tools.just]
+postinstall = '''
+    umask 022
+    mkdir -p $XDG_DATA_HOME/completion $XDG_DATA_HOME/man/man1
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/completions/just.zsh $XDG_DATA_HOME/completion/_just
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/*.1 $XDG_DATA_HOME/man/man1
+'''
+version = "latest"
+
+[tools.node]
+postinstall = '''
+    umask 022
+    echo "> installing global NPM modules" >&2
+    npm install -g pnpm yarn
+    npm install -g @anthropic-ai/claude-code
+'''
+version = "24.11.1"
+
+[tools.perl]
+postinstall = '''
+    umask 022
+    cd $HOME/.local/lib
+    echo "> installing perl modules from: $HOME/.local/lib/mise-perl-global.rc" >&2
+    source mise-perl-global.rc
+'''
+version = "5.42.0.0"
+
+[tools.ruby]
+postinstall = '''
+    umask 022
+    echo "installing ruby gems" >&2
+    gem update --system
+    gem install rails
+'''
+version = "3.4.6"
+
+[tools.step]
+postinstall = '''
+    umask 022
+    mkdir -p $XDG_DATA_HOME/completion $XDG_DATA_HOME/man/man1
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/autocomplete/zsh_autocomplete $XDG_DATA_HOME/completion/_step
+'''
+version = "latest"
+
+[tools.xh]
+postinstall = '''
+    umask 022
+    mkdir -p $XDG_DATA_HOME/completion $XDG_DATA_HOME/man/man1
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/completions/_xh $XDG_DATA_HOME/completion/
+    ln -fs $MISE_TOOL_INSTALL_PATH/**/doc/*.1 $XDG_DATA_HOME/man/man1
+'''
+version = "latest"
+
+[settings]
+idiomatic_version_file_enable_tools = ["ruby"]

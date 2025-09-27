@@ -1,0 +1,119 @@
+#!/usr/bin/env -S just --one --unstable --justfile
+
+# https://just.systems/man/en/
+
+set export
+export fzf-run-reload := require('fzf-run-reload')
+export fzf-table-multi := require('fzf-table-multi')
+export json2table := require('json2table')
+export this := justfile()
+export tui := 'auto'
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+# Run TUI if interactive, otherwise print static view
+[private]
+default:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        "$this" controller
+    else
+        "$this" view
+    fi
+
+# Print help
+[script("/usr/bin/env", "-S", "colored-md")]
+help:
+    # ABSTRACT
+    Interactive TUI for managing tools and plugins with mise
+
+    # DESCRIPTION
+    `menu-mise` provides a unified, interactive interface for managing the entire lifecycle of your development tools
+    with the `mise` (formerly `rtx`) version manager.
+
+    It solves the problem of running multiple `mise` commands to see what's available, what's installed, and which
+    versions are active. It combines all this information into a single, searchable, and actionable dashboard.
+
+    ## Key Features
+
+    * **Unified View:** Merges the output of `mise search` and `mise ls` to show all available plugins, which
+      versions are installed, and which one is currently active, all in a single list.
+    * **Full Lifecycle Management:** Provides intuitive key bindings to install, uninstall, upgrade, and set global
+      versions of tools directly from the TUI.
+    * **Discoverability:** The interactive preview shows all available remote versions for a tool, making it easy to
+      choose which one to install.
+    * **Clean & Composable:** Follows the three-mode pattern, allowing it to be used as an interactive TUI, a static
+      table generator for scripts, or a pure JSON data source.
+
+# => MVC ---------------------------------------------------------------------------------------------------------- {{{1
+
+# Generate a unified JSON list of all available and installed mise tools
+model:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    mise search --no-header \
+        | perl -CALS -x -ln <("$this" merge-mise-data) <(mise ls --json --installed)
+
+# Print available and installed tools as a formatted and colorized table
+view:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq_fields=(
+        '_id;\(.name)'
+        '_url;\(.url)'
+        'name;\(if .installed then "" else "${FG[silver]}" end + .name)${FX[reset]}'
+        'active;\(if .active then "active" else "" end);yellow'
+        'version;\(if .version then .version else "" end);cyan'
+        'description;\(.description)'
+    )
+    "$this" model | json2table 'sort_by((.version | not), (.active | not), .name)' "${jq_fields[@]}"
+
+# Display the interactive TUI for managing mise tools
+controller:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    export FZF_RELOAD_CMD="${this@Q} view"
+    fzf_args=(
+        --bind="alt-A:execute(fzf-run-reload -ft 1 -- mise use -g {+1})"
+        --bind="alt-R:execute( { echo -n mise remove -g\ ; paste -d @ {+f1} {+f5} | xargs -r; } | fzf-run-reload -ft 1)"
+        --bind="alt-U:execute(fzf-run-reload -ft 1 -- mise upgrade {+1})"
+        --footer="A-A:install A-R:remove A-U:upgrade | A-b:browse A-p:preview"
+        --preview-window="right:50%:border-left:wrap:nohidden,<55(hidden)"
+        --preview="echo name: {1}; echo description: {-1}; echo url: {2}; echo; echo versions:; mise ls-remote -q {1} | tac"
+        --prompt="mise > "
+        --tiebreak="begin,chunk"
+        --with-nth="3.."
+    )
+    "$this" view | fzf-table-multi "${fzf_args[@]}"
+
+# => helper ------------------------------------------------------------------------------------------------------- {{{1
+
+# Merge `mise search` and `mise ls` output into a single JSON stream
+[private, no-cd]
+merge-mise-data:
+    #!/usr/bin/env -S cat
+    #!/usr/bin/env -S perl
+    use v5.40;
+
+    use Cpanel::JSON::XS;
+
+    use constant {
+        JSON_ONE_LINE => Cpanel::JSON::XS->new->canonical->utf8(0)->unblessed_bool([1])->pretty(0)->indent(0)
+    };
+
+    our ($installed, @r);
+    INIT {
+        $installed = JSON_ONE_LINE()->decode(do {local $/ = undef; <<>>})
+    }
+
+    my @F           = split m/\s+/, $_, 2;
+    my $url         = ($F[1] =~ m{(https://\S+)}x && $1) || '';
+    my $description = $F[1] =~ s{(\s+https://\S+)}{}rx;
+    my %line        = (name => $F[0], url => $url, description => $description);
+
+    if (exists $installed->{$F[0]}) {
+        push @r, map { {%line, $_->%{qw(active version)}} } $installed->{$F[0]}->@*;
+    } else {
+        push @r, {%line};
+    }
+
+    END {
+        say JSON_ONE_LINE()->encode(\@r)
+    }
