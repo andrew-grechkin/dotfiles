@@ -1,0 +1,5 @@
+# vim: filetype=toml
+
+[settings]
+ceiling_paths = ["{{ env.HOME }}"]
+ignored_config_paths = ["/media", "/tmp", "/var", "{{ env.HOME }}/.local"]

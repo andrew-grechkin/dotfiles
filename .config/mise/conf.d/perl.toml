@@ -1,0 +1,8 @@
+# vim: filetype=toml
+
+[tools.perl]
+postinstall = '''
+    exec >&2
+    cd $HOME/.local/lib && source ./default-perl-install-modules.rc
+'''
+version = "5.44.0.0"
