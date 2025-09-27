@@ -266,9 +266,12 @@ filextype {*.ps,*.eps,*.ps.gz}
 
 " => File associations: Video ------------------------------------------------------------------------------------- {{{1
 
+filextype {{*fuse*}}<video/*>
+	\ {Video play using mpv}
+	\ mpv --title="force-focus" %c:p %i &,
 filextype <video/*>
 	\ {Video play using mpv}
-	\ mpv %c:p %i &,
+	\ mpv --title="force-focus" %c:p %i &,
 filetype <video/*>
 	\ {Video play using mpv True color terminal}
 	\ mpv %c:p --really-quiet --ao=pulse --hwdec=no -vo tct 2>/dev/null,
@@ -336,7 +339,7 @@ fileviewer <text/html>,{*.html,*.htm}
 
 filextype <application/x-mimearchive>,{*.mhtml,*.mht}
 	\ {Open with default browser}
-	\ python3 -mwebbrowser %c:p %i &,
+	\ git web--browse %c:p %i &,
 filetype <application/x-mimearchive>,{*.mhtml,*.mht}
 	\ {Extract}
 	\ mhtml-parse %c:p,
@@ -378,7 +381,7 @@ fileviewer <application/vnd.sqlite3>{*.sqlar,.*.sqlar}
 
 filetype <application/vnd.sqlite3>
 	\ {View}
-	\ sqlite-utils rows %c:p "$(sqlite-tables %c:p | head -1)" --nl | json2tsv | tsv-show | less --header=1,
+	\ sqlite-utils rows %c:p "$(sqlite-tables %c:p | head -1)" --nl | json2tsv | tsv-show -pc,
 	\ {Browse}
 	\ datasette %c:p -o,
 	\ {Dump}
@@ -417,7 +420,7 @@ filetype {CMakeLists.txt}
 
 filetype <application/x-ndjson>,{*.jsonl}
 	\ {View}
-	\ json2tsv %c:p | tsv-show --paging=always,
+	\ json2tsv %c:p | tsv-show -pc,
 	\ {Convert -> sqlite}
 	\ json2sqlite %c:p,
 	\ {Clean json}
@@ -451,7 +454,7 @@ filetype <application/yaml>
 
 filetype <text/tab-separated-values>
 	\ {View}
-	\ tsv-show %c:p | less --header=1,
+	\ tsv-show -pc %c:p,
 	\ {Edit}
 	\ vi -c "set filetype=csv" %c:p,
 	\ {Repl jq}
@@ -477,11 +480,8 @@ filetype <text/plain>/[.]sha512sum$/
 	\ {Check SHA512 hash sum}
 	\ sha512sum -c %c:p %m,
 
-fileviewer {*.pem,*.crt}
-	\ openssl x509 -inform PEM -text -in %c:p
-
-fileviewer {*.key}
-	\ openssl rsa -check -text -noout -in %c:p || openssl ec -check -text -noout -in %c:p
+fileviewer <application/pkix-cert>,{*.pem,*.crt}
+	\ openssl verify -- %c:p; openssl x509 -inform PEM -text -noout -in %c:p
 
 fileviewer {*.csr,*.req}
 	\ openssl req -verify -text -noout -in %c:p
@@ -491,7 +491,7 @@ filetype {*.key}
 	\ certtool --to-p12 --empty-password --load-privkey %c:p --outfile %c:r.p12,
 
 fileviewer {*.key}
-	\ openssl x509 -inform PEM -in %c:p -text
+	\ openssl pkey -check -text -noout -in %c:p
 
 filetype {*.p12}
 	\ {Convert to PEM}
@@ -699,9 +699,9 @@ filetype {cryfs.config}
 	\ {Mount with cryfs}
 	\ FUSE_MOUNT2|cryfs -c %SOURCE_FILE %d %DESTINATION_DIR %FOREGROUND,
 
-filetype {*.encfs}
+filetype {.encfs6.xml}
 	\ {Mount with encfs}
-	\ FUSE_MOUNT2|encfs %PARAM %DESTINATION_DIR %FOREGROUND,
+	\ FUSE_MOUNT2|encfs-mount %SOURCE_FILE %DESTINATION_DIR,
 
 " => File associations: all files --------------------------------------------------------------------------------- {{{1
 
