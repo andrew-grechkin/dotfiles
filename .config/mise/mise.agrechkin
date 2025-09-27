@@ -1,0 +1,17 @@
+# vim: filetype=toml
+
+# [settings.gitnub]
+# use_git_credentials = true
+
+# mise is fucking terrible to the upstream
+# even if auto_install and tools are disabled it will torture github every time it's executed for every tool
+# with github or vfox backend. Therefore every tools with github backend explicitly set the version.
+# backend can be checked here: https://mise-versions.jdx.dev
+
+[tools]
+deno = "latest"
+k3d = "latest"
+k9s = "latest"
+uv = "latest"
+"go:github.com/andrew-grechkin/format-yaml" = "latest"
+"go:github.com/andrew-grechkin/update-yaml" = "latest"
