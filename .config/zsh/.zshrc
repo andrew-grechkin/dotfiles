@@ -48,7 +48,7 @@ DIRSTACK['size']=20
 
 # https://zsh.sourceforge.io/Doc/Release/Completion-System.html#Completion-System
 # https://thevaluable.dev/zsh-completion-guide-examples/
-fpath=("$ZDOTDIR/completion" "${fpath[@]}")
+fpath=("$ZDOTDIR/completion" "$XDG_DATA_HOME/completion" "${fpath[@]}")
 
 FILES+=("$ZDOTDIR/lib"/*.zsh(N))
 FILES+=("$ZDOTDIR/lib"/**/*.plugin.zsh(N))

@@ -7,6 +7,7 @@ echo 'Executing setup'
 mkdir -p ~/.cache/bin
 mkdir -p ~/.config/fontconfig
 mkdir -p ~/.config/environment.d
+mkdir -p ~/.config/mise
 mkdir -p ~/.local/{bin,lib,scripts,scripts-ext,share,state}
 
 SCRIPT=$(realpath -s "$0")
@@ -39,6 +40,7 @@ ln -srf .config/fzfrc                                        ~/.config/fzfrc
 ln -srf .config/git                                          ~/.config/
 ln -srf .config/just                                         ~/.config/
 ln -srf .config/luarocks                                     ~/.config/
+ln -srf .config/mise/config                                  ~/.config/mise/config.toml
 ln -srf .config/mpv                                          ~/.config/
 ln -srf .config/picom.conf                                   ~/.config/
 ln -srf .config/ripgreprc                                    ~/.config/
