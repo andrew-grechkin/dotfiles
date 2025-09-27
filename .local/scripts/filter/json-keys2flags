@@ -1,0 +1,3 @@
+#!/usr/bin/env -S jq -r --from-file
+
+to_entries | sort_by(.value | not)[] | if (.value) then "☑️ \(.key)" else "\(.key)" end

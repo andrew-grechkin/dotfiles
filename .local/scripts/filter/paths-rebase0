@@ -1,0 +1,20 @@
+#!/usr/bin/env -S perl
+
+# ABSTRACT: rebase paths from a source to a destination directory
+
+use v5.36;
+use English               qw(-no_match_vars);
+use File::Spec::Functions qw(abs2rel rel2abs);
+
+die "invalid args: @ARGV\n" if @ARGV > 2;
+my @to   = ($ARGV[1] || ());
+my @from = ($ARGV[0] || ());
+local @ARGV = ();
+
+local $INPUT_RECORD_SEPARATOR  = "\0";
+local $OUTPUT_RECORD_SEPARATOR = "\0";
+
+while (<<>>) {
+    chomp;
+    print abs2rel(rel2abs($_, @from), @to);
+}
