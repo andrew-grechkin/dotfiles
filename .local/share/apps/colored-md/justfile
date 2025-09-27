@@ -1,0 +1,4 @@
+#!/usr/bin/env -S just --one --justfile
+
+build:
+    go build -o $XDG_CACHE_HOME/go/bin/
