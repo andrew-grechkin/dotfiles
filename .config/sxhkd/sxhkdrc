@@ -128,6 +128,8 @@ bracketleft + super
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pacman"
 bracketleft + alt + super
 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pkg-search"
+bracketright + super
+	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/scripts/tui/menu-mise"
 
 a + alt + super
 	wezterm start --always-new-process --class 'TermFloating' just -g audio
