@@ -1,0 +1,32 @@
+#!/usr/bin/env -S bash -Eeuo pipefail
+
+#MISE description="Build and install vifm from https://github.com/vifm/vifm into ~/.local"
+#MISE sources=[]
+#USAGE flag "--ref <ref>" help="Git ref (tag/branch/commit) to build" default="master"
+#USAGE flag "--prefix <prefix>" help="Install prefix" default="$HOME/.local"
+#USAGE flag "--jobs <jobs>" help="Parallel build jobs" default="4"
+
+# Build deps (Arch): pacman -S --needed autoconf automake pkgconf ncurses file perl
+# Optional runtime: file (libmagic), perl (for some helpers)
+
+ref=${usage_ref:-master}
+prefix=${usage_prefix:-$HOME/.local}
+jobs=${usage_jobs:-4}
+
+src=${XDG_CACHE_HOME:-$HOME/.cache}/src/vifm
+
+if [[ -d $src/.git ]]; then
+    git -C "$src" fetch --tags --prune origin
+else
+    mkdir -p "$(dirname "$src")"
+    git clone https://github.com/vifm/vifm "$src"
+fi
+
+git -C "$src" checkout -f "$ref"
+git -C "$src" clean -fdx
+
+cd "$src"
+autoreconf -fi
+./configure --prefix="$prefix"
+make -j"$jobs"
+make install

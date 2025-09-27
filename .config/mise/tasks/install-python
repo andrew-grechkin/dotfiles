@@ -1,10 +1,7 @@
-#!/usr/bin/env bash
+#!/usr/bin/env -S bash -Eeuo pipefail
 
-set -Eo pipefail
-
-UV_PYTHON="${UV_PYTHON:-3.13}"
-
-export UV_PYTHON
+#MISE description="Install python utilities"
+#MISE sources=[]
 
 uv python install
 uv python pin --no-project
