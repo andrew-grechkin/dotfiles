@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+# ABSTRACT: print command args as a text line quoted when necessary (shell ready)
+
+quote-if-necessary() {
+    local escaped
+    escaped=$(printf '%q' "$1")
+
+    if [[ "$1" == "$escaped" ]]; then
+        printf '%s' "$1"
+    else
+        printf '%s' "${1@Q}"
+    fi
+}
+
+while [[ -n "$*" ]]; do
+    arg="$1"
+    shift
+    quote-if-necessary "$arg"
+    [[ -n "$*" ]] && printf ' '
+done
+
+echo

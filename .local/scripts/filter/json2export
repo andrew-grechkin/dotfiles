@@ -1,0 +1,10 @@
+#!/usr/bin/env -S jq -r --null-input --from-file
+
+# ABSTRACT: convert hash key-value pairs to shell (export) environment variables
+
+[inputs | to_entries[]] | sort_by(.key)[]
+| if ($ARGS.named.export != null) then
+    "export \(.key | ascii_upcase)=\(.value | @sh)"
+else
+    "\(.key)=\(.value | @sh)"
+end

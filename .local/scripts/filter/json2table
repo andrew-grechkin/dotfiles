@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+source "$HOME/.local/lib/shell/data-processing.bash"
+
+json-array-to-tsv "$@"
