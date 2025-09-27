@@ -25,8 +25,27 @@ function disable-proxy() {
 	export no_proxy="*"
 }
 
+# => docker ------------------------------------------------------------------------------------------------------- {{{1
+
+function dw() {
+	image="registry.gitlab.com/andrew-grechkin/dotfiles/scripts"
+	name="$(basename "$image")"
+
+	[[ -t 0 && -t 1 ]] && args=(-it) || args=(-i)
+	# shellcheck disable=SC2016
+	args+=(
+		--rm
+		-e TERM -e USER -e GITLAB_TOKEN --env-merge 'PATH=${PATH}:/mnt'
+		-h "$name"
+		-v '.:/mnt:ro'
+		"$image"
+	)
+
+	command docker run "${args[@]}" "$@"
+}
+
 # => environment -------------------------------------------------------------------------------------------------- {{{1
 
 function remove-all-environment() {
-	unset $(env | cut -d= -f1 | grep -v '^PATH$' | grep -v '^HOME$' | grep -v '^PWD$' | grep -v '^USER$' | grep -v '^TERM$')
+	unset "$(env | cut -d= -f1 | grep -v '^PATH$' | grep -v '^HOME$' | grep -v '^PWD$' | grep -v '^USER$' | grep -v '^TERM$')"
 }

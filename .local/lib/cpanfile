@@ -24,13 +24,9 @@ requires "Syntax::Operator::Eqr";
 requires "Syntax::Operator::Equ";
 requires "Syntax::Operator::In";
 requires "Syntax::Operator::Is";
+requires "Text::CSV";
 requires "Time::Moment";
 # requires "YAML::XS"; # my repo has fixes for sequence indentation
-
-requires "Chipcard::PCSC::Card"; # for pcsc_scan, may fail
-
-requires "Neovim::Ext";
-requires "Text::CSV";
 
 on 'develop' => sub {
     requires "Devel::Trace";
@@ -45,6 +41,11 @@ feature 'develop' => sub {
     requires "Parallel::ForkManager"; # for Code::TidyAll
     requires "Sub::StrictDecl";
     requires "Test2::Harness";
+};
+
+feature 'system' => sub {
+    requires "Chipcard::PCSC::Card"; # for pcsc_scan, may fail
+    requires "Neovim::Ext";
 };
 
 feature 'mojo-extras' => sub {

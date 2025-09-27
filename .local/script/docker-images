@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+# test
 set -Eeuo pipefail
 
 args=$(getopt --name="$0" --options 'jt' --longoptions 'json,tui' -- "$@")
@@ -23,37 +23,39 @@ elif [[ -t 1 || "${tui:-}" == "1" ]]; then
 	source "$HOME/.local/lib/shell/fzf.bash"
 
 	fzf_args=(
-		--bind="alt-E:execute(docker run -it --rm -h \$(basename {3}) --entrypoint sh {-1})"
+		--bind="alt-E:execute(docker run -it --rm -h \$(basename {2}) --entrypoint sh {-1})"
+		--bind="alt-H:execute(jfrog tags {2})"
 		--bind="alt-I:execute(docker inspect {1} | jq-repl)"
-		--bind="alt-R:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -t 1 -- docker rmi -f {+1})"
-		--bind="alt-S:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -t 1 -- docker push {+-1})"
-		--bind="alt-b:execute-silent(true)"
+		--bind="alt-R:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -t 1 -- docker rmi -f {+-1})"
+		--bind="alt-b:execute(docker run -it --rm -h \$(basename {2}) --entrypoint bash {-1})"
 		--bind="alt-c:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -t 1 -- docker-clean)"
 		--bind="alt-g:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -- docker pull {+-1})"
+		--bind="alt-s:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -t 1 -- docker push {+-1})"
 		--bind="alt-i:execute(docker inspect {1} | json-pretty -f {-1})"
-		--bind="ctrl-e:execute(docker run -it --rm -h \$(basename {3}) {-1})"
-		--bind="ctrl-m:execute(docker run -it --rm -h \$(basename {3}) --entrypoint bash {-1})"
+		--bind="ctrl-b:execute(docker run -it --rm -h \$(basename {2}) --entrypoint sh {-1})"
+		--bind="ctrl-e:execute(docker run -it --rm -h \$(basename {2}) {-1})"
+		--bind="ctrl-m:become(cat {+f-1})"
 		--bind="ctrl-p:execute-silent(echo 'read -r -p image\ to\ pull:\  image; docker pull \$image' | fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -ft 1)"
 		--bind="ctrl-y:execute-silent(echo -n {+-1} | clipcopy)"
-		--header="A-R:remove A-S:push A-I:jq-repl A-c:clear A-g:pull A-i:inspect C-e:run C-p:pull Enter:bash $DEFAULT_FZF_KEYS"
+		--footer="A-R:remove A-H:history A-I:jq-repl A-b:bash A-c:clear A-g:pull A-i:inspect A-s:push C-b:sh C-e:run C-p:pull"
 		--preview="docker inspect {-1} | json-pretty -C -f {-1}"
 		--prompt="docker images > "
 		--with-nth="..-2"
 	)
 
-	"${fetcher[@]}" | fzf-exec-multi "${fzf_args[@]}"
+	"${fetcher[@]}" | fzf-table-multi "${fzf_args[@]}"
 else
 	source "$HOME/.local/lib/shell/data-processing.bash"
 
 	jq_fields=(
 		"id;\(.id | .[0:10]);olive"
-		"use;\(.containers)"
 		"repository;\(.repository);teal"
 		"tag;\(.tag)"
-		"size;\(.size | if type == \"string\" then . else \"\((. / (1024 * 1024)) | round) ${FG[gray]}MiB\" end);silver"
-		"created;\(if .createdat then .createdat else .created | todateiso8601 end)"
-		"since;\(.createdsince // \"\")"
+		"use;\(.containers);silver"
+		"size;\(.size | if type == \"string\" then . else \"\((. / (1024 * 1024)) | round) ${FG[gray]}MiB\" end);gray"
+		"created;\(if .createdat then .createdat else .created | todateiso8601 end);green"
+		# "since;\(.createdsince // \"\")"
 		"path;\(.repository):\(.tag)"
 	)
-	"${fetcher[@]}" -j | json-array-to-tsv 'sort_by(.repository == "<none>", .repository)' "${jq_fields[@]}"
+	"${fetcher[@]}" -j | json-array-to-tsv 'sort_by(.repository == "<none>", .repository, .tag)' "${jq_fields[@]}"
 fi
