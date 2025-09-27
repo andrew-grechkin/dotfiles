@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+file=${1:-$XDG_RUNTIME_DIR/test.rb}
+
+[[ -r "$file" ]] || {
+    {
+        echo '#!/usr/bin/env -S ruby'
+    } >> "$file"
+
+    chmod a+x "$file"
+}
+
+"${VISUAL:-vim}" "$file"

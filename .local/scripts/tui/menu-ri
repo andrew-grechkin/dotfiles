@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC2016
+
+set -Eeuo pipefail
+
+[[ -x "$(command -v argc)" ]] || {
+    echo "'argc' helper is required. Please install from https://github.com/sigoden/argc" >&2
+    exit 2
+}
+
+# @describe Quick access to ruby doc
+
+# @meta version 1.0.0
+# @meta combine-shorts
+# @meta require-tools fzf-table,jq
+
+# @flag -j --json Output JSON
+
+eval "$(argc --argc-eval "$0" "$@")"
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+function ri-items-get() {
+    ri --all -l | jq -nR '[inputs]'
+}
+
+if [[ -n "${argc_json:-}" ]]; then
+    ri-items-get
+elif [[ -t 1 ]]; then
+    export FZF_RELOAD_CMD="$0"
+
+    fzf_args=(
+        --bind='alt-g:execute(if v=$(gum input --header="Custom term" --value={1}"."); then echo "$v" | xargs -r ri -f markdown | GLAMOUR_WIDTH=$FZF_COLUMNS colored-md | ${PAGER:-less}; fi)'
+        --bind='alt-i:transform(echo "trigger(ctrl-m)")'
+        --bind='ctrl-m:execute(ri -f markdown {1} | GLAMOUR_WIDTH=$FZF_COLUMNS colored-md | ${PAGER:-less})'
+        --footer='alt-g:input enter:inspect | A-b:browse A-p:preview'
+        --preview-window='right:65%:border-left:wrap:nohidden,<55(hidden)'
+        --preview='ri -f markdown {1} | GLAMOUR_WIDTH="$((FZF_PREVIEW_COLUMNS - 1))" colored-md'
+        --prompt='ruby > '
+        --with-nth='3..'
+    )
+    "$0" | fzf-table "${fzf_args[@]}"
+else
+    source "$HOME/.local/lib/shell/data-processing.bash"
+
+    jq_fields=(
+        '_id;\(.)'
+        '!_url!https://docs.ruby-lang.org/en/master/\(gsub("::"; "/")).html'
+        'topic;\(.)'
+    )
+
+    "$0" -j | json-array-to-tsv 'sort' "${jq_fields[@]}"
+fi

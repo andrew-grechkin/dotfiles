@@ -7,11 +7,13 @@ indent_size              = 4
 indent_style             = space
 insert_final_newline     = true
 max_line_length          = 120
+spelling_language        = en
 tab_width                = 4
 trim_trailing_whitespace = true
 
 [Makefile]
 indent_style = tab
 
-[*.json,*.yaml]
+[*.json,*.rb,*.yaml]
 indent_size = 2
+tab_width   = 2
