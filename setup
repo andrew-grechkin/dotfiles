@@ -7,6 +7,7 @@ echo 'Executing setup'
 mkdir -p ~/.cache/bin
 mkdir -p ~/.config/fontconfig
 mkdir -p ~/.config/environment.d
+mkdir -p ~/.config/mise
 mkdir -p ~/.local/{bin,lib,scripts,scripts-ext,share,state}
 
 SCRIPT=$(realpath -s "$0")
@@ -75,6 +76,10 @@ if [[ "$USER" == "agrechkin" ]]; then
     # ln -srf .config/lazygit                                  ~/.config/
     ln -srf .config/luaformatter                             ~/.config/
     ln -srf .config/markdownlint.yaml                        ~/.config/
+    ln -srf .config/mise/mise."$USER"                        ~/.config/mise/mise."$USER".toml
+    ln -srf .config/mise/mise."$USER".lock                   ~/.config/mise/
+    ln -srf .config/mise/mise.experiment                     ~/.config/mise/mise.experiment.toml
+    ln -srf .config/mise/mise.experiment.lock                ~/.config/mise/
     ln -srf .config/nvim                                     ~/.config/
     ln -srf .config/perlcriticrc                             ~/.config/
     ln -srf .config/perlcriticrc                             ~/.perlcriticrc
@@ -106,6 +111,11 @@ if [[ "$USER" == "agrechkin" ]]; then
 else
     ln -srfn .config/vim                                     ~/.config/nvim
 fi
+
+ln -srf .config/mise/conf.d                                  ~/.config/mise/
+ln -srf .config/mise/mise                                    ~/.config/mise/mise.toml
+ln -srf .config/mise/mise.lock                               ~/.config/mise/
+ln -srf .config/mise/miserc                                  ~/.config/mise/miserc.toml
 
 [[ -f "$HOME/.config/npm" ]] || {
     command cp -rf ".config/npm"                             ~/.config/
