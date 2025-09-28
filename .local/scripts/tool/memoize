@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+[[ -x "$(command -v argc)" ]] || {
+    echo "'argc' helper command is required, install from https://github.com/sigoden/argc" >&2
+    exit 2
+}
+
+# @describe ABSTRACT:
+#   Executes a command and caches it's stdout
+#
+# SYNOPSIS:
+#   memoize -- find /usr/lib/modules -type f -exec sha256sum {} +
+#
+# LICENSE:
+#   GPL-2.0-or-later
+#   🄯 2025 Andrew Grechkin
+#
+# The cache is stored by default in $XDG_RUNTIME_DIR/memoize or /tmp/memoize
+# Don't use memoize for already fast operations unless there is some hidden cost you'd like to avoid
+# Work of argc command and checking cache operation are also taking time, thus using memoize to increase operation
+# speed have sense only if operation execution takes longer than ~100 ms
+
+# @meta version 1.1.0
+# @meta combine-shorts
+# @meta require-tools sha256sum
+
+# @arg    command+                            Command to execute
+# @env    MEMOIZE_DIR=`_get_dir`              Provide the dir to store cache
+# @env    MEMOIZE_FILENAME=`_get_filename`    Provide the name of the cache file
+# @env    MEMOIZE_TTL=1day                    Provide the default TTL
+# @flag   -c --cache-only                     Fail if there is no cache
+# @flag   -e --empty                          Allow empty cache
+# @flag   -v --verbose                        Verbose mode
+# @flag   -w --workdir                        Cache depends on current workdir
+# @option -f --file                           Explicitly provide cache file (label is ignored)
+# @option -l --label                          Distinguish commands if all other parameters are similar
+# @option -t --ttl                            TTL of the cache
+
+function _get_dir() {
+    echo "${XDG_RUNTIME_DIR:-/tmp}/memoize"
+}
+
+function _get_filename() {
+    # this explicit vars extraction is necessary because this function executed before main eval exposes them
+    eval "$(base64 -d <<< "$ARGC_VARS")"
+
+    {
+        [[ -z "${argc_label:-}" ]]   || echo "$argc_label"
+        [[ -z "${argc_workdir:-}" ]] || echo "$PWD"
+        echo "${argc__positionals[*]:-}"
+    } | sha256sum | { read -r sha _; echo "$sha"; }
+}
+
+eval "$(argc --argc-eval "$0" "$@")"
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+cache_file="${argc_file:-"$MEMOIZE_DIR/$MEMOIZE_FILENAME.stdout"}"
+
+function log() {
+    [[ -z "${argc_verbose:-}" ]] || echo "$@" >&2
+}
+
+function print_cache() {
+    mkdir -p "$MEMOIZE_DIR"
+
+    ref_file="$(mktemp --suffix="-memoize" --tmpdir="$MEMOIZE_DIR")"
+    trap 'rm -f "$ref_file"' EXIT
+
+    touch --date="-${argc_ttl:-$MEMOIZE_TTL}" "$ref_file"
+
+    if [[ -r "$cache_file" ]] && [[ -s "$cache_file" || -n "${argc_empty:-}" ]] && [[ "$cache_file" -nt "$ref_file" ]]; then
+        # explicitly close stdin as soon as possible
+        exec 0<&-
+        # explicitly remove ref file (exec will override trap)
+        rm -f "$ref_file"
+
+        log "fresh cache is found with size: $(stat -c %s "$cache_file")"
+        exec cat "$cache_file"
+    fi
+
+    return 1
+}
+
+function execute_command() {
+    [[ -z "${argc_cache_only:-}" ]] || {
+        log 'cache is not found'
+        exit 2
+    }
+
+    if [[ -z "${argc_file:-}" ]]; then
+        {
+            # shellcheck disable=SC2154
+            echo "cd ${PWD@Q} && ${argc__args[*]@Q}"
+        } > "$MEMOIZE_DIR/$MEMOIZE_FILENAME.sh"
+    fi
+
+    if "${argc__positionals[@]}" | tee "${cache_file}.memoize"; then
+        mv -f "${cache_file}.memoize" "$cache_file"
+    else
+        rm -f "${cache_file}.memoize"
+    fi
+}
+
+print_cache || execute_command
