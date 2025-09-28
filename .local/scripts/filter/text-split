@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+export DELIMITER="${1?delimiter must be provided}"
+shift
+exec perl -lnE '@F=split(m/$ENV{DELIMITER}/); say foreach @F' "$@"
