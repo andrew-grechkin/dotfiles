@@ -1,0 +1,54 @@
+#!/usr/bin/env ruby
+
+require "optparse"
+require "json"
+require "erb"
+require "ostruct"
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: erb2text [options] json_file1 [json_file2 ...]"
+
+  opts.on("-d", "--debug", "Enable debug mode (sets $DEBUG to true)") do
+    options[:debug] = true
+  end
+
+  opts.on("-p", "--prepend TEMPLATE", "Prepend a string to the main template") do |p|
+    options[:prepend] = p
+  end
+
+  opts.on("-h", "--help", "Prints this help") do
+    puts opts
+    exit
+  end
+end.parse!
+
+$DEBUG = true if options[:debug]
+
+if STDIN.tty? && !$stdin_if_file_is_terminal_is_not_provided
+  puts "You need to provide an ERB template to STDIN"
+  puts "Read more: https://ruby-doc.org/stdlib/libdoc/erb/rdoc/ERB.html"
+  exit 1
+end
+
+stash = {}
+ARGV.each do |file_path|
+  begin
+    content = File.read(file_path)
+    json_data = JSON.parse(content)
+    stash.merge!(json_data)
+  rescue => e
+    STDERR.puts "Error processing file #{file_path}: #{e.message}"
+    exit 1
+  end
+end
+
+template = STDIN.read
+template.prepend(options[:prepend]) if options[:prepend]
+
+begin
+  print ERB.new(template, trim_mode: "-").result_with_hash(stash)
+rescue => e
+  STDERR.puts "Error rendering template: #{e.message}"
+  exit 1
+end
