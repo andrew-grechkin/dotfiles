@@ -246,8 +246,8 @@ fileviewer <application/epub*,application/x-mobipocket-ebook>,{*.epub,*.mobi}
 	\ mutool draw -F text %c:p,
 
 filetype <text/markdown>,{*.md,*.mkd,*.Rmd,*.mdwiki}
-	\ {View in glow}
-	\ glow -p %c:p,
+	\ {View in color}
+	\ cat %c:p | colored-md | $PAGER,
 filextype <text/markdown>,{*.md,*.mkd,*.Rmd,*.mdwiki}
 	\ {Render to pdf and view}
 	\ tsp md-render-view %c:p %i &,
