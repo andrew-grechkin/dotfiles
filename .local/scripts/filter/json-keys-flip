@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+file="${1?JSON file must be provided}"
+shift
+
+for word in "$@"; do
+    jq --arg word "${word#+}" 'if has($word) then ."\($word)" = (."\($word)" | not) end' "$file" 2>/dev/null \
+        | sponge "$file"
+done
