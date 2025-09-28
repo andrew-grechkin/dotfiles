@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+[[ -x "$(command -v argc)" ]] || {
+    echo "'argc' helper command is required, install from https://github.com/sigoden/argc" >&2
+    exit 2
+}
+
+# @describe Executes a command for each line of stdin and print the same line to stdout
+# Similar to what xargs does but with some additional features (conditional and expression)
+# All output of the command is redirected to stderr or some other file descriptor
+#
+# Example:
+# $ echo $'4\n1\n2\n3' | tap -e 'got: $line' --if '!(( $line <= 2 ))' jq '"\(.) * 100 = \(. * 100)"' | wc -l | tap -e 'cnt: $line'
+
+# @meta version 1.0.0
+# @meta combine-shorts
+
+# @arg    command*                Command to execute
+# @flag   -0 --print0             Force \0 as output line separator
+# @flag   -n --nl                 Force \n as output line separator
+# @option    --if <EXPRESSION>    Print line and run command only if test expression succeeds (returns 0)
+# @option -e --expression='$line' Shell parameter expression to produce amended line
+# @option -i --input-fd=0         File descriptor for reading lines
+# @option -o --output-fd=2        File descriptor for command output
+
+eval "$(argc --argc-eval "$0" "$@")"
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+current_script="$(basename "$0")"
+if [[ "$current_script" =~ 0$ ]]; then
+    IFS=
+    read_args=(-d $'\0')
+    ls='\0'
+else
+    IFS=$'\n'
+    ls='\n'
+fi
+
+if [[ -n "${argc_input_fd:-0}" ]]; then
+    read_args+=(-u "${argc_input_fd:-0}")
+fi
+
+if [[ -n "${argc_print0:-}" ]]; then
+    ls='\0'
+elif [[ -n "${argc_nl:-}" ]]; then
+    ls='\n'
+fi
+
+while read -r "${read_args[@]}" line || [[ -n "$line" ]]; do
+    if [[ -z "${argc_if:-}" ]] || echo "$line" | eval "$argc_if" &>/dev/null; then
+        # shellcheck disable=SC2154
+        printf '%s'"$ls" "${argc_expression@P}"
+        # shellcheck disable=SC2154
+        if [[ ${#argc__positionals[@]} -ne 0 ]]; then
+            printf '%s' "$line" | "${argc__positionals[@]}" >&"${argc_output_fd:-2}"
+        fi
+    fi
+done
