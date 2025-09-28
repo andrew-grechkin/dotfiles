@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+typeset -A items
+items=(
+    [nvim]="nvim"
+    [AstroNvim]="https://github.com/AstroNvim/template"
+    [Kickstart]="https://github.com/nvim-lua/kickstart.nvim"
+    [LazyVim]="https://github.com/LazyVim/starter"
+    [NvChad]="https://github.com/nvim-lua/kickstart.nvim"
+)
+config=$(printf "%s\n" "${!items[@]}" | fzf --prompt=" Neovim Config  " --height=~50% --layout=reverse --border --exit-0)
+
+if [[ -n "$config" && "$config" != "default" ]]; then
+    [[ -d "$XDG_CONFIG_HOME/$config" ]] || {
+        git clone --depth=1 "${items[$config]}" "$XDG_CONFIG_HOME/$config"
+    }
+
+    export NVIM_APPNAME="$config"
+    unset VIMINIT
+fi
+
+exec nvim "$@"
