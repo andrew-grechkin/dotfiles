@@ -1,17 +1,18 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2016
 
 set -Eeuo pipefail
 
 cd "${1:-/usr/share/doc}"
 
 fzf_cmd=(
-	fzf
-	--bind="enter:execute(glow -p -s dark {})"
-	--no-multi
-	--preview='glow -p -s dark {}'
-	--reverse
+    fzf
+    --bind='ctrl-m:execute(GLAMOUR_WIDTH=$FZF_COLUMNS colored-md < {1} | ${PAGER:-less})'
+    --no-multi
+    --preview='GLAMOUR_WIDTH="$((FZF_PREVIEW_COLUMNS - 1))" colored-md < {1}'
+    --reverse
 )
 
 fd -t f -e md | sort -u      \
-	| grep -Pvi '\blicenses?\b' \
-	| "${fzf_cmd[@]}"
+    | grep -Pvi '\blicenses?\b' \
+    | "${fzf_cmd[@]}"
