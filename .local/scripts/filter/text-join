@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+[[ -x "$(command -v argc)" ]] || {
+    echo "'argc' helper is required. Please install from https://github.com/sigoden/argc" >&2
+    exit 2
+}
+
+# @describe Join text from files or STDIN with a delimiter
+
+# @meta version 1.0.0
+# @meta combine-shorts
+
+# @arg    input*           Input files
+# @flag   -E --no-empty    Ignore empty lines in input
+# @option -d --delimiter=, Delimiter
+
+eval "$(argc --argc-eval "$0" "$@")"
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+export D="${argc_delimiter:-}"
+export N="${argc_no_empty:-}"
+
+# shellcheck disable=SC2154
+exec perl -E '@l=<<>>; chomp @l; say join($ENV{D}, $ENV{N} ? grep length,@l : @l)' "${argc__positionals[@]}"
