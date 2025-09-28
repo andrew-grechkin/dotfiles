@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+pod="${1?pod name must be passed as first arg}"
+file="${2?path to file must be passed as second arg}"
+container="${3:-app}"
+
+if payload="$(kubectl exec -c "$container" "$pod" -- cat "$file" | vipe)"; then
+	kubectl exec -ic "$container" "$pod" -- tee "$file" <<<"$payload"
+fi

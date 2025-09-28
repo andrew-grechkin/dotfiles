@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-
-set -Eeuo pipefail
-
-command hardlinks "$@" \
-	| fzf --multi --bind 'tab:toggle-out,shift-tab:toggle-in'

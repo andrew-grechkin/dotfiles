@@ -1,0 +1,16 @@
+#!/usr/bin/env -S jq --null-input -c --from-file
+
+# for some reason if nothing is passed to while it will print null (maybe jq bug, not sure)
+# that's why the first pair is explicitly outside loop to make sure correct data passed to while
+
+try([input, input])
+| while(true; try([input, input]))
+| if (.[0] | type == "object") then
+    reduce .[] as $it ({}; . * $it)
+elif (.[0] | type == "array") then
+    reduce .[] as $it ([]; . + $it)
+elif (.[0] | type == "string") then
+    reduce .[] as $it (""; . + $it)
+elif (.[0] | type == "number") then
+    reduce .[] as $it (0; . + $it)
+end
