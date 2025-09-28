@@ -1,0 +1,604 @@
+# vim: filetype=just
+
+set export
+
+jq := require('fzf')
+
+[group('fzf'), private, no-cd, positional-arguments, no-exit-message]
+reloadable *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ ! -t 0 ]]; then
+        input="$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
+        trap 'rm -f "$input"' EXIT
+        cat > "$input"
+
+        export FZF_RELOAD_CMD="<$input $*"
+        eval "$FZF_RELOAD_CMD" | '{{justfile()}}' table
+    else
+        export FZF_RELOAD_CMD="$*"
+        eval "$FZF_RELOAD_CMD" | '{{justfile()}}' table
+    fi
+
+[group('fzf'), private, no-cd, positional-arguments, no-exit-message]
+table *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    source "$HOME/.local/lib/shell/fzf.bash"
+    fzf_args=(--header-lines=1)
+    fzf-exec "${fzf_args[@]}" "$@"
+
+[group('fzf'), private, no-cd, positional-arguments, no-exit-message]
+table-multi *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    source "$HOME/.local/lib/shell/fzf.bash"
+    fzf_args=(--header-lines=1)
+    fzf-exec-multi "${fzf_args[@]}" "$@"
+
+[group('fzf'), private, no-cd, positional-arguments, no-exit-message]
+execute *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    args="$(getopt --name="$0" --options='c:' --longoptions='column:' -- "$@")"
+    eval set -- "$args"
+
+    column='2'
+
+    while ((1)); do
+        case "$1" in
+            -c | --column) column="$2"; shift 2 ;;
+            --) shift; break ;;
+        esac
+    done
+
+    fzf_cmd=(
+        --ansi
+        # --bind="ctrl-m:become(exec 2>>${XDG_RUNTIME_DIR}/$(basename "$0").log; echo \>/dev/null \</dev/null nohup {${column}..} \& disown\; sleep 0.2 | tee -a /dev/stderr | bash)"
+        --bind="ctrl-m:become(exec 2>>${XDG_RUNTIME_DIR}/$(basename "$0").log; eval 'exec-detached '{${column}..})"
+        --bind="ctrl-y:execute-silent(echo -n {${column}..} | clipcopy)"
+        --bind="esc:cancel"
+        --delimiter=$'\u0009'
+        --footer="enter:execute"
+        --no-multi
+        --preview-window="right:60%:border-left:wrap:hidden"
+        --preview="echo {${column}..}"
+        --reverse
+        --with-nth="..$((column - 1))"
+    )
+
+    FZF_DEFAULT_OPTS_FILE="" exec fzf "${fzf_cmd[@]}" "$@"
+
+[group('fzf'), private, no-cd, positional-arguments, no-exit-message]
+execute2 *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    fzf_cmd=(
+        --ansi
+        --bind="ctrl-g:execute-silent(echo -n {2} | perl -pE 'chomp; s/\"(.+?)\"/\$1/g' | clipcopy)"
+        # --bind="ctrl-m:become(p={2}; exec 2> >(logger); echo \</dev/null \>/dev/null nohup {1} \\$\"\${p@Q}\" \& disown\; sleep 0.2 | tee -a /dev/stderr | bash)"
+        --bind="ctrl-m:become(exec 2> >(logger); set -x; </dev/null setsid -f {r1} {2})"
+        --bind="ctrl-y:execute-silent(p={2}; echo -n {1} \\$\"\${p@Q}\" | clipcopy)"
+        --bind="esc:become:true"
+        --bind="tab:execute(p={2}; echo {1} \\$\"\${p@Q}\")+become(true)"
+        --delimiter=$'\u0009'
+        --footer='enter:exec C-g:url A-p:preview C-y:yank'
+        --no-multi
+        --preview="p={2}; echo {1} \\$\"\${p@Q}\""
+        --reverse
+        --with-nth=3..
+    )
+
+    export SHELL="$BASH" # enforce bash for all fzf sub shells
+    exec fzf "${fzf_cmd[@]}" "$@"
+
+[group('fzf'), private, no-cd, positional-arguments, no-exit-message]
+execute-term *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    fzf_cmd=(
+        fzf
+        --ansi
+        --bind="enter:become(exec 2>>${XDG_RUNTIME_DIR}/$(basename "$0").log; echo \</dev/null {2..} | tee -a /dev/stderr | bash)"
+        --bind='ctrl-y:execute-silent(echo -n {2..} | clipcopy)'
+        --delimiter=$'\u0009'
+        --no-multi
+        --preview='echo {2..}'
+        --reverse
+        --with-nth=1
+    )
+
+    exec "${fzf_cmd[@]}" "$@"
+
+[group('fzf'), private, no-cd, positional-arguments, no-exit-message]
+execute-no-abort *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    fzf_cmd=(
+        fzf
+        --ansi
+        --bind="enter:execute-silent(set -x; exec 2>>${XDG_RUNTIME_DIR}/$(basename "$0").log; </dev/null &>/dev/null setsid -f -- {2..})"
+        --bind="alt-enter:become(set -x; exec 2>>${XDG_RUNTIME_DIR}/$(basename "$0").log; </dev/null &>/dev/null setsid -f -- {2..})"
+        --bind='ctrl-y:execute-silent(echo -n {2..} | clipcopy)'
+        --delimiter=$'\u0009'
+        --no-multi
+        --preview='echo {2..}'
+        --reverse
+        --with-nth=1
+    )
+
+    exec "${fzf_cmd[@]}" "$@"
+
+[group('fzf'), private, no-cd, positional-arguments, no-exit-message]
+run-reload *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    args=$(getopt --name="$0" --options 'e:fkt:' --longoptions 'env:,focus,keep,timeout:' -- "$@")
+    eval set -- "$args"
+
+    timeout='0'
+
+    while ((1)); do
+        case "$1" in
+            -e | --env) env="$2"; shift 2 ;;
+            -f | --focus) focus='1'; shift ;;
+            -k | --keep) keep='1'; shift ;;
+            -t | --timeout) timeout="$2"; shift 2 ;;
+            --) shift; break ;;
+        esac
+    done
+
+    # if fzf is listening and a reload command is set, send reload signal to fzf
+    if [[ -n "${FZF_PORT:-}" && -n "${FZF_RELOAD_CMD:-}" ]]; then
+        reload="$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
+        printf "reload(%s)\n" "$FZF_RELOAD_CMD" >"$reload"
+        reloading=$(cat <<EO_RELOADING
+            >&2 echo
+            >&2 echo reloading fzf...
+            >&2 curl -s -XPOST localhost:${FZF_PORT:-} --data "@$reload"
+    EO_RELOADING
+        )
+    fi
+
+    exec_script="$(mktemp --suffix=-fzf-run-reload --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
+
+    if [[ -z "${keep:-}" ]]; then
+        cleanup="rm -f '$exec_script'"
+    fi
+
+    cat >> "$exec_script" <<EO_HEADER
+    function footer() {
+        if [[ "\$1" == "0" ]]; then
+            sleep 1
+
+    ${reloading:-}
+
+            sleep $timeout
+        else
+            echo "Script exitcode: \$(errno \$1)"
+            echo
+            echo "Press Enter to continue"
+            read -n 1 -s -r
+        fi
+        if [[ -n "${reload:-}" ]]; then
+            rm -f "${reload:-}"
+        fi
+
+    ${cleanup:-}
+    }
+    trap 'footer \$?' EXIT
+
+    EO_HEADER
+
+    # prefer run from args, fallback to stdin
+    if [[ -n "$*" ]]; then
+        echo "${@@Q}" >> "$exec_script"
+    else
+        cat >> "$exec_script" < /dev/stdin
+    fi
+
+    if [[ -z "${TMUX:-}" ]]; then
+        "$BASH" "$exec_script"
+    else
+        # environment must be exposed explicitly for tmux
+        if [[ -n "${env:-}" ]]; then
+            IFS="," read -r -a env_pt <<< "$env"
+            tmux_envs=()
+            for e in "${env_pt[@]}"; do
+                if [[ -n "${!e:-}" ]]; then
+                    tmux_envs+=("-e" "$e=${!e}")
+                fi
+            done
+        fi
+
+        tmux_args=(-v)
+        [[ -z "${focus:-}" ]] && tmux_args+=(-d)
+
+        tmux split-window "${tmux_args[@]}" "${tmux_envs[@]}" "$BASH $exec_script"
+        # tmux display-popup -EE -w '100%' -y "50%" "${tmux_envs[@]}" "$BASH $exec_script"
+    fi
+
+[group('fzf'), private, no-cd, positional-arguments, no-exit-message]
+time-reload *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    args=$(getopt --name="$0" --options='i:w:' --longoptions='interval:wait:' -- "$@")
+    eval set -- "$args"
+
+    interval=10
+
+    while ((1)); do
+        case "$1" in
+            -i | --interval) interval="$2"; shift 2 ;;
+            -w | --wait) wait="$2"; shift 2 ;;
+            --) shift; break ;;
+        esac
+    done
+
+    sleep "${wait:-$interval}"
+    while ((1)); do
+        >&2 curl -fs -XPOST "localhost:${FZF_PORT:-}" --data "reload(${*@Q})"
+        sleep "$interval"
+    done
+
+[no-cd, positional-arguments]
+hardlinks *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    command hardlinks "$@" \
+        | fzf --multi --bind 'tab:toggle-out,shift-tab:toggle-in'
+
+[no-cd, positional-arguments]
+locate *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    dir="${1:-$(pwd)}"
+
+    command locate "$dir" \
+        | fzf
+
+[no-cd, positional-arguments]
+select *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    default_fzf_cmd=(
+        fzf
+        --ansi
+        --bind="alt-p:toggle-preview,ctrl-s:toggle-sort,ctrl-t:toggle-track"
+        --bind="ctrl-d:half-page-down,ctrl-u:half-page-up,home:top"
+        --bind="ctrl-e:toggle-preview-wrap,ctrl-n:preview-down,ctrl-p:preview-up"
+        --bind="ctrl-w:backward-kill-word,esc:cancel"
+        --delimiter="\t"
+        --header-lines=1
+        --listen
+        --reverse
+        --scroll-off=4
+        --tabstop=4
+    )
+
+    export LC_ALL='en_US.UTF-8'
+    unicode_bind="alt-b:execute(xdg-open \"https://unicode-table.com/en/\$(echo {} | grep -o '^[[:xdigit:]]\{4,\}')\" &>/dev/null)"
+    case "$1" in
+        emoji)   chosen=$(grep-emoji   | tsv-align | "${default_fzf_cmd[@]}" --prompt="$1 > " --bind="ctrl-m:become(echo -n {2})") ;;
+        nerd)    chosen=$(grep-nerd    | tsv-align | "${default_fzf_cmd[@]}" --prompt="$1 > " --bind="ctrl-m:become(echo -n {4})") ;;
+        unicode) chosen=$(grep-unicode | tsv-align | "${default_fzf_cmd[@]}" --prompt="$1 > " --bind="ctrl-m:become(echo -n {2})" --bind="$unicode_bind") ;;
+        *)       exit ;;
+    esac
+
+    if [[ -n "$chosen" ]]; then
+        echo -n "$chosen" | clipcopy \
+            && notify-send -i dialog-password "$chosen" 'Copied to the clipboard'
+    fi
+
+# => git ---------------------------------------------------------------------------------------------------------- {{{1
+
+[group('git'), no-cd, positional-arguments]
+git-branches *argv: ensure-git-repo
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    source "$HOME/.local/lib/shell/fzf.bash"
+
+    CURRENT_SCRIPT="$(basename "$0")"
+    export FZF_RELOAD_CMD="${CURRENT_SCRIPT#fzf-} ${*@Q}"
+
+    fzf_args=(
+        "${FZF_GIT_DEFAULT_ARGS[@]}"
+        --bind="ctrl-m:become(cat {+f1})"
+        --prompt="$(git main-project) | branches > "
+    )
+    eval "$FZF_RELOAD_CMD" | fzf-exec-multi "${fzf_args[@]}"
+
+[group('git'), no-cd, positional-arguments]
+git-x-blame *argv: ensure-git-repo
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    rpth="${*: -1}"
+    if [[ -z "$rpth" || "$rpth" == '--' || "$rpth" == "$0" ]]; then
+        echo "Provide relative path to file" >&2
+        exit 1
+    fi
+
+    # don't check file existence, it might absent in worktree
+
+    GIT_WORK_TREE="$(git rev-parse --show-toplevel)"
+    apth=$(realpath -ms --relative-to="$GIT_WORK_TREE" -- "$(realpath -m -- "$rpth")")
+
+    args=("$@")
+    args[-1]="$apth"
+
+    cd -- "$GIT_WORK_TREE" || exit 1
+
+    if [[ -t 1 ]]; then
+        export FZF_RELOAD_CMD="${0@Q} ${args[*]@Q}"
+        source "$HOME/.local/lib/shell/fzf.bash"
+        commit='"$('$CMD_EXTRACT_COMMIT')"'
+        cmtpth='"$('$CMD_EXTRACT_COMMIT'):'$apth'"'
+
+        fzf_args=(
+            --bind="alt-b:execute-silent(git browse $commit -- ${apth@Q})"
+            --bind="alt-d:execute(git diff $commit HEAD -- ${apth@Q} | delta --paging=always)"
+            --bind="alt-f:execute(git show $cmtpth | colored --color=always --paging=always --file-name=${apth@Q})"
+            --bind="alt-i:execute(show commit --color=always $commit -- | delta --paging=always)"
+            --bind="alt-o:execute(show commit --color=always $commit -- ${apth@Q} | delta --paging=always)"
+            --bind="ctrl-b:execute(git blame -M -w $commit -- ${apth@Q} | delta --paging=always)"
+            --bind="ctrl-m:become(cat {+f1})"
+            --bind="ctrl-y:execute-silent(echo -n $commit | clipcopy)"
+            --footer='A-d:diff A-f:view A-i:inspect A-o:inspect1 C-b:blame enter:change | A-b:browse A-p:preview'
+            --preview="show commit --color=always $commit -- ${apth@Q} | delta"
+            --prompt="$apth | history > "
+        )
+
+        eval "$FZF_RELOAD_CMD" | fzf-git "${fzf_args[@]}"
+    else
+        git-log-branch --follow "${args[@]}"
+    fi
+
+[group('git'), no-cd, positional-arguments]
+git-files *argv: ensure-git-repo
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    CURRENT_SCRIPT="$(basename "$0")"
+    export FZF_RELOAD_CMD="${CURRENT_SCRIPT#fzf-} ${*@Q}"
+
+    fzf_args=(
+        --bind="alt-o:execute(fzf-git-x-blame -- {-1})"
+        --bind="alt-t:become(fzf-git-log-all-graph)"
+        --footer='F3:view F4:edit | alt-o:history alt-t:log | ctrl-a:all alt-p:preview'
+        --preview='echo previous change in:; git-log-branch --follow -2 -- {-1}; echo; colored --color=always {-1}'
+        --prompt="$(git main-project) | files > "
+    )
+    eval "$FZF_RELOAD_CMD" | fzf-files-multi "${fzf_args[@]}"
+
+[group('git'), no-cd, positional-arguments]
+git-hashes *argv: ensure-git-repo
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    CURRENT_SCRIPT="$(basename "$0")"
+    export FZF_RELOAD_CMD="${CURRENT_SCRIPT#fzf-} ${*@Q}"
+
+    fzf_args=(
+        --bind="ctrl-m:become(grep -o '[[:xdigit:]]\{6,\}' {+f} | xargs -rn1 git pcommit)"
+    )
+    eval "$FZF_RELOAD_CMD" | fzf-git-log "${fzf_args[@]}"
+
+[group('git'), no-cd, positional-arguments]
+git-hashes-all *argv: ensure-git-repo
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    CURRENT_SCRIPT="$(basename "$0")"
+    export FZF_RELOAD_CMD="${CURRENT_SCRIPT#fzf-} ${*@Q}"
+
+    fzf_args=(
+        --bind="ctrl-m:become(grep -o '[[:xdigit:]]\{6,\}' {+f} | xargs -rn1 git pcommit)"
+    )
+    eval "$FZF_RELOAD_CMD" | fzf-git-log "${fzf_args[@]}"
+
+[group('git'), no-cd, positional-arguments]
+git-log *argv: ensure-git-repo
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ -z "${GIT_PREFIX:-}" ]]; then
+        GIT_PREFIX="$(git rev-parse --show-prefix)"
+    fi
+
+    source "$HOME/.local/lib/shell/fzf.bash"
+
+    if [[ -n "${FZF_RELOAD_CMD:-}" ]]; then
+        export FZF_RELOAD_CMD
+        export FZF_GIT_FOOTER_PREFIX=$'A-a:ai A-f:fetch A-g:pull A-m:co-m A-R:rebase A-r:rewrite C-o:co\n'
+        fzf_args=(
+            --bind="alt-a:execute(d=\$($CMD_EXTRACT_COMMIT); ai-suggest-commit-msg \$d | $PAGER)"
+            --bind="alt-f:execute-silent(fzf-run-reload -- git fall)"
+            --bind="alt-g:execute-silent(fzf-run-reload -- git up)"
+            --bind="alt-m:execute-silent(mb=\$(git main-branch); git switch \$mb)+reload($FZF_RELOAD_CMD)"
+            --bind="alt-R:execute-silent(tmux split-window; sleep 0.5; c=\$($CMD_CURRENT_BRANCH); b=\$(git-branching-point) && d=\$($CMD_EXTRACT_COMMIT) && tmux send-keys \" git rebase -i --autosquash --update-refs --onto=\$d \$b \$c --committer-date-is-author-date\")"
+            --bind="alt-r:execute(d=\$($CMD_EXTRACT_COMMIT); git rewrite \$d)+reload($FZF_RELOAD_CMD)"
+            --bind="ctrl-o:execute-silent(r=\$($CMD_EXTRACT_REF); git switch \$r || git switch --detach \$r)+reload($FZF_RELOAD_CMD)"
+            --prompt="$(git main-project) | log > "
+        )
+    fi
+    fzf-git-multi "${fzf_args[@]}" "$@"
+
+[group('git'), no-cd, positional-arguments]
+git-log-all *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    CURRENT_SCRIPT="$(basename "$0")" just -f "{{justfile()}}" git-log-branch "$@"
+
+[group('git'), no-cd, no-exit-message, positional-arguments]
+git-log-all-graph *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    CURRENT_SCRIPT="$(basename "$0")" just -f "{{justfile()}}" git-log-branch "$@"
+
+[group('git'), no-cd, positional-arguments]
+git-log-all-merges *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    CURRENT_SCRIPT="$(basename "$0")" just -f "{{justfile()}}" git-log-branch "$@"
+
+[group('git'), no-cd, positional-arguments]
+git-log-branch *argv: ensure-git-repo
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    CURRENT_SCRIPT="${CURRENT_SCRIPT:-$(basename "$0")}"
+
+    # always include some refs into selection
+    refs=(
+        HEAD
+        "$(git bname || true)"
+        "$(git main-branch || true)"
+    )
+
+    # filter out empty elements
+    readarray -t valid_refs < <(echo "${refs[@]}" | xargs -rn1 echo) || true
+    export FZF_RELOAD_CMD="${CURRENT_SCRIPT#fzf-} ${valid_refs[*]@Q} ${*@Q}"
+
+    fzf_args=(
+        --prompt="$(git main-project) | log > "
+    )
+    eval "$FZF_RELOAD_CMD" | fzf-git-log "${fzf_args[@]}"
+
+[group('git'), no-cd, positional-arguments]
+git-log-branch-graph *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    CURRENT_SCRIPT="$(basename "$0")" just -f "{{justfile()}}" git-log-branch "$@"
+
+[group('git'), no-cd, positional-arguments]
+git-log-reflog *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    CURRENT_SCRIPT="$(basename "$0")" just -f "{{justfile()}}" git-log-branch "$@"
+
+[group('git'), no-cd, positional-arguments]
+git-remotes *argv: ensure-git-repo
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    CURRENT_SCRIPT="$(basename "$0")"
+    export FZF_RELOAD_CMD="${CURRENT_SCRIPT#fzf-}"
+
+    "$FZF_RELOAD_CMD" \
+        | fzf --multi --bind 'tab:toggle-out,shift-tab:toggle-in' --preview ''
+
+[group('git'), no-cd, positional-arguments]
+git-search *argv: ensure-git-repo
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ -n "$*" ]]; then
+        query=${1}
+        shift
+    fi
+
+    source "$HOME/.local/lib/shell/fzf.bash"
+
+    fzf_args=(
+        "${FZF_GIT_DEFAULT_ARGS[@]}"
+        --bind="change:reload(q={q}; if [[ -n \"\$q\" ]]; then git-log-wrapper ${*@Q} -P -G \"\$q\"; else git-log-wrapper ${*@Q}; fi)"
+        --phony
+        --preview-window="right:60%:border-left:wrap:nohidden"
+        --prompt="search commit > "
+        --query="${query:-}"
+    )
+
+    if [[ -n "${query:-}" ]]; then
+        git-log-wrapper "${@@Q}" -P -G "${query:-}"
+    else
+        git-log-wrapper "${@@Q}"
+    fi | fzf-exec-multi "${fzf_args[@]}"
+
+[group('git'), no-cd, positional-arguments]
+git-search-file *argv: ensure-git-repo
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ -n "$*" ]]; then
+        query=${1}
+        shift
+    fi
+
+    source "$HOME/.local/lib/shell/fzf.bash"
+
+    preview="git show --color=always --format='' --no-patch --numstat \$($CMD_EXTRACT_COMMIT) | grep {q}; echo; show commit --color=always \$($CMD_EXTRACT_COMMIT) | ${LOG_PAGER[*]}"
+
+    fzf_args=(
+        "${FZF_GIT_DEFAULT_ARGS[@]}"
+        --bind="change:reload(q={q}; if [[ -n \"\$q\" ]]; then git-log-wrapper --follow ${*@Q} -- \"*\$q*\"; else git-log-wrapper ${*@Q}; fi)"
+        --phony
+        --preview-window="right:60%:border-left:wrap:nohidden"
+        --preview="$preview"
+        --prompt="search file > "
+        --query="${query:-}"
+    )
+
+    if [[ -n "${query:-}" ]]; then
+        git-log-wrapper --follow "${@@Q}" -- "*${query:-}*"
+    else
+        git-log-wrapper "${@@Q}"
+    fi | fzf-exec-multi "${fzf_args[@]}"
+
+[group('git'), no-cd, positional-arguments]
+git-search-message *argv: ensure-git-repo
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ -n "$*" ]]; then
+        query=${1}
+        shift
+    fi
+
+    source "$HOME/.local/lib/shell/fzf.bash"
+
+    fzf_args=(
+        "${FZF_GIT_DEFAULT_ARGS[@]}"
+        --bind="change:reload(q={q}; if [[ -n \"\$q\" ]]; then git-log-wrapper ${*@Q} --grep \"\$q\"; else git-log-wrapper ${*@Q}; fi)"
+        --phony
+        --preview-window="right:60%:border-left:wrap:nohidden"
+        --prompt="search message > "
+        --query="${query:-}"
+    )
+
+    if [[ -n "${query:-}" ]]; then
+        git-log-wrapper "${@@Q}" --grep "${query:-}"
+    else
+        git-log-wrapper "${@@Q}"
+    fi | fzf-exec-multi "${fzf_args[@]}"
+
+[group('git'), no-cd, positional-arguments]
+git-tags *argv: ensure-git-repo
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    source "$HOME/.local/lib/shell/fzf.bash"
+
+    CURRENT_SCRIPT="$(basename "$0")"
+    export FZF_RELOAD_CMD="${CURRENT_SCRIPT#fzf-} $*"
+
+    fzf_args=(
+        "${FZF_GIT_DEFAULT_ARGS[@]}"
+        --bind="ctrl-m:become(cat {+f1})"
+        --prompt="$(git main-project) | tags > "
+    )
+    eval "$FZF_RELOAD_CMD" | fzf-exec-multi "${fzf_args[@]}"
+
+[group('git'), no-cd, positional-arguments]
+git-x-status *argv: ensure-git-repo
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    CURRENT_SCRIPT="$(basename "$0")"
+    export FZF_RELOAD_CMD="echo -ne 'IW \tpath\0' && ${CURRENT_SCRIPT#fzf-} ${*@Q}"
+    open_help="git web--browse https://git-scm.com/docs/git-status#_short_format"
+
+    fzf_args=(
+        --accept-nth=2
+        --bind="alt-A:execute-silent(git reset -- {+-1})+reload-sync($FZF_RELOAD_CMD)"
+        --bind="alt-a:execute-silent(cat {+f-1} | xargs -rn1 git add --ignore-errors --)+reload-sync($FZF_RELOAD_CMD)"
+        --bind="alt-C:execute(fzf-git-log-all-graph | head -1 | xargs -r git commit --fixup)+reload-sync($FZF_RELOAD_CMD)"
+        --bind="alt-c:execute(git commit -vem '')+reload-sync($FZF_RELOAD_CMD)"
+        --bind="alt-i:execute({ git diff HEAD --color=always --stat -p --minimal --exit-code --ignore-space-change -- {-1} && git diff --stat -p --no-index -- /dev/null {-1}; } | delta --paging=always)"
+        --bind="alt-o:execute(fzf-git-x-blame -- {-1})"
+        --bind="alt-s:execute(git amend)+reload-sync($FZF_RELOAD_CMD)"
+        --bind="alt-t:become(fzf-git-log-all-graph)"
+        --bind="click-header:transform: [[ \$FZF_CLICK_HEADER_WORD == 'IW' ]] && echo 'execute-silent($open_help)'"
+        --color="fg:dim:italic,nth:regular"
+        --footer="F3:view F4:edit | A-a:add A-A:reset A-c:commit A-C:fixup A-i:inspect A-o:history A-s:amend A-t:log | C-a:all A-p:preview"
+        --header-lines=1
+        --nth=2
+        --preview="echo previous change in:; git-log-branch --follow -2 -- {-1}; echo; { git diff HEAD --color=always --stat -p --minimal --exit-code --ignore-space-change -- {-1} && git diff --stat -p --no-index -- /dev/null {-1}; } | delta"
+        --prompt="$(git main-project) | status > "
+    )
+    eval "$FZF_RELOAD_CMD" | fzf-files-multi "${fzf_args[@]}"
+
+[group('git'), no-cd, no-exit-message]
+ensure-git-repo:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    git rev-parse HEAD &>/dev/null || {
+        echo "fatal: not in a git repo" >&2
+        exit 95
+    }

@@ -1,0 +1,101 @@
+# vim: filetype=just
+
+set export
+
+xh := require('xh') # https://github.com/ducaale/xh#installation
+
+# generic http request using full url, provides diagnostics on failure
+[group('http'), private, no-cd, positional-arguments, no-exit-message]
+request method url *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 2
+    method="${method@U}"
+    args=(
+        "$url"
+        --https
+        --ignore-stdin
+        --no-follow
+    )
+
+    cmd=(xh "$method" "${args[@]}" "$@")
+
+    if [[ -n "${XH_DEBUG:-}" ]]; then
+        if [[ "$XH_DEBUG" == "curl" ]]; then
+            >&2 "${cmd[@]}" --curl
+        elif [[ -x "$(command -v args2log)" ]]; then
+            >&2 args2log "${cmd[@]}"
+        else
+            >&2 echo "${cmd[@]@Q}"
+        fi
+    fi
+
+    [[ -t 1 ]] && exec "${cmd[@]}"
+
+    # this should be done by the tool automatically but for now this is a required workaround
+    # because output is collected and parsed - all warnings are suppressed and only exact output is set to be printed
+    # this is not necessary to do if output is to TTY (above), hence difference in options
+    # much better solution would be if some output parts could be redirected to STDERR or other handle making sure main
+    # response body doesn't share STDOUT with other pieces of output
+    if [[ "$method" == 'HEAD' || "$method" == 'OPTIONS' ]]; then
+        args+=(-qq --print=h)
+    else
+        args+=(-qq --print=b)
+    fi
+
+    [[ "${XH_ALLOW_ERROR:-0}" == '0' ]] || args+=(--no-check-status)
+
+    if res="$(xh "$method" "${args[@]}" "$@")"; then
+        echo "$res"
+    else
+        errno="$?"
+        {
+            >&2 echo '> error in the following HTTP request:'
+            >&2 echo
+            if [[ -x "$(command -v args2log)" ]]; then
+                >&2 args2log "${cmd[@]}"
+            else
+                >&2 echo "${cmd[@]@Q}"
+            fi
+            >&2 echo
+            >&2 "${cmd[@]}" --print=HB --offline --pretty=all
+            >&2 echo "$res"
+        } 2>&1 | "$PAGER" >/dev/tty
+        exit "$errno"
+    fi
+
+# HTTP request provides body via stdin (not for GET or HEAD)
+[group('http'), private, no-cd, positional-arguments, no-exit-message]
+request-stdin method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 2
+    # this recipe requires caller to implement http-request recipe (with proper auth or other customization)
+    # it's used as a common solution - wrapper around custom http-request for all callers
+    "$this" http-request "$method" "$uri" --no-ignore-stdin "$@"
+
+# streaming http request using full url
+[group('http'), private, no-cd, positional-arguments, no-exit-message]
+request-streaming method url *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 2
+    args=(
+        "$url"
+        --https
+        --ignore-stdin
+        --no-follow
+        --stream
+    )
+    # it's impossible to use http::request here because it collects all output for debugging and this is
+    # absolutely incompatible with the main purpose of this recipe - streaming of the output
+    xh "${method@U}" "${args[@]}" "$@"
+
+# parse raw HTTP headers to JSON, support multi-value headers (set-cookie for example)
+[group('helpers'), private, no-cd]
+headers2json:
+    #!/usr/bin/env -S bash -Eeu
+    tail -n +2 \
+        | perl -lnE 'm/^$/x and exit; m/^ [[:alnum:].+-_]+? :/x and say s/^ ([^:]+?) : \s* (.+)/$1\t$2/xr' \
+        | sort -u \
+        | jq -nRS '[inputs | split("\t") | {key: (.[0] | ascii_downcase), value: .[1]}]
+            | group_by(.key)
+            | map( { (.[0].key): ([.[] .value] | if length == 1 then .[0] else . end) } )
+            | add'
