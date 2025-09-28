@@ -1,0 +1,75 @@
+#!/usr/bin/env -S just --one --unstable --justfile
+
+# https://just.systems/man/en/
+
+set export
+export colored-md := require('colored-md')
+export fzf-table := require('fzf-table')
+export json2table := require('json2table')
+export this := justfile()
+export tui := 'auto'
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+# Run TUI if interactive, otherwise print static view
+[private]
+default:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        "$this" controller
+    else
+        "$this" view
+    fi
+
+# Print help
+[script("/usr/bin/env", "-S", "colored-md")]
+help:
+    # ABSTRACT
+    Interactive TUI for quick access to Ruby documentation (ri)
+
+    # DESCRIPTION
+    `menu-ri` provides a fast, searchable interface for Ruby's `ri` documentation tool.
+
+    It solves the problem of needing to remember exact module/method names by providing a fuzzy-searchable list
+    of all available documentation topics. It allows for quick inspection of documentation directly in the terminal.
+
+    ## Key Features
+
+    * **Fuzzy Search:** Instantly search through all `ri` documentation topics.
+    * **Live Preview:** The preview window shows the formatted documentation for the selected topic.
+    * **Custom Search:** Allows entering a custom search term to `ri` directly.
+    * **Clean & Composable:** Follows the three-mode pattern, allowing it to be used as an interactive TUI, a static
+      table generator, or a pure JSON data source.
+
+# => MVC ---------------------------------------------------------------------------------------------------------- {{{1
+
+# List all ri documentation topics as a JSON stream
+model:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    ri --all -l | jq -nR '[inputs]'
+
+# Print ri topics as a formatted and colorized table
+view:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq_fields=(
+        '_id;\(.)'
+        '!_url!https://docs.ruby-lang.org/en/master/\(gsub("::"; "/")).html'
+        'topic;\(.)'
+    )
+    "$this" model | json2table 'sort' "${jq_fields[@]}"
+
+# Display the interactive TUI for browsing ri documentation
+controller:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    export FZF_RELOAD_CMD="${this@Q} view"
+    fzf_args=(
+        --bind='alt-g:execute(if v=$(gum input --header="Custom term" --value={1}"."); then echo "$v" | xargs -r ri -f markdown | GLAMOUR_WIDTH=$FZF_COLUMNS colored-md | ${PAGER:-less}; fi)'
+        --bind='alt-i:transform(echo "trigger(ctrl-m)")'
+        --bind='ctrl-m:execute(ri -f markdown {1} | GLAMOUR_WIDTH=$FZF_COLUMNS colored-md | ${PAGER:-less})'
+        --footer='alt-g:input enter:inspect | A-b:browse A-p:preview'
+        --preview-window='right:65%:border-left:wrap:nohidden,<55(hidden)'
+        --preview='ri -f markdown {1} | GLAMOUR_WIDTH="$((FZF_PREVIEW_COLUMNS - 1))" colored-md'
+        --prompt='ruby > '
+        --with-nth='3..'
+    )
+    "$this" view | fzf-table "${fzf_args[@]}"
