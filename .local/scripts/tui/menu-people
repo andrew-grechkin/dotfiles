@@ -1,0 +1,154 @@
+#!/usr/bin/env -S just --one --unstable --justfile
+
+# https://just.systems/man/en/
+
+mod fzf "~/.local/lib/just/fzf"
+mod json "~/.local/lib/just/json"
+
+set export
+set no-cd
+
+export colored-md := require('colored-md') # https://github.com/andrew-grechkin/colored-md
+export memoize := require('memoize')
+export people := require('people-model')
+export this := justfile()
+export tui := 'auto'
+
+export MEMOIZE_DIR := env_var_or_default('XDG_CACHE_HOME', env_var('HOME') / '.cache') / 'memoize'
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+# Run TUI if interactive, otherwise print static view
+[private]
+default:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        exec "$this" controller
+    fi
+    exec "$this" view
+
+# Print help
+help:
+    #!/usr/bin/env -S colored-md
+
+    # ABSTRACT
+    Interactive TUI for browsing Google contacts
+
+    # DESCRIPTION
+    `menu-people` provides a fast, searchable interface over the Google People API `connections` endpoint, backed by
+    `people-model`.
+
+    It solves the problem of inspecting a contact by name when the only sources are the bloated web UI or an
+    unpaginated API dump. It flattens the nested API response into a single, searchable list and renders the full
+    contact card in the preview pane.
+
+    ## Key Features
+
+    * **Unified View:** Normalizes the nested `connections` payload (names, phones, emails, organizations, birthdays,
+      addresses, URLs, relations, photos) into a flat array of contact objects.
+    * **Rich Preview:** Shows the contact photo with `chafa` (when present) followed by the full contact details as
+      colorized YAML.
+    * **Clipboard & Actions:** Copy the primary phone or email, compose an email, and jump straight to the contact in
+      the Google Contacts web UI.
+    * **Clean & Composable:** Follows the three-mode pattern, acting as an interactive TUI, a static table generator,
+      or a pure JSON data source.
+    * **Cached:** The raw API response is cached for 5 minutes via `memoize`, keeping the TUI snappy and preview cheap.
+
+# => MVC ---------------------------------------------------------------------------------------------------------- {{{1
+
+# List normalized contacts as a JSON array (raw API response cached via memoize)
+[no-exit-message]
+model:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    memoize -l people-contacts -st 5m -- "$people" list-contacts | "$this" normalize-contacts
+
+# Print contacts as a formatted and colorized table
+[no-exit-message]
+view:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq_fields=(
+        '_id;\(.id)'
+        '_url;https://contacts.google.com/person/\(.id | split("/") | last)'
+        'name;\(.name);silver'
+        'phone;\(.phones[0].value // "");green'
+        'email;\(.emails[0].value // "");cyan'
+        'org;\(.organizations[0] | if . then ((.name // "") + (if (.title // "") != "" then " - " + .title else "" end)) else "" end);olive'
+    )
+    "$this" model | "$this" json::to-table 'sort_by(.name | ascii_downcase)' "${jq_fields[@]}"
+
+# Display the interactive TUI for browsing contacts
+[no-exit-message]
+controller:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    export FZF_RELOAD_CMD="${this@Q} view"
+    export SHELL="$BASH"
+    fzf_args=(
+        --bind="alt-e:execute(${this@Q} compose-email {5})"
+        --bind="alt-r:execute-silent(${this@Q} refresh)+reload($FZF_RELOAD_CMD)"
+        --bind="alt-y:execute-silent(echo -n {5} | clipcopy)"
+        --bind="ctrl-m:become(echo {4})"
+        --bind="ctrl-y:execute-silent(echo -n {4} | clipcopy)"
+        --footer="enter:print C-y:phone A-y:email A-e:compose A-r:refresh | A-b:contacts A-p:preview"
+        --preview="${this@Q} preview-contact {1}"
+        --prompt="people > "
+        --with-nth="3.."
+    )
+    "$this" view | "$this" fzf::table "${fzf_args[@]}"
+
+# => helper ------------------------------------------------------------------------------------------------------- {{{1
+
+# Flatten the nested People API `connections` response into an array of contact hashes
+[private]
+normalize-contacts:
+    #!/usr/bin/env -S jq --from-file
+    [.connections[] | {
+        id:            .resourceName,
+        name:          (.names[0].displayName // ""),
+        first:         (.names[0].givenName // ""),
+        last:          (.names[0].familyName // ""),
+        nickname:      ([.nicknames[]?.value] | join(", ")),
+        phones:        [.phoneNumbers[]?   | {value: .value, type: (.formattedType // .type // "")}],
+        emails:        [.emailAddresses[]? | {value: .value, type: (.formattedType // .type // "")}],
+        organizations: [.organizations[]? | {name: (.name // ""), title: (.title // ""), department: (.department // ""), type: (.formattedType // .type // "")}],
+        birthdays:     [.birthdays[]?      | {text: (.text // ""), date: (.date // null)}],
+        addresses:     [.addresses[]?      | {value: (.formattedValue // ""), type: (.formattedType // .type // "")}],
+        urls:          [.urls[]?           | {value: .value, type: (.formattedType // .type // "")}],
+        relations:     [.relations[]?      | {person: .person, type: (.formattedType // .type // "")}],
+        photo:         ([.photos[]? | select(.default != true) | .url] | first // ""),
+        biography:     ([.biographies[]?.value] | join("\n"))
+    }]
+
+# Clear the cached contacts list
+[private]
+@refresh:
+    memoize -l people-contacts -C
+
+# Generate a rich preview for a single contact (photo + colorized YAML)
+[private]
+preview-contact id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    contact=$("$this" model | jq -c --arg id "$id" '.[] | select(.id == $id)')
+    [[ -n "$contact" ]] || { echo "contact not found: $id" >&2; exit 0; }
+
+    photo=$(jq -r '.photo // empty' <<< "$contact")
+    if [[ -n "$photo" ]] && command -v chafa >/dev/null; then
+        cache="$MEMOIZE_DIR/people-photo-${id//\//-}"
+        memoize -f "$cache" -t 30d -- curl -fsSL "$photo" 2>/dev/null \
+            | chafa -f symbols --size="${FZF_PREVIEW_COLUMNS:-80}x20" - \
+            || true
+        echo
+    fi
+
+    jq 'del(.id, .first, .last, .photo)
+        | with_entries(select(.value | if type == "array" then length > 0 else (. != null and . != "") end))' \
+        <<< "$contact" \
+        | json2yaml \
+        | FORMAT_YAML_MODE=full FORMAT_YAML_LINE_WIDTH="${FZF_PREVIEW_COLUMNS:-80}" format-yaml \
+        | colored-yaml
+
+# Open the default mail client with the selected contact address
+[private]
+compose-email address:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    [[ -n "$address" ]] || { echo "no email address for the selected contact" >&2; exit 0; }
+    xdg-open "mailto:$address" &>/dev/null
