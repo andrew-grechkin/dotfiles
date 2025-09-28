@@ -1,0 +1,320 @@
+#!/usr/bin/env -S just --one -d . -f
+
+# https://just.systems/man/en/
+
+# https://jamielinux.com/docs/openssl-certificate-authority/index.html
+# https://www.procustodibus.com/blog/2023/04/how-to-set-up-a-yubikey
+# https://developers.yubico.com/yubico-piv-tool/YKCS11/Functions_and_values.html
+
+export PKCS11_MODULE_PATH := '/usr/lib/libykcs11.so'
+export key_algorithm := 'eccp384'
+export expire_in_days := '3652'
+
+export auth_slot := '9a'
+export auth_key_id := 'pkcs11:object=Private key for PIV Authentication;type=private'
+
+export ca_slot := 'RETIRED1'
+export ca_key_id := 'pkcs11:object=Private key for Retired Key 1;type=private'
+
+export decrypt_slot := '9d'
+export decrypt_key_id := 'pkcs11:object=Private key for Key Management;type=private'
+
+export sign_slot := '9c'
+export sign_key_id := 'pkcs11:object=Private key for Digital Signature;type=private'
+
+dotenv := '.env'
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private]
+@default:
+    just -f "{{justfile()}}" --list
+
+[private]
+key-id slot:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ '{{slot}}' == '{{ca_slot}}' ]]; then
+        echo '{{ca_key_id}}'
+    elif [[ '{{slot}}' == '{{auth_slot}}' ]]; then
+        echo '{{auth_key_id}}'
+    elif [[ '{{slot}}' == '{{decrypt_slot}}' ]]; then
+        echo '{{decrypt_key_id}}'
+    elif [[ '{{slot}}' == '{{sign_slot}}' ]]; then
+        echo '{{sign_key_id}}'
+    else
+        >&2 echo unknown slot '{{slot}}'
+        exit 1
+    fi
+
+[group('piv')]
+[no-cd, private]
+personal-provision slot:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if ! ykman piv keys info '{{slot}}' &>/dev/null; then
+        >&2 echo "{{YELLOW}}generating private key in {{slot}} {{NORMAL}}"
+        ykman piv keys generate --algorithm '{{key_algorithm}}' --pin-policy NEVER --touch-policy CACHED '{{slot}}' /dev/null
+    fi
+
+    [[ -r '{{dotenv}}' ]] && source '{{dotenv}}'
+
+    sn="$(ykman info | grep -Po 'Serial number: \K\d+')"
+    key_id="$(just -f "{{justfile()}}" key-id '{{slot}}')"
+
+    conf=$(cat <<EO_CSR_CONF
+        [req]
+        prompt                  = no
+        distinguished_name      = req_distinguished_name
+
+        [req_distinguished_name]
+        countryName             = ${SUBJ_C?Subject C must be provided}
+        stateOrProvinceName     = ${SUBJ_ST?Subject ST must be provided}
+        localityName            = ${SUBJ_L?Subject L must be provided}
+        commonName              = ${SUBJ_CN?Subject CN must be provided}
+        emailAddress            = ${SUBJ_EMAILADDRESS?Subject emailAddress must be provided}
+        dnQualifier             = yk ${sn} ({{slot}})
+
+        [v3_csr_{{auth_slot}}]
+        basicConstraints        = critical, CA:FALSE
+        extendedKeyUsage        = clientAuth, anyExtendedKeyUsage
+
+        [v3_csr_{{decrypt_slot}}]
+        basicConstraints        = critical, CA:FALSE
+        extendedKeyUsage        = emailProtection, anyExtendedKeyUsage
+
+        [v3_csr_{{sign_slot}}]
+        basicConstraints        = critical, CA:TRUE, pathlen:0
+        keyUsage                = critical, cRLSign, keyCertSign
+        extendedKeyUsage        = codeSigning, OCSPSigning, emailProtection, anyExtendedKeyUsage
+    EO_CSR_CONF
+    )
+
+    >&2 echo "{{YELLOW}}fetching public key from {{slot}} {{NORMAL}}"
+    pub="$(ykman piv keys export '{{auth_slot}}' -)"
+
+    >&2 echo "{{YELLOW}}fetching CA certificate from {{ca_slot}} {{NORMAL}}"
+    ca_crt="$(ykman piv certificates export '{{ca_slot}}' -)"
+
+    >&2 echo "{{YELLOW}}generating csr{{NORMAL}}"
+    csr="$(openssl req -new -engine pkcs11 -keyform engine -key "$key_id" -out - -sha512 \
+            -extensions 'v3_csr_{{slot}}' -config <(echo "$conf"))"
+
+    >&2 echo "{{YELLOW}}signing csr{{NORMAL}}"
+    crt="$(openssl x509 -req -engine pkcs11 -CAkeyform engine -CAkey "{{ca_key_id}}" -in <(echo "$csr") -CA <(echo "$ca_crt") -out - \
+            -copy_extensions copyall -sha512 -days '{{expire_in_days}}')"
+
+    >&2 echo "{{YELLOW}}importing final certificate to {{slot}} {{NORMAL}}"
+    ykman piv certificates import --verify '{{slot}}' <(echo "$crt") \
+        && >&2 openssl x509 -text -noout <<< "$crt"
+
+# => piv ---------------------------------------------------------------------------------------------------------- {{{1
+
+# show certificate in a slot
+[group('piv')]
+@cert slot:
+    ykman piv certificates export '{{slot}}' - | tee >(openssl x509 -text -noout >&2)
+
+# show public key in a slot
+[group('piv')]
+@pub slot:
+    ykman piv keys export '{{slot}}' - | tee >(openssl pkey -pubin -text -noout >&2)
+
+# show piv objects
+[group('piv')]
+piv-objects:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    p11tool --list-all --provider '{{PKCS11_MODULE_PATH}}'
+
+# show piv info
+[group('piv')]
+@piv-info:
+    ykman piv info
+
+# check pkcs11 engine is working for openssl
+[group('piv')]
+check-engine:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    openssl engine pkcs11
+
+# check if slot doesn't have a key
+[group('piv')]
+[no-exit-message]
+key-is-empty slot:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if ykman piv keys info '{{slot}}' &>/dev/null; then
+        >&2 echo key already exists in '{{slot}}'
+        exit 1
+    else
+        exit 0
+    fi
+
+# => ca ----------------------------------------------------------------------------------------------------------- {{{1
+
+# show certificate of RETIRED1 slot on yubikey
+[group('piv-ca')]
+@ca-cert: (cert ca_slot)
+
+# show public key of RETIRED1 slot on yubikey
+[group('piv-ca')]
+@ca-pub: (pub ca_slot)
+
+# [group('piv-ca')]
+# @ca-sign file:
+#     openssl pkeyutl -sign -engine pkcs11 -keyform engine -inkey '{{ca_key_id}}' -in '{{file}}' -out '{{file}}.sig'
+
+# [group('piv-ca')]
+# @ca-attest file:
+#     openssl pkeyutl -verify -pubin -inkey <(ykman piv keys export '{{ca_slot}}' -) -in '{{file}}' -sigfile '{{file}}.sig'
+
+# [group('piv-ca')]
+# @ca-gen-cert-interactive file:
+#     openssl req -new -x509 -engine pkcs11 -keyform engine -key '{{ca_key_id}}' -out '{{file}}'
+
+# provision slot of RETIRED1 slot on yubikey with key and certificate
+[group('piv-ca')]
+[no-cd]
+ca-provision:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if ! ykman piv keys info '{{ca_slot}}' &>/dev/null; then
+        ykman piv keys generate --algorithm '{{key_algorithm}}' --pin-policy ONCE --touch-policy CACHED '{{ca_slot}}' /dev/null
+    fi
+
+    [[ -r '{{dotenv}}' ]] && source '{{dotenv}}'
+
+    sn="$(ykman info | grep -Po 'Serial number: \K\d+')"
+
+    ca_conf=$(cat <<EO_CA_CONF
+        [req]
+        prompt = no
+        distinguished_name      = req_distinguished_name
+
+        [req_distinguished_name]
+        countryName             = ${SUBJ_C?Subject C must be provided}
+        stateOrProvinceName     = ${SUBJ_ST?Subject ST must be provided}
+        localityName            = ${SUBJ_L?Subject L must be provided}
+        organizationName        = home
+        organizationalUnitName  = home
+        commonName              = ${SUBJ_CN?Subject CN must be provided}
+        emailAddress            = ${SUBJ_EMAILADDRESS?Subject emailAddress must be provided}
+        dnQualifier             = yk ${sn} ({{ca_slot}})
+
+        [v3_ca]
+        basicConstraints        = critical, CA:true, pathlen:0
+        keyUsage                = critical, keyCertSign
+    EO_CA_CONF
+    )
+
+    if pub="$(ykman piv keys export '{{ca_slot}}' -)"; then
+        if crt="$(openssl req -new -engine pkcs11 -keyform engine -key '{{ca_key_id}}' -out - \
+                -sha512 -x509 -days '{{expire_in_days}}' \
+                -extensions v3_ca -config <(echo "$ca_conf"))"; then
+            ykman piv certificates import --verify '{{ca_slot}}' <(echo "$crt") && echo "$crt" | openssl x509 -text -noout
+        fi
+    fi
+
+# sign a certificate request by CA key
+[group('piv-ca')]
+[no-cd]
+ca-sign-csr csr:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    >&2 echo "{{YELLOW}}fetching CA certificate from {{ca_slot}}{{NORMAL}}"
+    ca_crt="$(ykman piv certificates export '{{ca_slot}}' -)"
+
+    fpth='{{csr}}'
+    stem="${fpth%.csr}"
+
+    >&2 echo "{{YELLOW}}signing csr{{NORMAL}}"
+    openssl x509 -req -engine pkcs11 -CAkeyform engine -CAkey "{{ca_key_id}}" -CA <(echo "$ca_crt") -in '{{csr}}' \
+        -out "$stem.crt" - -copy_extensions copyall -sha512 -days '{{expire_in_days}}'
+
+# => auth --------------------------------------------------------------------------------------------------------- {{{1
+
+# show certificate of 9a slot on yubikey
+[group('personal-auth')]
+@auth-cert: (cert auth_slot)
+
+# show public key of 9a slot on yubikey
+[group('personal-auth')]
+@auth-pub: (pub auth_slot)
+
+# provision slot of 9a slot on yubikey with key and certificate
+[group('personal-auth')]
+[no-cd]
+auth-provision: (personal-provision auth_slot)
+
+# => sign ------------------------------------------------------------------------------------------------------ {{{1
+
+# show certificate of 9c slot on yubikey
+[group('personal-sign')]
+@sign-cert: (cert sign_slot)
+
+# show public key of 9c slot on yubikey
+[group('personal-sign')]
+@sign-pub: (pub sign_slot)
+
+# provision slot of 9c slot on yubikey with key and certificate
+[group('personal-sign')]
+[no-cd]
+sign-provision: (personal-provision sign_slot)
+
+# => decrypt ------------------------------------------------------------------------------------------------------ {{{1
+
+# show certificate of 9d slot on yubikey
+[group('personal-decrypt')]
+@decrypt-cert: (cert decrypt_slot)
+
+# show public key of 9d slot on yubikey
+[group('personal-decrypt')]
+@decrypt-pub: (pub decrypt_slot)
+
+# provision slot of 9d slot on yubikey with key and certificate
+[group('personal-decrypt')]
+[no-cd]
+decrypt-provision: (personal-provision decrypt_slot)
+
+# => csr ---------------------------------------------------------------------------------------------------------- {{{1
+
+# issue a certificate sign request
+[group('csr')]
+[no-cd]
+csr-issue domain:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    key='{{domain}}.crt.key'
+    >&2 echo "{{YELLOW}}generating private key for {{domain}}{{NORMAL}}"
+    openssl ecparam -genkey -name secp384r1 | openssl ec -out "$key"
+
+    [[ -r '{{dotenv}}' ]] && source '{{dotenv}}'
+
+    conf=$(cat <<EO_CSR_CONF
+        [req]
+        prompt                  = no
+        distinguished_name      = req_distinguished_name
+
+        [req_distinguished_name]
+        countryName             = ${SUBJ_C?Subject C must be provided}
+        stateOrProvinceName     = ${SUBJ_ST?Subject ST must be provided}
+        localityName            = ${SUBJ_L?Subject L must be provided}
+        organizationName        = home
+        organizationalUnitName  = home
+        emailAddress            = ${SUBJ_EMAILADDRESS?Subject emailAddress must be provided}
+        commonName              = {{domain}}
+
+        [v3_csr]
+        subjectAltName          = @alt_names
+        extendedKeyUsage        = serverAuth
+
+        [alt_names]
+        ${ALT_NAMES}
+    EO_CSR_CONF
+    )
+
+    >&2 echo "{{YELLOW}}generating csr{{NORMAL}}"
+    openssl req -new -key "$key" -out '{{domain}}.csr' -sha512 -extensions v3_csr -config <(echo "$conf")
+
+# => certificates ------------------------------------------------------------------------------------------------- {{{1
+
+# issue a certificate signed by CA key
+[group('certificates')]
+[no-cd]
+@cert-issue domain: (csr-issue domain) (ca-sign-csr domain + '.csr')
