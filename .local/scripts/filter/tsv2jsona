@@ -1,0 +1,26 @@
+#!/usr/bin/env -S jq --null-input --raw-input --from-file
+
+# parse TSV file with headers to a JSON array of arrays where first subarray is the header
+
+# the try-catch dance below is necessary to support json encoded arrays and hashes and also json-like strings in tsv
+# (such strings which are json encoded but don't have double quotes around them)
+# also excessively escaped output of mysql dump is supported
+
+def ingest_field:
+    . as $it |
+    if $it == "" or $it == "NULL" or $it == "null" then
+        null
+    else
+        $it | try (fromjson) # detect numbers, enumerables and properly quoted json strings
+        catch (
+            try ("\"\($it)\"" | fromjson) # detect json-like strings (encoded but without quotes)
+            catch (
+                try ($it | gsub("\\\\\\\\\\\""; "\\\"") | fromjson) # detect mysql dump output
+                catch $it
+        ))
+    end;
+
+[
+    (input  | split("\t") | map(gsub("^\\s+|\\s+$"; ""))),
+    (inputs | split("\t") | map(gsub("^\\s+|\\s+$"; "")) | map(ingest_field))
+]
