@@ -1,0 +1,17 @@
+#!/usr/bin/env -S jq -r --null-input --from-file
+
+# ABSTRACT: convert JSON array or stream of arrays to TSV with the header based on the first array
+
+{"array": 1, "object": 1} as $need_encode
+| def to_tsv($values):
+    $values
+    | map(if type | in($need_encode) then @json else . end)
+    | @tsv;
+
+input | . as $first
+
+| if $first[0] | type == "array" then
+    $first | .[] | to_tsv(.)
+else
+    ($first, inputs) | to_tsv(.)
+end
