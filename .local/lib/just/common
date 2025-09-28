@@ -1,0 +1,17 @@
+# vim: filetype=just
+
+set export
+
+# trim all leading and trailing whitespaces for the input as a whole and ensures new line in the end
+[group('text'), private, no-cd]
+@trim-stream:
+    exec perl -g -pE '$_ = builtin::trim($_); END{say}'
+
+[group('common'), private, no-cd, positional-arguments, no-exit-message]
+@fatal message *argv:
+    >&2 echo "{{style('error')}}${*}{{NORMAL}}"
+    exit 1
+
+[group('common'), private, no-cd, positional-arguments]
+@print message *argv:
+    [[ -t 1 ]] && >&2 echo "{{style('warning')}}${*}{{NORMAL}}" || true
