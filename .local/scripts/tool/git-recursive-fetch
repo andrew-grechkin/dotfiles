@@ -1,0 +1,29 @@
+#!/usr/bin/env zsh
+
+# vim: filetype=sh
+# man: zshexpn
+
+set -Euo pipefail
+
+source "$HOME/.local/lib/shell/color.bash"
+
+if [[ "$#" -eq "1" ]] && [[ "$1" =~ \.git/?$ ]]; then
+    repo=$(dirname "$1")
+
+    echo -e "$FG[olive]Fetching ${repo}$FX[reset]"
+
+    umask "$(umask -S),g+rwx,o+rx"
+
+    git -C "$repo" -c color.ui=always -c safe.directory="$repo" fetch --force --prune --prune-tags \
+        && nice git -C "$repo" -c safe.directory="$repo" -c color.ui=always bleach
+else
+    fd -0uL -E 'bazel-*' -td -tf '\A\.git\z' "${1:-$PWD}" | sort -z | {
+        if [[ -n "$(command -v parallel)" ]]; then
+            parallel -0j-50% --delay 0.3 "$0" {}
+        else
+            xargs -0rn1 "$0"
+        fi
+    }
+fi
+
+exit 0

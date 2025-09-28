@@ -1,0 +1,11 @@
+#!/usr/bin/env -S jq --slurp -c --from-file
+
+if (.[0] | type == "object") then
+    reduce .[] as $it ({}; . * $it)
+elif (.[0] | type == "array") then
+    reduce .[] as $it ([]; . + $it)
+elif (.[0] | type == "string") then
+    reduce .[] as $it (""; . + $it)
+elif (.[0] | type == "number") then
+    reduce .[] as $it (0; . + $it)
+end

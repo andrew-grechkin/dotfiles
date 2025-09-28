@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+current_script="$(basename "$0")"
+just_name="${current_script%%-*}"
+
+if [[ "$just_name" =~ ^fzf|http|json$ ]]; then
+    just_recipe="${current_script#*-}"
+    exec just -f "$HOME/.local/lib/just/$just_name" "$just_recipe" "$@"
+else
+    exec just -f "$HOME/.local/lib/just/common" "$current_script" "$@"
+fi
