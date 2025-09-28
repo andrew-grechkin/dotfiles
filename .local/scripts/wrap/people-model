@@ -1,0 +1,41 @@
+#!/usr/bin/env -S just --one --justfile
+
+# ABSTRACT: access Google contacts API from cli (basic wrapper, request endpoints directly)
+
+# https://just.systems/man/en/
+# https://developers.google.com/people/v1/contacts
+
+import 'generic-http'
+
+export git := require('git')
+export jq := require('jq') # https://jqlang.org/download/
+export this := justfile()
+
+export GOOGLE_HOST := env('GOOGLE_HOST', 'people.googleapis.com')
+export GOOGLE_API := env('GOOGLE_API', '/v1/people')
+export REALM := 'https://www.googleapis.com'
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private, no-cd]
+@default:
+    "$this" --list
+
+# => contacts ----------------------------------------------------------------------------------------------------- {{{1
+
+# https://developers.google.com/people/api/rest/v1/people/get
+# list all contacts
+[group('contacts'), no-cd]
+list-contacts:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request GET '/me/connections' 'personFields==names,emailAddresses,phoneNumbers'
+
+# => http --------------------------------------------------------------------------------------------------------- {{{1
+
+[group('http'), private, no-cd, positional-arguments]
+http-request method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 2
+    [[ "$uri" == /* ]] && uri="$GOOGLE_HOST${GOOGLE_API}${uri#${GOOGLE_API}}"
+    "$this" generic-http-request "$method" "$uri" \
+        --auth-type=bearer --auth="${GOOGLE_TOKEN:-$(credp "$REALM")}" "$@"
