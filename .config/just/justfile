@@ -161,22 +161,22 @@ prepare-btrfs-partition device label prefix:
 	wipefs -a                 '{{device}}'
 	mkfs.btrfs -L '{{label}}' '{{device}}'
 
-	current='/mnt-{{label}}/{{prefix}}/.snapshots/current'
+	head='/mnt-{{label}}/{{prefix}}/.snapshots/head'
 
 	mount -L '{{label}}' -o subvolid=5 '/mnt-{{label}}'
 	mkdir -p                           '/mnt-{{label}}/{{prefix}}'
 	btrfs subvolume create             '/mnt-{{label}}/{{prefix}}/.snapshots'
-	mkdir -p                           "$current"
-	btrfs subvolume create             "$current/snapshot"
+	mkdir -p                           "$head"
+	btrfs subvolume create             "$head/snapshot"
 
 	if [[ {{label}} =~ ^var ]]; then
 		chattr +C "$current/snapshot"
 	fi
 
-	chmod a+rX,g+ws                    "$current/snapshot"
-	mkdir  -p                          "$current/snapshot/.snapshots"
+	chmod a+rX,g+ws                    "$head/snapshot"
+	mkdir  -p                          "$head/snapshot/.snapshots"
 
-	# cat <<HEREDOC > "$current/info.xml"
+	# cat <<HEREDOC > "$head/info.xml"
 	# <?xml version="1.0"?>
 	# <snapshot>
 	#   <type>single</type>
@@ -187,7 +187,7 @@ prepare-btrfs-partition device label prefix:
 	# HEREDOC
 
 	if [[ {{prefix}} = "@" ]]; then
-		btrfs subvolume set-default  "$current/snapshot"
+		btrfs subvolume set-default  "$head/snapshot"
 	fi
 
 [no-cd]
@@ -225,7 +225,7 @@ prepare-btrfs-cache user:
 	npm install --no-audit --no-fund
 
 [no-exit-message]
-@audio dir="/media/nfs/home/music":
+@audio dir="/media/nfs/home/audio/music":
 	just -g audio-list "{{dir}}" | fzf-execute
 
 [no-exit-message]
@@ -237,7 +237,7 @@ prepare-btrfs-cache user:
 	just -g films-list "{{dir}}" | fzf-execute
 
 [no-exit-message]
-audio-list dir="/media/nfs/home/music":
+audio-list dir="/media/nfs/home/audio/music":
 	#!/usr/bin/env bash
 	set -Eeuo pipefail
 

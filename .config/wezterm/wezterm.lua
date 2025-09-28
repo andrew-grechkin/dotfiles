@@ -5,7 +5,7 @@ local act = wezterm.action
 local result = {}
 if wezterm.config_builder then result = wezterm.config_builder() end
 
-FONT_SIZE = 16
+FONT_SIZE = 15
 
 local handle = io.popen('hostname')
 if handle then

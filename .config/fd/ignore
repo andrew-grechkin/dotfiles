@@ -4,8 +4,11 @@
 **/.cache/.bun/
 **/.cache/bazel/
 **/.cache/cody-engine/
+**/.cache/go/
 **/.cache/google-chrome/
+**/.cache/nvim/
 **/.cache/opera/
+**/.cache/yarn/
 **/.config/google-chrome/
 **/.config/opera/
 **/.git/

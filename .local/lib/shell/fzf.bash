@@ -29,7 +29,7 @@ EO_TRANSFORM
     local fzf_args=(
         --ansi
         --bind="alt-B:execute:${VISUAL:-${EDITOR:-vi}} '$0'"
-        --bind="alt-b:execute-silent:python3 -mwebbrowser {2}"
+        --bind="alt-b:execute-silent:git web--browse {2}"
         --bind="alt-p:toggle-preview,alt-/:toggle-preview-wrap,ctrl-n:preview-down,ctrl-p:preview-up"
         --bind="alt-up:first,alt-down:last"
         --bind="click-footer:transform:$transform"
