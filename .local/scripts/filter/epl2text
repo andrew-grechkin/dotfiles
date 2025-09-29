@@ -1,0 +1,38 @@
+#!/usr/bin/env -S perl -CALS
+
+# ABSTRACT:
+#   Renders text templates from STDIN using merged JSON data from specified files and Mojo::Template
+#
+# SYNOPSIS:
+#   echo 'Hello <%= $what %> <%= $name %>!' | epl2text <(jq -nc '{name: "World"}') <(jq -nc '{what: "wonderful"}')
+
+use v5.42;
+
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+use List::Util   qw(reduce);
+
+use Mojo::File     qw(path);
+use Mojo::JSON     qw(decode_json);
+use Mojo::Template qw();
+
+GetOptions(
+    'debug|d'     => \(my $debug),
+    'prepend|p=s' => \(my $prepend),
+) or die "Unable to process command line options\n";
+
+local $ENV{MOJO_TEMPLATE_DEBUG} = 1 if $debug;
+
+my @payloads = map {decode_json(path($_)->slurp)} @ARGV;
+my $stash    = reduce {+{$a->%*, $b->%*}} ({}, @payloads);
+
+my $engine = Mojo::Template->new(vars => true)->prepend(($prepend // ''));
+
+print $engine->render(
+    -t 0
+    ? do {local $/ = undef; <DATA>}
+    : do {local $/ = undef; <STDIN>}, $stash,
+);
+
+__DATA__
+You need to provide Perl templates to STDIN
+read more: perldoc Mojo::Template
