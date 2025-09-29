@@ -1,0 +1,761 @@
+#!/usr/bin/env -S just --working-directory . --one --justfile
+
+# https://just.systems/man/en/
+
+# https://jamielinux.com/docs/openssl-certificate-authority/index.html
+# https://www.procustodibus.com/blog/2023/04/how-to-set-up-a-yubikey
+# https://developers.yubico.com/yubico-piv-tool/YKCS11/Functions_and_values.html
+
+set dotenv-load
+set dotenv-override := true
+set dotenv-required := false
+
+# => export ------------------------------------------------------------------------------------------------------- {{{1
+
+set export
+set no-cd
+
+export openssl := require('openssl')
+export this := justfile()
+export ykman := require('ykman')
+
+export PKCS11_MODULE_PATH := env('PKCS11_MODULE_PATH', '/usr/lib/libykcs11.so')
+export key_algorithm := 'eccp384'
+export expire_in_days := '3652'
+
+export attest_alias := 'att'
+export attest_slot := 'f9'
+export auth_alias := 'aut'
+export auth_slot := '9a'
+export ca_alias := 'ca'
+export ca_slot := 'RETIRED1'
+export decrypt_alias := 'dec'
+export decrypt_slot := '9d'
+export sign_alias := 'sig'
+export sign_slot := '9c'
+
+export pattern_personal_alias := f'{{auth_alias}}|{{sign_alias}}|{{decrypt_alias}}'
+export pattern_personal_piv_slot := f'{{auth_slot}}|{{sign_slot}}|{{decrypt_slot}}'
+export pattern_alias := pattern_personal_alias + f'|{{attest_alias}}|{{ca_alias}}'
+export pattern_piv_slot := pattern_personal_piv_slot + f'|{{attest_slot}}|{{ca_slot}}'
+
+export ssh_default_principals := 'dummy,git,root'
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private]
+@default:
+    "$this" --list
+
+serial:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    # NOTE: intentionally fail if there are several devices connected
+    ykman info | perl -nE 'say $1 if m/Serial number:\s+(\d+)/'
+
+# => piv ---------------------------------------------------------------------------------------------------------- {{{1
+
+# PIV: slot alias to yubikey native slot name
+[group('piv'), arg('alias', pattern=pattern_alias)]
+piv-alias-to-slot alias:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    case "$alias" in
+        att) slot="f9" ;;
+        aut) slot="9a" ;;
+        ca) slot="RETIRED1" ;;
+        dec) slot="9d" ;;
+        sig) slot="9c" ;;
+        *)  "$this" fatal "unsupported alias: $alias" ;;
+    esac
+    echo "$slot"
+
+[private, arg('slot', pattern=pattern_piv_slot)]
+key-id slot:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    case "$slot" in
+        '{{ auth_slot }}') name="PIV Authentication" ;;
+        '{{ ca_slot }}') name="Retired Key 1" ;;
+        '{{ decrypt_slot }}') name="Key Management" ;;
+        '{{ sign_slot }}') name="Digital Signature" ;;
+        *)  "$this" fatal "unsupported PIV slot: $slot" ;;
+    esac
+
+    echo "pkcs11:object=Private key for ${name};type=private"
+
+# PIV: provision non-CA slot
+[group('piv'), arg('slot', pattern=pattern_personal_piv_slot), private, confirm]
+personal-provision slot:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if "$this" key-is-empty "$slot" &>/dev/null; then
+        "$this" print "> generating private key in $slot"
+        ykman piv keys generate --algorithm "$key_algorithm" --pin-policy NEVER --touch-policy CACHED "$slot" /dev/null
+    fi
+
+    sn=$("$this" serial)
+    key_id=$("$this" key-id "$slot")
+
+    # sign slot is sub-authority. It might be used to sign final certificate itself. The CA certificate is used only to
+    # sign the very initial certs and sub-authorities
+    conf=$(cat <<EO_CSR_CONF
+        [req]
+        prompt                  = no
+        distinguished_name      = req_distinguished_name
+
+        [req_distinguished_name]
+        countryName             = ${SUBJ_C:?Subject C must be provided}
+        stateOrProvinceName     = ${SUBJ_ST:?Subject ST must be provided}
+        localityName            = ${SUBJ_L:?Subject L must be provided}
+        commonName              = ${SUBJ_CN:?Subject CN must be provided}
+        emailAddress            = ${SUBJ_EMAILADDRESS:?Subject emailAddress must be provided}
+        dnQualifier             = yk ${sn} ($slot)
+
+        [v3_csr_$auth_slot]
+        basicConstraints        = critical, CA:FALSE
+        extendedKeyUsage        = clientAuth, anyExtendedKeyUsage
+
+        [v3_csr_$decrypt_slot]
+        basicConstraints        = critical, CA:FALSE
+        extendedKeyUsage        = emailProtection, anyExtendedKeyUsage
+
+        [v3_csr_$sign_slot]
+        basicConstraints        = critical, CA:TRUE, pathlen:0
+        keyUsage                = critical, cRLSign, keyCertSign
+        extendedKeyUsage        = codeSigning, OCSPSigning, emailProtection, anyExtendedKeyUsage
+    EO_CSR_CONF
+    )
+
+    "$this" print "> fetching public key from $slot"
+    pub=$("$this" pub "$slot")
+
+    "$this" print "> fetching CA certificate from $ca_slot"
+    ca_crt=$("$this" cert "$ca_slot")
+
+    "$this" print "> generating csr"
+    csr=$(openssl req -new -engine pkcs11 -keyform engine -key "$key_id" -out - -sha512 \
+            -extensions "v3_csr_$slot" -config <(echo "$conf"))
+
+    "$this" print "> signing csr"
+    crt=$(openssl x509 -req -engine pkcs11 -CAkeyform engine -CAkey "$ca_key_id" -in <(echo "$csr") -CA <(echo "$ca_crt") -out - \
+            -copy_extensions copyall -sha512 -days "$expire_in_days")
+
+    "$this" print "> importing final certificate to $slot"
+    ykman piv certificates import --verify "$slot" <(echo "$crt") \
+        && openssl x509 -text -noout <<< "$crt" >&2
+
+# PIV: show certificate in a slot
+[group('piv'), arg('slot', pattern=pattern_piv_slot)]
+cert slot:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    cert=$(ykman piv certificates export "$slot" -)
+    echo "$cert"
+    if [[ -t 1 ]]; then
+        >&2 echo
+        >&2 openssl x509 -text -noout <<< "$cert"
+    fi
+
+# PIV: show public key in a slot
+[group('piv'), arg('slot', pattern=pattern_piv_slot)]
+pub slot:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    key=$(ykman piv keys export "$slot" -)
+    echo "$key"
+    if [[ -t 1 ]]; then
+        >&2 echo
+        >&2 openssl pkey -pubin -text -noout <<< "$key"
+    fi
+
+# PIV: show objects
+[group('piv')]
+piv-objects:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    p11tool --list-all --provider "$PKCS11_MODULE_PATH"
+
+# show piv info
+[group('piv')]
+@piv-info:
+    ykman piv info
+
+# check pkcs11 engine is working for openssl
+[group('piv')]
+check-engine:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    openssl engine pkcs11 -v
+
+# check if slot doesn't have a key
+[group('piv'), arg('slot', pattern=pattern_piv_slot), no-exit-message]
+key-is-empty slot:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if ykman piv keys info "$slot" &>/dev/null; then
+        "$this" fatal "key already exists in slot: $slot"
+    fi
+
+# PIV: attestate private key if it was generated on hardware
+[group('piv'), arg('alias', pattern=pattern_alias), no-exit-message]
+piv-attest alias:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    # attestation cert, the one which is predefined by yubico on factory
+    att=$("$this" piv-cert att)
+    # the root CA yubico used to sign predefined attestation certificate
+    ca_bundle="https://developers.yubico.com/PKI/yubico-ca-certs.txt"
+
+    if ! openssl verify -CAfile <(curl -Lfs "$ca_bundle") -untrusted <(echo "$att") <<< "$cert" &>/dev/null; then
+        "$this" fatal "Cryptographic signature chain is invalid"
+    fi
+
+    # for PIV attestation certificate issue fails if private key was imported
+    $this" piv-attestation-cert "$alias"
+
+# PIV: show an attestation certificate for a private key in a slot
+[group('piv'), arg('alias', pattern=pattern_alias)]
+piv-attestation-cert alias:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    slot=$("$this" alias-to-slot "$alias")
+    if cert=$(ykman piv keys attest "$slot" -) && [[ -n "$cert" ]]; then
+        echo "$cert"
+        if [[ -t 1 ]]; then
+            >&2 echo
+            >&2 openssl x509 -text -noout <<< "$cert"
+        fi
+    fi
+
+# PIV: show a certificate in a slot
+[group('piv'), arg('alias', pattern=pattern_alias)]
+piv-cert alias:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    slot=$("$this" alias-to-slot "$alias")
+    "$this" cert "$slot"
+
+# => ca ----------------------------------------------------------------------------------------------------------- {{{1
+
+# CA: anchor cert in the system
+[group('piv-ca')]
+ca-anchor:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    cert=$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")
+    trap 'rm -f -- "$cert"' EXIT
+
+    "$this" ca-cert > "$cert"
+    sudo trust anchor --store "$cert"
+
+# CA: show certificate of RETIRED1 slot on yubikey
+[group('piv-ca')]
+@ca-cert: (cert ca_slot)
+
+# CA: show public key of RETIRED1 slot on yubikey
+[group('piv-ca')]
+@ca-pub: (pub ca_slot)
+
+# [group('piv-ca')]
+# @ca-sign file:
+#     openssl pkeyutl -sign -engine pkcs11 -keyform engine -inkey "$ca_key_id" -in "$file" -out "$file.sig"
+
+# [group('piv-ca')]
+# @ca-attest file:
+#     openssl pkeyutl -verify -pubin -inkey <(ykman piv keys export "$ca_slot" -) -in "$file" -sigfile "$file.sig"
+
+# [group('piv-ca')]
+# @ca-gen-cert-interactive file:
+#     openssl req -new -x509 -engine pkcs11 -keyform engine -key "$ca_key_id" -out "$file"
+
+# CA: provision slot of RETIRED1 slot on yubikey with key and certificate
+[group('piv-ca'), confirm]
+ca-provision:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if "$this" key-is-empty "$ca_slot" &>/dev/null; then
+        ykman piv keys generate --algorithm "$key_algorithm" --pin-policy ONCE --touch-policy CACHED "$ca_slot" /dev/null
+    fi
+
+    sn=$("$this" serial)
+
+    ca_conf=$(cat <<EO_CA_CONF
+        [req]
+        prompt = no
+        distinguished_name      = req_distinguished_name
+
+        [req_distinguished_name]
+        countryName             = ${SUBJ_C:?Subject C must be provided}
+        stateOrProvinceName     = ${SUBJ_ST:?Subject ST must be provided}
+        localityName            = ${SUBJ_L:?Subject L must be provided}
+        organizationName        = home
+        organizationalUnitName  = home
+        commonName              = ${SUBJ_CN:?Subject CN must be provided}
+        emailAddress            = ${SUBJ_EMAILADDRESS:?Subject emailAddress must be provided}
+        dnQualifier             = yk ${sn} ($ca_slot)
+
+        [v3_ca]
+        basicConstraints        = critical, CA:true, pathlen:0
+        keyUsage                = critical, keyCertSign
+    EO_CA_CONF
+    )
+
+    if pub=$("$this" pub "$ca_slot"); then
+        if crt=$(openssl req -new -engine pkcs11 -keyform engine -key "$ca_key_id" -out - \
+                -sha512 -x509 -days "$expire_in_days" \
+                -extensions v3_ca -config <(echo "$ca_conf")); then
+            ykman piv certificates import --verify "$ca_slot" <(echo "$crt") && openssl x509 -text -noout <<< "$crt" >&2
+        fi
+    fi
+
+# CA: sign a certificate request
+[group('piv-ca')]
+ca-sign-csr csr:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    "$this" print "> fetching CA certificate from $ca_slot"
+    ca_crt=$("$this" cert "$ca_slot")
+
+    fpth="$csr"
+    stem="${fpth%.csr}"
+
+    "$this" print "> signing csr"
+    openssl x509 -req -engine pkcs11 -CAkeyform engine -CAkey "$ca_key_id" -CA <(echo "$ca_crt") -in "$csr" \
+        -out "$stem.crt" - -copy_extensions copyall -sha512 -days "$expire_in_days"
+
+# => auth --------------------------------------------------------------------------------------------------------- {{{1
+
+# PIV: show certificate of 9a slot on yubikey
+[group('piv-personal')]
+@auth-cert: (cert auth_slot)
+
+# PIV: show public key of 9a slot on yubikey
+[group('piv-personal')]
+@auth-pub: (pub auth_slot)
+
+# PIV: provision slot of 9a slot on yubikey with key and certificate
+[group('piv-personal')]
+@auth-provision: (personal-provision auth_slot)
+
+# => sign --------------------------------------------------------------------------------------------------------- {{{1
+
+# PIV: show certificate of 9c slot on yubikey
+[group('piv-personal')]
+@sign-cert: (cert sign_slot)
+
+# PIV: show public key of 9c slot on yubikey
+[group('piv-personal')]
+@sign-pub: (pub sign_slot)
+
+# PIV: provision slot of 9c slot on yubikey with key and certificate
+[group('piv-personal')]
+@sign-provision: (personal-provision sign_slot)
+
+# => decrypt ------------------------------------------------------------------------------------------------------ {{{1
+
+# PIV: show certificate of 9d slot on yubikey
+[group('piv-personal')]
+@decrypt-cert: (cert decrypt_slot)
+
+# PIV: show public key of 9d slot on yubikey
+[group('piv-personal')]
+@decrypt-pub: (pub decrypt_slot)
+
+# PIV: provision slot of 9d slot on yubikey with key and certificate
+[group('piv-personal')]
+@decrypt-provision: (personal-provision decrypt_slot)
+
+# => csr ---------------------------------------------------------------------------------------------------------- {{{1
+
+# issue a certificate sign request
+[group('csr')]
+csr-issue domain:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    key="$domain.crt.key"
+    "$this" print "> generating private key for $domain"
+    openssl ecparam -genkey -name secp384r1 | openssl ec -out "$key"
+
+    conf=$(cat <<EO_CSR_CONF
+        [req]
+        prompt                  = no
+        distinguished_name      = req_distinguished_name
+
+        [req_distinguished_name]
+        countryName             = ${SUBJ_C:?Subject C must be provided}
+        stateOrProvinceName     = ${SUBJ_ST:?Subject ST must be provided}
+        localityName            = ${SUBJ_L:?Subject L must be provided}
+        organizationName        = home
+        organizationalUnitName  = home
+        emailAddress            = ${SUBJ_EMAILADDRESS:?Subject emailAddress must be provided}
+        commonName              = $domain
+
+        [v3_csr]
+        subjectAltName          = @alt_names
+        extendedKeyUsage        = serverAuth
+
+        [alt_names]
+        ${ALT_NAMES}
+    EO_CSR_CONF
+    )
+
+    "$this" print "> generating csr"
+    openssl req -new -key "$key" -out "$domain.csr" -sha512 -extensions v3_csr -config <(echo "$conf")
+
+# => certificates ------------------------------------------------------------------------------------------------- {{{1
+
+# issue a certificate signed by CA key
+[group('certificates')]
+@cert-issue domain: (csr-issue domain) (ca-sign-csr domain + '.csr')
+
+# => config ------------------------------------------------------------------------------------------------------- {{{1
+
+# Generate a template .env file for subject information
+[group('config'), no-exit-message]
+init:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ -f ".env" ]]; then
+        "$this" print "'.evn' file already exists, skipping generation"
+        exit 0
+    fi
+
+    cat <<EO_DOTENV > ".env"
+    # shellcheck disable=SC2034
+
+    # Subject information for YubiKey certificates
+    # Country (2-letter code, e.g., US, GB)
+    SUBJ_C="US"
+
+    # State or Province Name (e.g., California, England)
+    SUBJ_ST="YourState"
+
+    # Locality Name (City, e.g., San Francisco, London)
+    SUBJ_L="YourCity"
+
+    # Common Name (e.g., John Doe, example.com)
+    SUBJ_CN="Your Name"
+
+    # Email Address
+    SUBJ_EMAILADDRESS="your.email@example.com"
+
+    # Subject Alternative Names for domain certificates (e.g., for csr-issue)
+    # Format: DNS.1=example.com, DNS.2=www.example.com, IP.1=192.168.1.1
+    # Leave empty if not needed for personal certificates or specific domain
+    # Example: ALT_NAMES="DNS.1=yourdomain.com,DNS.2=www.yourdomain.com"
+    ALT_NAMES=""
+
+    # PKCS#11 module path (optional, overrides default /usr/lib/libykcs11.so)
+    # PKCS11_MODULE_PATH="/usr/local/lib/libykcs11.so"
+    EO_DOTENV
+
+    "$this" print "template '.env' file generated, please edit it with your details"
+
+# => opengpg ------------------------------------------------------------------------------------------------------ {{{1
+
+# OPENGPG: attestate private key if it was generated on hardware
+[group('opengpg'), arg('slot', pattern=pattern_alias), no-exit-message]
+gpg-attest slot:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    # attestation cert, the one which is predefined by yubico on factory
+    att=$("$this" gpg-cert att)
+    # the root CA yubico used to sign predefined attestation certificate
+    ca_bundle="https://developers.yubico.com/PKI/yubico-ca-certs.txt"
+
+    cert=$("$this" gpg-cert "$slot")
+    if ! openssl verify -CAfile <(curl -Lfs "$ca_bundle") -untrusted <(echo "$att") <<< "$cert" &>/dev/null; then
+        "$this" fatal "Cryptographic signature chain is invalid"
+    fi
+
+    # Key Origin Check (Yubico OID: 1.3.6.1.4.1.41482.5.2)
+    # Value 020101 = Generated on-chip (02=Integer, 01=Length, 01=Generated)
+    oid_origin="1.3.6.1.4.1.41482.5.2"
+
+    is_generated=$(openssl asn1parse -in <(echo "$cert") | perl -0777 -nE "
+        say '01' if m/:\Q$oid_origin\E.*?OCTET STRING\s+\[HEX DUMP\]:020101\R/s
+    ")
+
+    if [[ "$is_generated" != "01" ]]; then
+        "$this" fatal "Certificate chain is valid, but key was IMPORTED (Not GENERATED on hardware)"
+    fi
+
+# OPENGPG: show attestation/information certificate for private key
+[group('opengpg'), arg('slot', pattern=pattern_alias)]
+gpg-cert slot:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    ykman openpgp certificates export "$slot" -
+
+# => ssh ---------------------------------------------------------------------------------------------------------- {{{1
+
+# SSH: issue key pair (non-resident)
+[group('ssh')]
+ssh-issue-key-pair comment='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    [[ -n "$comment" ]] && args=(-C "$comment")
+    umask 077
+    ssh-keygen -t ed25519 "${args[@]}" -f id_ed25519
+
+# SSH: print public half for a private key
+[group('ssh')]
+@ssh-pub private_key:
+    ssh-keygen -yf "$private_key"
+
+# SSH: show information about key or certificate
+[group('ssh')]
+ssh-show key_or_cert:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ "$key_or_cert" =~ -cert\.pub$ ]]; then
+        ssh-keygen -Lf "$key_or_cert"
+    else
+        ssh-keygen -lf "$key_or_cert"
+    fi
+
+# => ssh-ca ------------------------------------------------------------------------------------------------------- {{{1
+
+# SSH: generate sk CA private key name
+[group('ssh-ca'), private]
+ssh-ca-key-name type='users':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    echo "id_ed25519_sk_rk_$("${this}" serial):ca-$type"
+
+# https://developers.yubico.com/SSH/Securing_SSH_with_FIDO2.html
+# SSH: init CA for users/hosts cert and generate resident private key in FIDO2 storage
+[group('ssh-ca')]
+ssh-init-ca type='users':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    serial=$("$this" serial)"
+    args=(
+        -O resident # use FIDO2 to store (yubikey)
+        -O application="ssh:${serial:?Unable to detect yubikey serial number}:ca-$type"
+        -C "Certificate Authority to sign $type certs (sk: $serial)"
+        -P "" # passphrase is not necessary because secret material is stored on yubikey and protected by pin
+    )
+    umask 077
+    ssh-keygen -t ed25519-sk "${args[@]}" -f $("$this" ssh-ca-key-name "$type")
+
+# SSH: check CA key exist in the current dir
+[group('ssh-ca'), no-exit-message]
+ssh-check-ca-key type='users':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    filename=$("$this" ssh-ca-key-name "$type")
+    [[ -r "$filename" ]] \
+        || "$this" fatal "CA key not found: $filename\nchange dir or try 'yk ssh-fetch-ca' if key is a resident (FIDO2)"
+
+# SSH: fetch CA sk resident key handles from FIDO2 storage (secret material stays on a hardware key)
+[group('ssh-ca')]
+ssh-fetch-ca:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    umask 077
+    # NOTE: unfortunately key comment will be lost and replaced by application string because FIDO2 doesn't store it
+    ssh-keygen -K -P ''
+
+# SSH: configure sshd to trust hosts signed by a CA of a current connected yubikey
+[group('ssh-ca')]
+ssh-trust-ca-hosts:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    # TODO
+
+# SSH: configure sshd to trust users signed by a CA of a current connected yubikey
+[group('ssh-ca')]
+ssh-trust-ca-users:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    dir='/etc/ssh/sshd_config.d'
+    ca_keys='/etc/ssh/ssh-ca-users.keys'
+
+    # TODO: properly detect already trusted by reading file contents
+    [[ -f "$dir/50-trust-ca-users.conf" ]] && { "$this" print 'already trusted'; exit 0; }
+
+    "$this" ssh-check-ca-key 'users'
+    if pub=$("$this" ssh-pub $("$this" ssh-ca-key-name)) && [[ -n "$pub" ]]; then
+        "$this" print "> adding certificate authority"
+        sudo tee -a "$ca_keys"                      <<< "$pub"
+        sudo tee    "$dir/50-trust-ca-users.conf"   <<< "TrustedUserCAKeys       $ca_keys"
+        "$this" print "> disabling password usage"
+        sudo tee    "$dir/51-disable-password.conf" <<< "PasswordAuthentication  no"
+        sudo chmod a+r "$dir"/*.conf "$ca_keys"
+    fi
+
+# => ssh-host ----------------------------------------------------------------------------------------------------- {{{1
+
+# SSH: issue host certificate for existing key
+[group('ssh-host'), positional-arguments]
+ssh-sign-host-key public_or_private_key +hosts:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    args=(
+        -h
+        -s "$("$this" ssh-ca-key-name hosts)"
+        -I "${hosts[0]}"
+        -n "${hosts[*]// /,}"
+    )
+    umask 022
+    ssh-keygen "${args[@]}" "$public_or_private_key"
+
+# SSH: issue and deploy host certificates for all remote host keys
+[group('ssh-host'), positional-arguments]
+ssh-sign-remote-host hostname *aliases:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" ssh-check-ca-key 'hosts'
+
+    # NOTE: if sudo needs password it will fail here, which is expected because it will be impossible to write certs
+    # later anyway. Solution is to have NOPASSWD for the user (at least temporary)
+    conf='/etc/ssh/sshd_config.d/99-host-certs.conf'
+    ssh "$hostname" "sudo touch '$conf' && sudo chmod a+r '$conf'"
+
+    mapfile -t remote_keys < <(ssh "$hostname" "ls /etc/ssh/ssh_host_*_key.pub")
+
+    tmp_dir=$(mktemp -d --tmpdir="${XDG_RUNTIME_DIR:-/tmp}" "yk-ssh-sign-remote-host.XXXXXX")
+    cleanup=("$tmp_dir")
+    trap 'rm -rf -- "${cleanup[@]}"' EXIT
+
+    for key in "${remote_keys[@]}"; do
+        # NOTE: dsa keys are not supported by modern ssh
+        [[ "$key" =~ _dsa_ ]] && continue
+
+        "$this" print "> processing: $key"
+        # NOTE: old machines need -O flag to enable legacy mode
+        scp "$hostname:$key" "$tmp_dir/" &>/dev/null || scp -O "$hostname:$key" "$tmp_dir/"
+
+        name=$(basename "$key")
+        "$this" ssh-sign-host-key "$tmp_dir/$name" "$@"
+
+        cert="${name%.pub}-cert.pub"
+        scp "$tmp_dir/$cert" "$hostname:/tmp/$cert" &>/dev/null || scp -O "$tmp_dir/$cert" "$hostname:/tmp/$cert"
+        ssh "$hostname" 'bash -seu' << EO_SCRIPT
+            trap 'rm -f -- "/tmp/$cert"' EXIT
+            line='HostCertificate /etc/ssh/$cert'
+            sudo install -o root -g root -m 0644 '/tmp/$cert' /etc/ssh/
+            grep -qFx "\$line" '$conf' || sudo tee -a '$conf' <<< "\$line"
+    EO_SCRIPT
+    done
+
+# SSH: issue host certificates for local machine
+[group('ssh-host'), positional-arguments]
+ssh-sign-local-host hostname *aliases:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" ssh-check-ca-key 'hosts'
+
+    tmp_dir=$(mktemp -d --tmpdir="${XDG_RUNTIME_DIR:-/tmp}" "yk-ssh-sign-local-host.XXXXXX")
+    cleanup=("$tmp_dir")
+    trap 'rm -rf -- "${cleanup[@]}"' EXIT
+
+    conf='/etc/ssh/sshd_config.d/99-host-certs.conf'
+    sudo touch "$conf"
+    sudo chmod a+r "$conf"
+
+    for key in /etc/ssh/*_key.pub; do
+        "$this" print "> processing: $key"
+        name=$(basename "$key")
+
+        sudo install -o root -g root -m 0644 "$key" "$tmp_dir/"
+        "$this" ssh-sign-host-key "$tmp_dir/$name" "$@"
+
+        cert="${name%.pub}-cert.pub"
+        sudo install -o root -g root -m 0644 "$tmp_dir/$cert" "/etc/ssh/"
+        line="HostCertificate /etc/ssh/$cert"
+        grep -qFx "$line" "$conf" || sudo tee -a "$conf" <<< "$line"
+    done
+
+# => ssh-user ----------------------------------------------------------------------------------------------------- {{{1
+
+# SSH: issue user certificate for an existing key
+[group('ssh-user')]
+ssh-sign-user-key public_or_private_key user='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" ssh-check-ca-key
+    user="${user:-$USER}"
+    args=(
+        -s "$("$this" ssh-ca-key-name users)"
+        -I "$user"
+        -n "$user,$ssh_default_principals"
+    )
+    umask 022
+    ssh-keygen "${args[@]}" "$public_or_private_key"
+
+# SSH: issue permanent user certificate and key (non-resident) signed by CA resident in yubikey
+[group('ssh-user')]
+ssh-issue-standalone-user-cert user='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" ssh-check-ca-key
+    user="${user:-$USER}"
+    umask 077
+    "$this" ssh-issue-key-pair "user: $user" \
+        && rm -f -- id_ed25519.pub \
+        && "$this" ssh-sign-user-key id_ed25519 "$user"
+
+# SSH: issue permanent user resident key (FIDO2) and certificate signed by CA resident in yubikey
+[group('ssh-user')]
+ssh-issue-resident-user-cert user='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" ssh-check-ca-key
+    user="${user:-$USER}"
+    serial=$("$this" serial)
+    args_key=(
+        -t ed25519
+        -O resident
+        -O application="ssh:${serial:?Unable to detect yubikey serial number}:user-$user"
+        -C "user: $user (sk: $serial)" \
+        -P ""
+    )
+    umask 077
+    ssh-keygen "${args_key[@]}" -f id_ed25519 \
+        && rm -f -- id_ed25519.pub \
+        && "$this" ssh-sign-user-key id_ed25519 "$user"
+
+# SSH: issue temporary user certificate (valid for 12 hours) and store it in SSH agent only
+[group('ssh-user')]
+ssh-issue-temp-user-cert user='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" ssh-check-ca-key
+    user="${user:-$USER}"
+
+    tmpdir=$(mktemp -d --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")
+    trap 'rm -rf -- "$tmpdir"' EXIT
+
+    # NOTE: make temp files safe by adding random passphrase because they briefly stored on a disk
+    # unfortunately ssh-keygen is not good enough to be able to generate keys to STDOUT only
+    passphrase=$(set +o pipefail; tr -dc '[:alnum:]' </dev/urandom | head -c 16)
+
+    export SSH_ASKPASS="$tmpdir/ssh-askpass"
+
+    umask 077 && cat << EO_ASKPASS > "$SSH_ASKPASS" && chmod u+x "$SSH_ASKPASS"
+    #!/usr/bin/env bash
+    echo "$passphrase"
+    EO_ASKPASS
+
+    ssh-keygen -q -t ed25519 -P "$passphrase" -C "user: $user" -f "$tmpdir/id_ed25519"
+
+    args=(
+        -s "$("$this" ssh-ca-key-name users)"
+        -I "$user"
+        -n "$user,$ssh_default_principals"
+        -V '-5m:+12h'
+    )
+    ssh-keygen "${args[@]}" "$tmpdir/id_ed25519"
+
+    ssh-add "$tmpdir/id_ed25519" <<< "$passphrase"
+
+# => sudo --------------------------------------------------------------------------------------------------------- {{{1
+
+# SUDO: register this yubikey for usage as sudo permissions approval
+sudo-register-this:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    file="$XDG_CONFIG_HOME/Yubico/u2f_keys"
+    mkdir -p $(dirname "$file")
+    echo 'touch yubikey to be registered'
+    if [[ -s "$file" ]]; then
+        pamu2fcfg -n >> "$file"
+    else
+        pamu2fcfg    >> "$file"
+    fi
+
+# SUDO: allow yubikey to be used to confirm sudo
+sudo-pam-allow-yubikey:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    file='/etc/pam.d/sudo'
+    grep -q 'pam_u2f.so' "$file" && exit 0
+    (( EUID > 0 )) && exec sudo "$0" "$@"
+    {
+        echo '# allow yubikey to be used as sudo approval'
+        echo '# skip fprintd and u2f unless session is interactive (ansible run without TTY and should use password)'
+        echo '-auth       [success=ignore default=2] pam_succeed_if.so debug tty =~ ?*'
+        echo '-auth       sufficient  pam_fprintd.so debug timeout=10'
+        echo '-auth       sufficient  pam_u2f.so cue [cue_prompt=sudo: touch yubikey to confirm]'
+        cat "$file"
+    } | sponge "$file" && chmod a+r "$file"
+
+# => helpers ------------------------------------------------------------------------------------------------------ {{{1
+
+[group('helpers'), private, no-exit-message]
+@fatal message:
+    >&2 echo -e "{{style('error')}}$message{{NORMAL}}"
+    exit 1
+
+[group('helpers'), private]
+@print message:
+    [[ -t 1 ]] && >&2 echo -e "{{style('warning')}}$message{{NORMAL}}" || true
