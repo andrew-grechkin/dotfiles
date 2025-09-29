@@ -1,0 +1,3 @@
+#!/usr/bin/env -S jq -r --from-file
+
+to_entries | sort_by(.key)[] | if (.value) then "\u001B[1m\u001B[97m\u001B[7m" else "\u001B[2m\u001B[37m" end + .key + "\u001B[0m"

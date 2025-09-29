@@ -1,0 +1,93 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+xh := require('xh') # https://github.com/ducaale/xh#installation
+
+# generic http request using full url, provides diagnostics on failure
+[private, no-cd, no-exit-message]
+[group('http')]
+generic-http-request method url *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    xh_args=(
+        '{{url}}'
+        --https
+        --ignore-stdin
+        --no-follow
+    )
+
+    method='{{method}}'
+    cmd=(xh "${method@U}" "${xh_args[@]}" {{argv}})
+
+    if [[ -n "${XH_DEBUG:-}" ]]; then
+        if [[ "$XH_DEBUG" == "curl" ]]; then
+            >&2 "${cmd[@]}" --curl
+        elif [[ -x "$(command -v args2log)" ]]; then
+            >&2 args2log "${cmd[@]}"
+        else
+            >&2 echo "${cmd[@]@Q}"
+        fi
+    fi
+
+    [[ -t 1 ]] && exec "${cmd[@]}"
+
+    # this should be done by the tool automatically but for now this is required workaround
+    if [[ "${method@U}" == 'HEAD' || "${method@U}" == 'OPTIONS' ]]; then
+        args=(-qq --print=h)
+    else
+        args=(-qq --print=b)
+    fi
+
+    if res=$(xh "${method@U}" "${xh_args[@]}" "${args[@]}" {{argv}}); then
+        echo "$res"
+    else
+        errno="$?"
+        if [[ -x "$(command -v args2log)" ]]; then
+            >&2 args2log "${cmd[@]}"
+        else
+            >&2 echo "${cmd[@]@Q}"
+        fi
+        >&2 "${cmd[@]}" --print=HB --offline
+        >&2 echo "$res"
+        exit "$errno"
+    fi
+
+# streaming http request using full url
+[private, no-cd, no-exit-message]
+[group('http')]
+streaming-http-request method url *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    method='{{method}}'
+    xh_args=(
+        '{{url}}'
+        --https
+        --ignore-stdin
+        --no-follow
+        --stream
+    )
+    xh "${method@U}" "${xh_args[@]}" {{argv}}
+
+# => helpers ------------------------------------------------------------------------------------------------------ {{{1
+
+[group('helpers'), private, no-cd, no-exit-message]
+@fatal message:
+    >&2 echo '{{style("error")}}{{message}}{{NORMAL}}'
+    exit 1
+
+[group('helpers'), private, no-cd]
+@print message:
+    [[ -t 1 ]] && >&2 echo '{{style("warning")}}{{message}}{{NORMAL}}' || true
+
+# parse raw HTTP headers to JSON, support multi-value headers (set-cookie for example)
+[group('helpers'), private, no-cd]
+headers2json:
+    #!/usr/bin/env -S bash -Eeu
+    tail -n +2 \
+        | perl -lnE 'm/^$/x and exit; m/^ [[:alnum:].+-_]+? :/x and say s/^ ([^:]+?) : \s* (.+)/$1\t$2/xr' \
+        | sort -u \
+        | jq -nRS '[inputs | split("\t") | {key: (.[0] | ascii_downcase), value: .[1]}]
+            | group_by(.key)
+            | map( { (.[0].key): ([.[] .value] | if length == 1 then .[0] else . end) } )
+            | add
+        '
