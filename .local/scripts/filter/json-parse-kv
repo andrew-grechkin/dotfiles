@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+exec jq -R 'capture("(?<key>.+?)'"${1:-=}"'(?<value>.+)$") | map_values(trim)'
