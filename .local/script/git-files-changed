@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-
-set -Eeuo pipefail
-
-git-in-repo && {
-	git status --porcelain | sed 's/^...//'
-}
