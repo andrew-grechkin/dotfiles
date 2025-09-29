@@ -1,0 +1,53 @@
+#!/usr/bin/env -S just --one --justfile
+
+# ABSTRACT: access Google Drive API from cli (basic wrapper, request endpoints directly)
+
+# https://just.systems/man/en/
+# https://developers.google.com/workspace/drive/api/guides/search-files
+
+import 'generic-http'
+
+export git := require('git')
+export jq := require('jq') # https://jqlang.org/download/
+export this := justfile()
+
+export GOOGLE_HOST := env('GOOGLE_HOST', 'www.googleapis.com')
+export GOOGLE_API := env('GOOGLE_API', '/drive/v3')
+export REALM := 'https://www.googleapis.com'
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private, no-cd]
+@default:
+    "$this" --list
+
+# => directories -------------------------------------------------------------------------------------------------- {{{1
+
+# list all dirs
+[group('dirs'), no-cd]
+list-dirs:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request GET '/files' "q==mimeType='application/vnd.google-apps.folder'"
+
+# => spreadsheets ------------------------------------------------------------------------------------------------- {{{1
+
+# list all spreadsheets
+[group('spreadsheets'), no-cd]
+list-spreadsheets:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request GET '/files' "q==mimeType='application/vnd.google-apps.spreadsheet'"
+
+# show spreadsheets
+[group('spreadsheets'), no-cd]
+@spreadsheets:
+    "$this" list-spreadsheets | jq '.files | map(del(.mimeType))'
+
+# => http --------------------------------------------------------------------------------------------------------- {{{1
+
+[group('http'), private, no-cd, positional-arguments]
+http-request method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 2
+    [[ "$uri" == /* ]] && uri="$GOOGLE_HOST${GOOGLE_API}${uri#${GOOGLE_API}}"
+    "$this" generic-http-request "$method" "$uri" \
+        --auth-type=bearer --auth="${GOOGLE_TOKEN:-$(credp "$REALM")}" "$@"

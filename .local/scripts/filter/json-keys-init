@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+positive="${1?JSON positive keys must be provided, comma separated}"
+negative="${2?JSON negative keys must be provided, comma separated}"
+
+jq_positive_keys=$(echo "$positive" | jq -R 'split(",") | map(select(length > 0))')
+jq_negative_keys=$(echo "$negative" | jq -R 'split(",") | map(select(length > 0))')
+
+jq -n --argjson negative_keys "$jq_negative_keys" --argjson positive_keys "$jq_positive_keys" \
+    'reduce $negative_keys[] as $key ({}; .[$key] = false) + reduce $positive_keys[] as $key ({}; .[$key] = true)'

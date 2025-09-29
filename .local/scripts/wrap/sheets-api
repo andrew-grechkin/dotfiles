@@ -1,0 +1,242 @@
+#!/usr/bin/env -S just --one --justfile
+
+# ABSTRACT: access Google Sheets API from cli (basic wrapper, request endpoints directly)
+
+# https://just.systems/man/en/
+# https://developers.google.com/workspace/sheets/api/reference/rest/v4/spreadsheets.values
+
+import 'generic-http'
+
+export git := require('git')
+export jq := require('jq') # https://jqlang.org/download/
+export this := justfile()
+
+export GOOGLE_HOST := env('GOOGLE_HOST', 'sheets.googleapis.com')
+export GOOGLE_API := env('GOOGLE_API', '/v4/spreadsheets')
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private]
+@default:
+    "$this" --list
+
+# => document ----------------------------------------------------------------------------------------------------- {{{1
+
+# open document in a browser
+[group('document')]
+browse sheet_id='' id=env('DOCUMENT_ID'):
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    url="https://docs.google.com/spreadsheets/d/$id/edit"
+    [[ -n "$sheet_id" ]] && url+="?gid=$sheet_id"
+    git web--browse "$url" &>/dev/null
+
+# export a sheet of a document to TSV
+[group('document')]
+export-tsv sheet_id='' id=env('DOCUMENT_ID'):
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    [[ -n "$sheet_id" ]] && args+=("gid==$sheet_id")
+    xh GET "https://docs.google.com/spreadsheets/d/$id/export" 'format==tsv' "${args[@]}"
+
+# show a sheet of a document as aligned TSV
+[group('document')]
+show sheet_id='' id=env('DOCUMENT_ID'):
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" export-tsv "$sheet_id" "$id" | tsv-show -npc
+
+# rename a sheet in the document interactively
+[group('document')]
+select-rename id=env('DOCUMENT_ID'):
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    title=$("$this" select-sheet-title "$id")
+    new_title="$(gum input --placeholder='New sheet title' --header="Current title: $title")"
+    "$this" print "Renaming sheet: $title -> $new_title"
+    "$this" rename-sheet "$title" "$new_title" "$id"
+
+# select sheet id in the document
+[group('document')]
+select-sheet-id id=env('DOCUMENT_ID'):
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" get-metadata "$id" \
+        | jq -cS '.sheets[] | .properties | {index, sheetId, title}' \
+        | json2tsv | tsv-align \
+        | fzf-table --accept-nth=2 --with-nth=3
+
+# select sheet title in the document
+[group('document')]
+select-sheet-title id=env('DOCUMENT_ID'):
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" get-metadata "$id" \
+        | jq -c '.sheets[] | .properties | {index, sheetId, title}' \
+        | json2tsv | tsv-align \
+        | fzf-table --accept-nth=3 --with-nth=3
+
+# get the whole data of the document, including all sheets and metadata
+[group('document')]
+get-data id=env('DOCUMENT_ID'):
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    metadata=$("$this" get-metadata "$id" | jq -c '{spreadsheet: .}')
+    ranges=$(jq -r '.spreadsheet.sheets[].properties.title' <<< "$metadata" | tap -e 'ranges==${line@Q}')
+    data=$(xargs -d'\n' -r <<< "$ranges" "$this" batch-get-values "$id" | jq -c '{valueRanges: .valueRanges}')
+    { echo "$metadata"; echo "$data"; } | jq -n 'input * input'
+
+# get metadata of the document
+[group('document')]
+@get-metadata id=env('DOCUMENT_ID'): (http-request 'GET' '/' + id)
+
+# get sheets titles available in the document
+[group('document')]
+list-sheets id=env('DOCUMENT_ID'):
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" get-metadata "$id" | jq -r '.sheets[].properties.title'
+
+# => sheet -------------------------------------------------------------------------------------------------------- {{{1
+
+# clear all values from a range (can be a sheet title to clear the whole sheet)
+[group('sheet')]
+@clear-range range id=env('DOCUMENT_ID'):
+    "$this" http-request 'POST' "/$id/values/$range:clear"
+
+# create a new sheet in the document
+[group('sheet')]
+create-sheet title id=env('DOCUMENT_ID'):
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -nc --arg title "$title" '[{addSheet:{properties:{title:$title} } }]' \
+        | "$this" batch-update-sheets "$id"
+
+# delete a sheet from the document
+[group('sheet')]
+delete-sheet title id=env('DOCUMENT_ID'):
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    sheet_id=$("$this" get-sheet-id "$title" "$id")
+    [[ -n "$sheet_id" ]] || "$this" fatal "not found sheet with title: $title"
+    jq -nc --arg sheet_id "$sheet_id" '[{deleteSheet:{sheetId:$sheet_id} }]' \
+        | "$this" batch-update-sheets "$id"
+
+# rename a sheet in a document
+[group('sheet')]
+rename-sheet title new_title id=env('DOCUMENT_ID'):
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    sheet_id=$("$this" get-sheet-id "$title" "$id")
+    [[ -n "$sheet_id" ]] || "$this" fatal "not found sheet with title: $title"
+    jq -nc --arg sheet_id "$sheet_id" --arg new_title "$new_title" \
+        '[{updateSheetProperties:{properties:{sheetId:$sheet_id,title: $new_title},fields:"title"} }]' \
+        | "$this" batch-update-sheets "$id"
+
+# get sheet from the document
+[group('sheet')]
+@get-sheet title id=env('DOCUMENT_ID'):
+    "$this" http-request 'GET' "/$id/values/$title" 'valueRenderOption==FORMULA'
+
+# get sheet text (formatted as visible, no formulas) from the document
+[group('sheet')]
+@get-sheet-formatted title id=env('DOCUMENT_ID'):
+    "$this" http-request 'GET' "/$id/values/$title" 'valueRenderOption==FORMATTED_VALUE'
+
+# get sheet text (unformatted) from the document
+[group('sheet')]
+@get-sheet-unformatted title id=env('DOCUMENT_ID'):
+    "$this" http-request 'GET' "/$id/values/$title" 'valueRenderOption==UNFORMATTED_VALUE'
+
+# get sheet id by the title
+[group('sheet')]
+get-sheet-id title id=env('DOCUMENT_ID'):
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" get-metadata "$id" \
+        | jq -r --arg title "$title" '.sheets[] | select(.properties.title == $title) | .properties.sheetId'
+
+# append rows to a sheet by passing JSON (array of arrays) to stdin
+[group('sheet')]
+append-sheet title id=env('DOCUMENT_ID'):
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -nc '{values:inputs}' \
+        | exec "$this" http-request-stdin POST "/$id/values/$title:append" \
+            'valueInputOption==USER_ENTERED' \
+            'includeValuesInResponse==false'
+
+# append rows to a sheet by passing JSON (array of hashes) to stdin
+[group('sheet')]
+append-sheet-json title id=env('DOCUMENT_ID'):
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq '[(.[0] | keys), map([.[]])[]]' | "$this" append-sheet "$title" "$id"
+
+# append rows to a sheet by passing TSV to stdin
+[group('sheet')]
+append-sheet-tsv title id=env('DOCUMENT_ID'):
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    tsv2jsona | "$this" append-sheet "$title" "$id"
+
+# update a range in a sheet by passing JSON (array of arrays) to stdin
+[group('sheet')]
+set-range range id=env('DOCUMENT_ID'):
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -nc '{values:inputs}' \
+        | exec "$this" http-request-stdin PUT "/$id/values/$range" \
+            'valueInputOption==USER_ENTERED' \
+            'includeValuesInResponse==false'
+    }')
+
+# update a range in a sheet by passing JSON (array of hashes) to stdin
+[group('sheet')]
+set-range-json range id=env('DOCUMENT_ID'):
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq '[(.[0] | keys), map([.[]])[]]' | "$this" set-range "$range" "$id"
+
+# update a range in a sheet by passing TSV to stdin
+[group('sheet')]
+set-range-tsv range id=env('DOCUMENT_ID'):
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    tsv2jsona | "$this" set-range "$range" "$id"
+
+# update whole sheet in document by passing JSON (array of arrays, native) to stdin
+[group('sheet')]
+set-sheet title id=env('DOCUMENT_ID'):
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -nc --slurpfile current <("$this" get-sheet "$title" "$id") \
+        '$current[] | .values = inputs' \
+        | "$this" batch-update-values "$id"
+
+# update whole sheet in document by passing JSON (array of hashes) to stdin
+[group('sheet')]
+set-sheet-json title id=env('DOCUMENT_ID'):
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq '[(.[0] | keys), map([.[]])[]]' | "$this" set-sheet "$title" "$id"
+
+# update whole sheet in document by passing tsv to stdin
+[group('sheet')]
+set-sheet-tsv title id=env('DOCUMENT_ID'):
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    tsv2jsona | "$this" set-sheet "$title" "$id"
+
+# => http --------------------------------------------------------------------------------------------------------- {{{1
+
+# generic http request to the configured service, provides diagnostics on failure
+[group('http'), private, no-cd, positional-arguments]
+http-request method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 2
+    "$this" generic-http-request "$method" "$GOOGLE_HOST${GOOGLE_API}$uri" \
+        --auth-type=bearer --auth="${GOOGLE_TOKEN:-$(credp "$GOOGLE_HOST")}" "$@"
+
+# https://developers.google.com/workspace/sheets/api/reference/rest/v4/spreadsheets.values/batchGet
+# get arbitrary values from the document given one or more ranges
+[group('http'), private, no-cd, positional-arguments]
+batch-get-values id +argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 1
+    "$this" http-request GET "/$id/values:batchGet" 'valueRenderOption==FORMULA' "$@"
+
+# https://developers.google.com/workspace/sheets/api/reference/rest/v4/spreadsheets/batchUpdate
+# update sheets in the document given one or more ranges
+[group('http'), private, no-cd]
+batch-update-sheets id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -nc '{requests: inputs}' \
+        | "$this" http-request-stdin POST "/$id:batchUpdate"
+
+# https://developers.google.com/workspace/sheets/api/reference/rest/v4/spreadsheets.values/batchUpdate
+# update arbitrary values in the document given one or more ranges
+[group('http'), private, no-cd]
+batch-update-values id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -nc '{valueInputOption:"USER_ENTERED", data: inputs}' \
+        | "$this" http-request-stdin POST "/$id/values:batchUpdate"

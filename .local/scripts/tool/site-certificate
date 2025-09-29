@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+host=$1
+port=${2:-443}
+
+</dev/null gnutls-cli --print-cert "$host:$port" \
+	| openssl x509 -inform PEM -text -noout
