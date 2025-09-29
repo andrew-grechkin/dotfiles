@@ -1,0 +1,29 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+set export := true
+export this := justfile()
+
+[private, no-cd]
+@default:
+    "$this" --list
+
+[no-cd, positional-arguments]
+find *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    rg --multiline --encoding none -l '\A(?-u:\xEF\xBB\xBF)' "$@"
+
+[no-cd, positional-arguments]
+remove *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    for file in "$@"; do
+        nvim --headless -e -s -c "set nobomb" -c "set fileformat=unix" -c "set fileencoding=utf-8" -c "wq" "$file"
+    done
+
+    # perl -i -pE 's/\A\xEF\xBB\xBF// if $. == 1' "$@"
+    # nvim --headless -c "argdo set nobomb | set ff=unix | update" -c "q" "$@"
+    # vi -c ":set nobomb" -c ":wq" "$1"
+    # LC_ALL=C sed -i '1s/^\xEF\xBB\xBF//' "$1"
