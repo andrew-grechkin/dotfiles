@@ -1,0 +1,63 @@
+#!/usr/bin/env -S just --one --justfile
+
+# ABSTRACT: access Google Drive API from cli (basic wrapper, request endpoints directly)
+
+# https://just.systems/man/en/
+# https://developers.google.com/workspace/drive/api/guides/search-files
+
+import 'generic-http'
+
+git := require('git')
+jq := require('jq') # https://jqlang.org/download/
+
+export GOOGLE_HOST := env('GOOGLE_HOST', 'www.googleapis.com')
+export GOOGLE_API := env('GOOGLE_API', '/drive/v3')
+export this := justfile()
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private]
+@default:
+    '{{this}}' --list
+
+# => directories -------------------------------------------------------------------------------------------------- {{{1
+
+# list all dirs
+[group('dirs')]
+list-dirs:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    q="mimeType='application/vnd.google-apps.folder'"
+    '{{this}}' http-request GET '/files' "q==${q@Q}"
+
+# => spreadsheets ------------------------------------------------------------------------------------------------- {{{1
+
+# list all spreadsheets
+[group('spreadsheets')]
+list-spreadsheets:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    q="mimeType='application/vnd.google-apps.spreadsheet'"
+    '{{this}}' http-request GET '/files' "q==${q@Q}"
+
+# show spreadsheets
+[group('spreadsheets')]
+@spreadsheets:
+    '{{this}}' list-spreadsheets | jq '.files | map(del(.mimeType))'
+
+# => http --------------------------------------------------------------------------------------------------------- {{{1
+
+# generic http request to the configured service, provides diagnostics on failure
+[private, no-cd]
+[group('http')]
+http-request method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    argv=({{argv}})
+    '{{this}}' generic-http-request '{{method}}' "$GOOGLE_HOST${GOOGLE_API}{{uri}}" \
+        --auth-type=bearer --auth="${GOOGLE_TOKEN:-$(credp "$GOOGLE_HOST")}" "${argv[@]@Q}"
+
+# special http request to the configured service providing body via stdin (not for GET or HEAD)
+[private, no-cd]
+[group('http')]
+http-request-body method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    argv=({{argv}})
+    '{{this}}' http-request '{{method}}' '{{uri}}' --no-ignore-stdin "${argv[@]@Q}"
