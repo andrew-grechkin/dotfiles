@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+source "$HOME/.local/lib/shell/color.bash"
+
+# override eos with special (non-standard) version - jq friendly
+# because jq quoting is a bit weird and usage of naked backslashes is quite hard
+FX[eos]=$'\a'
+
+function join-with-nl() {
+    local IFS=$'\n'
+    echo -e "$*"
+}
+
+sort_by="$1"; shift
+jq_fields=("$@")
+
+for field in "${jq_fields[@]}"; do
+    if [[ "$field" =~ ^[[:alnum:]_] ]]; then
+        IFS=";" read -r <<< "$field" key value color
+    else # support explicit separator passed as the first character
+        IFS="${field:0:1}" read -r <<< "${field:1}" key value color
+    fi
+
+    col_keys+=("$key")
+    if [[ -n "${color:-}" ]]; then
+        col_values+=("${FG[$color]:?Unknown color: $color (${!FG[@]})}${key@P}${FX[reset]}")
+        jq_filter+=("${FG[$color]}${value@P}${FX[reset]}")
+    else
+        col_values+=("$key")
+        jq_filter+=("${value@P}")
+    fi
+done
+
+header=$(
+    jq -n "[\$header_k, \$header_v, \$filters] | transpose | map({key: .[0], value: .[1], filter: .[2]})" \
+        --slurpfile header_k <(join-with-nl "${col_keys[@]}" | jq -R)  \
+        --slurpfile header_v <(join-with-nl "${col_values[@]}" | jq -R) \
+        --slurpfile filters  <(join-with-nl "${jq_filter[@]}" | jq -R)
+)
+
+# NOTE: while jq still doesn't have [eval](https://github.com/jqlang/jq/issues/384) it's required to make this crazy and
+# fragile filter prep, trying to format it from outside in a way to have valid jq syntax (especially quoting and ansi)
+lines_filter=$(jq -r 'map("\(.key | tojson): \"\(.filter)\"") | join(",")' <<< "$header")
+
+{
+    jq -r "map(.value) | @tsv" <<< "$header"
+    jq -r "($sort_by) | map({$lines_filter})[] | [.[]] | @tsv"
+} | column --table --separator=$'\t' --output-separator=$'\t'
