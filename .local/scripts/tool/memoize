@@ -1,0 +1,195 @@
+#!/usr/bin/env -S bash -Eeuo pipefail
+# shellcheck disable=SC2153
+
+# @describe ABSTRACT:
+#   Executes a command and caches it's stdout
+#
+# SYNOPSIS:
+#   memoize -- find /usr/lib/modules -type f -exec sha256sum {} +
+#
+# LICENSE:
+#   GPL-2.0-or-later
+#   🄯 2025 Andrew Grechkin
+#
+# The cache is stored by default in $XDG_RUNTIME_DIR/memoize or /tmp/memoize
+# Cache is only written when the command exits 0 - a failing command leaves any prior cache intact
+# The wrapped command's exit code is propagated back to the caller
+# Don't use memoize for already fast operations unless there is some hidden cost you'd like to avoid
+# Work of argc command and checking cache operation are also taking time, thus using memoize to increase operation
+# speed have sense only if operation execution takes longer than ~100 ms
+
+# @meta version 1.3.0
+# @meta combine-shorts
+# @meta require-tools sha256sum
+
+# @arg    command*                            Command to execute
+# @env    MEMOIZE_DIR=`_get_dir`              Provide the dir to store cache
+# @env    MEMOIZE_FILENAME                    Provide the name of the cache file (default: sha256 of args, +cwd with -w)
+# @env    MEMOIZE_TTL=1day                    Provide the default TTL
+# @flag   -b --buffer                         Buffer all input into cache first, then spit it out
+# @flag   -C --clear                          Clear cache dir (with -l: only that label's subdir); command is ignored
+# @flag   -c --cache-only                     Fail if there is no cache
+# @flag   -e --empty                          Allow empty cache
+# @flag   -s --slide                          Sliding TTL: bump cache mtime on hit (TTL resets from last read, not last write)
+# @flag   -v --verbose                        Verbose mode
+# @flag   -w --workdir                        Cache depends on current workdir
+# @option -f --file                           Explicitly provide cache file (label is ignored)
+# @option -l --label                          Scope cache into a labeled subdir
+# @option -t --ttl                            TTL of the cache
+
+function fatal() {
+    [[ -n "${1:-}" && "$1" =~ ^[0-9]+$ && "$1" -ge 0 && "$1" -le 255 ]] && { error="$1"; shift 1; }
+    echo "fatal:" "$@" >&2
+    exit "${error:-1}"
+}
+
+function log() {
+    [[ -z "${argc_verbose:-}" ]] || echo "$@" >&2
+}
+
+[[ -x "$(command -v argc)" ]] || {
+    fatal 127 "'argc' helper command is required, install from https://github.com/sigoden/argc" >&2
+}
+
+function _get_dir() {
+    echo "${XDG_RUNTIME_DIR:-/tmp}/memoize"
+}
+
+eval "$(argc --argc-eval "$0" "$@")"
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+memoize_dir="$MEMOIZE_DIR"
+memoize_ttl="$MEMOIZE_TTL"
+
+if [[ -n "${MEMOIZE_FILENAME:-}" ]]; then
+    memoize_filename="$MEMOIZE_FILENAME"
+else
+    memoize_filename=$({
+            [[ -z "${argc_workdir:-}" ]] || echo "$PWD"
+            echo "${argc__positionals[*]:-}"
+    } | sha256sum | { read -r sha _; echo "$sha"; })
+fi
+
+# if one memoize process executes another one as a child - global environment can impact children
+# we need to clean it up before executing subprocess
+unset MEMOIZE_DIR MEMOIZE_FILENAME MEMOIZE_TTL
+
+# when -l is set, cache files live in a per-label subdir named sha256(label), enables scoped -C
+if [[ -n "${argc_label:-}" ]]; then
+    label_dir=$(printf '%s' "$argc_label" | sha256sum | { read -r sha _; echo "$sha"; })
+else
+    label_dir=''
+fi
+
+effective_dir="$memoize_dir${label_dir:+/$label_dir}"
+cache_file="${argc_file:-"$effective_dir/$memoize_filename.stdout"}"
+
+cleanup=()
+trap 'rm -rf -- "${cleanup[@]}"' EXIT
+
+# convert a TTL string to whole seconds
+# systemd-analyze accepts both compact ("5s", "1h30min") and verbose ("5 sec", "5 seconds")
+# forms; date -d only accepts the verbose form. Try systemd-analyze first, fall back to date
+# Sub-second inputs (500ms, 0.5s) round up to 1 sec - file mtime is second-resolution anyway
+# Any negative delta is treated as its absolute value
+function ttl_seconds() {
+    local ttl="$1" usec ago_ts delta
+    if [[ -x "$(command -v systemd-analyze)" ]]; then
+        usec=$(systemd-analyze timespan "$ttl" 2>/dev/null | awk -F: '/^ *(μs|us):/ {gsub(/ /,"",$2); print $2; exit}')
+        if [[ -n "$usec" ]]; then
+            (( usec < 0 )) && (( usec = -usec ))
+            echo $(( (usec + 999999) / 1000000 ))
+            return 0
+        fi
+    fi
+
+    # fallback: `date -d "-5 sec"` etc. - GNU date, doesn't accept "5s".
+    if ago_ts=$(date -d "-$ttl" +%s 2>/dev/null); then
+        delta=$(( $(date +%s) - ago_ts ))
+        (( delta < 0 )) && (( delta = -delta ))
+        echo "$delta"
+        return 0
+    fi
+
+    return 1
+}
+
+function print_cache() {
+    mkdir -p "$(dirname -- "$cache_file")"
+
+    ref_file="$effective_dir/$memoize_filename.timeref.memoize"
+    cleanup+=("$ref_file")
+
+    if seconds=$(ttl_seconds "${argc_ttl:-$memoize_ttl}"); then
+        touch -d "@$(( $(date +%s) - seconds ))" -- "$ref_file"
+    else
+        fatal 2 "error: cannot parse TTL: ${argc_ttl:-$memoize_ttl}"
+    fi
+
+    if [[ -r "$cache_file" ]] && [[ -s "$cache_file" || -n "${argc_empty:-}" ]] && [[ "$cache_file" -nt "$ref_file" ]]; then
+        # explicitly close stdin as soon as possible
+        exec 0<&-
+        # explicitly remove ref file (exec will override trap)
+        rm -f -- "$ref_file"
+
+        [[ -z "${argc_slide:-}" ]] || touch -- "$cache_file" 2>/dev/null || true
+
+        log "fresh cache is found with size: $(stat -c %s "$cache_file")"
+        exec cat -- "$cache_file"
+    fi
+
+    return 1
+}
+
+function execute_command() {
+    [[ -z "${argc_cache_only:-}" ]] || fatal 2 'cache is not found'
+
+    cleanup+=("${cache_file}.memoize")
+
+    local sh_file=''
+    if [[ -z "${argc_file:-}" ]]; then
+        sh_file="$effective_dir/$memoize_filename.sh"
+        cleanup+=("${sh_file}.memoize")
+        {
+            # shellcheck disable=SC2154
+            echo "cd ${PWD@Q} && ${argc__args[*]@Q}"
+        } > "$sh_file.memoize"
+    fi
+
+    local rc=0
+    if [[ -n "${argc_buffer:-}" ]]; then
+        "${argc__positionals[@]}" > "${cache_file}.memoize" || rc="$?"
+    else
+        # PIPESTATUS[0] is the wrapped command; tee is [1]. Only care about the wrapped
+        # command here - a tee failure with a working command still means output was streamed
+        if "${argc__positionals[@]}" | tee -- "${cache_file}.memoize"; then
+            :
+        else
+            rc="${PIPESTATUS[0]}"
+        fi
+    fi
+
+    if (( rc == 0 )); then
+        mv -f -- "${cache_file}.memoize" "$cache_file"
+        [[ -z "$sh_file" ]] || mv -f -- "${sh_file}.memoize" "$sh_file"
+        [[ -z "${argc_buffer:-}" ]] || cat -- "$cache_file"
+    fi
+    exit "$rc"
+}
+
+if [[ -n "${argc_clear:-}" ]]; then
+    [[ -z "${argc__positionals[*]}" ]] || echo "warning: command ignored during cache clean operation" >&2
+    if [[ -n "$label_dir" ]]; then
+        cleanup+=("$memoize_dir/$label_dir")
+    else
+        cleanup+=("$memoize_dir")
+    fi
+    exit 0
+fi
+
+if [[ -z "${argc__positionals[*]}" ]]; then
+    exec memoize --help
+fi
+
+print_cache || execute_command
