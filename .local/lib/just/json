@@ -1,0 +1,151 @@
+# vim: filetype=just
+
+set export
+set no-cd
+
+ifne := require('ifne')
+jq := require('jq')
+sponge := require('sponge')
+
+[group('json'), private, positional-arguments, no-exit-message]
+pretty *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    json-pretty "$@"
+
+[group('json'), private, positional-arguments, no-exit-message]
+keys2flags *argv:
+    #!/usr/bin/env -S jq -r --from-file
+    to_entries | sort_by(.key)[] | if (.value) then "\u001B[1m\u001B[97m\u001B[7m" else "\u001B[2m\u001B[37m" end + .key + "\u001B[0m"
+
+[group('json'), private, positional-arguments, no-exit-message]
+keys2flags-positive *argv:
+    #!/usr/bin/env -S jq -r --from-file
+    to_entries[] | select(.value) | .key
+
+[group('json'), private, positional-arguments, no-exit-message]
+keys-init *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    positive="${1?:JSON positive keys must be provided, comma separated}"
+    negative="${2?:JSON negative keys must be provided, comma separated}"
+
+    jq_positive_keys=$(echo "$positive" | jq -R 'split(",") | map(select(length > 0))')
+    jq_negative_keys=$(echo "$negative" | jq -R 'split(",") | map(select(length > 0))')
+
+    jq -n --argjson negative_keys "$jq_negative_keys" --argjson positive_keys "$jq_positive_keys" \
+        'reduce $negative_keys[] as $key ({}; .[$key] = false) + reduce $positive_keys[] as $key ({}; .[$key] = true)'
+
+[group('json'), private, positional-arguments, no-exit-message]
+keys-flip *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    file="${1?:JSON file must be provided}"
+    shift
+
+    for word in "$@"; do
+        jq --arg word "${word#+}" 'if has($word) then ."\($word)" = (."\($word)" | not) end' "$file" 2>/dev/null \
+            | ifne sponge "$file"
+    done
+
+[group('json'), private, positional-arguments, no-exit-message]
+to-table *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    source "$HOME/.local/lib/shell/color.bash"
+
+    # override eos with special (non-standard) version - jq friendly
+    # because jq quoting is a bit weird and usage of naked backslashes is quite hard
+    FX[eos]=$'\a'
+
+    function join-with-nl() {
+        local IFS=$'\n'
+        echo -e "$*"
+    }
+
+    sort_by="$1"; shift
+    jq_fields=("$@")
+
+    for field in "${jq_fields[@]}"; do
+        if [[ "$field" =~ ^[[:alnum:]_] ]]; then
+            IFS=";" read -r <<< "$field" key value color
+        else # support explicit separator passed as the first character
+            IFS="${field:0:1}" read -r <<< "${field:1}" key value color
+        fi
+
+        col_keys+=("$key")
+        if [[ -n "${color:-}" ]]; then
+            col_values+=("${FG[$color]:?Unknown color: $color (${!FG[@]})}${key@P}${FX[reset]}")
+            jq_filter+=("${FG[$color]}${value@P}${FX[reset]}")
+        else
+            col_values+=("$key")
+            jq_filter+=("${value@P}")
+        fi
+    done
+
+    header=$(
+        jq -n "[\$header_k, \$header_v, \$filters] | transpose | map({key: .[0], value: .[1], filter: .[2]})" \
+            --slurpfile header_k <(join-with-nl "${col_keys[@]}" | jq -R)  \
+            --slurpfile header_v <(join-with-nl "${col_values[@]}" | jq -R) \
+            --slurpfile filters  <(join-with-nl "${jq_filter[@]}" | jq -R)
+    )
+
+    # NOTE: while jq still doesn't have [eval](https://github.com/jqlang/jq/issues/384) it's required to make this crazy
+    # and fragile filter prep, trying to format it from outside in a way to have valid jq syntax (especially quoting
+    # and ansi)
+    lines_filter=$(jq -r 'map("\(.key | tojson): \"\(.filter)\"") | join(",")' <<< "$header")
+
+    {
+        jq -r "map(.value) | @tsv" <<< "$header"
+        jq -r "($sort_by) | map({$lines_filter})[] | [.[]] | @tsv"
+    } | just -f '{{source_file()}}' align-columns
+
+# Align tabular STDIN
+[group('json'), no-exit-message]
+align-columns:
+    #!/usr/bin/env perl
+
+    # ABSTRACT: Align tabular data while preserving ANSI escape sequences
+
+    # NOTE: this is a replacement for `column --table --separator=$'\t' --output-separator=$'\t'`
+    # but supporting more ansi sequences, `column` breaks with OCS8 (links)
+
+    use v5.42;
+    use experimental qw(declared_refs);
+
+    ## no critic [RegularExpressions::ProhibitComplexRegexes]
+    my $ansi_regex = qr{
+        (?(DEFINE)
+            (?<CSI>   \[[0-?]*[\x40-\x7E]                       ) # CSI: Control Sequence Introducer
+            (?<OSC>   \](?:[^\a\e]|(?:\e(?!\x5c)))*(?:\a|\e\\)  ) # OSC: Operating System Command
+            (?<OTHER> [\x20-\x2F]*[\x40-\x7E]                   ) # Other: ESC + chars
+        )
+
+        \e  # start of escape sequence
+        ( (?&CSI) | (?&OSC) | (?&OTHER) )
+    }xn;
+
+    my $split_regex = qr{\t};
+
+    my @rows;
+    my @row_widths;
+    my @max_widths;
+    while (defined(my $line = <<>>)) {
+        chomp $line;
+        my @row = split $split_regex, $line, -1;
+        my @width;
+
+        for (my $c = 0; $c < @row; ++$c) {
+            my $len = length($row[$c] =~ s/$ansi_regex//gr);
+            push @width, $len;
+            $max_widths[$c] //= 0;
+            $max_widths[$c] = $len if $max_widths[$c] < $len;
+        }
+
+        push @rows, \@row;
+        push @row_widths, \@width;
+    }
+
+    for my ($i, $row) (builtin::indexed @rows) {
+        my \@row = $row;
+        say join("\t", map {
+            $row[$_] . ' ' x ($max_widths[$_] - $row_widths[$i][$_])
+        } 0 .. $#row);
+    }
