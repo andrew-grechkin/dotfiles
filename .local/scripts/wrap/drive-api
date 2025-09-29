@@ -1,0 +1,85 @@
+#!/usr/bin/env -S just --one --justfile
+
+# ABSTRACT: access Google Drive API from cli (basic wrapper, request endpoints directly)
+
+# https://just.systems/man/en/
+
+git := require('git')
+jq := require('jq') # https://jqlang.org/download/
+xh := require('xh') # https://github.com/ducaale/xh#installation
+
+export GOOGLE_HOST := env('GOOGLE_HOST', 'www.googleapis.com')
+export GOOGLE_API := env('GOOGLE_API', '/drive/v3')
+export this := justfile()
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private]
+@default:
+    '{{this}}' --list
+
+# => spreadsheets ------------------------------------------------------------------------------------------------- {{{1
+
+# update whole sheet in document by passing tsv to stdin
+[group('spreadsheets')]
+@list-spreadsheets:
+    '{{this}}' http-request GET "/files?q=mimeType='application/vnd.google-apps.spreadsheet'"
+
+# show spreadsheets
+[group('spreadsheets')]
+@spreadsheets:
+    '{{this}}' list-spreadsheets | jq '.files | map(del(.mimeType))'
+
+# => http --------------------------------------------------------------------------------------------------------- {{{1
+
+# generic http request to the configured service, provides diagnostics on failure
+[private, no-cd]
+[group('http')]
+http-request method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    xh_args=(
+        "$GOOGLE_HOST${GOOGLE_API}{{uri}}"
+        --https
+        --ignore-stdin
+        --no-follow
+        --auth-type=bearer
+        --auth="${GOOGLE_TOKEN:-$(credp "$GOOGLE_HOST")}"
+    )
+
+    cmd=(xh '{{method}}' "${xh_args[@]}" {{argv}})
+    [[ -t 1 ]] && exec "${cmd[@]}"
+
+    method='{{method}}'
+    if [[ "${method@U}" == 'HEAD' || "${method@U}" == 'OPTIONS' ]]; then
+        args=(-qq --print=h)
+    else
+        args=(-qq --print=b)
+    fi
+
+    if res=$("${cmd[@]}" "${args[@]}"); then
+        echo "$res"
+    else
+        errno="$?"
+        >&2 args2log "${cmd[@]}"
+        >&2 "${cmd[@]}" --print=HB --offline
+        >&2 echo "$res"
+        exit "$errno"
+    fi
+
+# special http request to the configured service providing body via stdin (not for GET or HEAD)
+[private, no-cd]
+[group('http')]
+@http-request-body method uri *argv:
+    '{{this}}' http-request '{{method}}' '{{uri}}' --no-ignore-stdin {{argv}}
+
+# => helpers ------------------------------------------------------------------------------------------------------ {{{1
+
+[group('helpers')]
+[private]
+@fatal message:
+    >&2 echo '{{style("error")}}{{message}}{{NORMAL}}'
+    exit 1
+
+@print message:
+    >&2 echo '{{style("warning")}}{{message}}{{NORMAL}}'
