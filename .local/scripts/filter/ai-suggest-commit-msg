@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+# ABSTRACT: ask ai to suggest a commit message by the changes in git index or in the latest commit
+
+{
+    if [[ -n "${1:-}" ]]; then
+        git show "$1" -- . ':!submodules'
+    else
+        if (( "$(git diff --staged 2>/dev/null | wc -l)" > 0 )); then
+            git diff --staged -- . ':!submodules'
+        else
+            git show -- . ':!submodules'
+        fi
+    fi
+    echo "> generating commit message ${1:+for $1}" >&2
+} | gemini-api suggest-commit-msg
