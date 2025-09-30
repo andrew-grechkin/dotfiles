@@ -1,0 +1,13 @@
+#!/usr/bin/env -S bash -Euo pipefail
+
+# ABSTRACT:
+#   execute bash script/commands provided via STDIN on remote host
+#
+# USAGE:
+#   $ exec-on my-ssh-host <<< uptime
+#   $ exec-on my-ssh-host < my-bash-script
+
+[[ -t 0 ]] && echo "script must be provided via STDIN (press ctrl-d when finished)" >&2
+payload=$(base64 -w0 </dev/stdin)
+
+unbuffer ssh -T "${1:?ssh host must be provided}" "echo ${payload} | base64 -d | bash -eus"
