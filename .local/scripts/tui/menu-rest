@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+ROOT="$HOME/git/$DOMAIN/rest"
+
+cd "$ROOT" || exit
+
+fzf_cmd=(
+    fzf
+    --bind="enter:execute(tmux new-window -a -n '{}' vi '{}')+abort"
+    --no-multi
+    --preview='bat {}'
+    --reverse
+)
+
+if [[ -n "${TMUX:-}" && -n "$(pgrep tmux 2>/dev/null)" ]]; then
+    fd -t f -e http | sort -u \
+        | "${fzf_cmd[@]}"
+fi

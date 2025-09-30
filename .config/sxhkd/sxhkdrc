@@ -97,11 +97,11 @@ Return + super
 # 	wezterm --config="enable_csi_u_key_encoding=false" start --always-new-process /usr/bin/zsh
 
 minus + super
-	wezterm start --always-new-process --class 'TermFloatingSmall' "$HOME/.local/script/menu-system-misc"
+	wezterm start --always-new-process --class 'TermFloatingSmall' "menu-system-misc"
 equal + super
-	wezterm start --always-new-process --class 'TermFloatingSmall' "$HOME/.local/script/menu-system-audio"
+	wezterm start --always-new-process --class 'TermFloatingSmall' "menu-system-audio"
 BackSpace + super
-	wezterm start --always-new-process --class 'TermFloatingSmall' "$HOME/.local/script/menu-system-exit"
+	wezterm start --always-new-process --class 'TermFloatingSmall' "menu-system-exit"
 
 # r + super
 #	exo-open --launch FileManager
@@ -123,30 +123,32 @@ u + alt + super
 o + super
 	opera
 o + alt + super
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-clipboard"
+	wezterm start --always-new-process --class 'TermFloating' "menu-clipboard"
 bracketleft + super
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pacman"
+	wezterm start --always-new-process --class 'TermFloating' "menu-pacman"
 bracketleft + alt + super
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pkg-search"
+	wezterm start --always-new-process --class 'TermFloating' "menu-pkg-search"
 bracketright + super
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/scripts/tui/menu-mise"
+	wezterm start --always-new-process --class 'TermFloating' "menu-mise"
 
 a + alt + super
 	wezterm start --always-new-process --class 'TermFloating' just -g audio
 s + super
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-pass"
+	wezterm start --always-new-process --class 'TermFloating' "menu-pass"
 d + super
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-app"
+	wezterm start --always-new-process --class 'TermFloating' "menu-app"
 f + alt + super
 	wezterm start --always-new-process --class 'TermFloating' just -g films
 g + alt + super
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-mpris"
+	wezterm start --always-new-process --class 'TermFloating' "menu-mpris"
+g + super
+	wezterm start --always-new-process --class 'Floating'     "gg"
 h + alt + super
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-mpv-history"
+	wezterm start --always-new-process --class 'TermFloating' "menu-mpv-history"
 j + alt + super
 	wezterm start --always-new-process --class 'TermFloating' just -g books "/media/nfs/home/doc/@technical"
 k + alt + super
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-man-keyword"
+	wezterm start --always-new-process --class 'TermFloating' "menu-man-keyword"
 l + alt + super
 	wezterm start --always-new-process --class 'TermFloating' just -g books "/media/nfs/home/doc/@fiction"
 semicolon + alt + super
@@ -165,13 +167,13 @@ c + super
 # n + alt + super
 # 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/open-vim-wiki"
 m + alt + super
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-man-name"
+	wezterm start --always-new-process --class 'TermFloating' "menu-man-name"
 comma + alt + super
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-docs" "$HOME/.local/share/wiki"
+	wezterm start --always-new-process --class 'TermFloating' "menu-docs" "$HOME/.local/share/wiki"
 period + alt + super
 	wezterm start --always-new-process --class 'TermFloating' just -g books "${XDG_DATA_HOME}/cheatsheet"
 period + alt + super + shift
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/menu-docs"
+	wezterm start --always-new-process --class 'TermFloating' "menu-docs"
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1
 
