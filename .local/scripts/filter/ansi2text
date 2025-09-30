@@ -1,0 +1,24 @@
+#!/usr/bin/env -S perl -p
+
+# ABSTRACT: Strips all standard ANSI escape sequences, including CSI (colors/styles) and OSC (hyperlinks/titles).
+
+use v5.42;
+
+## no critic [RegularExpressions::ProhibitComplexRegexes, Variables::ProhibitPackageVars]
+
+our $ansi_regex;
+
+BEGIN {
+    $ansi_regex = qr{
+        (?(DEFINE)
+            (?<CSI>   \[[0-?]*[\x40-\x7E]                       ) # CSI: Control Sequence Introducer
+            (?<OSC>   \](?:[^\a\e]|(?:\e(?!\x5c)))*(?:\a|\e\\)  ) # OSC: Operating System Command
+            (?<OTHER> [\x20-\x2F]*[\x40-\x7E]                   ) # Other: ESC + chars
+        )
+
+        \e  # start of escape sequence
+        ( (?&CSI) | (?&OSC) | (?&OTHER) )
+    }xn;
+}
+
+s/$ansi_regex//g;
