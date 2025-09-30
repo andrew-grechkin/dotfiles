@@ -27,7 +27,7 @@ busctl --user -j get-property \$mpris_svc $mpris_obj $mpris_if Volume | jq -r .d
     | xargs -rI% busctl --user -j set-property \$mpris_svc $mpris_obj $mpris_if Volume d %
 EO_MPRIS_LOWER
 
-cat << EO_LIST | fzf-execute-no-abort
+cat << EO_LIST | just -f "$HOME/.local/lib/just/fzf" execute-no-abort
 Play/Pause			xdotool key XF86AudioPlay
 Next				xdotool key XF86AudioNext
 Prev				xdotool key XF86AudioPrev
