@@ -2,4 +2,4 @@
 
 # ABSTRACT: remove ansi sequences from the text file
 
-exec sed -E 's/\x1B\[([[:digit:]]{1,3})(;[[:digit:]]{1,3})*[mGK]//g'
+exec perl -pE 's/\x1B\[([[:digit:]]{1,3})(;[[:digit:]]{1,3})*[mGK]//g'

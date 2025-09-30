@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+# ABSTRACT: Serialize pipeline execution for parallel processes
+
+# DESCRIPTION:
+# `spew` is a Unix filter designed to be used in parallel pipelines (e.g., with
+# `xargs -P`). It solves the problem of interleaved output from multiple
+# processes writing to the same standard output.
+#
+# It works by first buffering its entire standard input into memory and only
+# then executing the given command with the buffered data. It uses `flock`
+# on itself (`$0`) to ensure that only one instance of the command runs at a
+# time, effectively serializing access to the next stage of the pipeline.
+#
+# It will use `mbuffer` for high-performance buffering if available. If not, it
+# will fall back to `dd` with a large block size, then to `pv` (Pipe Viewer),
+# and finally to a pure Bash implementation if none of the others are found.
+#
+# SYNOPSIS:
+#   # Fetch 10 pages from an API in parallel, but process and print the
+#   # results serially to avoid garbled JSON output.
+#   seq 1 10 | xargs -P10 -I{} bash -c 'api-call {} | spew jq .'
+
+set -Eeuo pipefail
+
+if [[ -x "$(command -v mbuffer)" ]]; then
+    mbuffer -q -Q
+elif [[ -x "$(command -v dd)" ]]; then
+    dd obs=1G
+elif [[ -x "$(command -v pv)" ]]; then
+    pv -qCB 1G
+else
+    buffer="$(</dev/stdin)"
+    cat <<< "$buffer"
+fi 2>/dev/null | flock "$0" "$@"
