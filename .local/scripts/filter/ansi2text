@@ -1,0 +1,7 @@
+#!/usr/bin/env -S perl -p
+
+# ABSTRACT: remove ansi sequences from the text file
+
+## no critic
+
+s/\x1B\[([[:digit:]]{1,3})(;[[:digit:]]{1,3})*[mGK]//gn

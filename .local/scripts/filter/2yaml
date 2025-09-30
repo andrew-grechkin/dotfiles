@@ -114,7 +114,7 @@ class ParserPerl {
     use Data::Dumper qw(Dumper);
     use Encode       qw();
 
-    field $type : reader = 'Perl';
+    field $type : reader = 'perl';
 
     method parse($reader) {
         my $decoded = eval Encode::decode('UTF-8', $reader->doc, Encode::FB_CROAK); ## no critic [BuiltinFunctions::ProhibitStringyEval]
@@ -234,9 +234,10 @@ sub main() {
     my %parser_options = %options{qw(lenient)};
     my $parser_json    = ParserJSON->new(%parser_options);
     my @supported_parsers
-        = (ParserJSONC->new(%parser_options), $parser_json, ParserYAML->new, ParserPerl->new, ParserTSV->new);
+        = (ParserJSONC->new(%parser_options), $parser_json, ParserPerl->new, ParserYAML->new, ParserTSV->new);
 
     if ($options{'TYPE'}) {
+        $options{'TYPE'} = lc $options{'TYPE'};
         @supported_parsers = grep {$_->type eq $options{'TYPE'}} @supported_parsers;
     }
 
