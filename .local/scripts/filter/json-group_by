@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+# group array elements into an object of arrays
+# keys are determined by the parameter
+#
+# $ jq -n '[{a:1, t:"one"}, {a:1.1, t:"one"}, {a:2, t:"two"}, {a:3, b:"42"}, {z:"z"}]' | json-group_by ".t | tostring + \"'\""
+# {
+#   "null'": [
+#     {
+#       "a": 3,
+#       "b": "42"
+#     },
+#     {
+#       "z": "z"
+#     }
+#   ],
+#   "one'": [
+#     {
+#       "a": 1,
+#       "t": "one"
+#     },
+#     {
+#       "a": 1.1,
+#       "t": "one"
+#     }
+#   ],
+#   "two'": [
+#     {
+#       "a": 2,
+#       "t": "two"
+#     }
+#   ]
+# }
+
+
+# script='group_by('"$1"') | map({(.[0] | '"$1"' | tostring): .}) | add'
+
+# shellcheck disable=SC2016
+script='reduce .[] as $it ({}; .[$it | '"$1"' | tostring] += [$it])'
+
+exec jq -S "$script"
