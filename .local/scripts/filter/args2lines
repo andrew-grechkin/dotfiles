@@ -6,13 +6,13 @@ set -Eeuo pipefail
 
 current_script="$(basename "$0")"
 if [[ "$current_script" =~ 0$ ]]; then
-	delim='\0'
+    delim='\0'
 else
-	delim='\n'
+    delim='\n'
 fi
 
-if [[ -n "$*" ]]; then
-	printf '%s'"$delim" "$@"
-elif [[ ! -t 0 ]]; then
-	cat | xargs -r printf '%b'"$delim"
+if [[ -z "$*" && ! -t 0 ]]; then
+    eval set -- "$(</dev/stdin)"
 fi
+
+printf '%s'"$delim" "$@"

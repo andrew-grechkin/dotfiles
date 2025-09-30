@@ -1,0 +1,44 @@
+#!/usr/bin/env perl
+
+# ABSTRACT: convert CSV file to JSON array of arrays
+
+use v5.40;
+
+use English          qw(-no_match_vars);
+use Cpanel::JSON::XS qw();
+use Text::CSV        qw();
+
+use constant {
+    'CSV'             => Text::CSV->new({binary => 1}),
+    'JSON_MULTI_LINE' =>
+        Cpanel::JSON::XS->new->allow_nonref(1)->canonical->utf8(0)->unblessed_bool([1])->pretty->space_before(0),
+    'JSON_ONE_LINE' =>
+        Cpanel::JSON::XS->new->allow_nonref(1)->canonical->utf8(0)->unblessed_bool([1])->pretty(0)->indent(0),
+};
+
+sub main() {
+    STDOUT->autoflush(1);
+
+    # Text::CSV requires file handle to parse from
+    my $data = do {local $/ = undef; <<>>};
+    open(my $fh, '<', \$data)
+        or die "unable to create file handle for string\n";
+
+    my @result;
+    while (my $row = CSV()->getline($fh)) {
+        push @result, $row;
+    }
+
+
+    if (-t 1) {
+        print JSON_MULTI_LINE()->encode(\@result);
+    } else {
+        say JSON_ONE_LINE()->encode(\@result);
+    }
+
+    return 0;
+}
+
+exit main();
+
+__END__

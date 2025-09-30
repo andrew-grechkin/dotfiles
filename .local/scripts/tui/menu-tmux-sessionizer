@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+# idea from https://github.com/ThePrimeagen/.dotfiles/blob/master/bin/.local/scripts/tmux-sessionizer
+
+root1="$HOME/git"
+root2="/usr/local/git_tree"
+fd_args=(
+    -HuL
+    --format="{//}"
+    -E 'bazel-*'
+    -td -tf
+    -d 4
+    '\A.git\z'
+)
+
+selected=$(
+    cat                                                              \
+        <(                                                           \
+            fd "${fd_args[@]}" --base-directory="$root1" 2>/dev/null \
+            | perl -plE "s{^(.*)}{$root1\t\1}x"                      \
+        )                                                            \
+        <(                                                           \
+            fd "${fd_args[@]}" --base-directory="$root2" 2>/dev/null \
+            | perl -plE "s{^(.*)}{$root2\t\1}x"                      \
+        )                                                            \
+        | sort -u                                                    \
+        | fzf
+)
+
+[[ -n "$selected" ]] || exit 0
+
+IFS=$'\t' read -r -a parts <<< "$selected"
+
+full_path="${parts[0]}/${parts[1]}"
+selected_name=$(echo "${parts[1]}" | tr . _)
+
+if [[ -z $TMUX ]] && ! pgrep tmux &>/dev/null; then
+    tmux new-session -s "$selected_name" -c "$full_path"
+    exit 0
+fi
+
+# -t= makes has-session to match exactly (not prefix)
+if ! tmux has-session "-t=$selected_name" &>/dev/null; then
+    tmux new-session -ds "$selected_name" -c "$full_path"
+fi
+
+tmux switch-client -t "$selected_name"
