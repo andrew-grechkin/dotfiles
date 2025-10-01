@@ -1,0 +1,11 @@
+FROM docker.io/library/golang:alpine AS gobuilder
+
+WORKDIR /app
+
+RUN go install github.com/andrew-grechkin/gotmpl2text@latest
+
+FROM scratch
+
+COPY --from=gobuilder /go/bin/gotmpl2text /gotmpl2text
+
+ENTRYPOINT ["/gotmpl2text"]
