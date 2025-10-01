@@ -1,0 +1,26 @@
+FROM docker.io/library/alpine:latest
+
+ENV LESS="-x4 -iRw"
+ENV PAGER=less
+ENV PATH=/root/.local/script:$PATH
+
+COPY .config/git         /root/.config/git
+COPY .local/lib/cpanfile /root/.local/lib/cpanfile
+COPY .local/lib/shell    /root/.local/lib/shell
+
+RUN apk add --no-cache                                  \
+	bash build-base coreutils coreutils-env             \
+	bat curl delta fzf git just grep jq make mbuffer    \
+	perl perl-dev perl-app-cpanminus perl-io-socket-ssl \
+	xh unzip util-linux
+
+RUN	cpanm -nq "https://github.com/andrew-grechkin/yaml-libyaml-pm/archive/refs/heads/master.zip"
+RUN	cpanm -nq --installdeps /root/.local/lib 2>&1 | grep -Ev 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)'
+RUN rm -rf /root/.cpanm
+RUN apk del --no-cache build-base make
+
+COPY .local/script /root/.local/script
+
+RUN ln -sf /bin/bash /bin/sh
+
+WORKDIR /mnt
