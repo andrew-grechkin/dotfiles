@@ -1,0 +1,30 @@
+FROM docker.io/library/alpine:latest
+
+ENV LESS="-x4 -iRw"
+ENV PAGER=less
+ENV PATH=/root/.local/script:$PATH
+
+COPY .config/git         /root/.config/git
+COPY .local/lib/cpanfile /root/.local/lib/cpanfile
+COPY .local/lib/shell    /root/.local/lib/shell
+
+RUN <<'EO_INSTALL'
+apk add --no-cache bash build-base coreutils coreutils-env
+apk add --no-cache bat curl delta fzf git just grep jq make mbuffer
+apk add --no-cache perl perl-dev perl-app-cpanminus perl-io-socket-ssl
+apk add --no-cache xh unzip util-linux
+
+cpanm -fnq "https://github.com/andrew-grechkin/DateTime-TimeZone-Zoneinfo/archive/refs/heads/main.tar.gz"
+cpanm -fnq "https://github.com/andrew-grechkin/yaml-libyaml-pm/archive/refs/heads/master.tar.gz"
+cpanm -nq --installdeps /root/.local/lib 2>&1 | grep -Ev 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)'
+
+rm -rf /root/.cpanm
+
+apk del --no-cache build-base make
+EO_INSTALL
+
+COPY .local/script /root/.local/script
+
+RUN ln -sf /bin/bash /bin/sh
+
+WORKDIR /mnt

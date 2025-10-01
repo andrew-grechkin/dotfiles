@@ -1,0 +1,8 @@
+[[registry]]
+location = "registry.home.ams"
+insecure = false
+
+[[registry.mirror]]
+location = "docker.io"
+insecure = false
+blocked = false
