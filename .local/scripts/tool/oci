@@ -1,0 +1,33 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+set export := true
+export this := justfile()
+
+[private, no-cd]
+@default:
+    "$this" --list
+
+[no-cd, positional-arguments]
+build *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    unset TMPDIR
+
+    dir="$(dirname "$1")"
+    name="$(basename "$1")"
+    root="$(git -C "$dir" rev-parse --show-superproject-working-tree --show-toplevel | head -1)"
+
+    image_name="$(echo -n "${name%%.*}" | perl -nE 'print lc')"
+    image_path="registry.gitlab.com/andrew-grechkin/dotfiles/$image_name"
+    tag="${2:+:$2}"
+
+    # building 2 versions of image
+    # 1. raw image with all layers preserved to have a cached rebuilds
+    # 2. squashed and trimmed image to use in all runs
+
+    docker build --rm -t "${image_path}-raw${tag}" -f "$1" "$root"
+    echo
+    set -x
+    docker build --rm -t "${image_path}${tag}" --squash-all -f <(echo FROM "${image_path}-raw${tag}") "$root"
