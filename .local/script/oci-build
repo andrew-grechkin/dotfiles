@@ -4,8 +4,17 @@ set -Eeuo pipefail
 
 dir="$(dirname "$1")"
 name="$(basename "$1")"
-tag="$(echo -n "${name%%.*}" | perl -nE 'print lc')"
 root="$(git -C "$dir" rev-parse --show-superproject-working-tree --show-toplevel | head -1)"
 
+image_name="$(echo -n "${name%%.*}" | perl -nE 'print lc')"
+image_path="registry.gitlab.com/andrew-grechkin/dotfiles/$image_name"
+tag="${2:+:$2}"
+
+# building 2 versions of image
+# 1. raw image with all layers preserved to have a cached rebuilds
+# 2. squashed and trimmed image to use in all runs
+
+docker build --rm -t "${image_path}-raw${tag}" -f "$1" "$root"
+echo
 set -x
-docker build --rm -t "$tag" -f "$1" "$root"
+docker build --rm -t "${image_path}${tag}" --squash-all -f <(echo FROM "${image_path}-raw${tag}") "$root"

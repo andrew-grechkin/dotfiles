@@ -1,59 +1,95 @@
-#!/usr/bin/env bash
+#!/usr/bin/env -S just --one --unstable --justfile
 
-set -Eeuo pipefail
+# https://just.systems/man/en/
 
-args=$(getopt --name="$0" --options 'jt' --longoptions 'json,tui' -- "$@")
-eval set -- "$args"
+set export
+export fzf-table-multi := require('fzf-table-multi')
+export jq-repl := require('jq-repl')
+export json2table := require('json2table')
+export pretty := require('json-pretty')
+export this := justfile()
+export tui := 'auto'
 
-while ((1)); do
-	case "$1" in
-		-j | --json) json='1'; shift ;;
-		-t | --tui) tui='1'; shift ;;
-		--) shift; break ;;
-	esac
-done
+# => default ------------------------------------------------------------------------------------------------------ {{{1
 
-fetcher=("$0")
+# Run TUI if interactive, otherwise print static view
+[private, positional-arguments]
+default *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        "$this" controller "$@"
+    else
+        "$this" view "$@"
+    fi
 
-if [[ -n "${json:-}" ]]; then
-	docker images -a --format "{{json . }}" "$@" 2>/dev/null \
-		| jq -nRcS '[inputs | fromjson | with_entries(.key |= ascii_downcase) | select(.repository != "<none>" or .dangling == true)]'
-elif [[ -t 1 || "${tui:-}" == "1" ]]; then
-	export FZF_RELOAD_CMD="${fetcher[*]@Q}"
-	source "$HOME/.local/lib/shell/fzf.bash"
+# Print help
+[script("/usr/bin/env", "-S", "colored-md")]
+help:
+    # ABSTRACT
+    Interactive TUI for managing Docker images
 
-	fzf_args=(
-		--bind="alt-E:execute(docker run -it --rm -h \$(basename {3}) --entrypoint sh {-1})"
-		--bind="alt-I:execute(docker inspect {1} | jq-repl)"
-		--bind="alt-R:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -t 1 -- docker rmi -f {+1})"
-		--bind="alt-S:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -t 1 -- docker push {+-1})"
-		--bind="alt-b:execute-silent(true)"
-		--bind="alt-c:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -t 1 -- docker-clean)"
-		--bind="alt-g:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -- docker pull {+-1})"
-		--bind="alt-i:execute(docker inspect {1} | json-pretty -f {-1})"
-		--bind="ctrl-e:execute(docker run -it --rm -h \$(basename {3}) {-1})"
-		--bind="ctrl-m:execute(docker run -it --rm -h \$(basename {3}) --entrypoint bash {-1})"
-		--bind="ctrl-p:execute-silent(echo 'read -r -p image\ to\ pull:\  image; docker pull \$image' | fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -ft 1)"
-		--bind="ctrl-y:execute-silent(echo -n {+-1} | clipcopy)"
-		--header="A-R:remove A-S:push A-I:jq-repl A-c:clear A-g:pull A-i:inspect C-e:run C-p:pull Enter:bash $DEFAULT_FZF_KEYS"
-		--preview="docker inspect {-1} | json-pretty -C -f {-1}"
-		--prompt="docker images > "
-		--with-nth="..-2"
-	)
+    # DESCRIPTION
+    `docker-images` provides a unified, interactive interface for managing the lifecycle of Docker images.
 
-	"${fetcher[@]}" | fzf-exec-multi "${fzf_args[@]}"
-else
-	source "$HOME/.local/lib/shell/data-processing.bash"
+    It replaces the need to run multiple `docker` commands to see what images are on the system, inspect them, run
+    them, or clean them up. It combines all this functionality into a single, searchable, and actionable dashboard.
 
-	jq_fields=(
-		"id;\(.id | .[0:10]);olive"
-		"use;\(.containers)"
-		"repository;\(.repository);teal"
-		"tag;\(.tag)"
-		"size;\(.size | if type == \"string\" then . else \"\((. / (1024 * 1024)) | round) ${FG[gray]}MiB\" end);silver"
-		"created;\(if .createdat then .createdat else .created | todateiso8601 end)"
-		"since;\(.createdsince // \"\")"
-		"path;\(.repository):\(.tag)"
-	)
-	"${fetcher[@]}" -j | json-array-to-tsv 'sort_by(.repository == "<none>", .repository)' "${jq_fields[@]}"
-fi
+    ## Key Features
+
+    * **Full Lifecycle Management:** Provides intuitive key bindings to pull, push, remove, and run images.
+    * **Deep Inspection:** Integrates with `jq-repl` for interactive, deep inspection of image layers and metadata.
+    * **Ecosystem Integration:** Connects with `jfrog` to view tag history.
+    * **Clean & Composable:** Follows the three-mode pattern, allowing it to be used as an interactive TUI, a static
+      table generator, or a pure JSON data source.
+
+# => MVC ---------------------------------------------------------------------------------------------------------- {{{1
+
+# List all docker images on the system as a JSON stream
+[positional-arguments]
+model *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    docker images -a --format "{{{{json . }}" "$@" 2>/dev/null \
+        | jq -nRcS '[inputs | fromjson | with_entries(.key |= ascii_downcase) | select(.repository != "<none>" or .dangling == true)]'
+
+# Print docker images as a formatted and colorized table
+[positional-arguments]
+view *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq_fields=(
+        'id;\(.id | .[0:10]);olive'
+        'repository;\(.repository);teal'
+        'tag;\(.tag)'
+        'use;\(.containers);silver'
+        'size;\(.size | if type == "string" then . else "\((. / (1024 * 1024)) | round) ${FG[gray]}MiB" end);gray'
+        'created;\(if .createdat then .createdat else .created | todateiso8601 end);green'
+        'path;\(.repository):\(.tag)'
+    )
+    "$this" model "$@" | json2table 'sort_by(.repository == "<none>", .repository, .tag)' "${jq_fields[@]}"
+
+# Display the interactive TUI for managing docker images
+[positional-arguments]
+controller *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    export FZF_RELOAD_CMD="${this@Q} view ${*@Q}"
+    fzf_args=(
+        --bind="alt-E:execute(docker run -it --rm -h \$(basename {2}) --entrypoint sh {1})"
+        --bind="alt-H:execute(jfrog tags {2})"
+        --bind="alt-G:execute-silent(echo 'read -r -p image\ to\ pull:\  image; docker pull \$image' | fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -ft 1)"
+        --bind="alt-I:execute(docker inspect {1} | jq-repl)"
+        --bind="alt-R:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -t 1 -- docker rmi -f {+1})"
+        --bind="alt-b:execute(docker run -it --rm -h \$(basename {2}) --entrypoint bash {1})"
+        --bind="alt-c:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -t 1 -- docker-clean)"
+        --bind="alt-g:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -- docker pull {+-1})"
+        --bind="alt-s:execute-silent(fzf-run-reload -e DOCKER_CONFIG,DOCKER_HOST -t 1 -- docker push --sign-by='$GNUPGKEY' {+-1})"
+        --bind="alt-i:execute(docker inspect {1} | ${pretty@Q} -f {-1})"
+        --bind="alt-t:become(jfrog tui=force tags {2})"
+        --bind="ctrl-b:execute(docker run -it --rm -h \$(basename {2}) --entrypoint sh {1})"
+        --bind="ctrl-e:execute(docker run -it --rm -h \$(basename {2}) {1})"
+        --bind="ctrl-m:become(cat {+f-1})"
+        --bind="ctrl-y:execute-silent(echo -n {+-1} | clipcopy)"
+        --footer="A-R:remove A-H:history A-I:jq-repl A-b:bash A-c:clear A-g:pull A-i:inspect A-s:push C-b:sh C-e:run C-p:pull"
+        --preview="docker inspect {1} | ${pretty@Q} -C -f {-1}"
+        --prompt="docker images > "
+        --with-nth="..-2"
+    )
+    "$this" view "$@" | fzf-table-multi "${fzf_args[@]}"
