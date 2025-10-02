@@ -3,82 +3,79 @@
 # => header (source able) ----------------------------------------------------------------------------------------- {{{1
 
 function klipper-item-action() {
-	busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- showKlipperManuallyInvokeActionMenu
+    busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- showKlipperManuallyInvokeActionMenu
 }
 
 function klipper-item-get() {
-	busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- getClipboardHistoryItem i "$1" \
-		| jq '.data[0]'
+    busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- getClipboardHistoryItem i "$1" \
+        | jq '.data[0]'
 }; [[ -n "${BASH:-}" ]] && export -f klipper-item-get
 
 function klipper-item-set() {
-	# don't use this, the klipper API is a crap. It should set by id, not by content
-	# (it's quite tedious to pass text with special symbols and quotes as a command line argument)
-	# busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- setClipboardContents s "$1"
-	clipcopy "$1"
+    # don't use this, the klipper API is a crap. It should set by id, not by content
+    # (it's quite tedious to pass text with special symbols and quotes as a command line argument)
+    # busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- setClipboardContents s "$1"
+    clipcopy "$1"
 }
 
 function klipper-items-clear() {
-	busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- clearClipboardHistory
+    busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- clearClipboardHistory
 }; [[ -n "${BASH:-}" ]] && export -f klipper-items-clear
 
 function klipper-items-get() {
-	busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- getClipboardHistoryMenu \
-		| jq -r '.data[]'
+    busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- getClipboardHistoryMenu \
+        | jq -r '.data[]'
 }
 
 # => body (executable) -------------------------------------------------------------------------------------------- {{{1
 
 if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under condition to make file source able
-	set -Eeuo pipefail
+    set -Eeuo pipefail
 
-	function help() {
-		name=$(basename "$0")
-		echo "$name - Browse clipboard history in terminal"
-		echo
-		echo "Usage:"
-		echo "    $name [options]"
-		echo
-		echo "Command options:"
-		echo "   -h, --help         print help and exit"
-		echo "   -j, --json         print as json (suppress UI)"
-	} >&2
+    function help() {
+        name=$(basename "$0")
+        echo "$name - Browse clipboard history in terminal"
+        echo
+        echo "Usage:"
+        echo "    $name [options]"
+        echo
+        echo "Command options:"
+        echo "   -h, --help         print help and exit"
+        echo "   -j, --json         print as json (suppress UI)"
+    } >&2
 
-	args=$(getopt --name="$0" --options 'hj' --longoptions 'help,json' -- "$@")
-	eval set -- "$args"
+    args=$(getopt --name="$0" --options 'hj' --longoptions 'help,json' -- "$@")
+    eval set -- "$args"
 
-	while ((1)); do
-		case "$1" in
-			-h | --help) help; exit ;;
-			-j | --json) json='1'; shift ;;
-			--) shift; break ;;
-		esac
-	done
+    while ((1)); do
+        case "$1" in
+            -h | --help) help; exit ;;
+            -j | --json) json='1'; shift ;;
+            --) shift; break ;;
+        esac
+    done
 
-	if [[ -n "${json:-}" ]]; then
-		klipper-items-get
-	elif [[ -t 1 ]]; then
-		export FZF_RELOAD_CMD="$0"
-		source "$HOME/.local/lib/shell/fzf.bash"
-
-		fzf_args=(
-			--bind="alt-c:become(klipper-items-clear)"
-			--bind="alt-enter:become(klipper-item-get {1} | jq -j | primarycopy)"
-			--bind="alt-i:execute(klipper-item-get {1} | jq -j | bat --color always --style numbers,grid --paging always --wrap never)"
-			--bind="alt-r:become(klipper-item-get {1} | jq -j | setsid -f ai-polite &>/dev/null)"
-			--bind="alt-s:become(klipper-item-get {1} | jq -j | secondarycopy)"
-			--bind="ctrl-m:become(klipper-item-get {1} | jq -j | clipcopy)"
-			--bind="ctrl-y:become(klipper-item-get {1} | jq -j | clipcopy)"
-			--header='A-c:clear A-i:inspect A-r:polite Enter:select A-p:preview C-l:reload'
-			--preview-window="right:40%:border-left:nowrap:nohidden"
-			--preview="klipper-item-get {1} | jq -j | bat --color always --style plain"
-			--prompt="clipboard history > "
-			--with-nth="2.."
-		)
-
-		"$0" | fzf-exec "${fzf_args[@]}"
-	else
-		echo $'id_\tbuffer'
-		"$0" -j | jq -r 'to_entries | map([.key, .value]).[] | select(.[1] | test("▨") | not) | @tsv'
-	fi
+    if [[ -n "${json:-}" ]]; then
+        klipper-items-get
+    elif [[ -t 1 ]]; then
+        export FZF_RELOAD_CMD="$0"
+        fzf_args=(
+            --bind="alt-c:become(klipper-items-clear)"
+            --bind="alt-enter:become(klipper-item-get {1} | jq -j | primarycopy)"
+            --bind="alt-i:execute(klipper-item-get {1} | jq -j | bat --color always --style numbers,grid --paging always --wrap never)"
+            --bind="alt-r:become(klipper-item-get {1} | jq -j | setsid -f ai-polite &>/dev/null)"
+            --bind="alt-s:become(klipper-item-get {1} | jq -j | secondarycopy)"
+            --bind="ctrl-m:become(klipper-item-get {1} | jq -j | clipcopy)"
+            --bind="ctrl-y:become(klipper-item-get {1} | jq -j | clipcopy)"
+            --footer='A-c:clear A-i:inspect A-r:polite enter:select | A-p:preview'
+            --preview-window="right:40%:border-left:nowrap:nohidden"
+            --preview="klipper-item-get {1} | jq -j | bat --color always --style plain"
+            --prompt="clipboard history > "
+            --with-nth="2.."
+        )
+        "$0" | fzf-table "${fzf_args[@]}"
+    else
+        echo $'id_\tbuffer'
+        "$0" -j | jq -r 'to_entries | map([.key, .value]).[] | select(.[1] | test("▨") | not) | @tsv'
+    fi
 fi
