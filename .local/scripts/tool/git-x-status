@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+# porcelain always returns relative paths to the git root
+# all relative paths need to be relocated the cwd to be used in `git add` for example
+git-in-repo && {
+    status=(git status --porcelain --no-renames -z)
+    paste -z \
+        <("${status[@]}" | sort -zk 2 | grep -Zzo '^..') \
+        <("${status[@]}" | sort -zk 2 | sed -z 's/^...//' | paths-rebase0 "$(git rev-parse --show-toplevel)")
+}

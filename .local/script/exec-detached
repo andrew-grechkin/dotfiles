@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
 
 # &>/dev/null </dev/null nohup "$@" & disown
-&>/dev/null </dev/null setsid -f "$@"
+# [[ -t 0 ]] && &>/dev/null </dev/null exec setsid -f "$@"
+
+[[ -t 0 ]] && exec 0</dev/null
+[[ -t 1 ]] && exec 1>/dev/null
+[[ -t 2 ]] && exec 2>/dev/null
+
+exec setsid -f "$@"
