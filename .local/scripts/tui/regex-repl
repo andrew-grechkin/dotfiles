@@ -1,62 +1,63 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2016,SC2154
 
 set -Eeuo pipefail
 
-# 🄯 2024 Andrew Grechkin
+[[ -x "$(command -v argc)" ]] || {
+    echo "'argc' helper command is required, install from https://github.com/sigoden/argc" >&2
+    exit 2
+}
+
+# @describe regex REPL. Quickly check regex
+#
+# SYNOPSIS:
+#     cat 'some input' | jq-repl -q '.'
+
+# 🄯 2025 Andrew Grechkin
 # LICENSE:
 #     GPL-2.0-or-later
 
-# ABSTRACT:
-#     regex REPL. Quickly check regex
+# @meta version 1.0.0
+# @meta combine-shorts
+# @meta require-tools fzf,jq
 
-# SYNOPSIS:
-#      cat 'some input' | jq-repl -q '.'
+# @arg    command*        File to process (or STDIN if not provided)
+# @option -q --query=.    Query
 
-args="$(getopt --name="$0" --options='q:' --longoptions='query:' -- "$@")"
-eval set -- "$args"
+eval "$(argc --argc-eval "$0" "$@")"
 
-query='.'
+# => -------------------------------------------------------------------------------------------------------------- {{{1
 
-while ((1)); do
-	case "$1" in
-		-q | --query) query="$2"; shift 2 ;;
-		--) shift; break ;;
-	esac
-done
-
-if [[ -z "${1:-}" ]] || [[ $1 == "-" ]]; then
-	input="$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
-	trap 'rm -f "$input"' EXIT
-	cat /dev/stdin > "$input"
+if [[ -z "${argc__positionals[*]}" ]] || [[ "${argc__positionals[0]}" == "-" ]]; then
+    input="$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
+    trap 'rm -f "$input"' EXIT
+    cat > "$input"
 else
-	input="$1"
+    input="${argc__positionals[0]}"
 fi
 
-script="'use English; if (my @m = m/'{q}'/p) {say \"matched: \", \${^MATCH}; say \"groups:\"; say foreach @m}'"
+script='BEGIN {$q = shift} use English; if (m/$q/p) {say ${^MATCH}}'
+reload="perl -nE ${script@Q} {q} < '$input'"
 
-fzf_cmd=(
-	fzf
-	--ansi
-	--bind="alt-p:unbind(alt-p)"
-	--bind="ctrl-c:become(echo -n {q} | clipcopy; true)"
-	--bind="ctrl-d:half-page-down,ctrl-u:half-page-up"
-	--bind="ctrl-j:preview-down,ctrl-k:preview-up"
-	--bind="ctrl-m:execute(perl -ngE $script '$input' | less)"
-	--bind="ctrl-x:become(echo regex: {q}; perl -ngE $script '$input')"
-	--bind="ctrl-y:execute-silent(echo -n {q} | clipcopy)"
-	--bind="end:preview-bottom"
-	--bind="esc:execute-silent(echo -n {q} | clipcopy)+change-query($query)"
-	--bind="home:preview-top"
-	--bind="page-down:preview-page-down,page-up:preview-page-up"
-	--disabled
-	--header='C-c:exit C-j:dn C-k:up C-x:dump C-y:yank Enter:view Esc:reset pgup,pgdn,home,end'
-	--preview-window='down:95%:border-top:wrap:nohidden'
-	--preview="perl -ngE $script '$input'; echo; cat '$input'"
-	--print-query
-	--reverse
-	--scroll-off=4
-	--tabstop=4
-	--query="$query"
+fzf_args=(
+    --ansi
+    --bind="alt-p:unbind(alt-p)"
+    --bind="change:reload:$reload"
+    --bind="ctrl-c:become(echo -n {q} | clipcopy; true)"
+    --bind="ctrl-m:execute($reload | ${PAGER:-less})"
+    --bind="ctrl-x:become(echo regex: {q}; $reload)"
+    --bind="ctrl-y:execute-silent(echo -n {q} | clipcopy)"
+    --bind="esc:execute-silent(echo -n {q} | clipcopy)+change-query(${argc_query})"
+    --bind="start:change-query(${argc_query})"
+    --disabled
+    --footer='C-c:exit C-x:dump C-y:yank enter:view esc:reset'
+    --preview-window='hidden'
+    --print-query
+    --prompt='regex > '
+    --query='⁉'
+    --scroll-off=4
+    --tabstop=4
 )
 
-"${fzf_cmd[@]}"
+export SHELL="$BASH" # enforce bash for all fzf sub shells
+fzf "${fzf_args[@]}"
