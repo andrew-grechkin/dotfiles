@@ -1,61 +1,58 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2016
 
 # => header (source able) ----------------------------------------------------------------------------------------- {{{1
 
 function btq-items-get() {
-	tsp -l
+    tsp -l
 }
 
 # => body (executable) -------------------------------------------------------------------------------------------- {{{1
 
 if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under condition to make file source able
-	set -Eeuo pipefail
+    set -Eeuo pipefail
 
-	args=$(getopt --name="$0" --options 'j' --longoptions 'json' -- "$@")
-	eval set -- "$args"
+    args=$(getopt --name="$0" --options 'j' --longoptions 'json' -- "$@")
+    eval set -- "$args"
 
-	while ((1)); do
-		case "$1" in
-			-j | --json) json='1'; shift ;;
-			--) shift; break ;;
-		esac
-	done
+    while ((1)); do
+        case "$1" in
+            -j | --json) json='1'; shift ;;
+            --) shift; break ;;
+        esac
+    done
 
-	if [[ -n "${json:-}" ]]; then
-		btq-items-get
-	elif [[ -t 1 ]]; then
-		export FZF_RELOAD_CMD="$0"
-		source "$HOME/.local/lib/shell/fzf.bash"
-
-		fzf_args=(
+    if [[ -n "${json:-}" ]]; then
+        btq-items-get
+    elif [[ -t 1 ]]; then
+        export FZF_RELOAD_CMD="$0"
+        fzf_args=(
             --bind="alt-A:execute-silent(cd \$(tsp -i {1} | jq -r .cwd) && tsp \$(tsp -i {1} | jq -r .cmd[]))+reload($FZF_RELOAD_CMD)"
-			# --bind="alt-C:execute-silent(fzf-run-reload <<< \"echo Cleaning up finished tasks...; $0 -j | jq -r '.[].output' | xargs -r rm -f; tsp -C\")"
-			# --bind="alt-R:execute-silent(fzf-run-reload --  echo 'Killing task' {1}; tsp -k {1})"
-			--bind="alt-i:execute( { tsp -i {1}; echo; echo Output:; cat \$(tsp -o {1}); } | \$PAGER)"
-			--bind="alt-o:execute(\$PAGER \$(tsp -o {1}))"
-			--header="A-A:again A-C:clean A-R:kill A-i:inspect $DEFAULT_FZF_KEYS"
-			--preview="tsp -i {1} | json2yaml; echo; echo Output:; cat \$(tsp -o {1}) | head -n 300"
-			--preview-window="right:50%:border-left:wrap:nohidden,<55(hidden)"
-			--prompt="btq > "
-			--tiebreak="begin,chunk"
-			--with-nth="3.."
-		)
-		"$0" | fzf-exec "${fzf_args[@]}"
-	else
-		source "$HOME/.local/lib/shell/data-processing.bash"
+            --bind="alt-C:execute-silent(fzf-run-reload <<< \"echo Cleaning up finished tasks...; $0 -j | jq -r '.[].output' | xargs -r rm -f; tsp -C\")"
+            # --bind="alt-R:execute-silent(fzf-run-reload --  echo 'Killing task' {1}; tsp -k {1})"
+            --bind="alt-i:execute( { tsp -i {1}; echo; echo Output:; cat \$(tsp -o {1}); } | \$PAGER)"
+            --bind="alt-o:execute(\$PAGER \$(tsp -o {1}))"
+            --footer="A-A:again A-C:clean A-R:kill A-i:inspect"
+            --preview="tsp -i {1} | json2yaml; echo; echo Output:; cat \$(tsp -o {1}) | head -n 300"
+            --preview-window="right:50%:border-left:wrap:nohidden,<55(hidden)"
+            --prompt="btq > "
+            --tiebreak="begin,chunk"
+            --with-nth="3.."
+        )
+        "$0" | fzf-table "${fzf_args[@]}"
+    else
+        jq_fields=(
+            '_id;\(.id)'
+            '_url;\(\"file://\(.out)\")'
+            'pid;\(.pid);olive'
+            'status;\(.status | if . == "failed" then "${FG[red]}\(.)" elif . == "finished" then "${FG[green]}\(.)" end)${FX[reset]}'
+            'ecode;\(.exit_code | if . == null then "" elif . != 0 then "${FG[red]}\(.)" else "${FG[green]}\(.)" end)${FX[reset]}'
+            # 'label;\(.label);blue'
+            'cmd;\(.shell)'
+            # 'times;\(.times);gray'
+            # 'out;\(.out);silver'
+        )
 
-		jq_fields=(
-			"_id;\(.id)"
-			"_url;\(\"file://\(.out)\")"
-			"pid;\(.pid);olive"
-			"status;\(.status | if . == \"failed\" then \"${FG[red]}\(.)\" elif . == \"finished\" then \"${FG[green]}\(.)\" end)${FX[reset]}"
-			"ecode;\(.exit_code | if . == null     then \"\" elif . != 0 then \"${FG[red]}\(.)\" else \"${FG[green]}\(.)\" end)${FX[reset]}"
-			# "label;\(.label);blue"
-			"cmd;\(.shell)"
-			# "times;\(.times);gray"
-			# "out;\(.out);silver"
-		)
-
-		"$0" -j | json-array-to-tsv 'sort_by(.id) | reverse' "${jq_fields[@]}"
-	fi
+        "$0" -j | json2table 'sort_by(.id) | reverse' "${jq_fields[@]}"
+    fi
 fi
