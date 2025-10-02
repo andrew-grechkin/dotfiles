@@ -3,23 +3,21 @@
 set -Eeuo pipefail
 
 if [[ -t 1 ]]; then
-	export FZF_RELOAD_CMD="$0"
-	source "$HOME/.local/lib/shell/fzf.bash"
-
-	fzf_args=(
-		--bind="alt-R:execute(echo printf \'%s\\\\n\' {+2} \| xargs -rn1 kubectl config delete-context | fzf-run-reload -t 2)"
-		--bind="ctrl-m:become(kubectl config use-context {2})"
-		--preview-window="right:50%:border-left:wrap:hidden"
-		--header="A-R:remove Enter:set $DEFAULT_FZF_KEYS"
-		--prompt="kubectl context > "
-	)
-	"$0" | fzf-exec-multi "${fzf_args[@]}"
+    export FZF_RELOAD_CMD="$0"
+    fzf_args=(
+        --bind="alt-R:execute(echo printf \'%s\\\\n\' {+2} \| xargs -rn1 kubectl config delete-context | fzf-run-reload -t 2)"
+        --bind="ctrl-m:become(kubectl config use-context {2})"
+        --preview-window="right:50%:border-left:wrap:hidden"
+        --footer="A-R:remove enter:set"
+        --prompt="kubectl context ($(kubectl config current-context)) > "
+    )
+    "$0" | fzf-table-multi "${fzf_args[@]}"
 else
-	{
-		echo -e "namespace\tcontext\tcluster\tuser\tcurrent";
-		kubectl config get-contexts --no-headers                       \
-			| perl -lpE 'if (m/^\*/) {s/^\*\s+/1 /} else {s/^\s+/0 /}' \
-			| perl -lanE '$n = pop @F; push @F, (shift @F); unshift @F, $n; say join "\t", @F'     \
-			| sort -u
-	} | tsv-align
+    {
+        echo -e "namespace\tcontext\tcluster\tuser\tcurrent";
+        kubectl config get-contexts --no-headers                       \
+            | perl -lpE 'if (m/^\*/) {s/^\*\s+/1 /} else {s/^\s+/0 /}' \
+            | perl -lanE '$n = pop @F; push @F, (shift @F); unshift @F, $n; say join "\t", @F'     \
+            | sort -u
+    } | tsv-align
 fi

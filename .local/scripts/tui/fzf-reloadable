@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+if [[ ! -t 0 ]]; then
+    input="$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
+    trap 'rm -f "$input"' EXIT
+    cat > "$input"
+
+    export FZF_RELOAD_CMD="<$input $*"
+    eval "$FZF_RELOAD_CMD" | fzf-table
+else
+    export FZF_RELOAD_CMD="$*"
+    eval "$FZF_RELOAD_CMD" | fzf-table
+fi

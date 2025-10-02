@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+git-in-repo || exit 95
+
+CURRENT_SCRIPT="$(basename "$0")"
+export FZF_RELOAD_CMD="echo -ne 'IW \tpath\0' && ${CURRENT_SCRIPT#fzf-} ${*@Q}"
+open_help='git web--browse https://git-scm.com/docs/git-status#_short_format'
+
+fzf_args=(
+    --accept-nth=2
+    --bind="alt-A:execute-silent(git reset -- {+-1})+reload($FZF_RELOAD_CMD)"
+    --bind="alt-c:execute(git commit -vem '')+reload($FZF_RELOAD_CMD)"
+    --bind="alt-C:execute(fzf-git-log-all-graph | head -1 | xargs -r git commit --fixup)+reload($FZF_RELOAD_CMD)"
+    --bind="alt-a:execute-silent(cat {+f-1} | xargs -rn1 git add --ignore-errors --)+reload($FZF_RELOAD_CMD)"
+    --bind="alt-i:execute({ git diff HEAD --color=always --stat -p --minimal --exit-code --ignore-space-change -- {-1} && git diff --stat -p --no-index -- /dev/null {-1}; } | delta --paging=always)"
+    --bind="alt-o:execute(fzf-git-file-show-history -- {-1})"
+    --bind="alt-s:execute(git amend)+reload($FZF_RELOAD_CMD)"
+    --bind="alt-t:become(fzf-git-log-all-graph)"
+    --bind="click-header:transform: [[ \$FZF_CLICK_HEADER_WORD == 'IW' ]] && echo 'execute-silent($open_help)'"
+    --color='fg:dim:italic,nth:regular'
+    --footer='F3:view F4:edit | A-a:add A-A:reset A-c:commit A-C:fixup A-i:inspect A-o:history A-s:amend A-t:log | C-a:all A-p:preview'
+    --header-lines=1
+    --nth=2
+    --preview='echo previous change in:; git-log-branch --follow -2 -- {-1}; echo; { git diff HEAD --color=always --stat -p --minimal --exit-code --ignore-space-change -- {-1} && git diff --stat -p --no-index -- /dev/null {-1}; } | delta'
+    --prompt="$(git main-project) | status > "
+)
+
+eval "$FZF_RELOAD_CMD" | fzf-files-multi "${fzf_args[@]}"

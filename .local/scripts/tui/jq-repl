@@ -1,77 +1,103 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2154
+
+# `jq-repl` transforms the process of writing `jq` filters from a static, trial-and-error loop into a fluid and
+# interactive experience. It provides a real-time "Read-Eval-Print Loop" directly in your terminal, allowing you
+# to see the results of your filter as you type.
+#
+# It is designed not just as a viewer, but as a meta-tool for building complete, correct, and reusable shell
+# commands.
+#
+# **Key Features:**
+#
+# * **Live Preview:** The output of your `jq` filter is updated with every keystroke, providing instant feedback
+#   and making it easy to explore complex JSON data.
+# * **"Exit and Copy Command":** The primary workflow (`Ctrl+X`) exits the TUI and automatically copies the
+#   complete, perfectly quoted `jq` command to your clipboard, ready to be pasted into a script or shell.
+# * **Robust Input Handling:** Safely handles JSON input from both piped STDIN and file arguments by caching
+#   streamed data to a temporary file.
+# * **Deep Inspection:** Provides key bindings to view the original input (`Alt+I`) or the full, un-truncated
+#   output in a pager (`Enter`) at any time.
+# * **Composable Design:** While a powerful standalone tool, it is also designed to be integrated into other
+#   TUIs (e.g., for inspecting a Docker image layer), acting as a reusable "inspection" component.
 
 set -Eeuo pipefail
 
-# 🄯 2024 Andrew Grechkin
-# LICENSE:
-#     GPL-2.0-or-later
-
-# ABSTRACT:
-#     jq REPL. Quickly build filtering request with preview
-
+# @describe ABSTRACT:
+#   jq REPL. Quickly build filtering request with preview
+#
 # SYNOPSIS:
-#     curl -Ls 'https://jsonplaceholder.typicode.com/users' | jq-repl -q 'map({position: .address.geo, email})'
+#   curl -Ls 'https://jsonplaceholder.typicode.com/users' | jq-repl -q 'map({position: .address.geo, email})'
+#
+# LICENSE:
+#   GPL-2.0-or-later
+#   🄯 2025 Andrew Grechkin
 
-# eval and getopt must be separated to ensure fatal error trowed on invalid parameter passed
-args="$(getopt --name="$0" --options='q:Rrt' --longoptions='query:,raw-input,raw-output,type' -- "$@")"
-eval set -- "$args"
+# @meta version 1.1.0
+# @meta combine-shorts
+# @meta require-tools clipcopy,fzf,jq
 
-query='.'
+# @arg    command*        Files to process (fallback to STDIN if no files provided)
+# @flag   -R --raw-input  Raw input
+# @flag   -r --raw-output Raw output
+# @option -q --query=.    Query
+
+[[ -x "$(command -v argc)" ]] || {
+    echo "'argc' helper command is required, install from https://github.com/sigoden/argc" >&2
+    exit 2
+}
+
+eval "$(argc --argc-eval "$0" "$@")"
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+if (( ${#argc__positionals[@]} == 1 )) && [[ "${argc__positionals[0]}" != "-" ]]; then
+    # only one parameter passed and it's not '-' than it's a file name and it can be used directly
+    input="${argc__positionals[0]}"
+else
+    # cache data into temporary file for all other cases
+    input="$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
+    trap 'rm -f "$input"' EXIT
+    cat "${argc__positionals[@]}" > "$input"
+fi
+
 rawi=''
 rawo=''
-type="'empty'"
+[[ -n "${argc_raw_input:-}" ]]  && rawi='Rn'
+[[ -n "${argc_raw_output:-}" ]] && rawi='r'
 
-while ((1)); do
-	case "$1" in
-		-q | --query) query="$2"; shift 2 ;;
-		-R | --raw-input) rawi="Rn"; shift ;;
-		-r | --raw-output) rawo="r"; shift ;;
-		-t | --type) type="{q}' | type'"; shift ;;
-		--) shift; break ;;
-	esac
-done
-
-if [[ -z "${1:-}" ]] || [[ $1 == "-" ]]; then
-	input="$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
-	trap 'rm -f "$input"' EXIT
-	cat /dev/stdin > "$input"
-else
-	input="$1"
-fi
-
+prettify=(jq -CS)
 if [[ -x "$(command -v json-pretty)" ]]; then
-	prettify=(json-pretty --no-filename --color=always)
-else
-	prettify=(jq --indent 2 -SC)
+    prettify=(json-pretty --no-filename --color=always)
 fi
 
-fzf_cmd=(
-	fzf
-	--ansi
-	--bind="alt-i:execute(${prettify[*]} <'$input' | less)"
-	--bind="alt-p:unbind(alt-p)"
-	--bind="alt-y:execute-silent(q={q}; jq -c$rawi$rawo {q} '$input' | clipcopy)"
-	--bind="ctrl-c:become(echo -n {q} | clipcopy; true)"
-	--bind="ctrl-d:half-page-down,ctrl-u:half-page-up"
-	--bind="ctrl-j:preview-down,ctrl-k:preview-up"
-	--bind="ctrl-m:execute(jq -c$rawi$rawo {q} '$input' | ${prettify[*]} | less)"
-	--bind="ctrl-x:become(q={q}; echo -n jq -c$rawo \"\${q@Q}\" | tee >(clipcopy) >&2; echo >&2; jq -c$rawo {q} '$input')"
-	--bind="ctrl-y:execute-silent(echo -n {q} | clipcopy)"
-	--bind="down:preview-down,up:preview-up"
-	--bind="end:preview-bottom"
-	--bind="esc:execute-silent(echo -n {q} | clipcopy)+change-query($query)"
-	--bind="home:preview-top"
-	--bind="page-down:preview-page-down,page-up:preview-page-up"
-	--disabled
-	--header="A-i:input C-c:exit C-j:dn C-k:up C-x:dump C-y:yank Enter:view Esc:reset pgup,pgdn,home,end"
-	--preview-window="up:95%:border-bottom:wrap:nohidden"
-	--preview="{ jq -c$rawi $type '$input' && jq -c$rawi {q} '$input' || jq -c$rawi . '$input'; } | ${prettify[*]}"
-	--print-query
-	--scroll-off=4
-	--tabstop=4
-	--query="$query"
+reload="set -eo pipefail; { jq -c$rawi {q} '$input' | ${prettify[*]}; } || jq -SC$rawi {q} '$input' 2>&1"
+
+fzf_args=(
+    --ansi
+    --bind="alt-i:execute(${prettify[*]} < '$input' | ${PAGER:-less})"
+    --bind="alt-p:unbind(alt-p)"
+    --bind="alt-y:execute-silent(jq -c$rawi$rawo {q} '$input' | clipcopy)"
+    --bind="change:reload:$reload"
+    --bind="ctrl-c:become(echo -n {q} | clipcopy; true)"
+    --bind="ctrl-m:execute(jq -c$rawi$rawo {q} '$input' | ${prettify[*]} | ${PAGER:-less})"
+    --bind="ctrl-x:become(q={q}; echo -n jq -c$rawo \"\${q@Q}\" | clipcopy >&2; echo >&2; jq -c$rawo {q} '$input')"
+    --bind="ctrl-y:execute-silent(echo -n {q} | clipcopy)"
+    --bind="esc:execute-silent(echo -n {q} | clipcopy)+change-query(${argc_query})"
+    --bind="home:first,end:last"
+    --bind="start:change-query(${argc_query})"
+    --disabled
+    --footer='A-i:input A-y:yank C-c:exit C-x:dump C-y:yank-q enter:view esc:reset'
+    --preview-window='hidden'
+    --print-query
+    --prompt='jq > '
+    --query='⁉'
+    --reverse
+    --scroll-off=4
+    --tabstop=4
 )
 
+unset FZF_DEFAULT_OPTS_FILE # use default fzf config (for portability)
 export SHELL="$BASH" # enforce bash for all fzf sub shells
 # exec would prevent trap from execution
-"${fzf_cmd[@]}"
+fzf "${fzf_args[@]}"

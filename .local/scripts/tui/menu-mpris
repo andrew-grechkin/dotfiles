@@ -1,91 +1,141 @@
-#!/usr/bin/env bash
+#!/usr/bin/env -S just --one --unstable --justfile
 
-set -Eeuo pipefail
+# https://just.systems/man/en/
 
-args=$(getopt --name="$0" --options 'j' --longoptions 'json' -- "$@")
-eval set -- "$args"
+set export
+export fzf-table := require('fzf-table')
+export fzf-time-reload := require('fzf-time-reload')
+export json2table := require('json2table')
+export pretty := require('json-pretty')
+export this := justfile()
+export tui := 'auto'
 
-while ((1)); do
-	case "$1" in
-		-j | --json) json='1'; shift ;;
-		--) shift; break ;;
-	esac
-done
+export MPRIS :='org.mpris.MediaPlayer2'
+export MPRIS_IF := MPRIS + '.Player'
+export MPRIS_OBJ :='/org/mpris/MediaPlayer2'
 
-export MPRIS='org.mpris.MediaPlayer2'
-export MPRIS_IF="$MPRIS.Player"
-export MPRIS_OBJ='/org/mpris/MediaPlayer2'
+# => default ------------------------------------------------------------------------------------------------------ {{{1
 
-function mpris-get-items() {
-	map_name=$(cat <<-'EO_MAP_NAME'
-		use constant {JSON_ONE_LINE => Cpanel::JSON::XS->new->canonical->utf8(0)->unblessed_bool([1])->pretty(0)->indent(0)};
+# Run TUI if interactive, otherwise print static view
+[private]
+default:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        "$this" controller
+    else
+        "$this" view
+    fi
 
-		chomp;
-		my $cmd = "busctl --user --json=short call $_ $ENV{MPRIS_OBJ} org.freedesktop.DBus.Properties -- GetAll s $ENV{MPRIS_IF}";
-		my $payload = qx($cmd) or next;
-		my \%d = JSON_ONE_LINE()->decode($payload);
-		my %p = map {my \%it=$_; map {$_ => $it{$_}{data}} keys %it} $d{data}->@*;
-		$p{name} = $_;
-		my \%m = $p{Metadata};
-		%m = map {$_ => $m{$_}{data}} grep {!m/artUrl/} keys %m;
+# Print help
+[script("/usr/bin/env", "-S", "colored-md")]
+help:
+    # ABSTRACT
+    Interactive TUI for controlling MPRIS-compatible media players
 
-		for (keys %m) {
-			$m{$_} = url_unescape($m{$_} =~ s'^file://''r) if $m{$_} && $m{$_} =~ m'^file://';
-		}
+    # DESCRIPTION
+    `menu-mpris` provides a unified, real-time dashboard for managing all media players on your system that support the
+    MPRIS D-Bus standard (such as Spotify, VLC, MPV, web browsers, etc.).
 
-		say JSON_ONE_LINE()->encode(\%p);
-		EO_MAP_NAME
-	)
+    It solves the problem of having to switch between different application windows to pause, change tracks, or adjust
+    volume. Instead of managing multiple players, you get a single, consistent, and powerful command-line interface.
 
-	busctl --user --json=short list \
-		| jq -r '.[] | select(.name | test("'"$MPRIS"'")) | .name' \
-		| perl -CAL -MCpanel::JSON::XS -MMojo::Util=url_unescape -Mexperimental=declared_refs,refaliasing -nE "$map_name" 2>/dev/null
-}
+    ## Key Features
 
-if [[ -n "${json:-}" ]]; then
-	mpris-get-items
-elif [[ -t 1 ]]; then
-	export FZF_RELOAD_CMD="$0"
-	source "$HOME/.local/lib/shell/fzf.bash"
+    * **Unified Control:** See and control all active media players from a single TUI.
+    * **Real-Time Dashboard:** The interface automatically refreshes periodically, providing a live view of playback
+      status, track position, and volume.
+    * **Rich Controls:** Provides a comprehensive set of key bindings to play/pause, skip, seek, change volume, and
+      toggle loop modes.
+    * **System Integration:** Interacts directly with the system's D-Bus API to discover players and send commands,
+      making it robust and efficient.
+    * **Clean & Composable:** Follows the three-mode pattern, allowing it to be used as an interactive TUI, a static
+      table generator for scripts, or a pure JSON data source.
 
-	fzf_args=(
-		--bind="load:execute-silent(setsid -f -- fzf-time-reload -i 3 $0)+unbind(load)"
-		--bind="alt-a:execute-silent(busctl --user --json=short get-property {1} $MPRIS_OBJ $MPRIS_IF -- LoopStatus | jq -r 'if (.data == \"None\") then \"Track\" elif (.data == \"Track\") then \"Playlist\" else \"None\" end' | xargs -r busctl --user set-property {1} $MPRIS_OBJ $MPRIS_IF -- LoopStatus s)+reload-sync($0)"
-		--bind="alt-b:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Seek x -9999999999999)+reload-sync($0)"
-		--bind="alt-h:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Seek x -60000000)+reload-sync($0)"
-		--bind="alt-l:execute-silent( busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Seek x  60000000)+reload-sync($0)"
-		--bind="alt-r:execute-silent( busctl --user call {1} $MPRIS_OBJ $MPRIS    -- Quit)+reload-sync($0)"
-		--bind="ctrl-m:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- PlayPause)+reload-sync($0)"
-		--bind="ctrl-n:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Next)+reload-sync($0)"
-		--bind="ctrl-p:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Previous)+reload-sync($0)"
-		--bind="ctrl-y:execute-silent(echo -n {-1} | clipcopy)"
-		--bind="down:execute-silent(busctl --user --json=short get-property {1} $MPRIS_OBJ $MPRIS_IF -- Volume | jq -r '.data - 0.05' | xargs -r busctl --user set-property {1} $MPRIS_OBJ $MPRIS_IF -- Volume d)+reload-sync($0)"
-		--bind="left:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Seek x -10000000)+reload-sync($0)"
-		--bind="right:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Seek x  10000000)+reload-sync($0)"
-		--bind="up:execute-silent(busctl --user --json=short get-property {1} $MPRIS_OBJ $MPRIS_IF -- Volume | jq -r '.data + 0.05' | xargs -r busctl --user set-property {1} $MPRIS_OBJ $MPRIS_IF -- Volume d)+reload-sync($0)"
-		--header="A-a:loop A-b:begin A-h:-60s A-l:+60s Dn:lower Up:higher Left:-10s Right:+10s Enter:play/pause C-n:next C-p:previous $DEFAULT_FZF_KEYS"
-		--preview-window="right:60%:border-left:wrap:hidden"
-		--preview="echo -n {-1}"
-		--prompt="mpris > "
-		--with-nth="2..-2"
-		--track
-	)
 
-	"$0" | fzf-exec "${fzf_args[@]}"
-else
-	source "$HOME/.local/lib/shell/data-processing.bash"
+# => MVC ---------------------------------------------------------------------------------------------------------- {{{1
 
-	jq_fields=(
-		"name;\(.name)"
-		"state;\(.PlaybackStatus);silver"
-		"position;\(.Position / 1000000 | round)/\(.Metadata.\"mpris:length\" / 1000000 | round)s (\(if .Metadata.\"mpris:length\" == 0 then 0 else .Position / .Metadata.\"mpris:length\" * 100 | round end)%);lime"
-		"volume;\(.Volume)"
-		"loop;\(.LoopStatus);silver"
-		"title;\(.Metadata.\"xesam:title\");cyan"
-		"artist;\(.Metadata.\"xesam:artist\"[0]?);blue"
-		"created;\(.Metadata.\"xesam:contentCreated\"[0:10]?);green"
-		"url;\(.Metadata.\"xesam:url\")"
-	)
+# Discover all MPRIS players and print their properties as JSON
+model:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    busctl --user --json=short list \
+        | jq -r '.[] | select(.name | test("'"$MPRIS"'")) | .name' \
+        | "$this" dbus-properties-to-json
 
-	"$0" -j | jq -nc '[inputs | select(.PlaybackStatus != "Stopped")]' | json-array-to-tsv 'sort_by(.Metadata."xesam:title") | reverse | sort_by(.PlaybackStatus) | reverse' "${jq_fields[@]}"
-fi
+# Print active players as a formatted and colorized table
+view:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq_fields=(
+        '_id;\(.id)'
+        '_url;\(.Metadata."xesam:url")'
+        'st;\(.PlaybackStatus | if . == "Playing" then "" else "" end);silver'
+        'position;\(.Position / 1000000 | round)/\(.Metadata."mpris:length" / 1000000 | round)s/\(if .Metadata."mpris:length" == 0 then 0 else .Position / .Metadata."mpris:length" * 100 | round end)%;lime'
+        'vol;\((.Volume * 100) | round)'
+        'ch;\(.Chapter + 1)'
+        'title;\(.Metadata."xesam:title" // "");cyan'
+        'track;\(.Metadata."xesam:titleTrack" // "")'
+        'artist;\(.Metadata."xesam:artist"[0]?);blue'
+        'loop;\(.LoopStatus);silver'
+        'created;\(.Metadata."xesam:contentCreated"[0:10]?);green'
+    )
+    "$this" model | jq -nc '[inputs | select(.PlaybackStatus != "Stopped")]' | json2table 'sort_by(.PlaybackStatus != "Playing", .Metadata."xesam:title")' "${jq_fields[@]}"
+
+# Display the real-time TUI for controlling media players
+controller:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    export FZF_RELOAD_CMD="${this@Q} view"
+    rld="+reload-sync($FZF_RELOAD_CMD)"
+    fzf_args=(
+        --bind="load:execute-silent(setsid -f -- fzf-time-reload -i 1 $FZF_RELOAD_CMD)+unbind(load)"
+        --bind="alt-a:execute-silent(busctl --user --json=short get-property {1} $MPRIS_OBJ $MPRIS_IF -- LoopStatus | jq -r 'if (.data == \"None\") then \"Track\" elif (.data == \"Track\") then \"Playlist\" else \"None\" end' | xargs -r busctl --user set-property {1} $MPRIS_OBJ $MPRIS_IF -- LoopStatus s)$rld"
+        --bind="alt-h:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Seek x -60000000)$rld"
+        --bind="alt-i:execute(${this@Q} model | jq 'select(.id == \"'{1}'\")' | ${pretty@Q} -Cpf {2})"
+        --bind="alt-l:execute-silent( busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Seek x 60000000)$rld"
+        --bind="alt-r:execute-silent( busctl --user call {1} $MPRIS_OBJ $MPRIS    -- Quit)$rld"
+        --bind="ctrl-b:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Seek x -9999999999999)$rld"
+        --bind="ctrl-m:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- PlayPause)$rld"
+        --bind="ctrl-n:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Next)$rld"
+        --bind="ctrl-p:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Previous)$rld"
+        --bind="ctrl-y:execute-silent(echo -n {2} | clipcopy)"
+        --bind="down:execute-silent(busctl --user --json=short get-property {1} $MPRIS_OBJ $MPRIS_IF -- Volume | jq -r '.data - 0.05' | xargs -r busctl --user set-property {1} $MPRIS_OBJ $MPRIS_IF -- Volume d)$rld"
+        --bind="left:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Seek x -10000000)$rld"
+        --bind="right:execute-silent(busctl --user call {1} $MPRIS_OBJ $MPRIS_IF -- Seek x 10000000)$rld"
+        --bind="up:execute-silent(busctl --user --json=short get-property {1} $MPRIS_OBJ $MPRIS_IF -- Volume | jq -r '.data + 0.05' | xargs -r busctl --user set-property {1} $MPRIS_OBJ $MPRIS_IF -- Volume d)$rld"
+        --footer="A-a:󰑖 A-h:󱘌 A-l:󱘋 down: up: left:󰴪 right:󰵱 enter:/ C-b:󰜉 C-n:󰒭 C-p:󰒮"
+        --gap=2
+        --preview-window="right:60%:border-left:wrap:hidden"
+        --preview="${this@Q} model | jq 'select(.id == \"'{1}'\")' | ${pretty@Q} -C"
+        --prompt="mpris > "
+        --with-nth="3.."
+        --track
+    )
+    "$this" view | fzf-table "${fzf_args[@]}"
+
+# => helper ------------------------------------------------------------------------------------------------------- {{{1
+
+# Fetch all properties for each player, prune them and print as a JSON object
+[private, no-cd]
+dbus-properties-to-json:
+    #!/usr/bin/env -S perl -CAL -n
+    use v5.40;
+    use Cpanel::JSON::XS;
+    use Mojo::Util qw(url_unescape);
+    use experimental qw(declared_refs refaliasing);
+
+    use constant {
+        JSON_ONE_LINE => Cpanel::JSON::XS->new->canonical->utf8(0)->unblessed_bool([1])->pretty(0)->indent(0),
+    };
+
+    chomp;
+    my $cmd = "busctl --user --json=short call $_ $ENV{MPRIS_OBJ} org.freedesktop.DBus.Properties -- GetAll s $ENV{MPRIS_IF}";
+    my $payload = qx($cmd) or next;
+    my \%d = JSON_ONE_LINE()->decode($payload);
+    my %result = map {my \%it=$_; map { $_ => $it{$_}{data} } keys %it} $d{data}->@*;
+    $result{id} = $_;
+    my \%metadata = $result{Metadata};
+    %metadata = map { $_ => $metadata{$_}{data} } grep {!m/artUrl/} keys %metadata;
+
+    for (keys %metadata) {
+        $metadata{$_} = url_unescape($metadata{$_} =~ s'^file://''r) if $metadata{$_} && $metadata{$_} =~ m'^file://';
+    }
+
+    say JSON_ONE_LINE()->encode(\%result);

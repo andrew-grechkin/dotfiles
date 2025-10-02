@@ -1,19 +1,82 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env -S just --one --justfile
 
-set -Eeuo pipefail
+# https://just.systems/man/en/
 
-DIR=${PASSWORD_STORE_DIR:-${XDG_DATA_HOME}/password-store}
+# requirements
+fzf-execute := require('fzf-execute')
+json2table := require('json2table')
 
-function list_files() {
-	# shopt -s nullglob globstar
-	setopt NULLGLOB
+tui := 'auto'
 
-	password_files=("$DIR"/**/*.gpg)
-	password_files=("${password_files[@]#*"$DIR/"}")
-	password_files=("${password_files[@]%".gpg"*}")
-	for FILE in "${password_files[@]}"; do
-		printf "%s	pass2clipboard \"$DIR/%s\" &>/dev/null\n" "$FILE" "$FILE"
-	done
-}
+export this := justfile()
+export pass_dir := env('PASSWORD_STORE_DIR', env('XDG_DATA_HOME') + '/password-store')
 
-list_files | sort | fzf-execute
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+# Run TUI if interactive, otherwise print static view
+[private]
+default:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ "{{tui}}" == 'force' ]] || [[ "{{tui}}" == 'auto' && -t 1 ]]; then
+        "$this" controller
+    else
+        "$this" view
+    fi
+
+set unstable
+# Print help
+[script("/usr/bin/env", "-S", "colored-md")]
+help:
+    # ABSTRACT
+    Interactive TUI for searching and managing the `pass` password store
+
+    # DESCRIPTION
+    `menu-pass` provides a fast, searchable interface for the standard Unix password manager, `pass`.
+
+    It solves the problem of needing to remember the exact path to a password entry by providing a fuzzy-searchable
+    list of all entries. It allows for quick copying of passwords, viewing entry details, and editing.
+
+    ## Key Features
+
+    * **Fuzzy Search:** Instantly search through all password entries.
+    * **Clipboard Integration:** The primary action copies the selected password to the clipboard.
+    * **Safe Preview:** The preview window shows the full content of the `pass` entry *except* for the first line,
+      which is assumed to be the password itself. This allows for viewing metadata without exposing the secret.
+    * **Clean & Composable:** Follows the three-mode pattern, allowing it to be used as an interactive TUI, a static
+      table generator, or a pure JSON data source.
+
+# => MVC ---------------------------------------------------------------------------------------------------------- {{{1
+
+# List all password store entries as a JSON stream
+model:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    fd -g '*.gpg' --base-directory "{{pass_dir}}" --format={.} | jq -nR --arg dir '{{pass_dir}}' '
+    reduce inputs as $line ([]; . + [{
+        "path": $line,
+        "command": "pass2clipboard \(($dir + "/" + $line + ".gpg") | @sh) &>/dev/null"
+    }])'
+
+# Print password entries as a formatted and colorized table
+view:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq_fields=(
+        'path;\(.path)'
+        '_command;\(.command)'
+    )
+    "$this" model | json2table 'sort_by(.path)' "${jq_fields[@]}"
+
+# Display the interactive TUI for managing the password store
+controller:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    export FZF_RELOAD_CMD="'$this' view"
+    fzf_args=(
+        --bind="alt-e:execute(pass edit {1})"
+        --bind="alt-i:execute(pass show {1} | $PAGER)"
+        --bind="alt-p:toggle-preview,alt-/:toggle-preview-wrap,ctrl-n:preview-down,ctrl-p:preview-up"
+        --bind="ctrl-y:execute-silent(echo -n \$(pass show {1} | head -n1) | clipcopy)"
+        --footer="enter:copy alt-e:edit alt-i:inspect ctrl-y:yank"
+        --header-lines=1
+        --preview="pass show {1} | tail -n +2"
+        --prompt="pass > "
+    )
+    "$this" view | fzf-execute -- "${fzf_args[@]}"

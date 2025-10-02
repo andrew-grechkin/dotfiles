@@ -1,0 +1,243 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+set export
+export model := require('vault')
+export this := justfile()
+export tui := 'auto'
+
+# precache required environment variables for the session
+export VAULT_ADDR := env('VAULT_ADDR')
+
+# vc edit /path/to/secret
+
+# => secrets ------------------------------------------------------------------------------------------------------ {{{1
+
+# show storages
+[group('secrets')]
+storages:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="{{source_file()}} storages"
+        fzf_args=(
+            --bind="ctrl-m:execute(${this@Q} show {1})"
+            --preview="${model@Q} secrets list -format=json | jq '.[\"{3}\"]' | ${this@Q} pretty -Cpf {1}"
+            --prompt="$VAULT_ADDR | storages > "
+            --with-nth="3.."
+        )
+        eval "$FZF_RELOAD_CMD" | fzf-table-multi "${fzf_args[@]}"
+    else
+        jq_fields=(
+            '_id;\(.name[:-1])'
+            '_url;{{VAULT_ADDR}}/ui/vault/secrets/\(.name[:-1]| @uri)/list'
+            'name;\(.name);olive'
+            'type;\(.type);magenta'
+            'description;\(.description)'
+            # 'status;\(.deprecation_status)'
+            # 'accessor;\(.accessor)'
+        )
+        "$model" secrets list -format=json \
+            | jq 'to_entries | map((.value.name = .key) | .value)' \
+            | json2table 'sort_by(.name)' "${jq_fields[@]}"
+    fi
+
+# show secrets in storage
+[group('secrets'), no-cd]
+show storage path:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$path" == *\/ ]]; then
+        if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+            export FZF_RELOAD_CMD="{{source_file()}} show ${storage@Q} ${path@Q}"
+            fzf_args=(
+                --bind="F4:execute(${this@Q} edit ${storage@Q}/{1})+refresh-preview"
+                --bind="F6:execute(${this@Q} rename-interactive ${storage@Q}/{1})+reload($FZF_RELOAD_CMD)"
+                --bind="alt-E:execute(${this@Q} edit-raw ${storage@Q}/{1})+refresh-preview"
+                --bind="alt-R:execute-silent(${this@Q} delete ${storage@Q}/{1})+reload($FZF_RELOAD_CMD)"
+                --bind="alt-c:execute-silent(${this@Q} clone ${storage@Q}/{1} clone)+reload($FZF_RELOAD_CMD)"
+                --bind="alt-g:execute(${this@Q} download ${storage@Q}/{1}; sleep 2)"
+                --bind="alt-y:execute-silent(${this@Q} show ${storage@Q} {1} | clipcopy)"
+                --bind="ctrl-m:execute(${this@Q} show ${storage@Q} {1})"
+                --bind="ctrl-y:execute-silent(echo -n ${storage@Q}/{1} | clipcopy)"
+                --footer="F4:edit F6:rename A-c:clone A-e:raw A-g:download A-R:remove enter:show | A-b:browse A-p:preview"
+                --preview="${this@Q} view ${storage@Q} {1}"
+                --prompt="$storage | $path | secrets > "
+                --with-nth="3.."
+            )
+            eval "$FZF_RELOAD_CMD" | fzf-table-multi "${fzf_args[@]}"
+        else
+            jq_fields=(
+                '_path;\(.path)'
+                "_url;\(.url)"
+                'name;\(.name);olive'
+                'path;\(.path);silver'
+                'dir;\(.directory);gray'
+            )
+            "$this" list "$storage" "$path" | json2table 'sort_by(.name)' "${jq_fields[@]}"
+        fi
+    else
+        if data=$("$model" kv get -format=json "$storage/$path" | jq -S '.data // empty') && [[ -n "$data" ]]; then
+            type="$(jq -r '.__TYPE__ // empty' <<< "$data")"
+            if [[ "$type" == 'file' ]]; then
+                jq -r '.contents' <<< "$data" | base64 -d | $PAGER
+            else
+                full_path="$storage/$path"
+                jq -S <<< "$data" | "$this" pretty -Cpf "$full_path"
+            fi
+        fi
+    fi
+
+# clone a secret
+[group('secrets'), no-cd, no-exit-message]
+clone path suffix: (ensure-file path)
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    "$model" kv get -format=json "$path" | jq '.data // empty' | "$model" kv put -format=json "$path.$suffix" -
+
+# edit a secret (support `__TYPE__=file` and auto decode/encode contents)
+[group('secrets')]
+edit path: (ensure-file path)
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if data=$("$model" kv get -format=json "$path" | jq -S '.data // empty') && [[ -n "$data" ]]; then
+        type="$(jq -r '.__TYPE__ // empty' <<< "$data")"
+        if [[ "$type" == 'file' ]]; then
+            payload="$(jq -r '.contents' <<< "$data" | base64 -d)"
+            if res=$(vipe <<< "$payload"); then
+                echo -n "$res" | base64 -w0 | "$model" write -format=json "$path" contents=- "__TYPE__=$type"
+            fi
+        else
+            if res=$(vipe -s json <<< "$data") && [[ -n "$res" ]]; then
+                "$model" kv put -format=json "$path" - <<< "$res"
+            fi
+        fi
+    fi
+
+# edit secret in a raw mode
+[group('secrets'), no-cd, no-exit-message]
+edit-raw path: (ensure-file path)
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if data=$("$model" kv get -format=json "$path" | jq -S '.data // empty') && [[ -n "$data" ]]; then
+        if res=$(vipe -s json <<< "$data") && [[ -n "$res" ]]; then
+            "$model" kv put -format=json "$path" - <<< "$res"
+        fi
+    fi
+
+# delete a secret
+[group('secrets'), no-cd, no-exit-message]
+delete path: (ensure-file path)
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$path" =~ \.marked-for-deletion$ ]]; then
+        "$this" print "deleting secret: $path"
+    else
+        "$this" print "marking secret for deletion: $path"
+        "$this" clone "$path" 'marked-for-deletion'
+    fi
+
+    "$model" delete -format=json "$path"
+
+# download a secret
+[group('secrets'), no-cd, no-exit-message]
+download path target='': (ensure-file path)
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    [[ -n "$target" ]] || target="$(basename "$path")"
+
+    if data=$("$model" kv get -format=json "$path" | jq -S '.data // empty') && [[ -n "$data" ]]; then
+        type="$(jq -r '.__TYPE__ // empty' <<< "$data")"
+        if [[ "$type" == 'file' ]]; then
+            jq -r '.contents' <<< "$data" | base64 -d
+        else
+            jq -S <<< "$data"
+        fi > "$target"
+    fi
+
+# enable versioning
+[group('secrets'), no-cd, no-exit-message]
+enable-versioning path: (ensure-file path)
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    "$model" kv enable-versioning -format=json "$path"
+
+# rename a secret
+[group('secrets'), no-cd, no-exit-message]
+rename path new_path: (ensure-file path)
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    [[ -n "$new_path" ]] || exit
+
+    # NOTE: vault cli for many years doesn't support native renaming
+    # shame on the developers - they force to use copy-delete workaround and this makes secret material leave server
+    "$model" kv get -format=json "$new_path" &>/dev/null && "$this" fatal "target path already exists: $new_path"
+
+    "$model" kv get -format=json "$path" | jq '.data // empty' | "$model" kv put -format=json "$new_path" -
+    "$model" delete -format=json "$path"
+
+# => models ------------------------------------------------------------------------------------------------------- {{{1
+
+[group('models'), private, no-cd, no-exit-message]
+list storage directory:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    [[ "$directory" == *\/ ]] || "$this" fatal "must operate on directories: $directory"
+
+    "$model" list -format=json "$storage/$directory" \
+        | jq '[ {storage: $storage, name: (.[])}
+                    | .directory = (.name | endswith("/"))
+                    | .parent = ($parent | sub("^/+"; "") | sub("/+$"; ""))
+                    | .path = "\(.parent)/\(.name)"
+                    | .url = ([$prefix, $storage, (if .directory then "list" else "show" end), .path] | join("/"))
+            ]' \
+            --arg storage "$storage" \
+            --arg parent "$directory" \
+            --arg prefix "{{VAULT_ADDR}}/ui/vault/secrets"
+
+[group('models'), private, no-cd, no-exit-message]
+view storage path:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$path" == *\/ ]]; then
+        "$this" list "$storage" "$path" | "$this" pretty -Cf "$storage/$path"
+    else
+        "$model" kv get -format=json "$storage/$path" | jq '.data // empty' | "$this" pretty -Cf "$storage/$path"
+    fi
+
+[group('models'), private, no-cd, no-exit-message]
+rename-interactive path:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    new_path=$(gum input --header New\ path: --value "$path")
+    "$this" rename "$path" "$new_path"
+
+# => helpers ------------------------------------------------------------------------------------------------------ {{{1
+
+[group('helpers'), private, no-cd, no-exit-message]
+@fatal message:
+    >&2 echo "{{style('error')}}$message{{NORMAL}}"
+    exit 1
+
+[group('helpers'), private, no-cd]
+@print message:
+    [[ -t 1 ]] && >&2 echo "{{style('warning')}}$message{{NORMAL}}" || true
+
+[group('helpers'), private, no-cd, no-exit-message, positional-arguments]
+@pretty *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ -x "$(command -v json-pretty)" ]]; then
+        json-pretty "$@"
+    else
+        jq -SC
+    fi
+
+# ensure secret file, not a dir
+[group('secrets'), private, no-cd, no-exit-message]
+ensure-file path:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$path" == *\/ ]]; then
+        "$this" fatal "cannot operate on directories: $path"
+    fi

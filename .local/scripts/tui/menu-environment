@@ -1,22 +1,96 @@
-#!/usr/bin/env bash
+#!/usr/bin/env -S just --one --unstable --justfile
 
-set -Eeuo pipefail
+# https://just.systems/man/en/
 
-export FZF_RELOAD_CMD="env | sort | sed 's/=.*//'"
-source "$HOME/.local/lib/shell/fzf.bash"
+set export
+export colored-md := require('colored-md')
+export fzf-table := require('fzf-table')
+export json2table := require('json2table')
+export text-split := require('text-split')
+export this := justfile()
+export tui := 'auto'
 
-# shellcheck disable=SC2016
-preview_quoted='echo -n "\"${}\""'
-# shellcheck disable=SC2016
-preview='echo "${}"'
+# => default ------------------------------------------------------------------------------------------------------ {{{1
 
-fzf_args=(
-	--bind="alt-i:execute(bash -c 'echo -n {}=; $preview_quoted' | ${PAGER:-less})"
-	--bind="ctrl-m:become(bash -c '$preview' | tee >(trim-whole | clipcopy))"
-	--bind="ctrl-y:execute-silent(bash -c 'echo -n {}=; $preview_quoted' | clipcopy)"
-	--header-lines=0
-	--preview-window="right:60%:border-left:wrap:nohidden"
-	--preview="bash -c '$preview'"
-)
+# Run TUI if interactive, otherwise print static view
+[private]
+default:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        "$this" controller
+    else
+        "$this" view
+    fi
 
-eval "$FZF_RELOAD_CMD" | fzf-exec "${fzf_args[@]}"
+# Print help
+[script("/usr/bin/env", "-S", "colored-md")]
+help:
+    # ABSTRACT
+    Interactive TUI for browsing and inspecting environment variables
+
+    # DESCRIPTION
+    `menu-environment` provides a fast, searchable interface for exploring the environment variables in the current
+    shell session.
+
+    It solves the problem of running `env` and getting a dense, hard-to-read wall of text. It presents the
+    variables in a clean, interactive list with a powerful preview that intelligently formats path-like variables.
+
+    ## Key Features
+
+    * **Fuzzy Search:** Instantly search for variables by name.
+    * **Intelligent Preview:** The preview window displays the full variable value and automatically splits known
+      path variables (like `$PATH`, `$FPATH`) by colons for easy inspection.
+    * **Clipboard Integration:** Easily copy the full value of any variable to the clipboard.
+    * **Clean & Composable:** Follows the three-mode pattern, allowing it to be used as an interactive TUI, a static
+      table generator, or a pure JSON data source.
+
+# => MVC ---------------------------------------------------------------------------------------------------------- {{{1
+
+# Output all environment variables as a single JSON array
+model:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    env -0 | jq -R -s 'split("\u0000") | .[:-1] | map(split("=") | {key: .[0], value: (.[1:] | join("="))})'
+
+# Print environment variables as a formatted and colorized table
+view:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq_fields=(
+        '_key;\(.key)'
+        '_url;'
+        'key;\(.key)'
+        'value;\(.value | if (length > 40) then .[0:40] + "…" else . end);silver'
+    )
+    "$this" model | json2table 'sort_by(.key)' "${jq_fields[@]}"
+
+# Display the interactive TUI for browsing environment variables
+controller:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    export FZF_RELOAD_CMD="${this@Q} view"
+    fzf_args=(
+        --bind="alt-i:execute(echo {2} | ${PAGER:-less})"
+        --bind="ctrl-m:become(echo {2})"
+        --bind="ctrl-y:execute-silent(echo -n {2} | clipcopy)"
+        --footer="A-i:inspect C-y:yank enter:print"
+        --header-lines=1
+        --preview-window="right:60%:border-left:wrap"
+        --preview="${this@Q} preview-environment-variable {1}"
+        --prompt="env > "
+        --with-nth="3.."
+    )
+    "$this" view | fzf-table "${fzf_args[@]}"
+
+# => helper ------------------------------------------------------------------------------------------------------- {{{1
+
+# Generate a formatted preview for a single environment variable
+[private]
+preview-environment-variable key:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    value="${!key}"
+    echo -e "\\e[1mKey:\\e[0m $key\\n---"
+    echo "$value"
+
+    if [[ "$key" =~ DIRS$|LIB$|PATH$|FPATH$|MANPATH$ && "$value" =~ : ]]; then
+        echo
+        echo -e "\\e[1mSplit:\\e[0m"
+        echo "$value" | text-split ":"
+    fi

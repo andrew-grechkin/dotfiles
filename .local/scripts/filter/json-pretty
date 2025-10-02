@@ -5,45 +5,52 @@ set -Eeuo pipefail
 color='auto'
 filename=''
 
-args=$(getopt --name="$0" --options 'nc:f:C' --longoptions 'no-filename,color:,filename:' -- "$@")
+args=$(getopt --name="$0" --options 'nc:f:pC' --longoptions 'no-filename,color:,filename:,paging' -- "$@")
 eval set -- "$args"
 
 while ((1)); do
-	case "$1" in
-		-c | --color) color="$2"; shift 2 ;;
-		-f | --filename) filename="$2"; shift 2 ;;
-		-n | --no-filename) no_filename="1"; shift ;;
-		-C) color="always"; shift ;;
-		--) shift; break ;;
-	esac
+    case "$1" in
+        -c | --color) color="$2"; shift 2 ;;
+        -f | --filename) filename="$2"; shift 2 ;;
+        -n | --no-filename) no_filename="1"; shift ;;
+        -p | --paging) paging="| $PAGER"; shift ;;
+        -C) color="always"; shift ;;
+        --) shift; break ;;
+    esac
 done
 
 if [[ -x "$(command -v json2yaml)" && -x "$(command -v perl)" && -n "$(perl -e 'print $] >= 5.036')" && -n "$(perl -MYAML::XS -e 'print $YAML::XS::VERSION' 2>/dev/null)" ]]; then
-	formatter="| json2yaml"
-	lang="yaml"
+    formatter="| json2yaml"
+    lang="yaml"
 elif [[ -x "$(command -v yq)" ]]; then
-	formatter="| yq -P -p=json -o yaml 'sort_keys(..)'"
-	lang="yaml"
+    formatter="| yq -P -p=json -o yaml 'sort_keys(..)'"
+    lang="yaml"
 else
-	formatter='| jq --indent 2 -S'
-	lang="json"
-	colorizer="-C"
+    formatter='| jq --indent 2 -S'
+    lang="json"
+    colorizer="-C"
 fi
 
 if [[ "$color" != 'never' ]] && [[ -t 1 || "$color" == 'always' ]]; then
-	if [[ -x "$(command -v bat)" ]]; then
-		if [[ "${no_filename:-}" == "1" ]]; then
-			bat_options=(--style=plain)
-		else
-			if [[ -n "$filename" ]]; then
-				bat_options=(--style=header "--file-name=$filename")
-			else
-				bat_options=(--style=header "--file-name=STDIN.${lang:-json}")
-			fi
-		fi
+    if [[ -x "$(command -v bat)" ]]; then
+        if [[ "${no_filename:-}" == "1" ]]; then
+            bat_options=(--style=plain)
+        else
+            if [[ -n "$filename" ]]; then
+                bat_options=(--style=header "--file-name=$filename")
+            else
+                bat_options=(--style=header "--file-name=STDIN.${lang:-json}")
+            fi
+        fi
 
-		colorizer="| bat --wrap=never -l '$lang' --color='$color' ${bat_options[*]@Q}"
-	fi
+        if [[ -n "${paging:-}" ]]; then
+            bat_options+=(--paging=always)
+        fi
+
+        colorizer="| bat --wrap=never -l ${lang@Q} --color=${color@Q} ${bat_options[*]@Q}"
+    else
+        colorizer=" ${paging:-}"
+    fi
 fi
 
 eval "cat ${*@Q} ${formatter:-| cat} ${colorizer:-}"
