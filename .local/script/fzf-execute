@@ -16,11 +16,11 @@ done
 
 fzf_cmd=(
 	--ansi
-	# --bind="enter:become(exec 2>>${XDG_RUNTIME_DIR}/$(basename "$0").log; echo \>/dev/null \</dev/null nohup {${column}..} \& disown\; sleep 0.2 | tee -a /dev/stderr | bash)"
-	--bind="ctrl-m:become(exec 2>>${XDG_RUNTIME_DIR}/$(basename "$0").log; eval {${column}..})"
+	# --bind="ctrl-m:become(exec 2>>${XDG_RUNTIME_DIR}/$(basename "$0").log; echo \>/dev/null \</dev/null nohup {${column}..} \& disown\; sleep 0.2 | tee -a /dev/stderr | bash)"
+	--bind="ctrl-m:become(exec 2>>${XDG_RUNTIME_DIR}/$(basename "$0").log; eval 'exec-detached '{${column}..})"
 	--bind="ctrl-y:execute-silent(echo -n {${column}..} | clipcopy)"
 	--delimiter=$'\u0009'
-	--header="Enter:execute"
+	--footer="enter:execute"
 	--no-multi
 	--preview-window="right:60%:border-left:wrap:hidden"
 	--preview="echo {${column}..}"

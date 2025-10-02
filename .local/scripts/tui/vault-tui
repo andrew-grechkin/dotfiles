@@ -1,0 +1,156 @@
+#!/usr/bin/env -S just --one -f
+
+# https://just.systems/man/en/
+
+api := require('vault')
+pretty := require('json-pretty')
+tui := 'auto'
+
+export this := justfile()
+
+# precache required environment variables for the session
+export VAULT_ADDR := env('VAULT_ADDR')
+
+# => secrets ------------------------------------------------------------------------------------------------------- {{{1
+
+# show storages
+[group('secrets')]
+storages:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "{{tui}}" == 'force' ]] || [[ "{{tui}}" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="{{source_file()}} storages"
+        fzf_args=(
+            --bind="ctrl-m:execute('{{this}}' show {1})"
+            --preview="'{{api}}' secrets list -format=json | jq '.[\"{3}\"]' | '{{pretty}}' -Cpf {1}"
+            --prompt="$VAULT_ADDR | storages > "
+            --with-nth="3.."
+        )
+        eval "$FZF_RELOAD_CMD" | fzf-table-multi "${fzf_args[@]}"
+    else
+        jq_fields=(
+            '_id;\(.name[:-1])'
+            "_api;$VAULT_ADDR/ui/vault/secrets/\(.name[:-1]| @uri)/list"
+            'name;\(.name);olive'
+            'type;\(.type);magenta'
+            'description;\(.description)'
+            # 'status;\(.deprecation_status)'
+            # 'accessor;\(.accessor)'
+        )
+        '{{api}}' secrets list -format=json | jq 'to_entries | map((.value.name = .key) | .value)' | json2table 'sort_by(.name)' "${jq_fields[@]}"
+    fi
+
+# download a secret
+[group('secrets')]
+download path target:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ '{{path}}' != *\/ ]]; then
+        if data="$('{{api}}' read -format=json '{{path}}' | jq -S '.data')"; then
+            type="$(jq -r '.__TYPE__' <<< "$data")"
+            if [[ "$type" == 'json' ]]; then
+                jq -S 'del(.__TYPE__)' <<< "$data" > '{{target}}'
+            elif [[ "$type" == 'file' ]]; then
+                jq -r '.contents' <<< "$data" | base64 -d > '{{target}}'
+            fi
+        fi
+    fi
+
+# show secrets in storage
+[group('secrets')]
+show storage path='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ -z '{{path}}' || '{{path}}' == *\/ ]]; then
+        if [[ "{{tui}}" == 'force' ]] || [[ "{{tui}}" == 'auto' && -t 1 ]]; then
+            export FZF_RELOAD_CMD="{{source_file()}} show '{{storage}}' {{path}}"
+            fzf_args=(
+                --bind="F4:execute('{{this}}' edit '{{storage}}/{{path}}'{1})+refresh-preview"
+                --bind="alt-R:execute-silent('{{this}}' delete '{{storage}}/{{path}}'{1})+reload($FZF_RELOAD_CMD)"
+                --bind="alt-c:execute-silent('{{this}}' clone '{{storage}}/{{path}}'{1})+reload($FZF_RELOAD_CMD)"
+                --bind="alt-g:execute(p='$XDG_RUNTIME_DIR/{1}'; echo Downloading to \${p@Q}; '{{this}}' download '{{storage}}/{{path}}'{1} \${p@Q}; sleep 2)"
+                --bind="ctrl-m:execute('{{this}}' show '{{storage}}' '{{path}}'{1})"
+                --bind="ctrl-y:execute-silent(echo -n '{{storage}}/{{path}}'{1} | clipcopy)"
+                --footer="F4:edit A-c:clone A-g:download A-R:remove enter:show | A-b:browse A-p:preview"
+                --preview="'{{api}}' read -format=json '{{storage}}/{{path}}'{1} | '{{pretty}}' -Cpf {1}"
+                --prompt="{{storage}}/{{path}} | secrets > "
+                --with-nth="3.."
+            )
+            eval "$FZF_RELOAD_CMD" | fzf-table-multi "${fzf_args[@]}"
+        else
+            jq_fields=(
+                '_path;\(.)'
+                "_api;$VAULT_ADDR/ui/vault/secrets/"'\("{{storage}}" | @uri)/list/{{path}}'
+                'path;\(.)'
+            )
+            '{{api}}' list -format=json '{{storage}}/{{path}}' | json2table 'sort' "${jq_fields[@]}"
+        fi
+    else
+        if data="$('{{api}}' read -format=json '{{storage}}/{{path}}' | jq -S '.data')"; then
+            type="$(jq -r '.__TYPE__ // empty' <<< "$data")"
+            if [[ -z "$type" || "$type" == 'json' ]]; then
+                echo "$data" | '{{pretty}}' -Cpf '{{path}}'
+            elif [[ "$type" == 'file' ]]; then
+                jq -r '.contents' <<< "$data" | base64 -d | $PAGER
+            fi
+        fi
+    fi
+
+# edit a secret
+[group('secrets')]
+edit path:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ '{{path}}' != *\/ ]]; then
+        if data="$('{{api}}' read -format=json '{{path}}' | jq -S '.data')"; then
+            type="$(jq -r '.__TYPE__ // empty' <<< "$data")"
+            if [[ -z "$type" ]]; then
+                if res="$(vipe <<< "$data" | jq -rc 'to_entries | map("\(.key)=\(.value)")[]')"; then
+                    mapfile -t kv <<< "$res"
+                    echo '{{api}}' write -format=json '{{path}}' "${kv[@]}"
+                fi
+            elif [[ "$type" == 'json' ]]; then
+                payload="$(jq -S 'del(.__TYPE__)' <<< "$data")"
+                if res="$(vipe <<< "$payload" | jq -rc 'to_entries | map("\(.key)=\(.value)")[]')"; then
+                    mapfile -t kv <<< "$res"
+                    '{{api}}' write -format=json '{{path}}' "${kv[@]}" "__TYPE__=$type"
+                fi
+            elif [[ "$type" == 'file' ]]; then
+                payload="$(jq -r '.contents' <<< "$data" | base64 -d)"
+                if updated="$(vipe <<< "$payload")"; then
+                    echo -n "$updated" | base64 -w0 | '{{api}}' write -format=json '{{path}}' contents=- "__TYPE__=$type"
+                else
+                    echo 'canceled'
+                fi
+            fi
+        fi
+    fi
+
+# duplicate a secret
+[group('secrets')]
+clone path:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ '{{path}}' != *\/ ]]; then
+        if res="$('{{api}}' read -format=json '{{path}}' | jq -rc '.data | to_entries | map("\(.key)=\(.value)")[]')"; then
+            mapfile -t kv <<< "$res"
+            '{{api}}' write -format=json '{{path}}.copy' "${kv[@]}"
+        fi
+    fi
+
+# delete a secret
+[group('secrets')]
+delete path:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    # if [[ '{{path}}' != *\/ ]]; then
+    #     if [[ '{{path}}' =~ \.deleted$ ]]; then
+    #         '{{api}}' delete -format=json '{{path}}'
+    #     else
+    #         if res="$('{{api}}' read -format=json '{{path}}' | jq -rc '.data | to_entries | map("\(.key)=\(.value)")[]')"; then
+    #             mapfile -t kv <<< "$res"
+    #             '{{api}}' write -format=json '{{path}}.deleted' "${kv[@]}" \
+    #                 && echo '{{api}}' delete -format=json '{{path}}'
+    #         fi
+    #     fi
+    # fi
