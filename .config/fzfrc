@@ -1,14 +1,16 @@
 --ansi
---bind="alt-p:toggle-preview,ctrl-s:toggle-sort,ctrl-t:toggle-track"
---bind="ctrl-d:half-page-down,ctrl-u:half-page-up,home:top"
---bind="ctrl-e:toggle-preview-wrap,ctrl-n:preview-down,ctrl-p:preview-up"
---bind="ctrl-g:jump"
---bind="ctrl-w:backward-kill-word,esc:cancel"
+--bind="alt-p:toggle-preview,alt-/:toggle-preview-wrap,ctrl-n:preview-down,ctrl-p:preview-up"
+--bind="alt-up:first,alt-down:last"
+--bind="ctrl-d:half-page-down,ctrl-u:half-page-up"
+--bind="ctrl-g:jump,ctrl-j:down-match,ctrl-k:up-match"
+--bind="ctrl-r:toggle-raw,ctrl-s:toggle-sort,ctrl-t:toggle-track"
 --bind="ctrl-y:execute-silent(echo -n {} | clipcopy)"
+--bind="esc:cancel"
 --bind="tab:execute-silent(true),shift-tab:execute-silent(true)"
---header="Enter:view A-p:preview C-n/p:p-move C-y:yank"
+--color="nomatch:dim:strip:gray"
 --listen
 --preview-window="right:60%:border-left:wrap:hidden"
 --preview='{ show-dir {} || show-file {}; } 2>&1'
+--reverse
 --scroll-off=4
 --tabstop=4
