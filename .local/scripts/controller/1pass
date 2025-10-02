@@ -1,0 +1,115 @@
+#!/usr/bin/env -S just --one --unstable --justfile
+
+# https://just.systems/man/en/
+
+mod fzf "~/.local/lib/just/fzf"
+mod json "~/.local/lib/just/json"
+
+set export
+export model := require('op')
+export this := justfile()
+export tui := 'auto'
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+# Run TUI if interactive, otherwise print static view
+[private]
+default:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        "$this" controller
+    else
+        "$this" view
+    fi
+
+# => MVC ---------------------------------------------------------------------------------------------------------- {{{1
+
+# Output items as a single JSON array of objects
+model:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    memoize -t 1min -- "$model" item list --format json
+
+# Output item fields as a single JSON array of objects
+model-item id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    memoize -t 1min -- "$model" item get "$id" --format=json | jq '.fields'
+
+# Print items as a formatted and colorized table
+view:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq_fields=(
+        '_id;\(.id)'
+        '_url;'
+        'vault;\(.vault.name);cyan'
+        'title;\(.title[0:80]);olive'
+        'tags;\(.tags // [] | sort | join(","))'
+        'category;\(.category);silver'
+    )
+    "$this" model | "$this" json::to-table 'sort_by(.vault.name, .title)' "${jq_fields[@]}"
+
+# Print item fields as a formatted and colorized table
+view-item id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq_fields=(
+        '_id;\(.id)'
+        '_url;\(.reference)'
+        'label;\(.label);olive'
+        'type;\(.type);silver'
+        'purpose;\(.purpose);gray'
+        'ref;\(.reference);silver'
+    )
+    "$this" model-item "$id" | "$this" json::to-table 'sort_by(.id)' "${jq_fields[@]}"
+
+# Display the interactive TUI for items
+controller:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    export FZF_RELOAD_CMD="${this@Q} view"
+    fzf_args=(
+        --bind="alt-i:execute(${this@Q} preview-item {1} | ${PAGER:-less})"
+        --bind="ctrl-m:execute(${this@Q} controller-item {1})"
+        --footer='A-i:inspect | A-p:preview'
+        --preview-window="right:50%:border-left:nowrap:hidden"
+        --preview="${this@Q} preview-item {1}"
+        --prompt="1password > "
+        --with-nth=3..
+    )
+    "$this" view | "$this" fzf::table "${fzf_args[@]}"
+
+# Display the interactive TUI for a single item
+controller-item id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    export FZF_RELOAD_CMD="${this@Q} view-item ${id@Q}"
+    fzf_args=(
+        --bind="alt-i:execute(${this@Q} preview-field ${id@Q} {1})"
+        --bind="alt-y:execute-silent(echo -n {2} | clipcopy)"
+        --bind="ctrl-m:execute-silent(true)"
+        --bind="ctrl-y:execute-silent(echo -n \$(${model@Q} read {2}) | clipcopy)"
+        --footer='A-y:ref A-i:inspect C-y:yank | A-p:preview'
+        --preview-window="right:50%:border-left:nowrap:hidden"
+        --preview="${this@Q} preview-field ${id@Q} {1}"
+        --prompt="1password [$id] > "
+        --with-nth=3..
+    )
+    "$this" view-item "$id" | "$this" fzf::table "${fzf_args[@]}"
+
+# => helper ------------------------------------------------------------------------------------------------------- {{{1
+
+# Generate a formatted preview for a single item
+[private]
+preview-item id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$model" item get "$id" --format=json | "$this" json::pretty -Cpf "$id"
+
+# Generate a formatted preview for a single item
+[private]
+preview-field id field:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    field=$("$this" model-item "$id" | jq --arg field "$field" '.[] | select(.id == $field)')
+    "$this" json::pretty -Cpf "$(jq -r .reference <<< "$field")" <<< "$field"
+
+# Secret field reference
+[private]
+ref id field:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    item=$("$model" item get "$id" --format=json)
+    jq -r --arg field "$field" '.fields[] | select(.id == $field) | .reference' <<< "$item"
