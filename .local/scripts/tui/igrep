@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+gpath="perl -F: -0lnE 'print \$F[0]'"
+glnpt="perl -F: -0lnE 'print \$F[1]; print \$F[0]'"
+reload='rg -Ps --sort=path --color=always --line-number {q}'
+replace=$(cat << 'EO_REPLACE'
+if v=$(gum input --header='Replacing old: '{q} --value={q}); then
+    <{+f1} perl -F: -l0E 'print $F[0]' | xargs -r0 perl -i -pE 'BEGIN {$s=shift; $r=shift; $s=qr/$s/} s|$s|$r|' {q} "$v"
+fi
+EO_REPLACE
+)
+
+fzf_args=(
+    --bind="F3:execute:printf '%s\0' {1} | $glnpt | xargs -r0 bash -c '</dev/tty ${PAGER:-less}           \"+\${0}g\" \"\$1\"'"
+    --bind="F4:execute:printf '%s\0' {1} | $glnpt | xargs -r0 bash -c '</dev/tty ${VISUAL:-${EDITOR:-vi}} \"+\${0}\"  \"\$1\"'"
+    --bind="alt-R:execute($replace)+reload($reload)"
+    --bind="change:reload:$reload"
+    --bind="ctrl-l:reload:$reload"
+    --bind="ctrl-m:trigger:F4"
+    --bind="ctrl-x:become(cat {+f1} | perl -l0pe1 | $gpath | perl -0lnE 'say')"
+    --bind="start:change-query(${1:-})"
+    --footer='F3:view F4:edit alt-R:replace ctrl-x:take | ctrl-a:all alt-p:preview'
+    --phony
+    --preview="printf '%s\0' {1} | $gpath | xargs -r0 colored"
+    --prompt='grep > '
+    --query="⁉"
+    --reverse
+)
+
+echo 'loading...' | fzf-exec-multi "${fzf_args[@]}"

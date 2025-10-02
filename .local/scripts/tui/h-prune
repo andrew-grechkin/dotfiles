@@ -2,6 +2,9 @@
 
 set -Eeuo pipefail
 
+# LC_ALL=C grep -P "[\x80-\xFF]" "$HISTFILE"
+# grep -iP "\b[[:xdigit:]]{40}\b" "$HISTFILE"
+
 file="$XDG_STATE_HOME/zsh/history@$HOSTNAME"
 
 temp_file=$(mktemp -u)
@@ -16,10 +19,11 @@ fzf_args=(
 	--bind="tab:toggle-out,shift-tab:toggle-in,ctrl-a:toggle-all"
 	--multi
 	--reverse
+	--tiebreak="begin,chunk"
 	--track
 )
 
-lines="$(sort < "$file" | fzf "${fzf_args[@]}")"
+lines="$(LC_COLLATE=C sort < "$file" | fzf "${fzf_args[@]}")"
 
 echo "Pruning history for whole lines: $(wc -l <<< "$lines")"
 cp -f "$file" "$file.prune.bak"
