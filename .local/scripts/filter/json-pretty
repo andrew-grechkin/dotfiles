@@ -1,49 +1,77 @@
-#!/usr/bin/env bash
+#!/usr/bin/env -S bash -Eeuo pipefail
+# shellcheck disable=SC2154
 
-set -Eeuo pipefail
+type -P argc &>/dev/null || {
+    echo "'argc' helper command is required, install from https://github.com/sigoden/argc" >&2
+    exit 2
+}
 
-color='auto'
-filename=''
+# @meta combine-shorts
+# @meta version 1.0.0
 
-args=$(getopt --name="$0" --options 'nc:f:C' --longoptions 'no-filename,color:,filename:' -- "$@")
-eval set -- "$args"
+# @describe ABSTRACT:
+#   Pretty-print JSON data with optional colorization and pagination
+#
+# SYNOPSIS:
+#   echo '{"example": true}' | json-pretty --paging=never
+#
+# DESCRIPTION:
+#   Read JSON input from files or STDIN, then pretty-print it with formatting (YAML preferred),
+#   colorization and optional pagination
 
-while ((1)); do
-	case "$1" in
-		-c | --color) color="$2"; shift 2 ;;
-		-f | --filename) filename="$2"; shift 2 ;;
-		-n | --no-filename) no_filename="1"; shift ;;
-		-C) color="always"; shift ;;
-		--) shift; break ;;
-	esac
-done
+# @arg    file                             File to process, uses STDIN if not provided
+# @flag   -C $FORCE_COLOR                  Force color, even if not a TTY
+# @flag   -P $FORCE_PAGING                 Force paging, even if not a TTY
+# @flag   -n --no-filename                 Don't show filename even if it's known
+# @flag   -p                               Force paging, even if not a TTY (deprecated, backward compatibility)
+# @option -c --color[=auto|never|always]   Control color mode
+# @option -f --filename                    Explicitly provide name of the file for display
+# @option    --paging[=auto|always|never]  Control paging
 
-if [[ -x "$(command -v json2yaml)" && -x "$(command -v perl)" && -n "$(perl -e 'print $] >= 5.036')" && -n "$(perl -MYAML::XS -e 'print $YAML::XS::VERSION' 2>/dev/null)" ]]; then
-	formatter="| json2yaml"
-	lang="yaml"
-elif [[ -x "$(command -v yq)" ]]; then
-	formatter="| yq -P -p=json -o yaml 'sort_keys(..)'"
-	lang="yaml"
+eval "$(argc --argc-eval "$0" "$@")"
+
+[[ -n "${argc_C:-}" ]] && argc_color='always'
+[[ -n "${argc_P:-}" || -n "${argc_p:-}" ]] && argc_paging='always'
+
+if [[ "$argc_paging" != 'never' ]] && [[ -t 1 || "$argc_paging" == 'always' ]]; then
+    page=("|" "${PAGER:-less}")
+fi
+
+if type -P json2yaml && type -P perl && \
+    [[ -n "$(perl -e 'print $] >= 5.036')" && -n "$(perl -MYAML::XS -e 'print $YAML::XS::VERSION' 2>/dev/null)" ]]; then
+    format=("json2yaml")
+    lang="yaml"
+elif type -P jaq; then
+    format=("jaq --to yaml -S")
+    colorize=("-C")
+elif type -P yq; then
+    format=("yq -P -p=json -o yaml 'sort_keys(..)'")
+    lang="yaml"
 else
-	formatter='| jq --indent 2 -S'
-	lang="json"
-	colorizer="-C"
-fi
+    format=("jq --indent 2 -S")
+    colorize=("-C")
+fi &>/dev/null
 
-if [[ "$color" != 'never' ]] && [[ -t 1 || "$color" == 'always' ]]; then
-	if [[ -x "$(command -v bat)" ]]; then
-		if [[ "${no_filename:-}" == "1" ]]; then
-			bat_options=(--style=plain)
-		else
-			if [[ -n "$filename" ]]; then
-				bat_options=(--style=header "--file-name=$filename")
-			else
-				bat_options=(--style=header "--file-name=STDIN.${lang:-json}")
-			fi
-		fi
+if [[ "$argc_color" != 'never' ]] && [[ -t 1 || "$argc_color" == 'always' ]]; then
+    if [[ -z "${colorize[*]}" ]] && type -P bat &>/dev/null; then
+        if [[ -n "${argc_no_filename:-}" ]]; then
+            bat_args=(--style=plain)
+        else
+            if [[ -n "${argc_filename:-}" ]]; then
+                bat_args=(--style=header "--file-name=${argc_filename}")
+            else
+                bat_args=(--style=header "--file-name=STDIN.${lang:-json}")
+            fi
+        fi
 
-		colorizer="| bat --wrap=never -l '$lang' --color='$color' ${bat_options[*]@Q}"
-	fi
-fi
+        colorize=("|" "bat --wrap=never -l ${lang@Q} --color=${argc_color} ${bat_args[*]@Q}")
 
-eval "cat ${*@Q} ${formatter:-| cat} ${colorizer:-}"
+        if [[ -n "${page[*]}" ]]; then
+            page=(--paging=always)
+        fi
+    fi
+else
+    colorize=()
+fi # NOTE: silencing by redirecting to /dev/null here will break TTY detection
+
+cat "${argc__positionals[@]}" | eval "${format[*]}"' '"${colorize[*]}"' '"${page[*]}"
