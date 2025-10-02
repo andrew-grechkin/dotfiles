@@ -1,84 +1,100 @@
-#!/usr/bin/env bash
+#!/usr/bin/env -S just --one --unstable --justfile
 
-# => header (source able) ----------------------------------------------------------------------------------------- {{{1
+# https://just.systems/man/en/
 
-function klipper-item-action() {
-	busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- showKlipperManuallyInvokeActionMenu
-}
+set export
+export colored-md := require('colored-md')
+export fzf_table := require('fzf-table')
+export json2table := require('json2table')
+export this := justfile()
+export tui := 'auto'
 
-function klipper-item-get() {
-	busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- getClipboardHistoryItem i "$1" \
-		| jq '.data[0]'
-}; [[ -n "${BASH:-}" ]] && export -f klipper-item-get
+# => default ------------------------------------------------------------------------------------------------------ {{{1
 
-function klipper-item-set() {
-	# don't use this, the klipper API is a crap. It should set by id, not by content
-	# (it's quite tedious to pass text with special symbols and quotes as a command line argument)
-	# busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- setClipboardContents s "$1"
-	clipcopy "$1"
-}
+# Run TUI if interactive, otherwise print static view
+[private]
+default:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        "$this" controller
+    else
+        "$this" view
+    fi
 
-function klipper-items-clear() {
-	busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- clearClipboardHistory
-}; [[ -n "${BASH:-}" ]] && export -f klipper-items-clear
+# Print help
+[script("/usr/bin/env", "-S", "colored-md")]
+help:
+    # ABSTRACT
+    Interactive TUI for browsing and inspecting KDE Klipper clipboard history
 
-function klipper-items-get() {
-	busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- getClipboardHistoryMenu \
-		| jq -r '.data[]'
-}
+    # DESCRIPTION
+    `menu-clipboard` provides a fast, searchable interface for exploring the clipboard history managed by KDE Klipper.
 
-# => body (executable) -------------------------------------------------------------------------------------------- {{{1
+    It solves the problem of having a large clipboard history that is difficult to navigate. It presents the history
+    in a clean, interactive list with a powerful preview and actions for copying, inspecting, or clearing items.
 
-if [[ "$0" == "${BASH_SOURCE[0]:-}" ]]; then # hide all executions under condition to make file source able
-	set -Eeuo pipefail
+    ## Key Features
 
-	function help() {
-		name=$(basename "$0")
-		echo "$name - Browse clipboard history in terminal"
-		echo
-		echo "Usage:"
-		echo "    $name [options]"
-		echo
-		echo "Command options:"
-		echo "   -h, --help         print help and exit"
-		echo "   -j, --json         print as json (suppress UI)"
-	} >&2
+    * **Fuzzy Search:** Instantly search through your entire clipboard history.
+    * **Full-Content Preview:** The preview window displays the full, un-truncated content of the selected
+      clipboard item, rendered with syntax highlighting via `bat`.
+    * **Clipboard Actions:** Easily copy any item back to the clipboard, copy it to the primary selection, or
+      clear the entire history.
+    * **Clean & Composable:** Follows the three-mode pattern, allowing it to be used as an interactive TUI, a static
+      table generator, or a pure JSON data source.
 
-	args=$(getopt --name="$0" --options 'hj' --longoptions 'help,json' -- "$@")
-	eval set -- "$args"
+# => MVC ---------------------------------------------------------------------------------------------------------- {{{1
 
-	while ((1)); do
-		case "$1" in
-			-h | --help) help; exit ;;
-			-j | --json) json='1'; shift ;;
-			--) shift; break ;;
-		esac
-	done
+# Output clipboard history as a single JSON array of objects
+model:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- getClipboardHistoryMenu \
+        | jq -r '.data[] | to_entries | map({id: .key, value: .value})'
 
-	if [[ -n "${json:-}" ]]; then
-		klipper-items-get
-	elif [[ -t 1 ]]; then
-		export FZF_RELOAD_CMD="$0"
-		source "$HOME/.local/lib/shell/fzf.bash"
+# Print clipboard history as a formatted and colorized table
+view:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq_fields=(
+        'id;\(.id)'
+        'value;\([.value] | @tsv | if (length > 80) then .[0:80] + "…" end);silver'
+    )
+    "$this" model | "$json2table" 'map(select(.value | test("▨") | not)) | sort_by(.id)' "${jq_fields[@]}"
 
-		fzf_args=(
-			--bind="alt-c:become(klipper-items-clear)"
-			--bind="alt-enter:become(klipper-item-get {1} | jq -j | primarycopy)"
-			--bind="alt-i:execute(klipper-item-get {1} | jq -j | bat --color always --style numbers,grid --paging always --wrap never)"
-			--bind="alt-r:become(klipper-item-get {1} | jq -j | setsid -f ai-polite &>/dev/null)"
-			--bind="alt-s:become(klipper-item-get {1} | jq -j | secondarycopy)"
-			--bind="ctrl-m:become(klipper-item-get {1} | jq -j | clipcopy)"
-			--bind="ctrl-y:become(klipper-item-get {1} | jq -j | clipcopy)"
-			--header='A-c:clear A-i:inspect A-r:polite Enter:select A-p:preview C-l:reload'
-			--preview-window="right:40%:border-left:nowrap:nohidden"
-			--preview="klipper-item-get {1} | jq -j | bat --color always --style plain"
-			--prompt="clipboard history > "
-			--with-nth="2.."
-		)
+# Display the interactive TUI for browsing clipboard history
+controller:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    export FZF_RELOAD_CMD="${this@Q} view"
+    fzf_args=(
+        --bind="alt-c:become(${this@Q} clear-history)"
+        --bind="alt-enter:become(${this@Q} get-item-content {1}  | primarycopy &>/dev/null)"
+        --bind="alt-i:execute(${this@Q} get-item-content {1} | bat --color always --style numbers,grid --paging always --wrap never)"
+        --bind="alt-r:execute-silent(${this@Q} get-item-content {1} | polite)+reload($FZF_RELOAD_CMD)"
+        --bind="alt-s:become(${this@Q} get-item-content {1} | secondarycopy &>/dev/null)"
+        --bind="ctrl-m:become(${this@Q} get-item-content {1} | clipcopy &>/dev/null)"
+        --bind="ctrl-y:become(${this@Q} get-item-content {1} | clipcopy &>/dev/null)"
+        --footer='A-c:clear A-i:inspect A-enter:primary A-s:secondary enter:select | A-p:preview'
+        --preview-window="right:40%:border-left:nowrap:nohidden"
+        --preview="${this@Q} preview-item {1}"
+        --prompt="clipboard history > "
+    )
+    "$this" view | "$fzf_table" "${fzf_args[@]}"
 
-		"$0" | fzf-exec "${fzf_args[@]}"
-	else
-		echo $'id_\tbuffer'
-		"$0" -j | jq -r 'to_entries | map([.key, .value]).[] | select(.[1] | test("▨") | not) | @tsv'
-	fi
-fi
+# => helper ------------------------------------------------------------------------------------------------------- {{{1
+
+# Clear the clipboard history
+[private]
+@clear-history:
+    busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- clearClipboardHistory
+
+# Get the raw content of a single clipboard item
+[private]
+get-item-content id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    # busctl --user --json=short call org.kde.klipper /klipper org.kde.klipper.klipper -- getClipboardHistoryItem i "{{id}}"
+    "$this" model | jq -jr --arg id "$id" "map(select(.id == $id))[].value"
+
+# Generate a formatted preview for a single clipboard item
+[private]
+preview-item id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" get-item-content "$id" | bat --color always --style=plain

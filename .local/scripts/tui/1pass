@@ -1,0 +1,64 @@
+#!/usr/bin/env -S just --one --unstable --justfile
+
+# https://just.systems/man/en/
+
+set export
+export fzf_table := require('fzf-table')
+export json2table := require('json2table')
+export pretty := require('json-pretty')
+export this := justfile()
+export tui := 'auto'
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+# Run TUI if interactive, otherwise print static view
+[private]
+default:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        "$this" controller
+    else
+        "$this" view
+    fi
+
+# => MVC ---------------------------------------------------------------------------------------------------------- {{{1
+
+# Output items as a single JSON array of objects
+model:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    memoize -t 1min -- op item list --format json
+
+# Print items as a formatted and colorized table
+view:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq_fields=(
+        'vault;\(.vault.name);cyan'
+        'title;\(.title[0:80]);olive'
+        'tags;\(.tags // [] | sort | join(","))'
+        'category;\(.category);silver'
+        'id;\(.id)'
+    )
+    "$this" model | "$json2table" 'sort_by(.vault.name, .title)' "${jq_fields[@]}"
+
+# Display the interactive TUI
+controller:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    export FZF_RELOAD_CMD="${this@Q} view"
+    fzf_args=(
+        --bind="alt-i:execute(${this@Q} preview-item {-1} | ${PAGER:-less})"
+        --bind="ctrl-m:execute(true)"
+        --footer='A-i:inspect | A-p:preview'
+        --preview-window="right:50%:border-left:nowrap:hidden"
+        --preview="${this@Q} preview-item {-1}"
+        --prompt="1password > "
+        --with-nth=..-2
+    )
+    "$this" view | "$fzf_table" "${fzf_args[@]}"
+
+# => helper ------------------------------------------------------------------------------------------------------- {{{1
+
+# Generate a formatted preview for a single item
+[private]
+preview-item id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    op item get "$id" --format=json | "$pretty" --color=always -f "$id"
