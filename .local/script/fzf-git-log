@@ -3,26 +3,24 @@
 set -Eeo pipefail
 
 if [[ -z "$GIT_PREFIX" ]]; then
-	GIT_PREFIX="$(git rev-parse --show-prefix)"
+    GIT_PREFIX="$(git rev-parse --show-prefix)"
 fi
 
 source "$HOME/.local/lib/shell/fzf.bash"
 
-fzf_args=(
-	"${FZF_GIT_DEFAULT_ARGS[@]}"
-)
-
 if [[ -n "$FZF_RELOAD_CMD" ]]; then
-	export FZF_RELOAD_CMD
-	fzf_args+=(
-		--bind="alt-f:execute-silent(fzf-run-reload -- git fall)"
-		--bind="alt-g:execute-silent(fzf-run-reload -- git up)"
-		--bind="alt-m:execute-silent(mb=\$(git main-branch); git switch \$mb)+reload($FZF_RELOAD_CMD)"
-		--bind="alt-o:execute-silent(r=\$($CMD_EXTRACT_REF); git switch \$r || git switch --detach \$r)+reload($FZF_RELOAD_CMD)"
-		--bind="alt-r:execute-silent(tmux split-window; sleep 0.5; c=\$($CMD_CURRENT_BRANCH); b=\$(git-branching-point) && d=\$($CMD_EXTRACT_COMMIT) && tmux send-keys \" git rebase -i --autosquash --update-refs --onto=\$d \$b \$c --committer-date-is-author-date\")"
-		--bind="alt-w:execute(d=\$($CMD_EXTRACT_COMMIT); ai-suggest-commit-msg \$d | $PAGER)"
-		--header="Enter:take C-y:yank A-f:fetch A-g:pull A-c/i/I:change A-d:diff A-m:co-m A-o:co A-r:rebase A-w:ai C-l:reload A-b:browse A-p:preview"
-	)
+    export FZF_RELOAD_CMD
+    export FZF_GIT_FOOTER_PREFIX=$'A-a:ai A-f:fetch A-g:pull A-m:co-m A-R:rebase A-r:rewrite C-o:co\n'
+    fzf_args=(
+        --bind="alt-a:execute(d=\$($CMD_EXTRACT_COMMIT); ai-suggest-commit-msg \$d | $PAGER)"
+        --bind="alt-f:execute-silent(fzf-run-reload -- git fall)"
+        --bind="alt-g:execute-silent(fzf-run-reload -- git up)"
+        --bind="alt-m:execute-silent(mb=\$(git main-branch); git switch \$mb)+reload($FZF_RELOAD_CMD)"
+        --bind="alt-R:execute-silent(tmux split-window; sleep 0.5; c=\$($CMD_CURRENT_BRANCH); b=\$(git-branching-point) && d=\$($CMD_EXTRACT_COMMIT) && tmux send-keys \" git rebase -i --autosquash --update-refs --onto=\$d \$b \$c --committer-date-is-author-date\")"
+        --bind="alt-r:execute(d=\$($CMD_EXTRACT_COMMIT); git rewrite \$d)+reload($FZF_RELOAD_CMD)"
+        --bind="ctrl-o:execute-silent(r=\$($CMD_EXTRACT_REF); git switch \$r || git switch --detach \$r)+reload($FZF_RELOAD_CMD)"
+        --prompt="$(git main-project) | log > "
+    )
 fi
 
-fzf-exec-multi "${fzf_args[@]}" "$@"
+fzf-git-multi "${fzf_args[@]}" "$@"
