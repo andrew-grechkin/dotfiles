@@ -4,55 +4,43 @@ set -Eeuo pipefail
 
 git-in-repo || exit 95
 
-PTH="${*: -1}"
-
-if [[ -z "$PTH" || "$PTH" == '--' || "$PTH" == "$0" ]]; then
+rpth="${*: -1}"
+if [[ -z "$rpth" || "$rpth" == '--' || "$rpth" == "$0" ]]; then
 	echo "Provide relative path to file" >&2
 	exit 1
 fi
 
-# if [[ ! -e "$PTH" ]]; then
-# 	echo "Path not found: $PTH" >&2
-# 	exit 2
-# fi
+# don't check file existence, it might absent in worktree
 
-GIT_ROOT="$(git root)"
-PTH_REL_ROOT=$(realpath -s --relative-to="$GIT_ROOT" "$(realpath "$PTH")")
+GIT_WORK_TREE="$(git rev-parse --show-toplevel)"
+apth=$(realpath -s --relative-to="$GIT_WORK_TREE" "$(realpath "$rpth")")
 
-ARGV=("$@")
-ARGV[-1]="$PTH_REL_ROOT"
+args=("$@")
+args[-1]="$apth"
 
-cd -- "$GIT_ROOT" || exit 1
+cd -- "$GIT_WORK_TREE" || exit 1
 
 if [[ -t 1 ]]; then
-	fetcher=(
-		"$0"
-		"${ARGV[@]}"
-	)
-	export FZF_RELOAD_CMD="${fetcher[*]@Q}"
+	export FZF_RELOAD_CMD="${0@Q} ${args[*]@Q}"
 	source "$HOME/.local/lib/shell/fzf.bash"
-
-	HEADER=$(
-		cat <<- EOF_HEADER
-		Press A-b: browse, A-d: diff-head, A-p: preview, C-b: blame, C-a: all, C-o: only, C-m/enter: view
-		EOF_HEADER
-	)
+	commit="\"\$($CMD_EXTRACT_COMMIT)\""
+	cmtpth="\"\$($CMD_EXTRACT_COMMIT):$apth\""
 
 	fzf_args=(
-		"${FZF_GIT_DEFAULT_ARGS[@]}"
-		--bind="alt-b:execute-silent(git browse \"\$($CMD_EXTRACT_COMMIT)\" -- \"$PTH_REL_ROOT\")"
-		--bind="alt-d:execute(git diff \"\$($CMD_EXTRACT_COMMIT)\" HEAD -- \"$PTH_REL_ROOT\" | delta --paging=always)"
-		--bind="ctrl-a:execute(show-commit \$(${CMD_EXTRACT_COMMIT}) -- --show-signature | delta --paging=always)"
-		--bind="ctrl-b:execute(git blame -M -w \"\$(${CMD_EXTRACT_COMMIT})\" \"$PTH_REL_ROOT\" | delta --paging=always)"
-		--bind="ctrl-m:execute(git show \"\$(${CMD_EXTRACT_COMMIT}):$PTH_REL_ROOT\" | bat --color=always --paging=always --file-name=$PTH_REL_ROOT)"
-		--bind="ctrl-o:execute(show-commit \$(${CMD_EXTRACT_COMMIT}) -- --show-signature -- \"$PTH_REL_ROOT\" | delta --paging=always)"
-		--bind="ctrl-y:execute-silent(${CMD_EXTRACT_COMMIT} | clipcopy)"
-		--header="$HEADER"
-		--preview="git show \"\$(${CMD_EXTRACT_COMMIT}):$PTH_REL_ROOT\" | bat --color=always --paging=never --file-name=$PTH_REL_ROOT"
-		--prompt="$PTH_REL_ROOT > "
+		--bind="alt-b:execute-silent(git browse $commit -- ${apth@Q})"
+		--bind="alt-d:execute(git diff $commit HEAD -- ${apth@Q} | delta --paging=always)"
+		--bind="alt-f:execute(git show $cmtpth | colored --color=always --paging=always --file-name=${apth@Q})"
+		--bind="alt-i:execute(show-commit $commit -- | delta --paging=always)"
+		--bind="alt-o:execute(show-commit $commit -- ${apth@Q} | delta --paging=always)"
+		--bind="ctrl-b:execute(git blame -M -w $commit -- ${apth@Q} | delta --paging=always)"
+		--bind="ctrl-m:become(cat {+f1})"
+		--bind="ctrl-y:execute-silent($commit | clipcopy)"
+		--footer='alt-d:diff alt-f:view alt-i:inspect alt-o:inspect1 ctrl-b:blame enter:change | alt-b:browse alt-p:preview'
+		--preview="show-commit $commit -- ${apth@Q} | delta"
+		--prompt="$apth | history > "
 	)
 
-	"${fetcher[@]}" | fzf-exec "${fzf_args[@]}"
+	eval "$FZF_RELOAD_CMD" | fzf-git "${fzf_args[@]}"
 else
-	git-log-branch --follow "${ARGV[@]}"
+	git-log-branch --follow "${args[@]}"
 fi
