@@ -3,18 +3,20 @@
 set -Eeuo pipefail
 
 fzf_cmd=(
-	fzf
-	--ansi
-	--bind="ctrl-g:execute-silent(echo -n {2} | perl -pE 'chomp; s/\"(.+?)\"/\$1/g' | clipcopy)"
-	--bind="ctrl-m:become(p={2}; exec 2> >(logger); echo \</dev/null \>/dev/null nohup {1} \\$\"\${p@Q}\" \& disown\; sleep 0.2 | tee -a /dev/stderr | bash)"
-	--bind="ctrl-y:execute-silent(p={2}; echo -n {1} \\$\"\${p@Q}\" | clipcopy)"
-	--bind="tab:execute(p={2}; echo {1} \\$\"\${p@Q}\")+become(true)"
-	--delimiter=$'\u0009'
-	--header='Enter:exec C-g:url A-p:preview C-y:yank'
-	--no-multi
-	--preview="p={2}; echo {1} \\$\"\${p@Q}\""
-	--reverse
-	--with-nth=3..
+    fzf
+    --ansi
+    --bind="ctrl-g:execute-silent(echo -n {2} | perl -pE 'chomp; s/\"(.+?)\"/\$1/g' | clipcopy)"
+    # --bind="ctrl-m:become(p={2}; exec 2> >(logger); echo \</dev/null \>/dev/null nohup {1} \\$\"\${p@Q}\" \& disown\; sleep 0.2 | tee -a /dev/stderr | bash)"
+    --bind="ctrl-m:become(exec 2> >(logger); set -x; </dev/null setsid -f {r1} {2})"
+    --bind="ctrl-y:execute-silent(p={2}; echo -n {1} \\$\"\${p@Q}\" | clipcopy)"
+    --bind="esc:become:true"
+    --bind="tab:execute(p={2}; echo {1} \\$\"\${p@Q}\")+become(true)"
+    --delimiter=$'\u0009'
+    --footer='enter:exec C-g:url A-p:preview C-y:yank'
+    --no-multi
+    --preview="p={2}; echo {1} \\$\"\${p@Q}\""
+    --reverse
+    --with-nth=3..
 )
 
 export SHELL="$BASH" # enforce bash for all fzf sub shells

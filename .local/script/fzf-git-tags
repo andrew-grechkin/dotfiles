@@ -10,6 +10,7 @@ export FZF_RELOAD_CMD="${CURRENT_SCRIPT#fzf-} $*"
 fzf_args=(
 	"${FZF_GIT_DEFAULT_ARGS[@]}"
 	--bind="ctrl-m:become(cat {+f1})"
+	--prompt="$(git main-project) | tags > "
 )
 
 eval "$FZF_RELOAD_CMD" | fzf-exec-multi "${fzf_args[@]}"
