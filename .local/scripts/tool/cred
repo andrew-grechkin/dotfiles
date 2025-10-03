@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC2076
+
+set -Eeuo pipefail
+
+url="${1?:url must be provided}"
+
+# default to https protocol
+if [[ ! "$url" =~ \:\/\/ ]]; then
+    url="https://$url"
+fi
+
+function fatal() {
+    echo "fatal:" "$@" >&2; exit 1
+}
+
+# rewrite some URLs to use the same token (useful for the cases many sites use the same auth and token can be reused)
+host_orig="$(git-parse-url "$url" 2>&1 | grep -Pom1 '^host=\K.+' 2>/dev/null)" || fatal "Failed to parse URL: $url"
+
+stem='boo''king' # there is nothing secret in the stem, just tiny obfuscation to reduce false alarming
+if [[ "$url" =~ "prod.$stem.com" ]]; then
+    host_rewrite="sso.prod.$stem.com"
+    url="https://$host_rewrite"
+elif [[ "$url" =~ "dqs.$stem.com" ]]; then
+    host_rewrite="sso.dqs.$stem.com"
+    url="https://$host_rewrite"
+fi
+
+# fetch credentials via git
+credentials="$(git credential fill <<< "url=$url" | sort)" || fatal "Failed to fetch credentials for $url"
+
+[[ -n "$credentials" ]] || fatal "No credentials found for $url"
+
+# expose std input lines as key=value variables
+# `source <(cat)` approach is not working because it fails if there is a space in values
+while read -r line; do
+    declare -- "$line"
+done <<< "$credentials"
+
+# simplistic check if approve can be called, no real usage of password
+# it's necessary because without approve auth and refresh token will not be saved in cache
+# and oauth helper will try to re-authentify every call
+if [[ -n "${username:-}" && -n "${password:-}" ]]; then
+    git credential approve <<< "$credentials"
+fi >&2
+
+if [[ -t 1 ]]; then
+    password_hash="$(grep -Pm1 '^password=' 2>/dev/null <<< "$credentials" | sha256sum | sed 's/\s-$//')"
+    credentials="$(sed -E $'s/^(password|oauth_refresh_token)=(.{1,5}).*$/\\1=\\2*****\e[91m<redacted for TTY output>\e[0m/' <<< "$credentials")"
+fi
+
+current_script="$(basename "$0")"
+if [[ "$current_script" =~ p$ ]]; then
+    exec grep -Pom1 '^password=\K.+' 2>/dev/null <<< "$credentials"
+fi
+
+# rewrite host back if it was rewritten before
+if [[ -n "${host_rewrite:-}" && -n "${host_orig:-}" ]]; then
+    credentials="$( { grep -v '^host=' <<< "$credentials"; echo "host=$host_orig"; } | sort)"
+fi
+
+echo "$credentials"
+
+# don't need these bells and whistles if output is not a TTY
+[[ -t 1 && -t 2 ]] || exit 0
+
+{ # nice to know when password will expire in a human readable form
+    [[ -n "${host_rewrite:-}" && "${host_orig:-}" != "${host_rewrite:-}" ]] && echo "> host was rewritten to use common token: $host_rewrite"
+    echo "> password fingerprint: $password_hash"
+    if [[ -n "${password_expiry_utc:-}" ]]; then
+        [[ -x "$(command -v date)" ]]     && echo -n "> password expires at: $(date -d "@$password_expiry_utc" --rfc-3339=seconds)"
+        [[ -x "$(command -v datediff)" ]] && echo -n ' (in:' "$(datediff now "@$password_expiry_utc" -f "%H:%M:%S" || true)"')'
+        echo
+    fi
+} >&2

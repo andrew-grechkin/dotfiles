@@ -2,8 +2,17 @@
 
 set -Eeuo pipefail
 
-# ABSTRACT: initialize git hooks after clone if hooks dir is provided by repo
-
+# ABSTRACT: post-clone setup for default branch aliasing and GPG-verified hook installation
+#
+# This hook performs two operations after git clone:
+# 1. Creates symbolic refs to alias the upstream default branch to your configured init.defaultBranch
+# 2. Auto-installs repository-provided hooks from hooks/ directory if GPG-verified autoinstall file exists
+#
+# Hook installation requires:
+# - hooks/autoinstall file (content: 'replace' or 'merge')
+# - hooks/autoinstall.asc file (GPG signature)
+# - Valid GPG signature verification
+#
 # man: githooks
 
 GIT_DIR="$(git rev-parse --git-dir)"
@@ -14,36 +23,52 @@ export GIT_DIR GIT_WORK_TREE
 hooks_dir="hooks"
 default_branch="$(git config get init.defaultBranch || echo 'main')"
 
-if [[ "${1:-}" == '0000000000000000000000000000000000000000' && "${3:-}" == '1' ]]; then # clone
-	# this hook is always executed with cwd of cloned repo root
-	echo "> post clone setup: $0" >&2
+if [[ "${1:-}" =~ ^0+$ && "${3:-}" == '1' ]]; then # clone
+    # this hook is always executed with cwd of cloned repo root
+    echo "> post clone setup: $0" >&2
 
-	remote_branch="$(git rev-parse --verify --abbrev-ref '@{upstream}' --symbolic-full-name)"
-	IFS="/" read -r <<< "$remote_branch" remote branch
+    if remote_branch="$(git rev-parse --verify --abbrev-ref '@{upstream}' --symbolic-full-name 2>/dev/null)"; then
+        IFS="/" read -r remote branch <<< "$remote_branch"
 
-	if [[ "$branch" != "$default_branch" ]]; then
-		echo "> the main branch is '$branch', setting up alias for it as '$default_branch'" >&2
-		git symbolic-ref "refs/heads/$default_branch" "refs/heads/$branch"
-		git symbolic-ref "refs/remotes/$remote/$default_branch" "refs/remotes/$remote/$branch"
-	fi
+        if [[ "$branch" != "$default_branch" ]]; then
+            echo "> the main branch is '$branch', setting up alias for it as '$default_branch'" >&2
+            git symbolic-ref "refs/heads/$default_branch" "refs/heads/$branch"
+            git symbolic-ref "refs/remotes/$remote/$default_branch" "refs/remotes/$remote/$branch"
+        fi
+    fi
 
-	if [[ -d "$GIT_WORK_TREE/$hooks_dir" && -e "$GIT_WORK_TREE/$hooks_dir/autoinstall" ]]; then
-		operation="$(< "$GIT_WORK_TREE/$hooks_dir/autoinstall")"
-		if [[ "$operation" == 'replace' ]]; then
-			echo "> repo provides own hooks, replacing default hooks with them" >&2
-			rm -rf "$GIT_DIR/hooks"
-			if ! ln -srf "$GIT_WORK_TREE/$hooks_dir" "$GIT_DIR/hooks"; then
-				echo "> error: failed to replace hooks" >&2
-			fi
-		else
-			echo "> repo provides own hooks, merging them with default hooks" >&2
-			for it in "$GIT_WORK_TREE/$hooks_dir"/*; do
-				if [[ ! "$it" =~ autoinstall$ ]]; then
-					if ! ln -srf "$it" "$GIT_DIR/hooks/"; then
-						echo "> error: failed to install hook: $(basename "$it")" >&2
-					fi
-				fi
-			done
-		fi
-	fi
+    sum_file="$GIT_WORK_TREE/$hooks_dir/sha256sum.txt"
+    autoinstall_file="$GIT_WORK_TREE/$hooks_dir/autoinstall"
+    if [[ -d "$GIT_WORK_TREE/$hooks_dir" && -r "$sum_file" && -r "$sum_file.asc" && -r "$autoinstall_file" ]]; then
+        [[ -x "$(command -v gpg)" ]] || {
+            echo "> warning: gpg not found, skipping hooks installation" >&2
+            exit 0
+        }
+
+
+        echo "> checking autoinstalled hooks signature" >&2
+        gpg --verify -q "$sum_file.asc" "$sum_file" || {
+            echo "> warning: signature for '$sum_file' is incorrect, skipping hooks installation" >&2
+            exit 0
+        }
+
+        operation="$(< "$autoinstall_file")"
+        if [[ "$operation" == 'replace' ]]; then
+            echo "> repo provides own hooks, replacing default hooks with them" >&2
+            rm -rf "$GIT_DIR/hooks" && mkdir "$GIT_DIR/hooks"
+        else
+            echo "> repo provides own hooks, merging them with default hooks" >&2
+        fi
+
+        # hooks with new line in the name intentionally are not supported
+        cd "$GIT_WORK_TREE/$hooks_dir" || exit 1
+        find "." -type d -exec mkdir -p "$GIT_DIR/hooks/{}" \;
+        sha256sum --ignore-missing --check "$sum_file" 2>/dev/null | grep ': OK$' 2>/dev/null | while IFS=$'\n' read -r line; do
+            name="${line%: OK}"
+            [[ -x "$name" || -L "$name" ]] || continue
+            if ! ln -srf "$GIT_WORK_TREE/$hooks_dir/$name" "$GIT_DIR/hooks/$name"; then
+                echo "> error: failed to install hook: $name [$?]" >&2
+            fi
+        done
+    fi
 fi

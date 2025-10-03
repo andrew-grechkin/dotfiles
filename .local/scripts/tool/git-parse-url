@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+if [[ "${1?url must be provided}" =~ :\/\/ ]]; then
+    echo "url=${1%.git}" \
+        | git -c credential.helper= -c credential.helper=echo -c credential.interactive=false -c credential.useHttpPath=true credential fill
+else
+    IFS="@" read -r user url <<< "${1%.git}"
+    IFS=":" read -r host path <<< "$url"
+    echo "username=$user"
+    echo "host=$host"
+    echo "protocol=git"
+    echo "path=$path"
+fi

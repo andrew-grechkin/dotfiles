@@ -1,0 +1,537 @@
+#!/usr/bin/env -S just --working-directory . --one --justfile
+
+# https://just.systems/man/en/
+
+set export
+export api := require('gitlab-api')
+export delta := require('delta')
+export pretty := require('json-pretty')
+export this := justfile()
+export tui := 'auto'
+
+# precache required environment variables for the session
+export GL_HOST := `gitlab-api --evaluate GL_HOST`
+export GL_PROJECT := `gitlab-api --evaluate GL_PROJECT`
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private]
+@default:
+    "$this" --list
+
+# => branches ----------------------------------------------------------------------------------------------------- {{{1
+
+# show branches
+[group('branches')]
+brs:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="{{source_file()}} brs"
+        fzf_args=(
+            # --bind="alt-N:execute-silent(m=\`git main-branch\`; echo 'whiptail-wrapper --inputbox \"Creating MR with message:\" 8 78 | xargs -rI% echo gl-create-mr -t \$m -m % -s '{3} | fzf-run-reload -ft 2)"
+            --bind="alt-R:execute-silent(fzf-run-reload -e GL_HOST,GL_PROJECT,GITLAB_TOKEN -- ${api@Q} delete-branches {+3})"
+            --bind="alt-c:execute-silent(${api@Q} clean-branches)+reload-sync($FZF_RELOAD_CMD)"
+            --bind="alt-i:execute(${api@Q} get-branch {3} | ${pretty@Q} -Cpf {3})"
+            --bind="alt-t:become(${this@Q} tui=force mrs)"
+            --bind="ctrl-x:become(echo -n {+3} | clipcopy; echo)"
+            --bind="ctrl-y:execute-silent(echo -n {3} | clipcopy)"
+            --footer="A-R:remove A-c:clear A-i:inspect C-x:dump C-y:yank | A-b:browse A-p:preview"
+            --preview="${api@Q} diff-branch {3} | ${delta@Q}"
+            --prompt="$GL_PROJECT | branches > "
+            --scheme=history
+            --with-nth="3.."
+        )
+        eval "$FZF_RELOAD_CMD" | fzf-table-multi "${fzf_args[@]}"
+    else
+        jq_fields=(
+            'id;\(.commit.id)'
+            'url;\(.web_url)'
+            'name;\(.name);olive'
+            'default;\(.default // "")'
+            'protected;\(.protected // "")'
+            'merged;\(.merged // "")'
+            'updated;\(.commit.committed_date[0:10]);green'
+            'author;\(.commit.author_name);blue'
+            'title;${FX[link]}\(.web_url)${FX[eos]}\(.commit.title)${FX[link]}${FX[eos]};silver'
+        )
+        "$api" list-branches | json2table 'sort_by(.commit.committed_date) | reverse' "${jq_fields[@]}"
+    fi
+
+# => commits ------------------------------------------------------------------------------------------------------ {{{1
+
+# create commit from stage
+[group('commits')]
+create-commit-from-stage message:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$api" create-commit <("$api" commit-from-stage "$message") && { [[ -w '.' ]] && git pull; }
+
+# => environments ------------------------------------------------------------------------------------------------- {{{1
+
+# show environments
+[group('environments')]
+environments:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="{{source_file()}} environments"
+        fzf_args=(
+            --bind="alt-A:execute(n=\"\$(gum input --header Name:)\"; ${api@Q} create-env \"\${n@Q}\"  >/dev/null)+reload($FZF_RELOAD_CMD)"
+            --bind="alt-H:execute-silent(${api@Q} stop-env {1})+reload($FZF_RELOAD_CMD)"
+            --bind="alt-R:execute-silent(${api@Q} delete-env {1})+reload($FZF_RELOAD_CMD)"
+            --bind="alt-i:execute(${api@Q} get-env {1} | ${pretty@Q} -Cpf {3})"
+            --bind="alt-m:execute(${api@Q} get-env {1} | jq -S 'del(.slug)' | json2yaml | vipe -s yaml | yaml2json | ${api@Q} update-env {1} >/dev/null)+reload($FZF_RELOAD_CMD)"
+            --footer="A-H:stop A-R:remove A-i:inspect A-m:modify | A-b:browse A-p:preview"
+            --preview="${api@Q} get-env {1} | ${pretty@Q} -Cf {3}"
+            --prompt="$GL_PROJECT | environments > "
+            --with-nth="3.."
+        )
+        eval "$FZF_RELOAD_CMD" | fzf-table-multi "${fzf_args[@]}"
+    else
+        jq_fields=(
+            '_id;\(.id)'
+            '_url;https://{{GL_HOST}}/{{GL_PROJECT}}/-/settings/ci_cd#js-cicd-variables-settings'
+            'name;\(.name);olive'
+            'state;\(.state)'
+            'url;\(.external_url | if . then .[0:30] else "" end);cyan'
+            'description;\(.description | if . then .[0:20] else "" end)'
+        )
+        "$api" list-envs | json2table 'sort_by(.name)' "${jq_fields[@]}"
+    fi
+
+# => groups ------------------------------------------------------------------------------------------------------- {{{1
+
+# show groups
+[group('groups')]
+groups:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="{{source_file()}} groups"
+        fzf_args=(
+            --preview="${api@Q} get-group {1} | ${pretty@Q} -Cf group\ {3}"
+            --prompt="groups > "
+            --with-nth="3.."
+        )
+        eval "$FZF_RELOAD_CMD" | fzf-table-multi "${fzf_args[@]}"
+    else
+        jq_fields=(
+            'id;\(.id)'
+            'url;\(.web_url)'
+            'name;\(.name);olive'
+            'description;\(.description // "");blue'
+            'visibility;\(.visibility);silver'
+        )
+        "$api" list-groups | json2table 'sort_by(.name) | reverse' "${jq_fields[@]}"
+    fi
+
+# => images ------------------------------------------------------------------------------------------------------- {{{1
+
+# show project images
+[group('images')]
+images:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="{{source_file()}} images"
+        fzf_args=(
+            --bind="ctrl-m:execute(${this@Q} image-tags {1})"
+            --footer="enter:tags | A-b:browse A-p:preview"
+            --preview="${api@Q} get-project-image {1} | ${pretty@Q} -Cf {4}"
+            --prompt="$GL_PROJECT | images > "
+            --with-nth="3.."
+        )
+        eval "$FZF_RELOAD_CMD" | fzf-table-multi "${fzf_args[@]}"
+    else
+        jq_fields=(
+            'id;\(.id)'
+            'url;https://{{GL_HOST}}/{{GL_PROJECT}}/container_registry/\(.id)'
+            'name;\(.name);olive'
+            'location;\(.location)'
+            'tags;\(.tags_count)'
+            'project;\(.project_id);silver'
+            'created;\(.created_at[0:19]);green'
+        )
+        "$api" list-project-images | json2table 'sort_by(.name) | reverse' "${jq_fields[@]}"
+    fi
+
+# show image tags
+[group('images')]
+image-tags image:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="{{source_file()}} image-tags ${image@Q}"
+        fzf_args=(
+            --bind="alt-R:execute-silent(fzf-run-reload -e GL_HOST,GL_PROJECT,GITLAB_TOKEN -- ${api@Q} delete-project-image-tag ${image@Q} {1})"
+            --bind="alt-g:execute-silent(fzf-run-reload -e GL_HOST,GL_PROJECT,GITLAB_TOKEN -- docker pull {4})"
+            --bind="ctrl-m:execute(${api@Q} get-project-image-tag ${image@Q} {1} | ${pretty@Q} -Cpf {4})"
+            --footer="A-R:remove A-g:pull enter:view | A-b:browse A-p:preview"
+            --preview="${api@Q} get-project-image-tag ${image@Q} {1} | ${pretty@Q} -Cf {4}"
+            --prompt="$GL_PROJECT | tags > "
+            --with-nth="3.."
+        )
+        eval "$FZF_RELOAD_CMD" | fzf-table-multi "${fzf_args[@]}"
+    else
+        jq_fields=(
+            'id;\(.name)'
+            'url;https://{{GL_HOST}}/{{GL_PROJECT}}/container_registry/{{image}}'
+            'name;\(.name);olive'
+            'location;\(.location)'
+        )
+        "$api" list-project-image-tags "$image" | json2table 'sort_by(.name) | reverse' "${jq_fields[@]}"
+    fi
+
+# => jobs --------------------------------------------------------------------------------------------------------- {{{1
+
+# show jobs
+[group('jobs')]
+jobs pipeline:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="{{source_file()}} jobs ${pipeline@Q}"
+        fzf_args=(
+            --bind="alt-C:execute-silent(${api@Q} cancel-job {1} {-1})"
+            --bind="alt-D:execute(o=${TMPDIR:-/tmp}/pipeline-${pipeline@Q}-job-{1}.zip; ${api@Q} download-job-artifacts {1} {-1} > \$o; echo Saved to: \$o)"
+            --bind="alt-R:execute-silent(echo ${api@Q} retry-job {1} {-1} | fzf-run-reload -t 2)"
+            --bind="alt-d:execute(o=${TMPDIR:-/tmp}/pipeline-${pipeline@Q}-job-{1}.log; ${api@Q} get-job-logs {1} {-1} > \$o; echo Saved to: \$o)"
+            --bind="alt-s:execute-silent(echo for id in {+1}\; do ${api@Q} run-job \\\$id {-1}\; done | fzf-run-reload -t 5)"
+            --bind="alt-i:execute(${api@Q} get-job {1} {-1} | ${pretty@Q} -Cpf 'job '{1})"
+            --bind="ctrl-m:execute([[ {7} == 1 ]] && { ${this@Q} GL_PROJECT={-3} jobs {-2}; true; } || { ${api@Q} get-job-logs {1} {-1} | less +G; })"
+            --footer="A-C:cancel A-D:dnlart A-R:retry A-d:dnllog A-s:run enter:log | A-b:browse A-p:preview"
+            --no-sort
+            --preview="${api@Q} get-job {1} {-1} | ${pretty@Q} -Cf 'job '{1}"
+            --prompt="$GL_PROJECT (pipeline: $pipeline) | jobs > "
+            --scheme=history
+            --track
+            --with-nth="3..-6"
+        )
+        eval "$FZF_RELOAD_CMD" | fzf-table-multi "${fzf_args[@]}"
+    else
+        jq_fields=(
+            'id;\(.id)'
+            'url;\(.web_url)'
+            'pipeline.id;\(.pipeline.id);olive'
+            'pipeline.src;\(.pipeline.source);gray'
+            'name;\(.name);teal'
+            'stage;\(.stage);silver'
+            'tr;\(if .downstream_pipeline then "1" else "" end);magenta'
+            'status;\(.status | if . == "failed" then "${FG[red]}\(.)" elif . == "success" then "${FG[lime]}\(.)" elif . == "created" then "${FG[gray]}\(.)" elif . == "manual" then "${FG[magenta]}\(.)" end)${FX[reset]}'
+            'canfail;\(.allow_failure);silver'
+            'user;\(.user.username);blue'
+            'dur;\( if (.duration) then (.duration | round?) // .duration else "" end)'
+            'created;\(.created_at[0:19]);green'
+            'started;\(.started_at[0:19])'
+            'finished;\(.finished_at[0:19]);green'
+            'down.pr;\(.downstream_pipeline.project_id)'
+            'down.pi;\(.downstream_pipeline.id)'
+            'pipeline.pr;\(.pipeline.project_id)'
+        )
+        "$api" list-jobs "$pipeline" | json2table '.' "${jq_fields[@]}"
+    fi
+
+# => mrs ---------------------------------------------------------------------------------------------------------- {{{1
+
+# show mrs
+[group('mrs'), no-cd, positional-arguments]
+mrs *args:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    args=('wip==no' 'state==opened' "$@")
+
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="{{source_file()}} mrs ${args[*]@Q}"
+        fzf_args=(
+            --bind="alt-A:execute-silent(fzf-run-reload -e GL_HOST,GL_PROJECT,GITLAB_TOKEN -- ${api@Q} approve-mrs {+1})"
+            --bind="alt-M:execute-silent(fzf-run-reload -e GL_HOST,GL_PROJECT,GITLAB_TOKEN -- ${api@Q} merge-mrs {+1})"
+            --bind="alt-R:execute-silent(fzf-run-reload -e GL_HOST,GL_PROJECT,GITLAB_TOKEN -- ${api@Q} rebase-mrs {+1})"
+            --bind="alt-a:execute-silent(fzf-run-reload -e GL_HOST,GL_PROJECT,GITLAB_TOKEN -- ${api@Q} unapprove-mrs {+1})"
+            --bind="alt-d:execute(${api@Q} diff-mr {1} | ${delta@Q})"
+            --bind="alt-i:execute(${api@Q} get-mr {1} | ${pretty@Q} -Cpf {2})"
+            --bind="alt-n:execute(${api@Q} list-notes {1} | jq -r '.[] | \"[\(.updated_at)] \(.author.name):\n\(.body)\n\"' | $PAGER)"
+            --bind="alt-s:execute({ echo -e 'Approved by:\n'; ${this@Q} approvals {1}; } | $PAGER)"
+            --bind="alt-t:become(${this@Q} tui=force brs)"
+            --bind="ctrl-m:execute(${this@Q} pipelines {1})"
+            --bind="ctrl-x:become(cat {+f1} | clipcopy)"
+            --bind="ctrl-y:execute-silent(echo -n {+1} | clipcopy)"
+            --footer="A-A:approve A-M:merge A-R:rebase A-a:unapprove A-d:diff A-i:inspect A-n:notes A-s:approvals C-x:ids enter:pipelines | A-b:browse A-p:preview"
+            --preview="${api@Q} diff-mr {1} | ${delta@Q}"
+            --prompt="$GL_PROJECT | mrs > "
+            --scheme=history
+            --with-nth="3.."
+        )
+        eval "$FZF_RELOAD_CMD" | fzf-table-multi "${fzf_args[@]}"
+    else
+        jq_fields=(
+            '_id;\(.iid)'
+            '_url;\(.web_url)'
+            'id;\(.iid);olive'
+            'updated;\(.updated_at[0:10]);green'
+            'state;\(.state)'
+            'wip;\(.work_in_progress // "")'
+            'conflicts;\(.has_conflicts // "")'
+            'draft;\(.draft // "")'
+            'merge;\(.detailed_merge_status)'
+            'author;\(.author.username[0:25]);blue'
+            # 'name;\(.author.name[0:25])'
+            'branch;\(.source_branch);magenta'
+            'title;${FX[link]}\(.web_url)${FX[eos]}\(.title)${FX[link]}${FX[eos]};silver'
+            # 'source_project;\(.source_project_id)'
+        )
+        "$api" list-mrs "${args[@]}" | json2table 'sort_by(.iid) | reverse' "${jq_fields[@]}"
+    fi
+
+# approve mrs
+[group('mrs'), no-cd, positional-arguments]
+approve-mrs +args:
+    #!/usr/bin/env -S bash -Euo pipefail
+    args=$(getopt --name="$0" --options 'u' --longoptions 'unapprove' -- "$@")
+    eval set -- "$args"
+
+    action='A'
+
+    while ((1)); do
+        case "$1" in
+            -u | --unapprove) action="Una"; shift ;;
+            --) shift; break ;;
+        esac
+    done
+
+    [[ -t 1 ]] && >&2 echo "{{YELLOW}}${action}pproving MRs: $*{{NORMAL}}"
+    for mr in "$@"; do
+        if [[ "$action" == 'Una' ]]; then
+            "$api" unapprove-mr "$mr"
+        else
+            "$api" approve-mr "$mr"
+        fi
+    done
+
+# merge mrs
+[group('mrs'), no-cd, positional-arguments]
+merge-mrs +args:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    args=$(getopt --name="$0" --options 'as:' --longoptions 'approve,sleep:' -- "$@")
+    eval set -- "$args"
+
+    sleep_sec=60
+
+    while ((1)); do
+        case "$1" in
+            -a | --approve) approve="1"; shift ;;
+            -s | --sleep) sleep_sec="$2"; shift 2 ;;
+            --) shift; break ;;
+        esac
+    done
+
+    [[ -t 1 ]] && >&2 echo "{{YELLOW}}Merging MRs (sleep $sleep_sec): $*{{NORMAL}}"
+
+    # flag that tail is being executed and sleep is required
+    flag="$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
+    trap 'rm -f "$flag"' EXIT
+
+    printf '%s\n' "$@" | jq -Rr @uri \
+        | xargs -rI% bash << EO_SCRIPT
+            [[ '${approve:-}' == '1' ]] && "$api" approve-mr '%'
+            [[ -s "$flag" ]] && sleep "$sleep_sec"
+            "$api" merge-mr '%' && echo '%' >> '$flag'
+        EO_SCRIPT
+
+# show approvals
+[group('mrs')]
+approvals id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq_fields=(
+        "id;\(.user.id);olive"
+        "uname;\(.user.username)"
+        "name;\(.user.name);blue"
+        "url;\(.user.web_url);cyan"
+    )
+    "$api" list-approvals "$id" | jq -c '.approved_by' | json2table 'sort_by(.iid) | reverse' "${jq_fields[@]}"
+
+# create mr
+[group('mrs')]
+create-mr message source target:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$api" create-mr "$message" "$source" "$target"
+
+# => pipelines ---------------------------------------------------------------------------------------------------- {{{1
+
+# show pipelines
+[group('pipelines')]
+pipelines mr='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="{{source_file()}} pipelines ${mr@Q}"
+        fzf_args=(
+            # --bind="alt-C:execute-silent(source $0; gl-pipeline-cancel ${GL_PROJECT@Q} {1})"
+            # --bind="alt-R:execute-silent(source $0; gl-pipeline-retry  ${GL_PROJECT@Q} {1})"
+            --bind="alt-i:execute(${api@Q} get-pipeline {1} | ${pretty@Q} -Cpf 'pipeline '{1})"
+            --bind="ctrl-m:execute(${this@Q} jobs {1})"
+            # --bind="ctrl-m:execute(${this@Q} GL_PROJECT={-1} jobs {1})"
+            --footer="A-C:cancel A-R:retry A-i: inspect enter:jobs | A-b:browse A-p:preview"
+            --preview="${api@Q} get-pipeline {1} | ${pretty@Q} -Cf 'pipeline '{1}"
+            --prompt="$GL_PROJECT${mr:+ (MR: $mr)} | pipelines > "
+            --scheme=history
+            --track
+            --with-nth="3..-2"
+        )
+        eval "$FZF_RELOAD_CMD" | fzf-table-multi "${fzf_args[@]}"
+    else
+        jq_fields=(
+            'id;\(.id)'
+            'url;\(.web_url)'
+            'id;\(.id);olive'
+            'status;\(.status | if . == "failed" then "${FG[red]}\(.)" elif . == "success" then "${FG[lime]}\(.)" end)${FX[reset]}'
+            'source;\(.source);silver'
+            'ref;\(.ref);magenta'
+            'created;\(.created_at[0:19]);green'
+            'updated;\(.updated_at[0:19])'
+            'project_id;\(.project_id)'
+        )
+        "$api" list-pipelines "$mr" | json2table 'sort_by(.created_at, .updated_at) | reverse' "${jq_fields[@]}"
+    fi
+
+# => projects ----------------------------------------------------------------------------------------------------- {{{1
+
+# show project tokens
+[group('projects')]
+project-tokens:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="{{source_file()}} project-tokens"
+        fzf_args=(
+            --footer="A-p:preview"
+            --preview="${api@Q} get-project-token {1} | ${pretty@Q} -Cf {3}"
+            --prompt="$GL_PROJECT | tokens > "
+            --with-nth="3.."
+        )
+        eval "$FZF_RELOAD_CMD" | fzf-table-multi "${fzf_args[@]}"
+    else
+        jq_fields=(
+            'id;\(.id)'
+            'url;https://{{GL_HOST}}/{{GL_PROJECT}}/-/settings/access_tokens'
+            'id;\(.id);olive'
+            'name;\(.name);blue'
+            # 'description;\(.description | if . then .[0:20] else "" end);cyan'
+            'scopes;\(.scopes | sort | join(", ") | .[0:40])'
+            'resource;\(.resource_type)'
+            'resource.id;\(.resource_id)'
+            'expires;\(.expires_at);red'
+            'used;\(if (.last_used_at) then .last_used_at[0:16] else "" end);green'
+            'created;\(.created_at[0:10]);gray'
+        )
+        "$api" list-project-tokens 'state==active' | json2table 'sort_by(.name)' "${jq_fields[@]}"
+    fi
+
+# => tokens ------------------------------------------------------------------------------------------------------- {{{1
+
+# show token (current or passed via stdin)
+[group('tokens')]
+token:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    # override token if provided via STDIN
+    [[ -t 0 ]] || export GITLAB_TOKEN="$(</dev/stdin)"
+
+    if user=$("$api" get-current-user); then
+        if pat=$(XH_ALLOW_ERROR=1 "$api" get-pat) && ! [[ "$(jq '.message' <<< "$pat")" =~ 400\ Bad\ request ]]; then
+            jq --argjson user "$user" '.user = $user' <<< "$pat" \
+                | "$pretty" -Cf "$(jq -r '.name' <<< "$pat")"
+        else
+            oauth=$("$api" oauth-token)
+            jq --argjson user "$user" '.user = $user' <<< "$oauth" \
+                | "$pretty" -Cf 'oauth token'
+        fi
+    fi
+
+# show tokens (siblings of current token)
+[group('tokens')]
+tokens:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ -z "${GL_USERNAME:-}" ]] && user="$("$api" get-current-user)"; then
+        export GL_USERNAME="$(jq -r '.username' <<< "$user")"
+        export GL_USERID="$(jq -r '.id' <<< "$user")"
+    fi
+
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="{{source_file()}} tokens"
+        fzf_args=(
+            --bind="alt-d:execute(${api@Q} list-pat-associations 30 | ${pretty@Q} -Cpf 'Developer of:')"
+            --bind="alt-i:execute(${api@Q} get-pat {1} | ${pretty@Q} -Cpf {4})"
+            --bind="alt-m:execute(${api@Q} list-pat-associations 40 | ${pretty@Q} -Cpf 'Maintainer of:')"
+            --footer="A-d:developer A-i:inspect A-m:maintainer | A-p:preview"
+            --preview="${api@Q} get-pat {1} | ${pretty@Q} -Cf {4}"
+            --prompt="${GL_USERNAME:-} [${GL_USERID:-}] | PATs > "
+            --with-nth="3.."
+        )
+        eval "$FZF_RELOAD_CMD" | fzf-table-multi "${fzf_args[@]}"
+    else
+        jq_fields=(
+            'id;\(.id)'
+            "url;https://$GL_HOST/${GL_USERNAME:-}"
+            'id;\(.id);olive'
+            'name;\(.name);blue'
+            # 'description;\(.description | if . then .[0:20] else "" end);cyan'
+            'scopes;\(.scopes | sort | join(", ") | .[0:40])'
+            'active;\(.active | if . then "${FG[lime]}\(.)" else "${FG[red]}\(.)" end)${FX[reset]}'
+            'expires;\(if (.active) then if ((.expires_at[0:10] + "T00:00:00Z" | fromdate) < (now + 28 * 24 * 60 * 60)) then "${FG[magenta]}" else "${FG[lime]}" end + .expires_at else "" end)${FX[reset]}'
+            'used;\(if (.last_used_at) then if ((.last_used_at[0:19] + "Z" | fromdate) < (now - 7 * 24 * 60 * 60)) then "${FG[yellow]}" else "${FG[lime]}" end + .last_used_at[0:16] else "" end)${FX[reset]}'
+            'created;\(.created_at[0:10]);gray'
+        )
+        "$api" list-pat | jq -c 'map(select(.revoked | not))' \
+            | json2table 'sort_by((.active | not), .name)' "${jq_fields[@]}"
+    fi
+
+# => user --------------------------------------------------------------------------------------------------------- {{{1
+
+# show user (of current token)
+[group('users')]
+user:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    res="$("$api" get-current-user)" \
+        && echo "$res" | "$pretty" -Cf "$(jq -r '.name' <<< "$res")"
+
+# => vars --------------------------------------------------------------------------------------------------------- {{{1
+
+# show vars
+[group('vars')]
+vars:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="{{source_file()}} vars"
+        create=$(cat << 'EO_CREATE'
+    jq -n '{key: $k, value: $v}' \
+        --arg k "$(gum input --header Key:)" \
+        --arg v "$(gum input --header Value:)"
+    EO_CREATE
+    )
+        fzf_args=(
+            --bind="alt-A:execute($create | ${api@Q} create-var-stdin >/dev/null)+reload($FZF_RELOAD_CMD)"
+            --bind="alt-R:execute-silent(${api@Q} delete-var {1} {4})+reload($FZF_RELOAD_CMD)"
+            --bind="alt-i:execute(${api@Q} get-var {1} {4} | ${pretty@Q} -Cpf {1}' ['{4}']')"
+            --bind="alt-m:execute(${api@Q} get-var {1} {4} | jq -S 'del(.key)' | json2yaml | vipe -s yaml | yaml2json | ${api@Q} update-var-stdin {1} {4} >/dev/null)+reload($FZF_RELOAD_CMD)"
+            --footer="A-A:add A-R:remove A-i:inspect A-m:modify | A-b:browse A-p:preview"
+            --preview="${api@Q} get-var {1} {4} | ${pretty@Q} -Cf {1}' ['{4}']'"
+            --prompt="$GL_PROJECT | vars > "
+            --with-nth="3.."
+        )
+        eval "$FZF_RELOAD_CMD" | fzf-table-multi "${fzf_args[@]}"
+    else
+        jq_fields=(
+            '_key;\(.key)'
+            '_url;https://{{GL_HOST}}/{{GL_PROJECT}}/-/settings/ci_cd#js-cicd-variables-settings'
+            'key;\(.key);olive'
+            'env;\(.environment_scope)'
+            'h;\(.hidden | if . then 1 else "" end)'
+            'm;\(.masked | if . then 1 else "" end)'
+            'p;\(.protected | if . then 1 else "" end)'
+            'value;\(.value[0:40])'
+            'description;\(.description | if . then .[0:20] else "" end);cyan'
+        )
+        "$api" list-vars | json2table 'sort_by(.key, .variable_type, .environment_scope)' "${jq_fields[@]}"
+    fi
