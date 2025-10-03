@@ -4,35 +4,37 @@
 # => builtin ------------------------------------------------------------------------------------------------------ {{{1
 
 alias help='run-help'
-
-alias vi-tsv='vi -c "set filetype=csv"'
+alias :q='exit'
+alias :qa='exit'
 
 # => apps --------------------------------------------------------------------------------------------------------- {{{1
 
+alias dd='command dd oflag=sync conv=sparse,excl status=progress'
+alias fm='vifm . .'
 alias htop='htop -u "$USER"'
 alias j='~/.config/just/justfile'
+alias vi-tsv='vi -c "set filetype=csv"'
 
 # => commands ----------------------------------------------------------------------------------------------------- {{{1
 
 alias e='menu-environment'
+alias lsblk='lsblk -o NAME,TYPE,FSTYPE,LABEL,UUID,SIZE,FSAVAIL,FSUSE%,RO,MOUNTPOINTS'
+alias -g xa='xargs -rd\n'
+alias this-path='export PATH="$PATH:$(pwd)"'
 
 # => ls ----------------------------------------------------------------------------------------------------------- {{{1
 
-if [[ -n "$(command -v exa)"  ]]; then
-	alias l='exa -lF --group --time-style=long-iso --group-directories-first'
-	alias la='l -a --sort=name'
-elif [[ -n "$(command -v eza)"  ]]; then
-	alias l='eza -lF --group --time-style=long-iso --group-directories-first'
-	alias la='l -a --sort=name'
+if [[ -n "$(command -v eza)"  ]]; then
+    alias l='eza -lbF --group --time-style=long-iso --group-directories-first'
+    alias la='l -a --sort=name'
 else
-	alias l='ls -lFhv --group-directories-first' # long list, show type, human readable, group dirs
-	alias la='l -A'
+    # long list, show type, human readable, group dirs
+    alias l='ls -lFhv --group-directories-first'
+    alias la='l -A'
 fi
 
 alias le='la --sort=extension'
 alias lt='la --sort=time'
-
-alias lsblk='lsblk -o NAME,TYPE,FSTYPE,LABEL,UUID,SIZE,FSAVAIL,FSUSE%,RO,MOUNTPOINTS'
 
 # => cat, head, less ---------------------------------------------------------------------------------------------- {{{1
 
@@ -49,6 +51,8 @@ alias rm='rm -i'
 alias dangling-symlinks='ls -v **/*(-@)'
 alias dangling-symlinks-remove='rm -v **/*(-@)'
 alias dir-remove-empty='find . -depth -type d -empty -delete'
+alias take-ownership=' sudo chown "${USER}:$(id -ng)" -R -- *; sudo chmod -R u+rwX,g+rX -- *; fd -u -E "@eaDir" -t d -x chmod g+s'
+alias file-hardlinks='find . -xdev -samefile'
 
 # => git ---------------------------------------------------------------------------------------------------------- {{{1
 
@@ -86,7 +90,7 @@ alias gotest='go test -v -count 1 -failfast .'
 # => opkg --------------------------------------------------------------------------------------------------------- {{{1
 
 if [[ -x "/opt/bin/opkg" ]]; then
-	alias -g apt='opkg'
+    alias -g apt='opkg'
 fi
 
 # => mail --------------------------------------------------------------------------------------------------------- {{{1
@@ -95,16 +99,7 @@ alias mbsync='mbsync -c ~/.config/isync/mbsyncrc andrew-grechkin julia-grechkina
 
 # => misc --------------------------------------------------------------------------------------------------------- {{{1
 
-alias -g xa='xargs -rd\n'
-alias fm='vifm . .'
-alias dd='command dd oflag=sync conv=sparse,excl status=progress'
-alias :q='exit'
-alias :qa='exit'
-alias take-ownership=' sudo chown "${USER}:$(id -ng)" -R -- *; sudo chmod -R u+rwX,g+rX -- *; fd -u -E "@eaDir" -t d -x chmod g+s'
-
 alias ssh-agent-fix='eval $(tmux showenv -s SSH_AUTH_SOCK)'
-
-alias file-hardlinks='find . -xdev -samefile'
 
 # => flibusta library --------------------------------------------------------------------------------------------- {{{1
 
@@ -129,3 +124,8 @@ alias flatpak-system-setup='sudo flatpak remote-add --if-not-exists flathub "htt
 # => network ------------------------------------------------------------------------------------------------------ {{{1
 
 alias wg-import='sudo nmcli connection import type wireguard file'
+
+# => token -------------------------------------------------------------------------------------------------------- {{{1
+
+alias export-token-gitlab='__etgf() { pass show "https/gitlab.com/${1:-$USER}" | export-var GITLAB_TOKEN; }; __etgf'
+alias export-bearer-tf='__ebtf() { pass show "https/app.terraform.io/${1:-$USER}" | export-var TF_BEARER; }; __ebtf'
