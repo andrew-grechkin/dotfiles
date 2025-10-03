@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+cd "$(dirname "$0")"
+
+{
+    find . -type f -executable -print0
+    find . -type l -print0
+} | xargs -r0 sha256sum > sha256sum.txt
+rm -f "sha256sum.txt.asc" && gpg --detach-sign --armor "sha256sum.txt"
