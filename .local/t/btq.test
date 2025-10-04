@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+tsp bash -c 'echo 1; sleep 10; exit 42'
+tsp -d bash -c 'echo 2; sleep 10'
+tsp bash -c 'echo 3; sleep 10'
+tsp -d bash -c 'echo 4; sleep 10'
+tsp bash -c 'echo 5; sleep 10'
+tsp -d bash -c 'echo 6; sleep 10'
