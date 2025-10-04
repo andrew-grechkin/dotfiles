@@ -98,7 +98,7 @@ class BTQueue::ClientExecute : isa(BTQueue::Client) {
                         $log->infof('process exited with code: %d', $code);
 
                         my $dur_sec = $start->delta_seconds(Time::Moment->now);
-                        if ($dur_sec > NOTIFY_AFTER_SEC()) {
+                        if (!$self->app->quiet && $dur_sec > NOTIFY_AFTER_SEC()) {
                             my $gid = getgrnam($ENV{USER});
                             system('wall', '-g', $gid,
                                 sprintf('Process %s has finished in %d seconds', $self->app->id, $dur_sec))
