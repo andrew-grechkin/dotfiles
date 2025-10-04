@@ -26,6 +26,11 @@ class BTQueue::ClientApp {
     field $out : reader      = File::Spec->catfile($config->temp_dir, $id) . '.out';
     field $res_path : reader = File::Spec->catfile($config->temp_dir, $id) . '.res';
     field $res : reader;
+    field $quiet : reader = false;
+
+    method set_quiet() {
+        $quiet = true;
+    }
 
     method connect() {
         $loop->connect(
@@ -116,7 +121,6 @@ class BTQueue::ClientApp {
 
                 $loop->run;
                 return 0;
-
             },
         );
 
