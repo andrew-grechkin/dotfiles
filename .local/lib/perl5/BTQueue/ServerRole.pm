@@ -1,4 +1,3 @@
-## no critic [Modules::RequireExplicitPackage]
 use v5.40;
 use experimental qw(class declared_refs defer refaliasing);
 
@@ -145,39 +144,41 @@ class BTQueue::ServerRole {
 
         $self->move_to_finished();
 
-        my @running = grep {$queue{$_}{status} eq 'running'} keys %queue;
-        if (@running < $slots) {
-            $log->debugf('there are empty slots available: %d/%d', scalar @running, $slots);
+        my @waiting = sort {$a->{start} cmp $b->{start}} grep {$_->{status} eq 'waiting'} values %queue;
+        while (@waiting) {
+            my @running = grep {$_->{status} eq 'running'} values %queue;
 
-            while (my @waiting = grep {$_->{status} eq 'waiting'} values %queue) {
-                my $descriptor = shift @waiting;
-
-                if (my $id = $descriptor->{depends}) {
-                    p $id;
-                    my $dependency = first {$_->{id} eq $id} $self->procs()->@*;
-                    p $dependency;
-                    if (!$dependency || $dependency->{status} eq 'failed') {
-                        $log->debugf('canceling process');
-                        $descriptor->{status} = 'canceled';
-                        my $socket = delete $descriptor->{socket};
-                        $socket->write($json->encode({event => 'cancel'}) . "\n");
-                        next;
-                    } elsif ($dependency->{status} eq 'waiting') {
-                        next;
-                    }
-                }
-
-                my %copy = $descriptor->%*;
-                delete @copy{'socket', 'status'};
-                say {*STDOUT} $json->encode(\%copy);
-
-                $descriptor->{status} = 'running';
-                $log->debugf('executing process: %s', $descriptor->{id});
-                $descriptor->{socket}->write($json->encode({event => 'execute'}) . "\n");
+            if (@running >= $slots) {
+                $log->tracef('there are no empty slots available: %d/%d', scalar @running, $slots);
+                last;
             }
 
-        } else {
-            $log->tracef('there are no empty slots available: %d/%d', scalar @running, $slots);
+            $log->debugf('there are empty slots available: %d/%d', scalar @running, $slots);
+
+            my $descriptor = shift @waiting;
+
+            if (my $id = $descriptor->{depends}) {
+                p $id;
+                my $dependency = first {$_->{id} eq $id} $self->procs()->@*;
+                p $dependency;
+                if (!$dependency || $dependency->{status} eq 'failed') {
+                    $log->debugf('canceling process');
+                    $descriptor->{status} = 'canceled';
+                    my $socket = delete $descriptor->{socket};
+                    $socket->write($json->encode({event => 'cancel'}) . "\n");
+                    next;
+                } elsif ($dependency->{status} eq 'waiting') {
+                    next;
+                }
+            }
+
+            my %copy = $descriptor->%*;
+            delete @copy{'socket', 'status'};
+            say {*STDOUT} $json->encode(\%copy);
+
+            $descriptor->{status} = 'running';
+            $log->debugf('executing process: %s', $descriptor->{id});
+            $descriptor->{socket}->write($json->encode({event => 'execute'}) . "\n");
         }
 
         return;
