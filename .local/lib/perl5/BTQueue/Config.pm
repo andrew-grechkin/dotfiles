@@ -1,4 +1,3 @@
-## no critic [Modules::RequireExplicitPackage]
 use v5.40;
 use experimental qw(class declared_refs defer refaliasing);
 
