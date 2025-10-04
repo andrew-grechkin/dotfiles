@@ -85,6 +85,7 @@ sub main() {
                 case ('-B') {return}
                 case ('-U') {return}
                 case ('-V') {return}
+                case ('-q') {$app->set_quiet}
                 case ('-d') {$depends = true}
                 case ('-D') {$depends = shift(@argv)}
             };
