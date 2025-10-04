@@ -1,6 +1,5 @@
 requires "Cpanel::JSON::XS";
 requires "Future::AsyncAwait";
-requires "IO::Socket::SSL";
 requires "IO::Socket::Socks";
 requires "Mojolicious";
 requires "Net::DNS::Native";
@@ -14,6 +13,7 @@ requires "Data::Dump";
 requires "Data::Printer";
 requires "DateTime::TimeZone";
 requires "File::Map";
+requires "HTML::Tagset";
 requires "IO::Async";
 requires "Log::Any";
 requires "Path::Tiny";
@@ -45,6 +45,7 @@ feature 'develop' => sub {
 
 feature 'system' => sub {
     requires "Chipcard::PCSC::Card"; # for pcsc_scan, may fail
+    requires "IO::Socket::SSL";
     requires "Neovim::Ext";
 };
 

@@ -8,6 +8,7 @@ suspend/sleep		systemctl suspend
 hibernate			systemctl hibernate
 hybrid				systemctl hybrid-sleep
 logout				qdbus org.kde.ksmserver /KSMServer logout 0 0 3 || loginctl terminate-session self
+soft/reload     	systemctl soft-reboot
 reboot/restart		systemctl reboot
 poweroff/shutdown	systemctl poweroff
 UEFI/firmware		systemctl reboot --firmware

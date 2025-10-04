@@ -6,7 +6,7 @@ git-in-repo || exit 95
 
 CURRENT_SCRIPT="$(basename "$0")"
 export FZF_RELOAD_CMD="echo -ne 'IW \tpath\0' && ${CURRENT_SCRIPT#fzf-} ${*@Q}"
-open_help='python3 -mwebbrowser https://git-scm.com/docs/git-status#_short_format'
+open_help='git web--browse https://git-scm.com/docs/git-status#_short_format'
 
 fzf_args=(
     --accept-nth=2

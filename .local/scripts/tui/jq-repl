@@ -1,77 +1,78 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2154
 
 set -Eeuo pipefail
 
-# 🄯 2024 Andrew Grechkin
-# LICENSE:
-#     GPL-2.0-or-later
+[[ -x "$(command -v argc)" ]] || {
+    echo "'argc' helper command is required, install from https://github.com/sigoden/argc" >&2
+    exit 2
+}
 
-# ABSTRACT:
-#     jq REPL. Quickly build filtering request with preview
-
+# @describe jq REPL. Quickly build filtering request with preview
+#
 # SYNOPSIS:
 #     curl -Ls 'https://jsonplaceholder.typicode.com/users' | jq-repl -q 'map({position: .address.geo, email})'
 
-# eval and getopt must be separated to ensure fatal error trowed on invalid parameter passed
-args="$(getopt --name="$0" --options='q:Rrt' --longoptions='query:,raw-input,raw-output,type' -- "$@")"
-eval set -- "$args"
+# 🄯 2025 Andrew Grechkin
+# LICENSE:
+#     GPL-2.0-or-later
 
-query='.'
+# @meta version 1.0.0
+# @meta combine-shorts
+# @meta require-tools fzf,jq
+
+# @arg    command*        File to process (or STDIN if not provided)
+# @flag   -R --raw-input  Raw input
+# @flag   -r --raw-output Raw output
+# @option -q --query=.    Query
+
+eval "$(argc --argc-eval "$0" "$@")"
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+if [[ -z "${argc__positionals[*]}" ]] || [[ "${argc__positionals[0]}" == "-" ]]; then
+    input="$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
+    trap 'rm -f "$input"' EXIT
+    cat /dev/stdin > "$input"
+else
+    input="${argc__positionals[0]}"
+fi
+
 rawi=''
 rawo=''
-type="'empty'"
-
-while ((1)); do
-	case "$1" in
-		-q | --query) query="$2"; shift 2 ;;
-		-R | --raw-input) rawi="Rn"; shift ;;
-		-r | --raw-output) rawo="r"; shift ;;
-		-t | --type) type="{q}' | type'"; shift ;;
-		--) shift; break ;;
-	esac
-done
-
-if [[ -z "${1:-}" ]] || [[ $1 == "-" ]]; then
-	input="$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
-	trap 'rm -f "$input"' EXIT
-	cat /dev/stdin > "$input"
-else
-	input="$1"
-fi
+[[ -n "${argc_raw_input:-}" ]]  && rawi='Rn'
+[[ -n "${argc_raw_output:-}" ]] && rawi='r'
 
 if [[ -x "$(command -v json-pretty)" ]]; then
-	prettify=(json-pretty --no-filename --color=always)
+    prettify=(json-pretty --no-filename --color=always)
 else
-	prettify=(jq --indent 2 -SC)
+    prettify=(jq --indent 2 -SC)
 fi
 
-fzf_cmd=(
-	fzf
-	--ansi
-	--bind="alt-i:execute(${prettify[*]} <'$input' | less)"
-	--bind="alt-p:unbind(alt-p)"
-	--bind="alt-y:execute-silent(q={q}; jq -c$rawi$rawo {q} '$input' | clipcopy)"
-	--bind="ctrl-c:become(echo -n {q} | clipcopy; true)"
-	--bind="ctrl-d:half-page-down,ctrl-u:half-page-up"
-	--bind="ctrl-j:preview-down,ctrl-k:preview-up"
-	--bind="ctrl-m:execute(jq -c$rawi$rawo {q} '$input' | ${prettify[*]} | less)"
-	--bind="ctrl-x:become(q={q}; echo -n jq -c$rawo \"\${q@Q}\" | tee >(clipcopy) >&2; echo >&2; jq -c$rawo {q} '$input')"
-	--bind="ctrl-y:execute-silent(echo -n {q} | clipcopy)"
-	--bind="down:preview-down,up:preview-up"
-	--bind="end:preview-bottom"
-	--bind="esc:execute-silent(echo -n {q} | clipcopy)+change-query($query)"
-	--bind="home:preview-top"
-	--bind="page-down:preview-page-down,page-up:preview-page-up"
-	--disabled
-	--footer="A-i:input C-c:exit C-j:dn C-k:up C-x:dump C-y:yank enter:view esc:reset"
-	--preview-window="up:95%:border-bottom:wrap:nohidden"
-	--preview="{ jq -c$rawi $type '$input' && jq -c$rawi {q} '$input' || jq -c$rawi . '$input'; } | ${prettify[*]}"
-	--print-query
-	--scroll-off=4
-	--tabstop=4
-	--query="$query"
+reload="{ jq -c$rawi {q} '$input' || jq -c$rawi . '$input'; } | ${prettify[*]}"
+
+fzf_args=(
+    --ansi
+    --bind="alt-i:execute(${prettify[*]} < '$input' | ${PAGER:-less})"
+    --bind="alt-p:unbind(alt-p)"
+    --bind="alt-y:execute-silent(jq -c$rawi$rawo {q} '$input' | clipcopy)"
+    --bind="change:reload:$reload"
+    --bind="ctrl-c:become(echo -n {q} | clipcopy; true)"
+    --bind="ctrl-m:execute(jq -c$rawi$rawo {q} '$input' | ${prettify[*]} | less)"
+    --bind="ctrl-x:become(q={q}; echo -n jq -c$rawo \"\${q@Q}\" | tee >(clipcopy) >&2; echo >&2; jq -c$rawo {q} '$input')"
+    --bind="ctrl-y:execute-silent(echo -n {q} | clipcopy)"
+    --bind="esc:execute-silent(echo -n {q} | clipcopy)+change-query(${argc_query})"
+    --bind="start:change-query(${argc_query})"
+    --disabled
+    --footer='A-i:input A-y:yank C-c:exit C-x:dump C-y:yank enter:view esc:reset'
+    --preview-window='hidden'
+    --print-query
+    --prompt='jq > '
+    --query='⁉'
+    --scroll-off=4
+    --tabstop=4
 )
 
 export SHELL="$BASH" # enforce bash for all fzf sub shells
 # exec would prevent trap from execution
-"${fzf_cmd[@]}"
+fzf "${fzf_args[@]}"
