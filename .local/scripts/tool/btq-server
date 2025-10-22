@@ -7,43 +7,40 @@ use experimental qw(class declared_refs defer refaliasing);
 
 use File::Spec   qw();
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+use List::Util   qw(min);
 use Pod::Usage   qw(pod2usage);
 
+use BTQueue::Config qw();
+# use BTQueue::Server    qw(server_check_running);
 use BTQueue::ServerApp qw();
-use BTQueue::Config    qw();
 
 use Future::AsyncAwait;
-
-use List::Util              qw(min);
 use Log::Any                qw($log);
 use Log::Any::Adapter       qw(Stderr), ('log_level' => 'notice');
 use Log::Any::Adapter::Util qw(NOTICE TRACE);
 
-use BTQueue::Server qw(server_check_running);
-
-## use IO::Async::Stream       qw();
-# use IO::Async::Timer::Countdown qw();
+use Data::Printer;
 
 async sub main() {
     my %OPTIONS = (
-        foreground  => 0,
-        VERBOSITY   => 0,
         config_dir  => $ENV{XDG_CONFIG_HOME} || File::Spec->catfile($ENV{HOME}, '.config', 'btq'),
+        foreground  => 0,
         runtime_dir => $ENV{XDG_RUNTIME_DIR} || File::Spec->tmpdir(),
         temp_dir    => $ENV{XDG_STATE_HOME}  || File::Spec->tmpdir(),
+        verbosity   => 0,
     );
 
     GetOptions(
-        'foreground|f' => \$OPTIONS{'foreground'},
+        'foreground|f' => \$OPTIONS{foreground},
         'help|h'       => sub {pod2usage(-exitval => 0, -verbose => 99)},
-        'verbose|v+'   => \$OPTIONS{'VERBOSITY'},
-    ) or die('Unable to process command line options');
+        'verbose|v+'   => \$OPTIONS{verbosity},
+    ) or die("Unable to process command line options\n");
 
     Log::Any::Adapter->set(
         'Multiplex',
         'adapters' => {
             'Syslog' => ['log_level' => 'warning', 'options' => 'pid,ndelay'],
-            'Stderr' => ['log_level' => min(TRACE(), NOTICE() + $OPTIONS{VERBOSITY})],
+            'Stderr' => ['log_level' => min(TRACE(), NOTICE() + $OPTIONS{verbosity})],
         },
     );
 
@@ -54,24 +51,6 @@ async sub main() {
     my $app = BTQueue::ServerApp->new(config => $config);
 
     return $app->execute();
-
-#     $loop->add(
-#         IO::Async::Timer::Countdown->new(
-#             delay     => 10,
-#             on_expire => sub ($self) {
-#                 $log->notice('10 секунд have passed');
-#                 $self->start;
-#             },
-#         )->start,
-#     );
-#     $loop->add(IO::Async::Stream->new_for_stdin(
-#         on_read => sub($self, $buffref, $eof) {
-#             while ($$buffref =~ s/^(.*)\n//) {
-#                 print "You typed a line $1\n";
-#             }
-#             return 0;
-#         },
-#     ));
 }
 
 exit await main();
