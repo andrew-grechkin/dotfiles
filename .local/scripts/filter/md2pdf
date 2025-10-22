@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+# ABSTRACT: convert markdown to PDF
+
+exec markdown render <(cat "$@")
