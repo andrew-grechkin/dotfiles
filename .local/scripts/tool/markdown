@@ -1,0 +1,93 @@
+#!/usr/bin/env -S just --one --justfile
+
+# ABSTRACT: different operations over markdown files
+
+# https://just.systems/man/en/
+
+set export
+export this := justfile()
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private, no-cd]
+@default:
+    "$this" --list
+
+# => render ------------------------------------------------------------------------------------------------------- {{{1
+
+# pre-process markdown with knit
+[group('render'), no-cd]
+pre-process-knit workdir:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    args=(
+        -w /data
+        'docker.io/rocker/verse'
+        '/usr/local/lib/R/site-library/knitr/bin/knit'
+        -n /data/result.md
+        -o /data/knit.md
+    )
+    "$this" docker-run "$workdir" "${args[@]}" && mv -f "$workdir/knit.md" "$workdir/result.md"
+
+# pre-process markdown with mermaid diagrams
+[group('render'), no-cd]
+pre-process-mermaid workdir:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    args=(
+        'docker.io/minlag/mermaid-cli'
+        -q -b transparent
+        -i "/data/result.md"
+        -o "/data/mermaid.md"
+    )
+    "$this" docker-run "$workdir" "${args[@]}" && mv -f "$workdir/mermaid.md" "$workdir/result.md"
+
+# render markdown to PDF
+[group('render'), no-cd]
+render file:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    umask 0
+    workdir="$(mktemp --tmpdir="${XDG_RUNTIME_DIR:-/tmp}" -d --suffix '.md2pdf')"
+    trap 'rm -rf "$workdir"' EXIT
+    chmod a+rwX,g+s "$workdir"
+    mkdir -p "$workdir/.cache"
+
+    cp -f -- '$file' "$workdir/result.md" && chmod a+r "$workdir/result.md"
+    ln -s -- '/dev/stdout' "$workdir/stdout.pdf"
+
+    grep -P '[`]{3}[{]r'    "$workdir/result.md" &>/dev/null && "$this" pre-process-knit "$workdir"
+    grep -P '[`]{3}mermaid' "$workdir/result.md" &>/dev/null && "$this" pre-process-mermaid "$workdir"
+
+    if grep -P 'output:\s+beamer_presentation' "$workdir/result.md" &>/dev/null; then
+        args=(-t beamer)
+    else
+        args=(-t pdf)
+    fi
+    "$this" docker-run "$workdir" docker.io/pandoc/latex:latest-ubuntu -f markdown+smart -o /data/stdout.pdf /data/result.md "${args[@]}"
+
+# show markdown as PDF in zathura
+[group('render'), no-cd]
+show file:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if grep -P 'output:\s+beamer_presentation' "$file" &>/dev/null; then
+        args=(--mode=presentation)
+    fi
+    "$this" render "$file" | zathura - "${args[@]}"
+
+# => docker ------------------------------------------------------------------------------------------------------- {{{1
+
+# generic docker run
+[group('docker'), private, no-cd, positional-arguments]
+docker-run vol +args:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 1
+    docker run --rm -v "$vol:/data" "$@"
+
+# => helpers ------------------------------------------------------------------------------------------------------ {{{1
+
+[group('helpers'), private, no-cd]
+@fatal message:
+    >&2 echo "{{style('error')}}$message{{NORMAL}}"
+    exit 1
+
+[group('helpers'), private, no-cd]
+@print message:
+    [[ -t 1 ]] && >&2 echo "{{style('warning')}}$message{{NORMAL}}" || true
