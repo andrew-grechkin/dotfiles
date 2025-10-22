@@ -1,0 +1,319 @@
+#!/usr/bin/env -S just --one --unstable --justfile
+
+# https://just.systems/man/en/
+
+set export
+export GG := config_directory() + "/gg"
+export api := require('gemini-api')
+export colored-md := require('colored-md')
+export fzf-table := require('fzf-table')
+export git := require('git')
+export jq := require('jq')
+export show := require('show')
+export this := justfile()
+export tui := 'auto'
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+# Start the chat interface
+[private, no-cd]
+@default: chat
+
+# Print help
+[script("/usr/bin/env", "-S", "colored-md")]
+help:
+    # ABSTRACT
+    Interactive TUI for chatting with Google Gemini models
+
+    # DESCRIPTION
+    `gg` provides a fast, interactive, and feature-rich chat interface for Google's Gemini API, leveraging `fzf` and
+    the `gemini-api` backend. It transforms the raw API into a powerful command-line application.
+
+    It solves the problem of interacting with LLMs through a web interface or complex API calls by providing a
+    persistent, context-aware, and highly efficient command-line chat experience. It is designed for developers
+    who want to integrate LLMs seamlessly into their terminal workflow.
+
+    ## Key Features
+
+    * **Persistent Chat History:** Conversations are automatically saved and loaded based on the current Git project
+      or a specified chat name, ensuring context is always maintained.
+    * **Context-Awareness:** Automatically names chats based on the current Git repository, making it easy to keep
+      conversations relevant to your work.
+    * **Multimodal Input:** Easily add files (code, images, etc.) to the chat context, enabling multimodal interactions
+      with Gemini models.
+    * **Interactive Model Selection:** Browse and select different Gemini models directly from the TUI.
+    * **Advanced Chat Navigation:** Navigate through past prompts and responses within the chat history.
+    * **Rich `fzf` Interface:** Utilizes `fzf` as a dynamic chat interface, allowing you to view history, type new
+      messages, copy parts of the conversation, or dump entire sections.
+    * **Dynamic Prompt & Info:** The `fzf` prompt and info line dynamically display the current chat name, active model,
+      and context-sensitive keybindings.
+    * **Performance:** Designed for speed and efficiency, offering a much faster experience than typical web interfaces
+      or bloated CLI tools.
+
+# => chat --------------------------------------------------------------------------------------------------------- {{{1
+
+# Interactive chat interface with history and model interaction
+[group('chat'), no-cd]
+chat GG_CHAT='':
+    #!/usr/bin/env -S bash -Eeu
+    if [[ -z "$GG_CHAT" ]]; then
+        if git rev-parse HEAD &>/dev/null; then
+            cd $(git root)
+            GG_CHAT=$(git main-project)
+        else
+            GG_CHAT='default'
+        fi
+    fi
+    export GG_CHAT
+    export FZF_RELOAD_CMD="${this@Q} turn ${GG_CHAT@Q}"
+    export PROMPT="$GG_CHAT | \$(${api@Q} default-model | sed 's|models\/||') > "
+    fzf_args=(
+        --ansi
+        --bind="alt-C:become(${this@Q} select-chat ${GG_CHAT@Q})"
+        --bind="alt-F:execute(${this@Q} add-server-side-file      ${GG_CHAT@Q})+reload($FZF_RELOAD_CMD)"
+        --bind="alt-R:execute-silent(${api@Q} remove-last-content ${GG_CHAT@Q})+reload($FZF_RELOAD_CMD)"
+        --bind="alt-c:execute-silent(${this@Q} add-clipboard      ${GG_CHAT@Q})+reload($FZF_RELOAD_CMD)"
+        --bind="alt-d:execute(${this@Q} add-diff                  ${GG_CHAT@Q})+reload($FZF_RELOAD_CMD)"
+        --bind="alt-f:execute(${this@Q} add-file                  ${GG_CHAT@Q})+reload($FZF_RELOAD_CMD)"
+        --bind="alt-m:execute(${this@Q} models ${GG_CHAT@Q})+transform-prompt(echo \"\${PROMPT@P}\")"
+        --bind="alt-p:toggle-preview"
+        --bind="alt-up:last,alt-down:first"
+        --bind="alt-y:execute-silent(cat {+f3..} | ${this@Q} ansi2text | clipcopy)+deselect-all"
+        --bind="ctrl-g:jump"
+        --bind="ctrl-l:reload-sync($FZF_RELOAD_CMD {1})"
+        --bind="ctrl-m:pos(1)+reload([[ -n {q} ]] && echo {q} | ${api@Q} add-request-to-chat ${GG_CHAT@Q}; $FZF_RELOAD_CMD)+change-query()"
+        # --bind="ctrl-n:pos(0)+reload-sync(i={1}; $FZF_RELOAD_CMD \$((i + 1)))"
+        # --bind="ctrl-p:pos(-1)+reload-sync(i={1}; (( i == 0 )) && i=1; $FZF_RELOAD_CMD \$((i - 1)))+pos(0)"
+        # --bind="ctrl-n:transform:p=\$(${this@Q} next-prompt ${GG_CHAT@Q}); echo \"pos(\$p)\""
+        --bind="ctrl-n:transform:${this@Q} next ${GG_CHAT@Q} {1}"
+        --bind="ctrl-p:transform:${this@Q} previous ${GG_CHAT@Q} {1}"
+        # --bind="ctrl-s:reload([[ -n {q} ]] && echo {q} | ${api@Q} add-request-to-chat ${GG_CHAT@Q}; ${api@Q} update-chat ${GG_CHAT@Q}; $FZF_RELOAD_CMD)+change-query()"
+        # --bind="ctrl-s:pos(1)+reload-sync([[ -n {q} ]] && echo {q} | ${api@Q} add-request-to-chat ${GG_CHAT@Q}; $FZF_RELOAD_CMD)+change-query()+execute-silent(setsid -f ${this@Q} redraw-streamed-update-chat ${GG_CHAT@Q})"
+        --bind="ctrl-s:execute-silent([[ -n {q} ]] && echo {q} | ${api@Q} add-request-to-chat ${GG_CHAT@Q})+change-query()+reload(${this@Q} raw-streamed-update-chat ${GG_CHAT@Q})"
+        --bind="ctrl-x:become:cat {+f3..} | tee >(${this@Q} ansi2text | clipcopy)"
+        --bind="ctrl-y:execute-silent(NO_PREFIX=1 $FZF_RELOAD_CMD {1} | clipcopy)"
+        --bind="esc:become:true"
+        --bind="home:first,end:last"
+        --bind="resize:reload-sync:$FZF_RELOAD_CMD {1}"
+        --bind="shift-tab:unbind(shift-tab)"
+        --delimiter=$'\t'
+        --disabled
+        --gutter=' '
+        --info-command='echo -n "$FZF_INFO | A-R:rm A-y:yank A-c:clip A-f:file A-m:mdl C-n:next-pr C-p:prev-pr C-x:dump C-y:yank enter:req C-s:send"'
+        --listen
+        --multi
+        --preview-window="right:50%:border-left:wrap:hidden"
+        --preview="${this@Q} preview-help"
+        --print-query
+        --prompt="${PROMPT@P}"
+        --scroll-off=4
+        --sync
+        --tabstop=4
+        --tac
+        --with-nth=3..
+    )
+
+    unset FZF_DEFAULT_OPTS_FILE # use default fzf config (for portability)
+    export SHELL="$BASH" # enforce bash for all fzf sub shells
+    eval "$FZF_RELOAD_CMD" | fzf "${fzf_args[@]}"
+
+# Send a redraw command to fzf to update the UI
+redraw:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    reload="$(printf "reload(%s)\n" "$FZF_RELOAD_CMD")"
+    "$api" http-request POST :${FZF_PORT} --no-ignore-stdin --no-https <<< "$reload"
+
+# Stream response from API, update history, and redraw fzf after each chun
+redraw-streamed-update-chat name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ -n "${FZF_PORT:-}" && -n "${FZF_RELOAD_CMD:-}" ]]; then
+        "$api" stream-chat "$name" \
+            | grep --line-buffered -Po '^data: \K.+' \
+            | while read -r line; do
+                "$api" add-sse-to-chat "$name" <<< "$line"
+                "$this" redraw
+            done
+    else
+        "$api" update-chat "$name"
+    fi
+    "$this" redraw
+
+# Stream response from API and directly append to fzf output for real-time display
+raw-streamed-update-chat name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" turn "$name"
+    "$api" stream-chat "$name" \
+        | grep --line-buffered -Po '^data: \K.+' \
+        | while read -r line; do
+            "$api" add-sse-to-chat "$name" <<< "$line"
+
+            prefix="-1"$'\t'"model"$'\t'
+            jq -r '.candidates[]?.content?.parts?[].text' <<< "$line" \
+                | perl -nE "print qq{$prefix}, \$_"
+        done
+    "$this" redraw
+
+# Display chat dialog turn for a given chat name
+[group('chat'), no-cd, no-exit-message]
+turn name index='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    GLAMOUR_WIDTH=$(( ${FZF_COLUMNS:-$(tput cols)} - 8 ))
+    export GLAMOUR_WIDTH
+    "$api" render-turn "$name" "${index:--1}"
+
+# Add clipboard to the context of the chat
+[group('chat'), no-cd]
+add-clipboard name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    clippaste | "$api" add-text-to-chat "$name" 'pasted from clipboard' text
+
+# Add diff to the context of the chat
+[group('chat'), no-cd]
+add-diff name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    ref=$(fzf-git-log-all-graph) && [[ -n "$ref" ]] || exit 0
+    show-commit "$ref" | "$api" add-text-to-chat "$name" "$ref" "diff for commit"
+
+# Add file to the context of the chat
+[group('chat'), no-cd, no-exit-message]
+add-file name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    fzf_args=(
+        --bind="esc:becomes:true"
+        --bind="F3:execute:${PAGER:-less} {-1}"
+        --bind="F4:execute:${VISUAL:-${EDITOR:-vi}} {-1}"
+        --footer='F3:view F4:edit'
+        --no-multi-line
+        --preview='colored --color=always {-1}'
+    )
+    fzf "${args[@]}" \
+        | xargs -rn1 -d$'\n' "$api" add-file-to-chat "$name"
+
+# Add server-side file to the context of the chat
+[group('chat'), no-cd]
+add-server-side-file name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    fzf --multi --reverse \
+        | xargs -rn1 -d$'\n' "$api" add-server-side-file-to-chat "$name"
+
+# Select chat
+[group('chat'), no-cd]
+select-chat current='default':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    chats=$(fd . "$GG" --type d --max-depth 1 --format {/}| sort)
+    pos=$(grep -nm1 -Fx "$current" <<< "$chats" 2>/dev/null | cut -f1 -d: || true)
+    fzf --reverse --sync <<< "$chats" \
+        --bind="ctrl-m:become:gg chat {1}" \
+        --bind="start:transform:echo 'pos(${pos:-1})'" \
+        --prompt="chats > "
+
+# => models ------------------------------------------------------------------------------------------------------- {{{1
+
+# Inspect and select available Gemini models
+[group('models'), no-cd]
+models chat='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    dir="$GG"
+    [[ -n "$chat" ]] && dir+="/$chat"
+    mkdir -p "$dir"
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="${this@Q} models"
+        fzf_args=(
+            --bind="ctrl-m:become(${api@Q} list-models | jq -S --arg name {1} '.[] | select(.name == \$name)' > ${dir@Q}/model.json)"
+            --footer='enter:select | A-p:preview'
+            --preview="${api@Q} list-models | jq -CS --arg name {1} '.[] | select(.name == \$name)'"
+            --prompt='models > '
+            --with-nth='3..'
+        )
+        "$this" models | fzf-table "${fzf_args[@]}"
+    else
+        jq_fields=(
+            '_id;\(.name)'
+            '_url;\("")'
+            'name;\(.displayName);olive'
+            'methods;\(.supportedGenerationMethods | sort | join(","));gray'
+        )
+        "$api" list-models | json2table 'sort_by(.displayName)' "${jq_fields[@]}"
+    fi
+
+# => helper ------------------------------------------------------------------------------------------------------- {{{1
+
+# Display a static help preview with keybindings
+[private, no-cd]
+preview-help:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    cat <<-'EO_PREVIEW'
+    Key Bindings:
+    -------------
+    alt-C:  Select chat
+    alt-F:  Add server-side file to chat context
+    alt-R:  Remove last item (user prompt or model response)
+    alt-c:  Add clipboard content to chat context
+    alt-d:  Add a commit diff to chat context
+    alt-f:  Add local file content to chat context
+    alt-m:  Select a different model
+    alt-y:  Yank selected line(s) to clipboard
+
+    ctrl-g: Jump to target line
+    ctrl-l: Clear screen and reload chat history
+    ctrl-m: Append prompt (no streaming response)
+    ctrl-n: Load next dialog turn
+    ctrl-p: Load previous dialog turn
+    ctrl-s: Send prompt and receive response
+    ctrl-x: Dump selection to stdout and clipboard and exit
+    ctrl-y: Yank the last model response to clipboard
+
+    esc:    Exit chat
+    EO_PREVIEW
+
+# Remove ANSI coloring
+[group('helper'), private, no-cd]
+@ansi2text:
+    exec perl -pE 's/\x1B\[([[:digit:]]{1,3})(;[[:digit:]]{1,3})*[mGK]//g'
+
+# Find position of next prompt in the history
+[group('helper'), private, no-cd]
+next-prompt name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    [[ "${FZF_POS:-1}" == "1" ]] && exec echo "${FZF_POS:-1}"
+    line="$(( ${FZF_TOTAL_COUNT:=0} - ${FZF_POS:-0} + 1 ))"
+    pattern="PROMPT:"
+    line=$("$this" history "$name" | grep -n "$pattern" | grep -Po "^\d+" | jq --arg cur "$line" --arg last "$FZF_TOTAL_COUNT" -nr '[inputs | select(. > ($cur | tonumber))][0] // $last')
+    echo "$(( FZF_TOTAL_COUNT - line + 1 ))"
+
+# Find position of previous prompt in the history
+[group('helper'), private, no-cd]
+prev-prompt name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    [[ "${FZF_POS:-1}" == ${FZF_TOTAL_COUNT:-1} ]] && exec echo "${FZF_POS:-1}"
+    line="$(( ${FZF_TOTAL_COUNT:-0} - ${FZF_POS:-0} + 1 ))"
+    pattern="PROMPT:"
+    line=$("$this" history "$name" | grep -n "$pattern" | grep -Po "^\d+" | jq --arg cur "$line" -nr '[inputs | select(. < ($cur | tonumber))][-1] // $cur')
+    echo "$(( ${FZF_TOTAL_COUNT:-1} - line + 1 ))"
+
+# Load next dialog turn
+[group('helper'), private, no-cd]
+next name index:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ "$FZF_POS" != "1" ]]; then
+        exec echo 'pos(0)'
+    fi
+
+    index=$(( index + 1 ))
+    # pos(-1) doesn't work properly after reload, looks like a bug in fzf
+    cat << EO_TRANSFORM
+    pos(0)+reload-sync($FZF_RELOAD_CMD $index)
+    EO_TRANSFORM
+
+# Load previous dialog turn
+[group('helper'), private, no-cd]
+previous name index:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ "$FZF_POS" != "$FZF_TOTAL_COUNT" || "$index" == "0" ]]; then
+        exec echo 'pos(-1)'
+    fi
+
+    (( index > 0 )) && index=$(( index - 1 ))
+    cat << EO_TRANSFORM
+    pos(-1)+reload-sync($FZF_RELOAD_CMD $index)+pos(0)
+    EO_TRANSFORM
