@@ -14,7 +14,7 @@
 
 # @meta version 1.0.0
 # @meta combine-shorts
-# @meta require-tools fzf-table,jq,tsp
+# @meta require-tools jq,tsp
 
 # @flag -j --json  Output result as json
 
@@ -39,7 +39,7 @@ elif [[ -t 1 ]]; then
         --tiebreak='begin,chunk'
         --with-nth='3..'
     )
-    "$0" | fzf-table "${fzf_args[@]}"
+    "$0" | just -f "$HOME/.local/lib/just/fzf" table "${fzf_args[@]}"
 else
     jq_fields=(
         '_id;\(.id)'
@@ -51,5 +51,6 @@ else
         'finish;\(.finish | if . then .[0:19] else "" end);blue'
         'cmd;\(.shell);silver'
     )
-    "$0" -j | json2table 'sort_by(.start) | [(map(select(.finish | not))[]), (map(select(.finish)) | reverse[])]' "${jq_fields[@]}"
+    "$0" -j | just -f "$HOME/.local/lib/just/json" to-table \
+        'sort_by(.start) | [(map(select(.finish | not))[]), (map(select(.finish)) | reverse[])]' "${jq_fields[@]}"
 fi
