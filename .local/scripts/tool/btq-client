@@ -70,6 +70,9 @@ sub main() {
                 case ('-C') {
                     return $app->query({event => 'clear'}, sub {exit 0});
                 }
+                case ('-k') {
+                    return $app->query({event => 'kill', what => shift(@argv)}, sub {exit 0});
+                }
                 case ('-l') {return $app->query({event => 'query'})}
                 case ('-S') {return}
                 case ('-t') {return}
@@ -80,7 +83,6 @@ sub main() {
                 case ('-s') {return $app->query({event => 'query',  what => shift(@argv), field => 'status'})}
                 case ('-r') {return $app->query({event => 'remove', what => shift(@argv), field => undef})}
                 case ('-w') {return $app->query({event => 'wait',   what => shift(@argv), field => undef})}
-                case ('-k') {return $app->query({event => 'kill',   what => shift(@argv), field => undef})}
                 case ('-u') {return $app->query({event => 'urgent', what => shift(@argv), field => undef})}
                 case ('-B') {return}
                 case ('-U') {return}
@@ -113,11 +115,11 @@ sub try_connecting($loop, $options) {
             socktype => 'stream',
             path     => $options->socket_path,
         },
-        on_connect_error => sub (@p) {
+        on_connect_error => sub(@p) {
             system('btq-server') == 0
                 or warn 'unable to start server';
         },
-        on_connected => sub (@p) {
+        on_connected => sub(@p) {
             ## do nothing, server is listening
         },
     )->await();
