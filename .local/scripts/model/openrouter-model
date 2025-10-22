@@ -1,0 +1,921 @@
+#!/usr/bin/env -S just --one --justfile
+
+# ABSTRACT: access OpenRouter API from cli
+# https://openrouter.ai/docs
+
+mod common "~/.local/lib/just/common"
+mod http "~/.local/lib/just/http"
+
+set export
+set no-cd
+
+export clipcopy := require('clipcopy')
+export colored-md := require('colored-md')
+export credp := require('credp')
+export ifne := require('ifne')
+export jq := require('jq')
+export sponge := require('sponge')
+export this := justfile()
+
+export OPENROUTER_HOST := env('OPENROUTER_HOST', 'openrouter.ai')
+export OPENROUTER_API := env('OPENROUTER_API', '/api/v1')
+export OPENROUTER_MODEL := env('OPENROUTER_MODEL', 'deepseek/deepseek-v4.1-flash')
+export OPENROUTER_EMBEDDING_MODEL := env('OPENROUTER_EMBEDDING_MODEL', 'openai/text-embedding-3-small')
+export OPENROUTER_RERANK_MODEL := env('OPENROUTER_RERANK_MODEL', 'cohere/rerank-v3.5')
+export OPENROUTER_TTS_MODEL := env('OPENROUTER_TTS_MODEL', 'openai/gpt-4o-mini-tts-2025-12-15')
+export OPENROUTER_TTS_VOICE := env('OPENROUTER_TTS_VOICE', 'alloy')
+export OPENROUTER_TTS_FORMAT := env('OPENROUTER_TTS_FORMAT', 'mp3')
+export OPENROUTER_STT_MODEL := env('OPENROUTER_STT_MODEL', 'openai/whisper-1')
+export OPENROUTER_IMAGE_MODEL := env('OPENROUTER_IMAGE_MODEL', 'openai/gpt-image-1')
+export OR_STATE := config_directory() + '/or'
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private]
+@default:
+    "$this" --list
+
+# => api ---------------------------------------------------------------------------------------------------------- {{{1
+
+# Fetch the OpenAPI specification
+[group('api')]
+swagger:
+    #!/usr/bin/env -S bash -Eeu
+    memoize -- "$this" http-request GET 'openrouter.ai/openapi.json'
+
+# List documented endpoints as ansi table, optionally filtered by case-insensitive regex
+[group('api')]
+endpoints pattern='.':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" swagger \
+        | jq -r --arg host "$OPENROUTER_HOST" --arg api "$OPENROUTER_API" '
+            ((.servers // [])[0].url // ("https://" + $host + $api)) as $base
+            | .paths | to_entries[]
+            | .key as $path
+            | .value | to_entries[]
+            | select(.key | test("^(get|put|post|delete|head|patch|options|trace)$"; "i"))
+            | [(.key | ascii_upcase), ($base + $path), (.value.summary // "")]
+            | @tsv
+        ' \
+        | grep -iE -- "$pattern" \
+        | sort -k2,2 -k1,1 \
+        | column -t -s $'\t'
+
+# => chat --------------------------------------------------------------------------------------------------------- {{{1
+
+# Return history or partial history of a specific chat
+[group('chat')]
+history name from='0' to='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    history_file="$OR_STATE/$name/history.json"
+    [[ -s "$history_file" ]] || "$this" init-history "$history_file"
+    jq -r '.messages[{{from}}:{{to}}][] | select(.role != "system") | (
+        .role as $r
+        | (if (.content | type) == "array"
+             then (.content | map(select(.type == "text") | .text) | join("\n"))
+             else (.content // "")
+           end)
+        | trim? | split("\n")[] | if $r == "user" then "\n# PROMPT: " else "" end + .
+    )' "$history_file"
+
+# Render full chat to ansi text representation
+[group('chat')]
+render-chat name from='0' to='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" history "$name" "$from" "$to" \
+        | colored-md
+
+# Render chat dialog turn to ansi text representation for fzf with index
+[group('chat'), no-exit-message]
+render-turn name index='-1':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    history_file="$OR_STATE/$name/history.json"
+    [[ -s "$history_file" ]] || "$this" init-history "$history_file"
+    jq_script=$(cat << 'EO_JQ_SCRIPT'
+        (.messages // []) as $m
+        | ($m | length) as $len
+        | (if ($from < 0 or $from >= $len) then $len - 1 else $from end) as $from
+        | (($m | to_entries | map(select(.value.role == "user") | .key)) + [$len]) as $starts
+        | ([range(0; ($starts | length) - 1) | [$starts[.], $starts[. + 1]]]
+            | map(select(.[0] <= $from and $from < .[1]))[0]) as $bounds
+        | $m[$bounds[0] : $bounds[1]]
+        | to_entries[]
+        | {
+            index: ($bounds[0] + .key),
+            role: .value.role,
+            text: (
+                (.value.content
+                    | if type == "array" then
+                        (map(select(.type == "text") | .text) | join("\n"))
+                      else (. // "")
+                      end)
+            ),
+            images: (
+                (.value.content
+                    | if type == "array" then
+                        map(select(.type == "image_url") | .image_url.url
+                            | select(type == "string" and startswith("data:"))
+                            | sub("^data:[^;]+;base64,"; ""))
+                      else []
+                      end)
+            )
+          }
+        | if .role == "user" then .text |= "# " + . else . end
+    EO_JQ_SCRIPT
+    )
+    jq -c --argjson from "$index" "$jq_script" "$history_file" | while read -r line; do
+        {
+            jq -r '.text' <<< "$line" | colored-md
+            echo
+            while read -r picture; do
+                [[ -n "$picture" ]] || continue
+                # NOTE: fzf man lies about FZF_COLUMNS: the number includes padding and margin (marker and scrollbar)
+                # and thus cannot be used without substracting at least 3 columns
+                base64 -d <<< "$picture" \
+                    | chafa -f symbols --view-size "$(( ${FZF_COLUMNS:-$(tput cols)} - 8 ))"
+                echo
+            done < <(jq -r '.images[]?' <<< "$line")
+        } | if [[ -n "${NO_PREFIX:-}" ]]; then
+            cat
+        else
+            prefix="$(jq -r '"\(.index)\t\(.role)\t"' <<< "$line")"
+            perl -nE "print qq{$prefix}, \$_"
+        fi
+    done
+
+# Remove last item in the chat
+[group('chat')]
+remove-last-content name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    history_file="$OR_STATE/$name/history.json"
+    [[ -s "$history_file" ]] && {
+        jq '.messages |= del(.[-1])' "$history_file" \
+            | ifne sponge "$history_file"
+    }
+
+# Request AI to give response to the chat
+[group('chat')]
+update-chat name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    history_file="$OR_STATE/$name/history.json"
+    [[ -s "$history_file" ]] || "$this" init-history "$history_file"
+    if res=$("$this" http-request POST "/chat/completions" --no-ignore-stdin < "$history_file"); then
+        jq -nS '$history[] | .messages += $model' \
+                --slurpfile model <(jq '.choices[0].message' <<< "$res") \
+                --slurpfile history "$history_file" \
+            | ifne sponge "$history_file"
+    fi
+
+# Update chat contents with new data
+[group('chat')]
+add-to-chat name content role='user':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    history_file="$OR_STATE/$name/history.json"
+    [[ -s "$history_file" ]] || "$this" init-history "$history_file"
+    jq -nS --arg role "$role" --arg content "$content" \
+        --slurpfile history "$history_file" '
+        $history[] | .messages += [{"role": $role, "content": $content}]
+    ' | ifne sponge "$history_file"
+
+# Update chat contents with new content items provided via STDIN as a JSON array
+[group('chat')]
+add-parts-to-chat name role='user':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    history_file="$OR_STATE/$name/history.json"
+    [[ -s "$history_file" ]] || "$this" init-history "$history_file"
+    jq -nS --arg role "$role" --slurpfile items <(cat) --slurpfile history "$history_file" '
+        ($items[0] // []) as $new
+        | $history[]
+        | if (.messages[-1]?.role == $role) then
+              .messages[-1].content = (
+                  (if (.messages[-1].content | type) == "array" then .messages[-1].content
+                   else [{"type": "text", "text": (.messages[-1].content // "")}]
+                   end) + $new
+              )
+          else
+              .messages += [{"role": $role, "content": $new}]
+          end
+    ' | ifne sponge "$history_file"
+
+# Add request (plain text provided via STDIN) to the chat
+[group('chat')]
+add-request-to-chat name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -ncS --rawfile request <(cat) '[{"type": "text", "text": $request}]' \
+        | "$this" add-parts-to-chat "$name" user
+
+# Add text to the chat, not request but additional information to request (clipboard for example)
+[group('chat')]
+add-text-to-chat name display_name type='text':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -ncS --rawfile d <(base64 -w0) --arg n "$display_name" --arg t "$type" '
+    [
+        {"type": "text", "text": "this is a \($t): \($n)"},
+        {"type": "text", "text": ($d | @base64d)}
+    ]' | "$this" add-parts-to-chat "$name"
+
+# Add file to the chat (inline, base64-encoded)
+[group('chat')]
+add-file-to-chat name path:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" file-content "$path" \
+        | "$this" add-parts-to-chat "$name"
+
+# Add file to the chat via server-side upload (for large files)
+[group('chat')]
+add-server-side-file-to-chat name path:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    file_id=$("$this" upload-file "$path" | jq -r '.id // empty')
+    [[ -n "$file_id" ]] || exec "$this" common::fatal "unable to upload file: $path"
+    jq -ncS --arg id "$file_id" --arg p "$path" '
+    [
+        {"type": "text", "text": ("this is a server-side file (path: " + $p + ")")},
+        {"type": "file", "file": {"file_id": $id}}
+    ]' | "$this" add-parts-to-chat "$name"
+
+# Request AI to give streamed response to the chat
+[group('chat')]
+stream-chat name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    history_file="$OR_STATE/$name/history.json"
+    [[ -s "$history_file" ]] || "$this" init-history "$history_file"
+    jq -S '. + {stream: true}' "$history_file" \
+        | "$this" http-stream POST "/chat/completions"
+
+# Update chat contents with new streamed SSE data
+[group('chat')]
+add-sse-to-chat name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    history_file="$OR_STATE/$name/history.json"
+    [[ -s "$history_file" ]] || "$this" init-history "$history_file"
+    jq -rj '.choices[0].delta.content // empty' \
+        | jq -Rs --slurpfile history "$history_file" '
+            . as $delta
+            | $history[]
+            | if (.messages[-1]?.role == "assistant") then
+                  .messages[-1].content = ((.messages[-1].content // "") + $delta)
+              else
+                  .messages += [{"role": "assistant", "content": $delta}]
+              end
+        ' | ifne sponge "$history_file"
+
+# Initialize chat history file with model and system instructions unless it already exists
+[group('chat')]
+init-history history_file:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    [[ -s "$history_file" ]] || {
+        mkdir -p "$(dirname "$history_file")"
+        jq -nS '{"model": $model, "messages": [$instructions]}' \
+            --arg model "$OPENROUTER_MODEL" \
+            --argjson instructions "$("$this" default-instructions)" \
+            > "$history_file"
+    }
+
+# => files -------------------------------------------------------------------------------------------------------- {{{1
+
+# List server-side files
+[group('files')]
+list-files *query:
+    #!/usr/bin/env -S bash -Eeu
+    "$this" http-request GET "/files" "$@"
+
+# Delete a server-side file
+[group('files')]
+delete-file id:
+    #!/usr/bin/env -S bash -Eeu
+    "$this" http-request DELETE "/files/$id"
+
+# Upload a server-side file
+[group('files')]
+upload-file path:
+    #!/usr/bin/env -S bash -Eeu
+    "$this" http-request POST "/files" --form "file@$path"
+
+# Describe provided file according to prompt
+[group('files'), positional-arguments]
+describe file *prompt:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift
+    prompt="${*:-Describe this file}"
+    jq -ncS --slurpfile content <("$this" file-content "$file") --arg prompt "$prompt" '
+        {"messages": [{"role": "user", "content": ($content[0] + [{"type": "text", "text": $prompt}])}]}
+    ' \
+        | "$this" prepared-request \
+        | jq -r '.choices[0].message.content' \
+        | colored-md
+
+# => text --------------------------------------------------------------------------------------------------------- {{{1
+
+# Make a prompt
+[group('text'), positional-arguments]
+prompt *prompt:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    {
+        [[ -z "$*" ]] || echo "$*"
+        [[ -t 0    ]] || cat
+    } | "$this" raw-request \
+        | jq -r '.choices[0].message.content' \
+        | colored-md
+
+# Make a streamed prompt
+[group('text'), positional-arguments]
+streamed-prompt *prompt:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    {
+        [[ -z "$*" ]] || echo "$*"
+        [[ -t 0    ]] || cat
+    } | "$this" streamed-request \
+        | grep --line-buffered -Po '^data: \K.+' \
+        | while read -r line; do
+            if [[ "$line" == "[DONE]" ]]; then
+                break
+            fi
+            jq -rj '.choices[0].delta.content // empty' <<< "$line"
+        done
+
+# Rephrase text provided via STDIN
+[group('text'), positional-arguments]
+rephrase *prompt:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -ncS '{"model": $model, "messages": ([$instructions] + [{"role": "user", "content": $req + $prompt + ":\n" + $stdin}])}' \
+            --arg model "$OPENROUTER_MODEL" \
+            --argjson instructions "$("$this" rephrase-instructions)" \
+            --arg req "Follow your instructions and rephrase the provided text " \
+            --rawfile prompt <([[ -z "$*" ]] || echo -n "$*") \
+            --rawfile stdin  <([[ -t 0    ]] || cat) \
+        | "$this" http-request POST "/chat/completions" --no-ignore-stdin \
+        | jq -r '.choices[0].message.content' \
+        | "$this" common::trim-stream \
+        | clipcopy
+
+# Rephrase prompt in a polite way
+[group('text'), positional-arguments]
+polite *prompt:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -ncS '{"model": $model, "messages": ([$instructions] + [{"role": "user", "content": $req + $prompt + $stdin}])}' \
+            --arg model "$OPENROUTER_MODEL" \
+            --argjson instructions "$("$this" rephrase-instructions)" \
+            --arg req "Follow your instructions and rephrase the provided text in a formal and polite language:\n" \
+            --rawfile prompt <([[ -z "$*" ]] || echo -n "$*") \
+            --rawfile stdin  <([[ -t 0    ]] || cat) \
+        | "$this" http-request POST "/chat/completions" --no-ignore-stdin \
+        | jq -r '.choices[0].message.content' \
+        | "$this" common::trim-stream \
+        | clipcopy
+
+# Finalize a provided prompt
+[group('text'), positional-arguments]
+finalize *prompt:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -ncS '{"model": $model, "messages": ([$instructions] + [{"role": "user", "content": $req + $prompt + $stdin}])}' \
+            --arg model "$OPENROUTER_MODEL" \
+            --argjson instructions "$("$this" finalize-instructions)" \
+            --arg req "Follow your instructions and finalize the provided text:" \
+            --rawfile prompt <([[ -z "$*" ]] || echo -n "$*") \
+            --rawfile stdin  <([[ -t 0    ]] || cat) \
+        | "$this" http-request POST "/chat/completions" --no-ignore-stdin \
+        | jq -r '.choices[0].message.content'
+
+# Suggest a commit message based on a git diff
+[group('text')]
+suggest-commit-msg:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -ncS '{"model": $model, "messages": ([$instructions] + [{"role": "user", "content": "Here is the diff:\n" + $prompt}])}' \
+            --arg model "$OPENROUTER_MODEL" \
+            --argjson instructions "$("$this" commit-msg-instructions)" \
+            --rawfile prompt <(cat) \
+        | "$this" http-request POST "/chat/completions" --no-ignore-stdin \
+        | jq -r '.choices[0].message.content'
+
+# Detect geo location
+[group('text'), positional-arguments]
+locate *prompt:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -ncS '{"model": $model, "messages": ([$instructions] + [{"role": "user", "content": $req + $prompt + $stdin}])}' \
+            --arg model "$OPENROUTER_MODEL" \
+            --argjson instructions "$("$this" geolocate-instructions)" \
+            --arg req "For the provided below description provide a response by strictly following instructions:\n" \
+            --rawfile prompt <([[ -z "$*" ]] || echo -n "$*") \
+            --rawfile stdin  <([[ -t 0    ]] || cat) \
+        | "$this" http-request POST "/chat/completions" --no-ignore-stdin \
+        | jq -r '.choices[0].message.content'
+
+# Generate embeddings for provided text
+[group('text')]
+embeddings:
+    #!/usr/bin/env -S bash -Eeu
+    jq -ncS '{"model": $model, "input": $input}' \
+            --arg model "$OPENROUTER_EMBEDDING_MODEL" \
+            --rawfile input <(cat) \
+        | "$this" http-request POST "/embeddings" --no-ignore-stdin
+
+# Rerank documents based on query
+[group('text'), positional-arguments]
+rerank query *documents:
+    #!/usr/bin/env -S bash -Eeu
+    shift
+    jq -ncS '{"model": $model, "query": $query, "documents": $docs}' \
+            --arg model "$OPENROUTER_RERANK_MODEL" \
+            --arg query "$query" \
+            --argjson docs "$(printf '%s\n' "$@" | jq -R . | jq -s .)" \
+        | "$this" http-request POST "/rerank" --no-ignore-stdin
+
+# => audio -------------------------------------------------------------------------------------------------------- {{{1
+
+# Text to speech
+[group('audio'), positional-arguments]
+tts *text:
+    #!/usr/bin/env -S bash -Eeu
+    jq -ncS '{"model": $model, "input": $input, "voice": $voice, "response_format": $format}' \
+            --arg model "$OPENROUTER_TTS_MODEL" \
+            --arg voice "$OPENROUTER_TTS_VOICE" \
+            --arg format "$OPENROUTER_TTS_FORMAT" \
+            --rawfile input <({ [[ -z "$*" ]] || echo "$*"; [[ -t 0 ]] || cat; }) \
+        | "$this" http-stream POST "/audio/speech"
+
+# Speech to text (transcription)
+[group('audio')]
+stt path:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    format="${path##*.}"
+    jq -ncS '{"model": $model, "input_audio": {"data": $data, "format": $format}}' \
+            --arg model "$OPENROUTER_STT_MODEL" \
+            --arg format "${format,,}" \
+            --rawfile data <(base64 -w0 "$path") \
+        | "$this" http-request-cached POST "/audio/transcriptions"
+
+# Read text (synthesize and play)
+[group('audio'), positional-arguments]
+read *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" tts "$@" \
+        | ifne mpv --no-video --msg-level=all=error -
+
+# Read clipboard
+[group('audio')]
+read-clipboard:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    clippaste | "$this" read
+
+# Read text to file
+[group('audio'), positional-arguments]
+read2file path *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift
+    "$this" tts "$@" \
+        | ifne sponge "$path"
+
+# => images ------------------------------------------------------------------------------------------------------- {{{1
+
+# Generate image from prompt
+[group('images'), positional-arguments]
+generate-image *prompt:
+    #!/usr/bin/env -S bash -Eeu
+    jq -ncS '{"model": $model, "prompt": $prompt}' \
+            --arg model "$OPENROUTER_IMAGE_MODEL" \
+            --rawfile prompt <({ [[ -z "$*" ]] || echo "$*"; [[ -t 0 ]] || cat; }) \
+        | "$this" http-request-cached POST "/images"
+
+# List image generation models
+[group('images')]
+list-image-models:
+    #!/usr/bin/env -S bash -Eeu
+    memoize -- "$this" http-request GET '/images/models'
+
+# List endpoints for an image model (author/slug)
+[group('images')]
+list-image-model-endpoints model:
+    #!/usr/bin/env -S bash -Eeu
+    "$this" http-request GET "/images/models/$model/endpoints"
+
+# => models ------------------------------------------------------------------------------------------------------- {{{1
+
+# List available models
+[group('models')]
+list-models:
+    #!/usr/bin/env -S bash -Eeu
+    memoize -- "$this" http-request GET '/models'
+
+# Get a model by its slug (author/slug)
+[group('models')]
+get-model model:
+    #!/usr/bin/env -S bash -Eeu
+    "$this" http-request GET "/model/$model"
+
+# Get total count of available models
+[group('models')]
+count-models:
+    #!/usr/bin/env -S bash -Eeu
+    memoize -- "$this" http-request GET '/models/count'
+
+# List all endpoints for a model (author/slug)
+[group('models')]
+list-model-endpoints model:
+    #!/usr/bin/env -S bash -Eeu
+    "$this" http-request GET "/models/$model/endpoints"
+
+# List models filtered by user provider preferences, privacy settings and guardrails
+[group('models')]
+list-user-models *query:
+    #!/usr/bin/env -S bash -Eeu
+    memoize -- "$this" http-request GET '/models/user' "$@"
+
+# List all embeddings models
+[group('models')]
+list-embeddings-models:
+    #!/usr/bin/env -S bash -Eeu
+    memoize -- "$this" http-request GET '/embeddings/models'
+
+# Print effective default model (chat model when OR_CHAT is set, otherwise the configured default)
+[group('models')]
+default-model:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ -n "${OR_CHAT:-}" && -r "$OR_STATE/$OR_CHAT/history.json" ]]; then
+        model=$(jq -r '.model // empty' "$OR_STATE/$OR_CHAT/history.json")
+        [[ -z "$model" ]] || { echo "$model"; exit 0; }
+    fi
+    echo "$OPENROUTER_MODEL"
+
+# => providers ---------------------------------------------------------------------------------------------------- {{{1
+
+# List available providers
+[group('providers')]
+list-providers:
+    #!/usr/bin/env -S bash -Eeu
+    memoize -- "$this" http-request GET '/providers'
+
+# => tools -------------------------------------------------------------------------------------------------------- {{{1
+
+# List server tools OpenRouter can run on behalf of a model
+[group('tools')]
+list-tools *query:
+    #!/usr/bin/env -S bash -Eeu
+    "$this" http-request GET '/tools' "$@"
+
+# Get a server tool by canonical name or alias
+[group('tools')]
+get-tool name:
+    #!/usr/bin/env -S bash -Eeu
+    "$this" http-request GET "/tools/$name"
+
+# => presets ------------------------------------------------------------------------------------------------------ {{{1
+
+# List presets
+[group('presets')]
+list-presets:
+    #!/usr/bin/env -S bash -Eeu
+    "$this" http-request GET '/presets'
+
+# Get a preset by its slug
+[group('presets')]
+get-preset slug:
+    #!/usr/bin/env -S bash -Eeu
+    "$this" http-request GET "/presets/$slug"
+
+# List versions of a preset
+[group('presets')]
+list-preset-versions slug:
+    #!/usr/bin/env -S bash -Eeu
+    "$this" http-request GET "/presets/$slug/versions"
+
+# => video -------------------------------------------------------------------------------------------------------- {{{1
+
+# List all video generation models
+[group('video')]
+list-video-models:
+    #!/usr/bin/env -S bash -Eeu
+    memoize -- "$this" http-request GET '/videos/models'
+
+# => http --------------------------------------------------------------------------------------------------------- {{{1
+
+[group('http'), private]
+api-key:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ -n "${OPENROUTER_API_KEY:-}" ]]; then
+        echo "$OPENROUTER_API_KEY"
+    else
+        "$credp" "token://$OPENROUTER_HOST" || {
+            "$this" common::fatal "unable to init openrouter api key.
+                Export key directly via OPENROUTER_API_KEY variable"
+        }
+    fi
+
+[group('http'), private, positional-arguments]
+http-request method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 2
+    [[ "$uri" == /* ]] && uri="$OPENROUTER_HOST$OPENROUTER_API${uri#${OPENROUTER_API}}"
+    "$this" http::request "$method" "$uri" --auth-type=bearer --auth="$("$this" api-key)" "$@"
+
+[group('http'), private, positional-arguments]
+http-request-cached method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 2
+    [[ "$uri" == /* ]] && uri="$OPENROUTER_HOST$OPENROUTER_API${uri#${OPENROUTER_API}}"
+    cmd=(
+        "$this" http::request "$method" "$uri"
+        --no-ignore-stdin
+        --auth-type=bearer
+        --auth="$("$this" api-key)"
+        "$@"
+    )
+    payload="$(cat)"
+    memoize -l "$(md5sum <<< "$payload")" -- "${cmd[@]}" <<< "$payload"
+
+[group('http'), private, positional-arguments]
+http-stream method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 2
+    [[ "$uri" == /* ]] && uri="$OPENROUTER_HOST$OPENROUTER_API${uri#${OPENROUTER_API}}"
+    cmd=(
+        "$this" http::request-streaming "$method" "$uri"
+        --no-ignore-stdin
+        --auth-type=bearer
+        --auth="$("$this" api-key)"
+        "$@"
+    )
+    payload="$(cat)"
+    memoize -l "$(md5sum <<< "$payload")" -- "${cmd[@]}" <<< "$payload"
+
+# Send request with data already prepared as a valid chat-completions body via STDIN
+[group('text')]
+prepared-request:
+    #!/usr/bin/env -S bash -Eeu
+    jq -ncS --slurpfile req <(cat) --argjson instructions "$("$this" default-instructions)" '
+        $req[0] + {messages: ([$instructions] + ($req[0].messages // []))}
+    ' | "$this" http-request-cached POST "/chat/completions"
+
+# Send request with raw text data and streaming response
+[group('http'), private]
+streamed-request:
+    #!/usr/bin/env -S bash -Eeu
+    jq -ncS '{"model": $model, "messages": ([$instructions] + [{"role": "user", "content": $prompt}]), "stream": true}' \
+            --arg model "$OPENROUTER_MODEL" \
+            --argjson instructions "$("$this" default-instructions)" \
+            --rawfile prompt <(cat) \
+        | "$this" http-stream POST "/chat/completions"
+
+# Send request with raw text data
+[group('http'), private]
+raw-request:
+    #!/usr/bin/env -S bash -Eeu
+    jq -ncS '{"model": $model, "messages": ([$instructions] + [{"role": "user", "content": $prompt}])}' \
+            --arg model "$OPENROUTER_MODEL" \
+            --argjson instructions "$("$this" default-instructions)" \
+            --rawfile prompt <(cat) \
+        | "$this" http-request-cached POST "/chat/completions"
+
+# => management --------------------------------------------------------------------------------------------------- {{{1
+
+# Get account activity (requires management key)
+[group('management')]
+activity *query:
+    #!/usr/bin/env -S bash -Eeu
+    "$this" http-request GET "/activity" "$@"
+
+# Get credit balance (requires management key)
+[group('management')]
+credits:
+    #!/usr/bin/env -S bash -Eeu
+    "$this" http-request GET "/credits"
+
+# List API keys (requires management key)
+[group('management')]
+list-keys:
+    #!/usr/bin/env -S bash -Eeu
+    "$this" http-request GET "/keys"
+
+# List batches (requires management key)
+[group('management')]
+list-batches:
+    #!/usr/bin/env -S bash -Eeu
+    "$this" http-request GET "/batches"
+
+# List workspaces (requires management key)
+[group('management')]
+list-workspaces:
+    #!/usr/bin/env -S bash -Eeu
+    "$this" http-request GET "/workspaces"
+
+# => helper ------------------------------------------------------------------------------------------------------- {{{1
+
+# Get info about a specific generation
+[group('helper')]
+generation-info id:
+    #!/usr/bin/env -S bash -Eeu
+    "$this" http-request GET "/generation?id={{id}}"
+
+# Get stored prompt, completion and error content for a generation
+[group('helper')]
+generation-content id:
+    #!/usr/bin/env -S bash -Eeu
+    "$this" http-request GET "/generation/content?id={{id}}"
+
+# Preview the impact of ZDR on the available endpoints
+[group('helper')]
+endpoint-zdr *query:
+    #!/usr/bin/env -S bash -Eeu
+    "$this" http-request GET "/endpoints/zdr" "$@"
+
+# Build content items (text descriptor plus media part) for the provided path
+[group('helper'), private]
+file-content path:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    mime="$(file -b --mime-type "$path")"
+    size="$(wc -c < "$path")"
+    name="$(basename "$path")"
+    if [[ "$mime" == image/* ]]; then
+        jq -ncS --rawfile d <(base64 -w0 "$path") \
+                --arg m "$mime" --arg p "$path" --arg s "$size" '
+            [
+                {"type": "text", "text": ("this is a file (path: " + $p + ", size in bytes: " + $s + ")")},
+                {"type": "image_url", "image_url": {"url": ("data:" + $m + ";base64," + $d)}}
+            ]'
+    else
+        jq -ncS --rawfile d <(base64 -w0 "$path") \
+                --arg m "$mime" --arg p "$path" --arg s "$size" --arg n "$name" '
+            [
+                {"type": "text", "text": ("this is a file (path: " + $p + ", size in bytes: " + $s + ")")},
+                {"type": "file", "file": {"file_data": ("data:" + $m + ";base64," + $d), "filename": $n}}
+            ]'
+    fi
+
+# Get benchmarks data
+[group('helper')]
+benchmarks:
+    #!/usr/bin/env -S bash -Eeu
+    "$this" http-request GET "/benchmarks"
+
+# Get info about the current API key
+[group('helper')]
+key-info:
+    #!/usr/bin/env -S bash -Eeu
+    "$this" http-request GET '/auth/key'
+
+# Print default instructions
+[group('helper')]
+default-instructions:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    exec jq -ncS '{
+        "role": "system",
+        "content": [
+            "Always format your answer as a valid markdown format. Never use raw TAB characters",
+            "If you need to put headers in the answer never use first level header (#) only use headers of higher number (##, ### and more)",
+            "Never use `en` or `em` dashes (–, —), only use simple minus symbols (-) when dash is necessary",
+            "Ensure unordered list markers (*, -, +) are followed by exactly one space",
+            "Ensure all code blocks which started with triple backticks ``` always have close backticks",
+            "Overall headers are good. If you need to logically separate one block of text from another use markdown headers",
+            "Try to keep sentenses in one line without line separator (new line), does not matter how long they are",
+            "Every sentense must always end with an explicit dot (.) or explicit new line",
+            "Be accurate in your answers and do not hallucinate. Use metric system, reference to the sources if possible",
+            "If answer is short it should be supported by a short information how conclusion was made",
+            "For 2 dimensional data (answer assumes rows and columns and information in cells) prefer table presentation",
+            "When you generate code snippets and adding comments in them - only `WHY it is done this way` comments are usefull, if intention deserve explanation. Never add `WHAT is done` comments, they are useless",
+            "When analyzing code, if you see an obvious bug or security issue - give a short notice even if you were not asked about that, unless explicitly told not to do that",
+            "Suggest best practices or improvements in code analysis: Beyond identifying bugs or security issues, when analyzing code, if there are clear opportunities to suggest best practices, improved efficiency, readability or maintainability, briefly mention them. This should be done with a focus on the WHY behind the suggestion",
+            "Explicitly state assumptions or inferences: When the response relies on assumptions or makes inferences due to incomplete information, clearly articulate what those assumptions or inferences are and why they were made",
+            "Handle ambiguity or incomplete requests gracefully: If a users request is unclear, ambiguous or lacks sufficient detail to provide a definitive answer, you should clearly state the ambiguity or missing information and, if appropriate, ask for clarification or suggest reasonable interpretations",
+            "Prioritize actionable and most relevant information: In cases where a response could be extensive, prioritize an highlight the most actionable, critical or relevant information first, ensuring the the answer has the most important details upfront",
+            "You must trust my knowledge. If I am in doubt I will be asking but if I am sure and telling that something exists you do not question that - I know it because I have checked. You just assume that your data is outdated",
+            "You do not care about outdated software. If something uses feature of latest bash or Perl that is absolutely fine and there is no need to focus on the fact that it will not work if run with 10 years old bash",
+            "Mind your verbosity. Prefer to answer question in short and direct form without unrelated topics covered. Go into details when you asked for them. You can mention that there is something worth to look at but not explain it at once"
+        ] | join("\n")
+    }'
+
+# Print instructions to make rephrase input
+[group('helper')]
+rephrase-instructions:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    exec jq -ncS '{
+        "role": "system",
+        "content": [
+            "Just return the answer without any additional code examples.",
+            "Only wording without any additional quotes and your greeting message.",
+            "Do not add anything from you.",
+            "Keep all provided urls and other links.",
+            "Keep only one trailing new line at the end."
+        ] | join("\n")
+    }'
+
+# Print instructions to finalize a prompt
+[group('helper')]
+finalize-instructions:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    exec jq -ncS '{
+        "role": "system",
+        "content": [
+            "You are a text completion engine. Your task is to analyze the user-provided text and continue it logically. You must not alter the original text in any way. Your response must start with the exact original text and be followed immediately by your logical continuation.",
+            "Do not add any introductory phrases, concluding remarks, or explanations. Your output should be only the combined, completed text.",
+            "There are things you are allowed to change in the prompt: capitalization of the characters where necessary, always fix typos and wrong words.",
+            "If there is nothing to add or fix and prompt is already complete and correct just return prompt as is unchanged.",
+            "EXAMPLE: If the user provides `The first three letters of the alphabet are a, b,` your response MUST be `The first three letters of the alphabet are a, b, c.`"
+        ] | join("\n")
+    }'
+
+# Print instructions to generate a commit message
+[group('helper')]
+commit-msg-instructions:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    exec jq -ncS '{
+        "role": "system",
+        "content": [
+            "You are an expert programmer who generates commit messages from git diffs.",
+            "Generate a proper commit message for the git diff provided by the user.",
+            "Format the output as:",
+            "1. Main commit message line (semantic prefix like feat:, fix:, refactor:, etc.)",
+            "2. Empty line",
+            "3. Marker \"---- BEGIN DESCRIPTION GENERATED BY AI ----\"",
+            "4. Details section with bullet points explaining the changes",
+            "",
+            "5. Marker \"---- END DESCRIPTION GENERATED BY AI ----\"",
+            "",
+            "Example format:",
+            "feat: add Amp AI integration and improve development tools",
+            "",
+            "---- BEGIN DESCRIPTION GENERATED BY AI ----",
+            "**Details:**",
+            "- Added Amp configuration with tool restrictions and MCP server setup",
+            "- Created new ai script for AI interactions",
+            "- Removed deprecated ai-request script, improved ai-polite",
+            "- Enhanced git hooks: added post-checkout for submodules, optimized pre-commit",
+            "- Added mkpython script for Python project scaffolding",
+            "- Updated development tool configurations and submodules",
+            "---- END DESCRIPTION GENERATED BY AI ----",
+            "",
+            "Requirements:",
+            "- Main message: max 72 characters, use semantic commit prefixes",
+            "- Details: bullet points with specific changes, no generic descriptions",
+            "- Be descriptive and actionable, avoid vague terms like \"misc updates\"",
+            "- Focus on what functionality was added/changed/removed",
+            "- Do not add any additional messages or something which would be outside of described format",
+            "- Do not generate TODOs and do not print them"
+        ] | join("\n")
+    }'
+
+# Print instructions to detect geo location by a description
+[group('helper')]
+geolocate-instructions:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    exec jq -ncS '{
+        "role": "system",
+        "content": [
+            "You are a geo-guesser and geo-wizard. You can easily detect geo location just by a description of a postition or an event.",
+            "Your task is to analyze a description of a location or of an event and suggest its geo location.",
+            "The description might consist of the same or similar data in different languages. You need to process all of them to get the most accurate position out the entire description.",
+            "The field `active` in data does not provide any location information, it is information about where this picture was presented. But if picture was active in only one country - most probable this picture has relation to it.",
+            "If description have coordinates already you dont trust them. Try to detect position on your own and then compare with the existing coordinates. Override them if you sure your coordinates are more accurate.",
+            "Your output should be simple lines which eventually will be a valid yaml output.",
+            "First of all you print a line with yaml header `---`.",
+            "Your own output you start with a line similar to `location_lat: 53.6731298`. Do not add degree symbol to the value.",
+            "Further a line in `location_lon: 7.3514969` form. Do not ever add degree symbol.",
+            "Further an optional line `location_url: <link to a google object if you have it>`. Dont give dynamic links to https://maps.app.goo.gl or https://www.google.com/maps/place/ or links via google.com/maps/place. Links to the exact query are the best: https://maps.google.com/maps?q=<properly url-encoded query>. Prefer them over other links.",
+            "Then a line with text describing which point you have chosen for coordinates like `location_place: Temple of Philae, Aswan, Egypt` (including meaningfull breadcrumbs when possible, not only the object place itself, from small to large: city, province, country), preferrably something known to google maps.",
+            "Then a line print a `location_comment: |-` and on the line with 2 spaces indetation the comment of what postion you have discovered and why, in English. If initial location coordinates were provided but not accurate - explain what was wrong. This can be and encouraged to be a multiline comment, just keep indentation always 2 spaces.",
+            "And as a last line print the `location_detalization: ` as a number from 0 to 9. The score is given only for the level of distinct location which is clearly given in description. Where 9 means that exact location is clear and its small (size of a house), 8 - street or object of a street size (explicit mountain for example), 7 - part of a city, 6 - approximate or exactly its city or town or object of this size, 4 - approximate or exactly a county (mountains for example or river with unknown position on it), 3 - province/big lake, 2 - country/sea, 1 - continent/ocean and 0 is nothing can be detected at all. If place is clear by name from description (which bridge for example or address) the score should correspond its size. If place is not clear and you need to guess - score is for the smallest object you didnt have to propose as representation",
+            "Do not output anything else, just these lines (without quotes which I gave in examples of course).",
+            "The final result should be 5-6 lines of a valid yaml file so the location_comment line should be quoted if necessary to make yaml valid.",
+            "If you cannot detect position with some level of confidence (at least on a country level, in this case use coordinates of a capital) - output null instead of coordinates."
+        ] | join("\n")
+    }'
+
+# Print default server tools
+[group('helper')]
+default-tools:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    exec jq -ncS '{
+        "tools": [
+            {"type": "openrouter:web_search"},
+            {"type": "openrouter:web_fetch"}
+        ]
+    }'
+
+# Print default function tools (user-defined, executed by the caller)
+[group('helper')]
+file-tools:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    exec jq -ncS '{
+        "tools": [
+            {
+                "type": "function",
+                "function": {
+                    "name": "find_files",
+                    "description": "A program to find entries in the filesystem with fd. Returns matching paths. Use it to locate files by name or pattern and to apply filters (type, extension, depth, hidden, ignore).",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "pattern": {
+                                "type": "string",
+                                "description": "File name pattern to search for (regular expression, unless --glob is used)"
+                            },
+                            "options": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                                "description": "Command line options passed directly to fd (e.g. -t f, -e md, -H, -I, -d 3, -g)"
+                            }
+                        },
+                        "required": ["pattern"]
+                    }
+                }
+            }
+        ]
+    }'
