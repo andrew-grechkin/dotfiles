@@ -1,0 +1,1056 @@
+#!/usr/bin/env -S just --one --justfile
+
+# ABSTRACT: access DeepSeek API from cli
+# https://api-docs.deepseek.com/
+# https://platform.deepseek.com/
+
+mod common "~/.local/lib/just/common"
+mod http "~/.local/lib/just/http"
+
+set export
+set no-cd
+
+export clipcopy := require('clipcopy')
+export colored-md := require('colored-md')
+export credp := require('credp')
+export fd := require('fd')
+export ifne := require('ifne')
+export jq := require('jq')
+export sponge := require('sponge')
+export this := justfile()
+
+export DEEPSEEK_HOST := env('DEEPSEEK_HOST', 'api.deepseek.com')
+export DEEPSEEK_API := env('DEEPSEEK_API', '')
+export DEEPSEEK_BETA_API := env('DEEPSEEK_BETA_API', '/beta')
+export DEEPSEEK_MODEL := env('DEEPSEEK_MODEL', 'deepseek-flash')
+export DEEPSEEK_REASONING_EFFORT := env('DEEPSEEK_REASONING_EFFORT', 'high')
+export DS_STATE := env('DS_STATE', config_directory() + '/ds')
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private]
+@default:
+    "$this" --list
+
+# => chat --------------------------------------------------------------------------------------------------------- {{{1
+
+# Return history or partial history of a specific chat
+[group('chat')]
+history name from='0' to='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    history_file="$DS_STATE/$name/history.json"
+    [[ -s "$history_file" ]] || "$this" init-history "$history_file"
+    jq -r '.messages[{{from}}:{{to}}][] | select(.role != "system") | (
+        .role as $r
+        | (if (.content | type) == "array"
+             then (.content | map(select(.type == "text") | .text) | join("\n"))
+             else (.content // "")
+           end)
+        | trim? | split("\n")[] | if $r == "user" then "\n# PROMPT: " else "" end + .
+    )' "$history_file"
+
+# Render full chat to ansi text representation
+[group('chat')]
+render-chat name from='0' to='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" history "$name" "$from" "$to" \
+        | colored-md
+
+# Render chat dialog turn to ansi text representation for fzf with index
+[group('chat'), no-exit-message]
+render-turn name index='-1':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    history_file="$DS_STATE/$name/history.json"
+    [[ -s "$history_file" ]] || "$this" init-history "$history_file"
+    jq_script=$(cat << 'EO_JQ_SCRIPT'
+        (.messages // []) as $m
+        | ($m | length) as $len
+        | (if ($from < 0 or $from >= $len) then $len - 1 else $from end) as $from
+        | (($m | to_entries | map(select(.value.role == "user") | .key)) + [$len]) as $starts
+        | ([range(0; ($starts | length) - 1) | [$starts[.], $starts[. + 1]]]
+            | map(select(.[0] <= $from and $from < .[1]))[0]) as $bounds
+        | $m[$bounds[0] : $bounds[1]]
+        | to_entries[]
+        | {
+            index: ($bounds[0] + .key),
+            role: .value.role,
+            text: (
+                (.value.content
+                    | if type == "array" then
+                        (map(select(.type == "text") | .text) | join("\n"))
+                      else (. // "")
+                      end)
+            ),
+            images: (
+                (.value.content
+                    | if type == "array" then
+                        map(select(.type == "image_url") | .image_url.url
+                            | select(type == "string" and startswith("data:"))
+                            | sub("^data:[^;]+;base64,"; ""))
+                      else []
+                      end)
+            )
+          }
+        | if .role == "user" then .text |= "# " + . else . end
+    EO_JQ_SCRIPT
+    )
+    jq -c --argjson from "$index" "$jq_script" "$history_file" | while read -r line; do
+        {
+            jq -r '.text' <<< "$line" | colored-md
+            echo
+            while read -r picture; do
+                [[ -n "$picture" ]] || continue
+                # NOTE: fzf man lies about FZF_COLUMNS: the number includes padding and margin (marker and scrollbar)
+                # and thus cannot be used without substracting at least 3 columns
+                base64 -d <<< "$picture" \
+                    | chafa -f symbols --view-size "$(( ${FZF_COLUMNS:-$(tput cols)} - 8 ))"
+                echo
+            done < <(jq -r '.images[]?' <<< "$line")
+        } | if [[ -n "${NO_PREFIX:-}" ]]; then
+            cat
+        else
+            prefix="$(jq -r '"\(.index)\t\(.role)\t"' <<< "$line")"
+            perl -nE "print qq{$prefix}, \$_"
+        fi
+    done
+
+# Remove last item in the chat
+[group('chat')]
+remove-last-content name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    history_file="$DS_STATE/$name/history.json"
+    [[ -s "$history_file" ]] && {
+        jq '.messages |= del(.[-1])' "$history_file" \
+            | ifne sponge "$history_file"
+    }
+
+# Request AI to give response to the chat
+[group('chat')]
+update-chat name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    history_file="$DS_STATE/$name/history.json"
+    [[ -s "$history_file" ]] || "$this" init-history "$history_file"
+    if res=$("$this" http-request POST "/chat/completions" --no-ignore-stdin < "$history_file"); then
+        jq -nS '$history[] | .messages += $model' \
+                --slurpfile model <(jq '.choices[0].message' <<< "$res") \
+                --slurpfile history "$history_file" \
+            | ifne sponge "$history_file"
+    fi
+
+# Update chat contents with new data
+[group('chat')]
+add-to-chat name content role='user':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    history_file="$DS_STATE/$name/history.json"
+    [[ -s "$history_file" ]] || "$this" init-history "$history_file"
+    jq -nS --arg role "$role" --arg content "$content" \
+        --slurpfile history "$history_file" '
+        $history[] | .messages += [{"role": $role, "content": $content}]
+    ' | ifne sponge "$history_file"
+
+# Update chat contents with new content items provided via STDIN as a JSON array
+[group('chat')]
+add-parts-to-chat name role='user':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    history_file="$DS_STATE/$name/history.json"
+    [[ -s "$history_file" ]] || "$this" init-history "$history_file"
+    jq -nS --arg role "$role" --slurpfile items <(cat) --slurpfile history "$history_file" '
+        ($items[0] // []) as $new
+        | $history[]
+        | if (.messages[-1]?.role == $role) then
+              .messages[-1].content = (
+                  (if (.messages[-1].content | type) == "array" then .messages[-1].content
+                   else [{"type": "text", "text": (.messages[-1].content // "")}]
+                   end) + $new
+              )
+          else
+              .messages += [{"role": $role, "content": $new}]
+          end
+    ' | ifne sponge "$history_file"
+
+# Add request (plain text provided via STDIN) to the chat
+[group('chat')]
+add-request-to-chat name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -ncS --rawfile request <(cat) '[{"type": "text", "text": $request}]' \
+        | "$this" add-parts-to-chat "$name" user
+
+# Add text to the chat, not request but additional information to request (clipboard for example)
+[group('chat')]
+add-text-to-chat name display_name type='text':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -ncS --rawfile d <(base64 -w0) --arg n "$display_name" --arg t "$type" '
+    [
+        {"type": "text", "text": "this is a \($t): \($n)"},
+        {"type": "text", "text": ($d | @base64d)}
+    ]' | "$this" add-parts-to-chat "$name"
+
+# Add image file to the chat (inline, base64-encoded). DeepSeek vision accepts images only
+[group('chat')]
+add-file-to-chat name path:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" file-content "$path" \
+        | "$this" add-parts-to-chat "$name"
+
+# Add file to the chat via server-side upload (for large images). Returns a file_id reference
+[group('chat')]
+add-server-side-file-to-chat name path:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    file_id=$("$this" upload-file "$path" | jq -r '.id // empty')
+    [[ -n "$file_id" ]] || exec "$this" common::fatal "unable to upload file: $path"
+    jq -ncS --arg id "$file_id" --arg p "$path" '
+    [
+        {"type": "text", "text": ("this is a server-side file (path: " + $p + ")")},
+        {"type": "file", "file_id": $id}
+    ]' | "$this" add-parts-to-chat "$name"
+
+# Request AI to give streamed response to the chat
+[group('chat')]
+stream-chat name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    history_file="$DS_STATE/$name/history.json"
+    [[ -s "$history_file" ]] || "$this" init-history "$history_file"
+    jq -S '. + {stream: true}' "$history_file" \
+        | "$this" http-stream POST "/chat/completions"
+
+# Update chat contents with new streamed SSE data (accumulates both content and reasoning_content)
+[group('chat')]
+add-sse-to-chat name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    history_file="$DS_STATE/$name/history.json"
+    [[ -s "$history_file" ]] || "$this" init-history "$history_file"
+    mapfile -t lines
+    join-delta() {
+        printf '%s\n' "${lines[@]}" | jq -Rr --arg field "$1" '
+            sub("^data: "; "")
+            | select(length > 0 and . != "[DONE]")
+            | (fromjson? | .choices[0].delta[$field] // empty)
+        '
+    }
+    content="$(join-delta content)"
+    reasoning="$(join-delta reasoning_content)"
+    jq -nS --arg c "$content" --arg r "$reasoning" --slurpfile history "$history_file" '
+        $history[]
+        | if (.messages[-1]?.role == "assistant") then
+              .messages[-1].content = ((.messages[-1].content // "") + $c)
+              | .messages[-1].reasoning_content = (
+                    ((.messages[-1].reasoning_content // "") + $r)
+                    | if . == "" then null else . end
+                )
+          else
+              .messages += [{
+                  "role": "assistant",
+                  "content": $c,
+                  "reasoning_content": (if $r == "" then null else $r end)
+              }]
+          end
+    ' | ifne sponge "$history_file"
+
+# Initialize chat history file with model, thinking config and system instructions unless it already exists
+[group('chat')]
+init-history history_file:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    [[ -s "$history_file" ]] || {
+        mkdir -p "$(dirname "$history_file")"
+        jq -nS '{model: $model, messages: [$instructions]} + $reasoning[0]' \
+            --arg model "$DEEPSEEK_MODEL" \
+            --argjson instructions "$("$this" default-instructions)" \
+            --slurpfile reasoning <("$this" reasoning) \
+            > "$history_file"
+    }
+
+# => files -------------------------------------------------------------------------------------------------------- {{{1
+
+# List server-side files (images uploaded via the Files API)
+[group('files')]
+list-files *query:
+    #!/usr/bin/env -S bash -Eeu
+    "$this" http-request GET "/files" "$@"
+
+# Retrieve metadata of a server-side file
+[group('files')]
+get-file id:
+    #!/usr/bin/env -S bash -Eeu
+    "$this" http-request GET "/files/$id"
+
+# Upload a server-side file (images only, purpose is fixed to user_data)
+[group('files')]
+upload-file path:
+    #!/usr/bin/env -S bash -Eeu
+    "$this" http-request POST "/files" --form "purpose=user_data" --form "file@$path"
+
+# Delete a server-side file
+[group('files')]
+delete-file id:
+    #!/usr/bin/env -S bash -Eeu
+    "$this" http-request DELETE "/files/$id"
+
+# Describe provided image according to prompt
+[group('files'), positional-arguments]
+describe file *prompt:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift
+    prompt="${*:-Describe this file}"
+    jq -ncS --slurpfile content <("$this" file-content "$file") --arg prompt "$prompt" '
+        {"messages": [{"role": "user", "content": ($content[0] + [{"type": "text", "text": $prompt}])}]}
+    ' \
+        | "$this" prepared-request \
+        | jq -r '.choices[0].message.content' \
+        | colored-md
+
+# => models ------------------------------------------------------------------------------------------------------- {{{1
+
+# List available models
+[group('models')]
+list-models:
+    #!/usr/bin/env -S bash -Eeu
+    memoize -- "$this" http-request GET '/models'
+
+# Print effective default model (chat model when DS_CHAT is set, otherwise the configured default)
+[group('models')]
+default-model:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ -n "${DS_CHAT:-}" && -r "$DS_STATE/$DS_CHAT/history.json" ]]; then
+        model=$(jq -r '.model // empty' "$DS_STATE/$DS_CHAT/history.json")
+        [[ -z "$model" ]] || { echo "$model"; exit 0; }
+    fi
+    echo "$DEEPSEEK_MODEL"
+
+# => text --------------------------------------------------------------------------------------------------------- {{{1
+
+# Make a prompt
+[group('text'), positional-arguments]
+prompt *prompt:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    {
+        [[ -z "$*" ]] || echo "$*"
+        [[ -t 0    ]] || cat
+    } | "$this" raw-request \
+        | jq -r '.choices[0].message.content' \
+        | colored-md
+
+# Make a streamed prompt
+[group('text'), positional-arguments]
+streamed-prompt *prompt:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    {
+        [[ -z "$*" ]] || echo "$*"
+        [[ -t 0    ]] || cat
+    } | "$this" streamed-request \
+        | grep --line-buffered -Po '^data: \K.+' \
+        | while read -r line; do
+            if [[ "$line" == "[DONE]" ]]; then
+                break
+            fi
+            jq -rj '.choices[0].delta.content // empty' <<< "$line"
+        done
+
+# Rephrase text provided via `STDIN`
+[group('text'), positional-arguments]
+rephrase *prompt:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -ncS '{model: $model, messages: ([$instructions] + [{"role": "user", "content": $req + $prompt + ":\n" + $stdin}])} + $reasoning[0]' \
+            --arg model "$DEEPSEEK_MODEL" \
+            --argjson instructions "$("$this" rephrase-instructions)" \
+            --arg req "Follow your instructions and rephrase the provided text " \
+            --rawfile prompt <([[ -z "$*" ]] || echo -n "$*") \
+            --rawfile stdin  <([[ -t 0    ]] || cat) \
+            --slurpfile reasoning <("$this" reasoning disabled) \
+        | "$this" http-request POST "/chat/completions" --no-ignore-stdin \
+        | jq -r '.choices[0].message.content' \
+        | "$this" common::trim-stream \
+        | clipcopy
+
+# Rephrase prompt in a polite way
+[group('text'), positional-arguments]
+polite *prompt:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -ncS '{model: $model, messages: ([$instructions] + [{"role": "user", "content": $req + $prompt + $stdin}])} + $reasoning[0]' \
+            --arg model "$DEEPSEEK_MODEL" \
+            --argjson instructions "$("$this" rephrase-instructions)" \
+            --arg req "Follow your instructions and rephrase the provided text in a formal and polite language:\n" \
+            --rawfile prompt <([[ -z "$*" ]] || echo -n "$*") \
+            --rawfile stdin  <([[ -t 0    ]] || cat) \
+            --slurpfile reasoning <("$this" reasoning disabled) \
+        | "$this" http-request POST "/chat/completions" --no-ignore-stdin \
+        | jq -r '.choices[0].message.content' \
+        | "$this" common::trim-stream \
+        | clipcopy
+
+# Finalize a provided prompt
+[group('text'), positional-arguments]
+finalize *prompt:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -ncS '{model: $model, messages: ([$instructions] + [{"role": "user", "content": $req + $prompt + $stdin}])} + $reasoning[0]' \
+            --arg model "$DEEPSEEK_MODEL" \
+            --argjson instructions "$("$this" finalize-instructions)" \
+            --arg req "Follow your instructions and finalize the provided text:" \
+            --rawfile prompt <([[ -z "$*" ]] || echo -n "$*") \
+            --rawfile stdin  <([[ -t 0    ]] || cat) \
+            --slurpfile reasoning <("$this" reasoning disabled) \
+        | "$this" http-request POST "/chat/completions" --no-ignore-stdin \
+        | jq -r '.choices[0].message.content'
+
+# Suggest a commit message based on a git diff provided via `STDIN`
+[group('text')]
+suggest-commit-msg:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -ncS '{model: $model, messages: ([$instructions] + [{"role": "user", "content": "Here is the diff:\n" + $prompt}])} + $reasoning[0]' \
+            --arg model "$DEEPSEEK_MODEL" \
+            --argjson instructions "$("$this" commit-msg-instructions)" \
+            --rawfile prompt <(cat) \
+            --slurpfile reasoning <("$this" reasoning disabled) \
+        | "$this" http-request POST "/chat/completions" --no-ignore-stdin \
+        | jq -r '.choices[0].message.content'
+
+# => beta --------------------------------------------------------------------------------------------------------- {{{1
+
+# FIM (Fill In the Middle) completion. Prefix is read from STDIN, optional suffix via argument (beta endpoint)
+[group('beta'), positional-arguments]
+fim suffix='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    prefix="$(cat)"
+    jq -ncS '{model: $model, prompt: $prefix} + (if $suffix == "" then {} else {suffix: $suffix} end)' \
+            --arg model "$DEEPSEEK_MODEL" \
+            --arg prefix "$prefix" \
+            --arg suffix "$suffix" \
+        | "$this" http-request-beta-cached POST "/completions" \
+        | jq -r '.choices[0].text'
+
+# Chat prefix completion. First argument is the assistant prefix to force, the prompt follows (beta endpoint)
+[group('beta'), positional-arguments]
+prefix assistant_prefix *prompt:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -ncS '{model: $model, messages: [
+            {"role": "user", "content": $prompt},
+            {"role": "assistant", "content": $prefix, "prefix": true}
+        ]} + $stop[0]' \
+            --arg model "$DEEPSEEK_MODEL" \
+            --arg prompt "$*" \
+            --arg prefix "$assistant_prefix" \
+            --slurpfile stop <("$this" stop-config) \
+        | "$this" http-request-beta-cached POST "/chat/completions" \
+        | jq -r '.choices[0].message.content'
+
+# => edit --------------------------------------------------------------------------------------------------------- {{{1
+
+# Agentic file editing via function tools (list_files, read_file, write_file, replace_in_file)
+[group('edit'), positional-arguments]
+edit *prompt:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    state="$(mktemp)"
+    trap 'rm -f "$state"' EXIT
+    jq -ncS --arg model "$DEEPSEEK_MODEL" --arg prompt "$*" \
+            --argjson system "$("$this" default-instructions)" \
+            --argjson editor "$("$this" edit-instructions)" \
+            --slurpfile tools <("$this" edit-tools) '
+        {model: $model, messages: [$system, $editor, {role: "user", content: $prompt}],
+         tools: $tools[0].tools, thinking: {type: "disabled"}}
+    ' > "$state"
+
+    max_steps="${DEEPSEEK_EDIT_STEPS:-25}"
+    for (( step = 1; step <= max_steps; step++ )); do
+        res=$("$this" http-request POST "/chat/completions" --no-ignore-stdin < "$state")
+        message="$(jq -c '.choices[0].message' <<< "$res")"
+        tool_calls="$(jq -c '.tool_calls // empty' <<< "$message")"
+
+        if [[ -z "$tool_calls" ]]; then
+            jq -r '.content // empty' <<< "$message" | colored-md
+            exit 0
+        fi
+
+        jq --argjson message "$message" '.messages += [$message]' "$state" | sponge "$state"
+
+        while IFS= read -r call; do
+            id="$(jq -r '.id' <<< "$call")"
+            name="$(jq -r '.function.name' <<< "$call")"
+            arguments="$(jq -r '.function.arguments // "{}"' <<< "$call")"
+            result="$(printf '%s' "$arguments" | "$this" run-tool "$name" 2>&1)" \
+                || result="ERROR: ${result:-tool call failed}"
+            jq --arg id "$id" --arg result "$result" \
+                '.messages += [{role: "tool", tool_call_id: $id, content: $result}]' "$state" \
+                | sponge "$state"
+        done < <(jq -c '.[]' <<< "$tool_calls")
+    done
+
+    "$this" common::fatal "edit agent exceeded $max_steps steps without a final answer"
+
+# Execute a single function tool call. Arguments JSON is read from STDIN, result text is printed to STDOUT
+[group('edit'), private, positional-arguments]
+run-tool name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    arguments="$(cat)"
+    if ! jq -e . <<< "$arguments" >/dev/null 2>&1; then
+        echo "invalid JSON arguments for $name: $arguments"
+        exit 1
+    fi
+
+    guard-path() {
+        local path="$1" root abs
+        root="$(realpath -m -- "$PWD")"
+        abs="$(realpath -m -- "$path")"
+        if [[ -z "${DEEPSEEK_EDIT_UNSAFE:-}" && "$abs" != "$root"/* ]]; then
+            echo "refusing to access path outside the working directory: $path (set DEEPSEEK_EDIT_UNSAFE=1 to override)" >&2
+            return 1
+        fi
+        printf '%s' "$abs"
+    }
+
+    case "$name" in
+        list_files)
+            pattern="$(jq -r '.pattern' <<< "$arguments")"
+            mapfile -t options < <(jq -r '.options[]?' <<< "$arguments")
+            fd "${options[@]}" -- "$pattern"
+            ;;
+        read_file)
+            path="$(jq -r '.path' <<< "$arguments")"
+            file="$(guard-path "$path")" || exit 1
+            [[ -f "$file" ]] || { echo "not a file: $path"; exit 1; }
+            start="$(jq -r '.start_line // 1' <<< "$arguments")"
+            end="$(jq -r '.end_line // 0' <<< "$arguments")"
+            PERL_START="$start" PERL_END="$end" perl -ne '
+                my $start = $ENV{PERL_START};
+                my $end   = $ENV{PERL_END};
+                print if $. >= $start && ($end <= 0 || $. <= $end);
+            ' "$file"
+            ;;
+        write_file)
+            path="$(jq -r '.path' <<< "$arguments")"
+            file="$(guard-path "$path")" || exit 1
+            mkdir -p -- "$(dirname -- "$file")"
+            tmp="$(mktemp -- "${file}.XXXXXX")"
+            jq -j '.content // ""' <<< "$arguments" > "$tmp"
+            mv -- "$tmp" "$file"
+            echo "wrote $(wc -c < "$file") bytes to $path"
+            ;;
+        replace_in_file)
+            path="$(jq -r '.path' <<< "$arguments")"
+            file="$(guard-path "$path")" || exit 1
+            [[ -f "$file" ]] || { echo "not a file: $path"; exit 1; }
+            (
+                old_file="$(mktemp)"
+                new_file="$(mktemp)"
+                trap 'rm -f "$old_file" "$new_file"' EXIT
+                jq -j '.old_string // ""' <<< "$arguments" > "$old_file"
+                jq -j '.new_string // ""' <<< "$arguments" > "$new_file"
+                replace_all="$(jq -r 'if (.replace_all // false) then "1" else "" end' <<< "$arguments")"
+                perl -e '
+                    use strict;
+                    use warnings qw(FATAL utf8);
+                    my ($path, $old_file, $new_file, $all) = @ARGV;
+                    local $/;
+                    open my $fh, "<", $path or die "cannot read $path: $!\n";
+                    my $content = <$fh>;
+                    close $fh;
+                    open my $of, "<", $old_file or die "cannot read old_string\n";
+                    my $old = <$of>;
+                    close $of;
+                    open my $nf, "<", $new_file or die "cannot read new_string\n";
+                    my $new = <$nf>;
+                    close $nf;
+                    die "old_string must not be empty\n" if $old eq q{};
+                    my $count = () = $content =~ /\Q$old\E/g;
+                    die "old_string not found in $path\n" if $count == 0;
+                    die "old_string is ambiguous ($count matches) in $path, provide more context or set replace_all\n"
+                        if $count > 1 && !$all;
+                    if ($all) {
+                        $content =~ s/\Q$old\E/$new/g;
+                    } else {
+                        my $i = index $content, $old;
+                        substr($content, $i, length $old) = $new;
+                    }
+                    my $tmp = "$path.tmp.$$";
+                    open my $out, ">", $tmp or die "cannot write $tmp: $!\n";
+                    print {$out} $content;
+                    close $out or die "cannot close $tmp: $!\n";
+                    rename $tmp, $path or die "cannot replace $path: $!\n";
+                    print "replaced $count occurrence(s) in $path\n";
+                ' "$file" "$old_file" "$new_file" "$replace_all"
+            )
+            ;;
+        *)
+            echo "unknown tool: $name"
+            exit 1
+            ;;
+    esac
+
+# => responses ---------------------------------------------------------------------------------------------------- {{{1
+
+# Make a prompt via the Responses API
+[group('responses'), positional-arguments]
+responses-prompt *prompt:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    {
+        [[ -z "$*" ]] || echo "$*"
+        [[ -t 0    ]] || cat
+    } | "$this" responses-request \
+        | jq -r '.output[] | select(.type == "message") | .content[] | select(.type == "output_text") | .text' \
+        | colored-md
+
+# Make a streamed prompt via the Responses API
+[group('responses'), positional-arguments]
+responses-stream *prompt:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    {
+        [[ -z "$*" ]] || echo "$*"
+        [[ -t 0    ]] || cat
+    } | "$this" responses-streamed-request \
+        | grep --line-buffered -Po '^data: \K.+' \
+        | while read -r line; do
+            jq -rj 'if .type == "response.output_text.delta" then .delta else empty end' <<< "$line"
+        done
+
+# Ask the model to produce a unified diff via the apply_patch custom tool and print it
+[group('responses'), positional-arguments]
+patch *prompt:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    input="$*"
+    [[ -t 0 ]] || input+=$'\n'"$(cat)"
+    jq -ncS '{model: $model, instructions: $instructions, input: $input, tools: [{type: "custom", name: "apply_patch"}]}' \
+            --arg model "$DEEPSEEK_MODEL" \
+            --rawfile instructions <("$this" patch-instructions) \
+            --arg input "$input" \
+        | "$this" http-request-cached POST "/responses" \
+        | jq -r '.output[] | select(.type == "custom_tool_call") | .input'
+
+# Apply a unified diff provided via STDIN. Uses git apply unless DEEPSEEK_APPLY_PATCH_CMD points to another tool
+[group('responses')]
+apply-patch:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ -n "${DEEPSEEK_APPLY_PATCH_CMD:-}" ]]; then
+        exec "$DEEPSEEK_APPLY_PATCH_CMD"
+    fi
+    command -v git >/dev/null 2>&1 || "$this" common::fatal "git is required to apply unified diffs.
+        Install git or point DEEPSEEK_APPLY_PATCH_CMD to a compatible patch command"
+    read -r -a args <<< "${DEEPSEEK_GIT_APPLY_ARGS:---whitespace=nowarn}"
+    exec git apply "${args[@]}" -
+
+# Edit a single file in one shot: the model returns a unified diff and git apply applies it
+[group('responses'), positional-arguments]
+edit-patch path *prompt:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    [[ -f "$path" ]] || "$this" common::fatal "not a file: $path"
+    input=$(jq -rn --rawfile c "$path" --arg p "$path" --arg req "$*" '
+        "Edit the file at \($p).\n\nRequest: \($req)\n\nCurrent content:\n```\n\($c)\n```"
+    ')
+    patch=$(
+        jq -ncS '{model: $model, instructions: $instructions, input: $input, tools: [{type: "custom", name: "apply_patch"}]}' \
+                --arg model "$DEEPSEEK_MODEL" \
+                --rawfile instructions <("$this" patch-instructions) \
+                --arg input "$input" \
+            | "$this" http-request-cached POST "/responses" \
+            | jq -r '.output[] | select(.type == "custom_tool_call") | .input'
+    )
+    [[ -n "$patch" ]] || "$this" common::fatal "model did not return a patch for: $path"
+    printf '%s\n' "$patch" | "$this" apply-patch
+
+# => balance ------------------------------------------------------------------------------------------------------ {{{1
+
+# Get current account balance
+[group('balance')]
+balance:
+    #!/usr/bin/env -S bash -Eeu
+    "$this" http-request GET "/user/balance"
+
+# => http --------------------------------------------------------------------------------------------------------- {{{1
+
+[group('http'), private]
+api-key:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ -n "${DEEPSEEK_API_KEY:-}" ]]; then
+        echo "$DEEPSEEK_API_KEY"
+    else
+        "$credp" "token://$DEEPSEEK_HOST" || {
+            "$this" common::fatal "unable to init deepseek api key.
+                Export key directly via DEEPSEEK_API_KEY variable"
+        }
+    fi
+
+[group('http'), private, positional-arguments]
+http-request method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 2
+    [[ "$uri" == /* ]] && uri="$DEEPSEEK_HOST$DEEPSEEK_API${uri#${DEEPSEEK_API}}"
+    "$this" http::request "$method" "$uri" --auth-type=bearer --auth="$("$this" api-key)" "$@"
+
+[group('http'), private, positional-arguments]
+http-request-cached method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 2
+    [[ "$uri" == /* ]] && uri="$DEEPSEEK_HOST$DEEPSEEK_API${uri#${DEEPSEEK_API}}"
+    cmd=(
+        "$this" http::request "$method" "$uri"
+        --no-ignore-stdin
+        --auth-type=bearer
+        --auth="$("$this" api-key)"
+        "$@"
+    )
+    payload="$(cat)"
+    memoize -l "$(md5sum <<< "$payload")" -- "${cmd[@]}" <<< "$payload"
+
+[group('http'), private, positional-arguments]
+http-stream method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 2
+    [[ "$uri" == /* ]] && uri="$DEEPSEEK_HOST$DEEPSEEK_API${uri#${DEEPSEEK_API}}"
+    cmd=(
+        "$this" http::request-streaming "$method" "$uri"
+        --no-ignore-stdin
+        --auth-type=bearer
+        --auth="$("$this" api-key)"
+        "$@"
+    )
+    payload="$(cat)"
+    memoize -l "$(md5sum <<< "$payload")" -- "${cmd[@]}" <<< "$payload"
+
+[group('http'), private, positional-arguments]
+http-request-beta method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 2
+    [[ "$uri" == /* ]] && uri="$DEEPSEEK_HOST$DEEPSEEK_BETA_API${uri#${DEEPSEEK_BETA_API}}"
+    "$this" http::request "$method" "$uri" --auth-type=bearer --auth="$("$this" api-key)" "$@"
+
+[group('http'), private, positional-arguments]
+http-request-beta-cached method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 2
+    [[ "$uri" == /* ]] && uri="$DEEPSEEK_HOST$DEEPSEEK_BETA_API${uri#${DEEPSEEK_BETA_API}}"
+    cmd=(
+        "$this" http::request "$method" "$uri"
+        --no-ignore-stdin
+        --auth-type=bearer
+        --auth="$("$this" api-key)"
+        "$@"
+    )
+    payload="$(cat)"
+    memoize -l "$(md5sum <<< "$payload")" -- "${cmd[@]}" <<< "$payload"
+
+# Send request with data already prepared as a valid chat-completions body via STDIN
+[group('text'), private]
+prepared-request:
+    #!/usr/bin/env -S bash -Eeu
+    jq -ncS --slurpfile req <(cat) --argjson instructions "$("$this" default-instructions)" --arg model "$DEEPSEEK_MODEL" '
+        ($req[0] + {model: ($req[0].model // $model)}) as $r
+        | $r + {messages: ([$instructions] + ($r.messages // []))}
+    ' | "$this" http-request-cached POST "/chat/completions"
+
+# Send request with raw text data and streaming response
+[group('http'), private]
+streamed-request:
+    #!/usr/bin/env -S bash -Eeu
+    jq -ncS '{model: $model, messages: ([$instructions] + [{"role": "user", "content": $prompt}]), stream: true} + $reasoning[0]' \
+            --arg model "$DEEPSEEK_MODEL" \
+            --argjson instructions "$("$this" default-instructions)" \
+            --rawfile prompt <(cat) \
+            --slurpfile reasoning <("$this" reasoning) \
+        | "$this" http-stream POST "/chat/completions"
+
+# Send request with raw text data
+[group('http'), private]
+raw-request:
+    #!/usr/bin/env -S bash -Eeu
+    jq -ncS '{model: $model, messages: ([$instructions] + [{"role": "user", "content": $prompt}])} + $reasoning[0]' \
+            --arg model "$DEEPSEEK_MODEL" \
+            --argjson instructions "$("$this" default-instructions)" \
+            --rawfile prompt <(cat) \
+            --slurpfile reasoning <("$this" reasoning) \
+        | "$this" http-request-cached POST "/chat/completions"
+
+# Build and send a Responses API request from raw text provided via STDIN
+[group('responses'), private]
+responses-request:
+    #!/usr/bin/env -S bash -Eeu
+    jq -ncS --rawfile input <(cat) --argjson sys "$("$this" default-instructions)" --arg model "$DEEPSEEK_MODEL" '
+        {model: $model, instructions: $sys.content, input: $input}
+    ' | "$this" http-request-cached POST "/responses"
+
+# Build and send a streamed Responses API request from raw text provided via STDIN
+[group('responses'), private]
+responses-streamed-request:
+    #!/usr/bin/env -S bash -Eeu
+    jq -ncS --rawfile input <(cat) --argjson sys "$("$this" default-instructions)" --arg model "$DEEPSEEK_MODEL" '
+        {model: $model, instructions: $sys.content, input: $input, stream: true}
+    ' | "$this" http-stream POST "/responses"
+
+# => helper ------------------------------------------------------------------------------------------------------- {{{1
+
+# Print thinking mode config fragment. type is enabled/disabled, effort defaults to DEEPSEEK_REASONING_EFFORT
+[group('helper'), private]
+reasoning type='enabled' effort='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    [[ -n "$effort" ]] || effort="$DEEPSEEK_REASONING_EFFORT"
+    jq -ncS '{thinking: {type: $t}} + (if $t == "enabled" then {reasoning_effort: $e} else {} end)' \
+        --arg t "$type" --arg e "$effort"
+
+# Print stop config fragment from DEEPSEEK_STOP (newline separated sequences)
+[group('helper'), private]
+stop-config:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ -n "${DEEPSEEK_STOP:-}" ]]; then
+        jq -ncS '{stop: ($s | split("\n"))}' --arg s "$DEEPSEEK_STOP"
+    else
+        echo '{}'
+    fi
+
+# Build content items (text descriptor plus image part) for the provided path. DeepSeek vision accepts images only
+[group('helper'), private]
+file-content path:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    mime="$(file -b --mime-type "$path")"
+    size="$(wc -c < "$path")"
+    if [[ "$mime" == image/* ]]; then
+        jq -ncS --rawfile d <(base64 -w0 "$path") --arg m "$mime" --arg p "$path" --arg s "$size" '
+            [
+                {"type": "text", "text": ("this is a file (path: " + $p + ", size in bytes: " + $s + ")")},
+                {"type": "image_url", "image_url": {"url": ("data:" + $m + ";base64," + $d)}}
+            ]'
+    else
+        "$this" common::fatal "deepseek accepts image files only for vision, got [$mime]: $path"
+    fi
+
+# Print default instructions
+[group('helper')]
+default-instructions:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    exec jq -ncS '{
+        "role": "system",
+        "content": [
+            "Always format your answer as a valid markdown format. Never use raw TAB characters",
+            "If you need to put headers in the answer never use first level header (#) only use headers of higher number (##, ### and more)",
+            "Never use `en` or `em` dashes (\u2013, \u2014), only use simple minus symbols (-) when dash is necessary",
+            "Ensure unordered list markers (*, -, +) are followed by exactly one space",
+            "Ensure all code blocks which started with triple backticks ``` always have close backticks",
+            "Overall headers are good. If you need to logically separate one block of text from another use markdown headers",
+            "Try to keep sentenses in one line without line separator (new line), does not matter how long they are",
+            "Every sentense must always end with an explicit dot (.) or explicit new line",
+            "Be accurate in your answers and do not hallucinate. Use metric system, reference to the sources if possible",
+            "If answer is short it should be supported by a short information how conclusion was made",
+            "For 2 dimensional data (answer assumes rows and columns and information in cells) prefer table presentation",
+            "When you generate code snippets and adding comments in them - only `WHY it is done this way` comments are usefull, if intention deserve explanation. Never add `WHAT is done` comments, they are useless",
+            "When analyzing code, if you see an obvious bug or security issue - give a short notice even if you were not asked about that, unless explicitly told not to do that",
+            "Suggest best practices or improvements in code analysis: Beyond identifying bugs or security issues, when analyzing code, if there are clear opportunities to suggest best practices, improved efficiency, readability or maintainability, briefly mention them. This should be done with a focus on the WHY behind the suggestion",
+            "Explicitly state assumptions or inferences: When the response relies on assumptions or makes inferences due to incomplete information, clearly articulate what those assumptions or inferences are and why they were made",
+            "Handle ambiguity or incomplete requests gracefully: If a users request is unclear, ambiguous or lacks sufficient detail to provide a definitive answer, you should clearly state the ambiguity or missing information and, if appropriate, ask for clarification or suggest reasonable interpretations",
+            "Prioritize actionable and most relevant information: In cases where a response could be extensive, prioritize an highlight the most actionable, critical or relevant information first, ensuring the the answer has the most important details upfront",
+            "You must trust my knowledge. If I am in doubt I will be asking but if I am sure and telling that something exists you do not question that - I know it because I have checked. You just assume that your data is outdated",
+            "You do not care about outdated software. If something uses feature of latest bash or Perl that is absolutely fine and there is no need to focus on the fact that it will not work if run with 10 years old bash",
+            "Mind your verbosity. Prefer to answer question in short and direct form without unrelated topics covered. Go into details when you asked for them. You can mention that there is something worth to look at but not explain it at once"
+        ] | join("\n")
+    }'
+
+# Print instructions to make rephrase input
+[group('helper')]
+rephrase-instructions:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    exec jq -ncS '{
+        "role": "system",
+        "content": [
+            "Just return the answer without any additional code examples.",
+            "Only wording without any additional quotes and your greeting message.",
+            "Do not add anything from you.",
+            "Keep all provided urls and other links.",
+            "Keep only one trailing new line at the end."
+        ] | join("\n")
+    }'
+
+# Print instructions to finalize a prompt
+[group('helper')]
+finalize-instructions:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    exec jq -ncS '{
+        "role": "system",
+        "content": [
+            "You are a text completion engine. Your task is to analyze the user-provided text and continue it logically. You must not alter the original text in any way. Your response must start with the exact original text and be followed immediately by your logical continuation.",
+            "Do not add any introductory phrases, concluding remarks, or explanations. Your output should be only the combined, completed text.",
+            "There are things you are allowed to change in the prompt: capitalization of the characters where necessary, always fix typos and wrong words.",
+            "If there is nothing to add or fix and prompt is already complete and correct just return prompt as is unchanged.",
+            "EXAMPLE: If the user provides `The first three letters of the alphabet are a, b,` your response MUST be `The first three letters of the alphabet are a, b, c.`"
+        ] | join("\n")
+    }'
+
+# Print instructions to generate a commit message
+[group('helper')]
+commit-msg-instructions:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    exec jq -ncS '{
+        "role": "system",
+        "content": [
+            "You are an expert programmer who generates commit messages from git diffs.",
+            "Generate a proper commit message for the git diff provided by the user.",
+            "Format the output as:",
+            "1. Main commit message line (semantic prefix like feat:, fix:, refactor:, etc.)",
+            "2. Empty line",
+            "3. Marker \"---- BEGIN DESCRIPTION GENERATED BY AI ----\"",
+            "4. Details section with bullet points explaining the changes",
+            "",
+            "5. Marker \"---- END DESCRIPTION GENERATED BY AI ----\"",
+            "",
+            "Example format:",
+            "feat: add Amp AI integration and improve development tools",
+            "",
+            "---- BEGIN DESCRIPTION GENERATED BY AI ----",
+            "**Details:**",
+            "- Added Amp configuration with tool restrictions and MCP server setup",
+            "- Created new ai script for AI interactions",
+            "- Removed deprecated ai-request script, improved ai-polite",
+            "- Enhanced git hooks: added post-checkout for submodules, optimized pre-commit",
+            "- Added mkpython script for Python project scaffolding",
+            "- Updated development tool configurations and submodules",
+            "---- END DESCRIPTION GENERATED BY AI ----",
+            "",
+            "Requirements:",
+            "- Main message: max 72 characters, use semantic commit prefixes",
+            "- Details: bullet points with specific changes, no generic descriptions",
+            "- Be descriptive and actionable, avoid vague terms like \"misc updates\"",
+            "- Focus on what functionality was added/changed/removed",
+            "- Do not add any additional messages or something which would be outside of described format",
+            "- Do not generate TODOs and do not print them"
+        ] | join("\n")
+    }'
+
+# Print instructions for producing unified diff patches
+[group('helper')]
+patch-instructions:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    printf '%s\n' \
+        'You modify files exclusively by calling the apply_patch tool with a standard unified diff, exactly in the format produced by `git diff`.' \
+        'Never answer with prose, explanations or code fences.' \
+        'Every requested change must be expressed as a single patch passed to apply_patch.' \
+        'The patch must contain proper file and hunk headers, for example:' \
+        'diff --git a/path/to/file b/path/to/file' \
+        '--- a/path/to/file' \
+        '+++ b/path/to/file' \
+        '@@ -12,7 +12,9 @@' \
+        ' context line' \
+        '-removed line' \
+        '+added line' \
+        'Use a/ and b/ prefixes and correct line numbers and counts in every hunk header. For a new file use /dev/null as the source, for a deleted file use /dev/null as the target.' \
+        'Keep the diff minimal and strictly limited to the requested change.'
+
+# Print instructions for the agentic file editing loop
+[group('helper')]
+edit-instructions:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    exec jq -ncS '{
+        "role": "system",
+        "content": [
+            "You are a precise file editing agent working inside the current working directory.",
+            "Always inspect the relevant files with list_files and read_file before making any change.",
+            "Use replace_in_file for targeted edits and only use write_file to create a new file or fully rewrite one.",
+            "Make the smallest change that satisfies the request and do not touch unrelated code.",
+            "Never invent file contents: base every edit on what you actually read.",
+            "When the task is done reply with a short plain text summary of what changed and why. Do not paste whole files."
+        ] | join("\n")
+    }'
+
+# Print function tools for agentic file editing (user-defined, executed by run-tool)
+[group('helper')]
+edit-tools:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    exec jq -ncS '{
+        "tools": [
+            {
+                "type": "function",
+                "function": {
+                    "name": "list_files",
+                    "description": "List files under the current working directory using fd. Use it to discover files by name or glob pattern.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "pattern": {
+                                "type": "string",
+                                "description": "File name pattern (regular expression unless options enable --glob)"
+                            },
+                            "options": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                                "description": "Extra fd options passed directly, e.g. -t f, -e md, -H, -I, -d 3, -g, -a"
+                            }
+                        },
+                        "required": ["pattern"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "read_file",
+                    "description": "Read the contents of a text file, optionally restricted to a line range. Always read a file before editing it.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "path": {
+                                "type": "string",
+                                "description": "Path relative to the working directory"
+                            },
+                            "start_line": {
+                                "type": "integer",
+                                "description": "First line to return (1-based, optional)"
+                            },
+                            "end_line": {
+                                "type": "integer",
+                                "description": "Last line to return (inclusive, optional)"
+                            }
+                        },
+                        "required": ["path"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "write_file",
+                    "description": "Create or overwrite a file with the given content. Prefer replace_in_file for small targeted edits.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "path": {
+                                "type": "string",
+                                "description": "Path relative to the working directory"
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "Full file content, including the trailing newline if the file should end with one"
+                            }
+                        },
+                        "required": ["path", "content"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "replace_in_file",
+                    "description": "Replace an exact literal string in a file. Fails if old_string is not found or is ambiguous. Use replace_all to replace every occurrence.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "path": {
+                                "type": "string",
+                                "description": "Path relative to the working directory"
+                            },
+                            "old_string": {
+                                "type": "string",
+                                "description": "Exact text to replace, must be non-empty and unique unless replace_all is true"
+                            },
+                            "new_string": {
+                                "type": "string",
+                                "description": "Replacement text"
+                            },
+                            "replace_all": {
+                                "type": "boolean",
+                                "description": "Replace all occurrences instead of a single unique one"
+                            }
+                        },
+                        "required": ["path", "old_string", "new_string"]
+                    }
+                }
+            }
+        ]
+    }'
+
+# Print the DeepSeek custom apply_patch tool declaration (Responses API only)
+[group('helper')]
+apply-patch-tool:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    exec jq -ncS '{"tools": [{"type": "custom", "name": "apply_patch"}]}'
