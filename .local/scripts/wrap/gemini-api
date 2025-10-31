@@ -1,0 +1,495 @@
+#!/usr/bin/env -S just --one --unstable --justfile
+
+# ABSTRACT: access Google Sheets API from cli (basic wrapper, request endpoints directly)
+
+# https://just.systems/man/en/
+# https://ai.google.dev/gemini-api/docs
+
+import 'generic-http'
+
+colored := require('colored-md')
+git := require('git')
+jq := require('jq')
+
+export FALLBACK_MODEL := 'models/gemini-2.5-flash'
+export GG := config_directory() + '/gg'
+export GEMINI_MODEL := env('GEMINI_MODEL', '') || shell("""
+    dir="$1"
+    if [ -n "${GG_CHAT:-}" ]; then
+        dir="$dir/$GG_CHAT"
+    fi
+    if [ -r "${model_file:=$dir/model.json}" ]; then
+        exec jq -r '.name' "$model_file"
+    fi
+    echo "$2"
+""", GG, FALLBACK_MODEL)
+export GOOGLE_ACCOUNT := env('GOOGLE_ACCOUNT', 'andrew.grechkin.nl')
+export GOOGLE_HOST := env('GOOGLE_HOST', 'generativelanguage.googleapis.com')
+export GOOGLE_API := env('GOOGLE_API', '/v1beta')
+export this := justfile()
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private]
+@default:
+    '{{this}}' --list
+
+# => chat --------------------------------------------------------------------------------------------------------- {{{1
+
+# Return history or partial history of a specific chat
+[group('chat'),no-cd]
+history name from='0' to='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    [[ -s "${history_file:="$GG/{{name}}/history.json"}" ]] || "$this" init-history "$history_file"
+    jq -r '.contents[{{from}}:{{to}}][] | (
+        .role as $r | .parts[]?.text | trim? | split("\n")[] | if $r == "user" then "\n# PROMPT: " else "" end + .
+    )' "$history_file"
+
+# Render full chat to ansi text representation
+[group('chat'),no-cd]
+render-chat name from='0' to='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    # TODO: glamour adds new lines at the beginning and at the end, trimming them so far, better to fix the root cause
+    '{{this}}' history '{{name}}' '{{from}}' '{{to}}' | colored-md | perl -g -pE '$_ = trim($_)'
+
+# Remove last item in the chat
+[group('chat'),no-cd]
+remove-last-content name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    [[ -s "${history_file:="$GG/{{name}}/history.json"}" ]] && jq '.contents |= del(.[-1])' "$history_file" \
+        | ifne sponge "$history_file"
+
+# Request AI to give response to the chat
+[group('chat'),no-cd]
+update-chat name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    [[ -s "${history_file:="$GG/{{name}}/history.json"}" ]] || "$this" init-history "$history_file"
+    if res=$("$this" http-request-body POST "/$GEMINI_MODEL:generateContent" < "$history_file"); then
+        jq -n --slurpfile model <(jq '.candidates[].content' <<< "$res") --slurpfile history "$history_file" '$history[] | .contents += $model' \
+            | ifne sponge "$history_file"
+    fi
+
+# Request AI to give streamed response to the chat
+[group('chat'),no-cd]
+stream-chat name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    [[ -s "${history_file:="$GG/{{name}}/history.json"}" ]] || "$this" init-history "$history_file"
+    args=(
+        "/$GEMINI_MODEL:streamGenerateContent" alt==sse --no-ignore-stdin
+    )
+    "$this" http-stream POST "${args[@]}" < "$history_file"
+
+# Update chat contents with new data
+[group('chat'),no-cd]
+add-parts-to-chat name role='user':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    [[ -s "${history_file:="$GG/{{name}}/history.json"}" ]] || "$this" init-history "$history_file"
+    jq -n --slurpfile parts <(cat) --slurpfile history "$history_file" --arg role '{{role}}' '
+        $history[] | if (.contents[-1] != null and .contents[-1].role == $role) then
+            if ((.contents[-1].parts[-1]?.text == null) or (.contents[-1].parts[-1].text[-1:] | in({".": 1, "\n": null}))) then
+                .contents[-1].parts += $parts[]
+            else
+                .contents[-1].parts[-1].text |= . + $parts[][-1].text
+            end
+        else
+            .contents += [{parts: $parts[], role: $role}]
+        end
+    ' | ifne sponge "$history_file"
+
+# Update chat contents with new streamed SSE data
+[group('chat'),no-cd]
+add-sse-to-chat name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -cS '.candidates[]?.content?.parts?' \
+        | '{{this}}' add-parts-to-chat '{{name}}' model
+
+# Add request to the chat
+[group('chat'),no-cd]
+add-request-to-chat name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -ncS --rawfile request <(cat) '[{"text": $request}]' \
+        | '{{this}}' add-parts-to-chat '{{name}}'
+
+# Add text to the chat
+[group('chat'),no-cd]
+add-text-to-chat name display_name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -ncS --rawfile d <(base64 -w0) --arg m "text/plain" --arg n '{{display_name}}' '
+    [
+        {"text": "this is a text (name: " + $n + ")"},
+        {"inline_data": {"data": $d, "mime_type": $m}}
+    ]' | '{{this}}' add-parts-to-chat '{{name}}'
+
+# Add file to the chat (inline, base64-encoded)
+[group('chat'),no-cd]
+add-file-to-chat name path:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    [[ "${mime:=$(file -b --mime-type '{{path}}')}" =~ ^text/ ]] && mime='text/plain'
+    size=$(wc -c < '{{path}}')
+    jq -n --rawfile d <(base64 -w0 '{{path}}') --arg m "$mime" --arg p '{{path}}' --arg s "$size" '
+    [
+        {"text": "this is a file (path: " + $p + ", size in bytes: " + $s + ")"},
+        {"inline_data": {"data": $d, "mime_type": $m}}
+    ]' | '{{this}}' add-parts-to-chat '{{name}}'
+
+# Add file to the chat via server-side upload (for large files)
+[group('chat'),no-cd]
+add-server-side-file-to-chat name path dname='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    while read -r line; do
+        declare -- "$line"
+    done < <("$this" upload-file '{{path}}' '{{dname}}' | jq -r '.file | to_entries[] | "\(.key)=\(.value | @sh)"')
+
+    if [[ -n "$uri" ]]; then
+        jq -n --arg u "$uri" --arg m "$mimeType" --arg p '{{path}}' --arg s "$sizeBytes" --arg d "$displayName" '
+        [
+            {"text": "this is a server-side file (path: \($p), display name: \($d), size in bytes: \($s))"},
+            {"file_data": {"mime_type": $m, "file_uri": $u}}
+        ]' | '{{this}}' add-parts-to-chat '{{name}}'
+    fi
+
+[group('chat'),no-cd]
+init-history history_file:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    [[ -s '{{history_file}}' ]] || {
+        mkdir -p "$(dirname '{{history_file}}')"
+        jq -nS --slurpfile tools <("$this" default-tools) --slurpfile instructions <("$this" default-instructions) '{
+            "contents": []} + $instructions[] + $tools[]' > '{{history_file}}'
+    }
+
+# => files -------------------------------------------------------------------------------------------------------- {{{1
+
+# List server-side files
+[group('files'),no-cd]
+list-files:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request GET '/files'
+
+# Delete server-side file
+[group('files'),no-cd]
+delete-file name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request DELETE '/{{name}}'
+
+# Upload server-side file
+[group('files'),no-cd]
+upload-file  path display_name='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    display_name='{{display_name}}'
+    [[ -z "$display_name" ]] && display_name="$(basename '{{path}}')"
+    [[ "${mime:=$(file -b --mime-type '{{path}}')}" =~ ^text/ ]] && mime='text/plain'
+    size=$(wc -c < '{{path}}')
+
+    init_req=$(jq -n --arg name "$display_name" '{"file": {"display_name": $name}}')
+    args=(
+        "X-Goog-Upload-Protocol:resumable"
+        "X-Goog-Upload-Command:start"
+        "X-Goog-Upload-Header-Content-Length:$size"
+        "X-Goog-Upload-Header-Content-Type:$mime"
+        --print=h
+    )
+    upload_url=$(GOOGLE_API="" "$this" http-request-body POST "/upload${GOOGLE_API}/files" "${args[@]}" <<< "$init_req" \
+        | grep -Poim1 '^x-goog-upload-url:\s{,4}\K.*')
+
+    args=(
+        "X-Goog-Upload-Offset:0"
+        "X-Goog-Upload-Command:upload,finalize"
+    )
+    "$this" http-request-body POST "$upload_url" "${args[@]}" < '{{path}}'
+
+# Describe provided file according to prompt
+[group('files'),no-cd]
+describe file *prompt:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    mime=$(file -b --mime-type '{{file}}')
+    req=$(jq -ncS --arg mime "$mime" \
+        --rawfile prompt <(echo "${prompt:-Describe this file}") \
+        --rawfile data <(base64 -w0 "{{file}}") '{"contents": [{"parts": [
+            {"inline_data": {"data": $data, "mime_type": $mime}},
+            {"text": $prompt}
+        ]}]}')
+    "$this" prepared-request <<< "$req" \
+        | jq -r '.candidates[].content.parts[].text' \
+        | colored-md
+
+# => models ------------------------------------------------------------------------------------------------------- {{{1
+
+# List available models
+[group('models'),no-cd]
+list-models exclude='\bpreview\b|\bexperimental\b|\bexp\b':
+    #!/usr/bin/env -S bash -Eeu
+    memoize -- "$this" http-request-all GET '/models' \
+        | jq -n --arg regex '{{exclude}}' '[inputs | .models[] | select(.name | test($regex; "i") | not)]'
+
+# Print default model
+[group('models'),no-cd]
+default-model:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    dir="$GG"
+    [[ -n "${GG_CHAT:-}" ]] && dir+="/$GG_CHAT"
+    [[ -r "${model_file:=$dir/model.json}" ]] && {
+        exec jq -r '.name' "$model_file"
+    }
+    echo "$FALLBACK_MODEL"
+
+# => text --------------------------------------------------------------------------------------------------------- {{{1
+
+# Rephrase prompt in a polite way
+[group('text'),no-cd]
+polite *prompt:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    req=$({
+            echo 'Rephrase the following phrase in a polite form:'
+            [[ -t 0 ]] || { cat; echo; }
+            cat << 'EO_PROMPT'
+            {{prompt}}
+    EO_PROMPT
+        } | jq -ncS \
+        --rawfile prompt <(cat) \
+        --slurpfile instructions <("$this" polite-instructions) '{
+      "contents": [{"parts": [{"text": $prompt}]}]} + $instructions[]')
+
+    "$this" prepared-request <<< "$req" \
+        | jq -r '.candidates[].content.parts[].text' \
+        | tee >(clipcopy)
+
+# Finalize a provided prompt
+[group('text'),no-cd]
+finalize *prompt:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    req=$({
+            [[ -t 0 ]] || { cat; echo; }
+            cat << 'EO_PROMPT'
+            {{prompt}}
+    EO_PROMPT
+        } | jq -ncS \
+        --rawfile prompt <(cat) \
+        --slurpfile instructions <("$this" finalize-instructions) '{
+      "contents": [{"parts": [{"text": $prompt}]}]} + $instructions[]')
+
+    "$this" prepared-request <<< "$req" \
+        | jq -r '.candidates[]?.content?.parts[]?.text'
+
+# Suggest a commit message based on a git diff
+[group('text'),no-cd]
+suggest-commit-msg:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    req=$(jq -ncS \
+        --rawfile prompt <(cat) \
+        --slurpfile instructions <("$this" commit-msg-instructions) '{
+      "contents": [{"parts": [{"text": "Here is the diff:"}, {"text": $prompt}]}]} + $instructions[]')
+
+    "$this" prepared-request <<< "$req" \
+        | jq -r '.candidates[]?.content?.parts[]?.text'
+
+# Make a prompt
+[group('text'),no-cd]
+prompt *prompt:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    {
+        [[ -t 0 ]] || { cat; echo; }
+        cat << 'EO_PROMPT'
+        {{prompt}}
+    EO_PROMPT
+    } | "$this" raw-request | jq -r '.candidates[].content.parts[].text' | colored-md
+
+# Make a streamed prompt
+[group('text'),no-cd]
+streamed-prompt *prompt:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    {
+        [[ -t 0 ]] || { cat; echo; }
+        cat << 'EO_PROMPT'
+        {{prompt}}
+    EO_PROMPT
+    } | "$this" streamed-request \
+        | grep --line-buffered -Po '^data: \K.+' \
+        | jq -r '.candidates[].content.parts[].text'
+
+# Send request with data already prepared as valid JSON input
+[group('text'),no-cd]
+prepared-request:
+    #!/usr/bin/env -S bash -Eeu
+    req=$(jq -ncS \
+        --slurpfile contents <(cat) \
+        --slurpfile tools <("$this" default-tools) \
+        --slurpfile instructions <("$this" default-instructions) '$instructions[] + $tools[] + $contents[]')
+    memoize -l "$(md5sum <<< "$req")" "$this" http-request-body POST "/$GEMINI_MODEL:generateContent" <<< "$req"
+
+# Send request with raw text data
+[group('text'),no-cd]
+raw-request:
+    #!/usr/bin/env -S bash -Eeu
+    req=$(jq -ncS \
+        --rawfile prompt <(cat) \
+        --slurpfile tools <("$this" default-tools) \
+        --slurpfile instructions <("$this" default-instructions) \
+        '$instructions[] + $tools[] + {"contents": [{"parts": [{"text": $prompt}]}]}')
+    memoize -l "$(md5sum <<< "$req")" "$this" http-request-body POST "/$GEMINI_MODEL:generateContent" <<< "$req"
+
+# Send request with raw text data and streaming response
+[group('text'),no-cd]
+streamed-request:
+    #!/usr/bin/env -S bash -Eeu
+    req=$(jq -ncS \
+        --rawfile prompt <(cat) \
+        --slurpfile tools <("$this" default-tools) \
+        --slurpfile instructions <("$this" default-instructions) \
+        '{"contents": [{"parts": [{"text": $prompt}]}]} + $instructions[] + $tools[]')
+    args=(
+        "/$GEMINI_MODEL:streamGenerateContent" alt==sse --no-ignore-stdin
+    )
+    memoize -l "$(md5sum <<< "$req")" -- "$this" http-stream POST "${args[@]}" <<< "$req"
+
+# => helper ------------------------------------------------------------------------------------------------------- {{{1
+
+# Print default instructions
+[group('helper'),no-cd]
+default-instructions:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    exec jq -nc '{"system_instruction": {"parts": [
+        {"text": "Always format your answer as a valid markdown format. Never use raw TAB characters"},
+        {"text": "If you need to put headers in the answer never use first level header (#) only use headers of higher number (##, ### and more)"},
+        {"text": "Ensure unordered list markers (*, -, +) are followed by exactly one space"},
+        {"text": "Overall headers are good. If you need to logically separate one block of text from another use markdown headers"},
+        {"text": "Try to keep sentenses in one line without line separator (new line), does not matter how long are they"},
+        {"text": "Every sentense should always end with an explicit dot (.) or explicit new line"},
+        {"text": "Be accurate in your answers and do not hallucinate. Use metric system"},
+        {"text": "If answer is short it should be supported by a short information how conclusion was made"},
+        {"text": "For 2 dimensional data (answer assumes rows and columns and information in cells) prefer table presentation"}
+    ]}}'
+
+# Print instructions to make prompt polite
+[group('helper'),no-cd]
+polite-instructions:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    exec jq -nc '{"system_instruction": {"parts": [
+        {"text": "Just return the answer without any additional code examples."},
+        {"text": "Only wording without any additional quotes and your greeting message."},
+        {"text": "Do not add anything from you."},
+        {"text": "Keep all provided urls and other links."},
+        {"text": "Keep only one trailing new line at the end."}
+    ]}}'
+
+# Print instructions to finalize a prompt
+[group('helper'),no-cd]
+finalize-instructions:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    exec jq -nc '{"system_instruction": {"parts": [
+        {"text": "You are a text completion engine. Your task is to analyze the user-provided text and continue it logically. You must not alter the original text in any way. Your response must start with the exact original text and be followed immediately by your logical continuation."},
+        {"text": "Do not add any introductory phrases, concluding remarks, or explanations. Your output should be only the combined, completed text."},
+        {"text": "There are things you are allowed to change in the prompt: capitalization of the characters where necessary, always fix typos and wrong words"},
+        {"text": "If there is nothing to add or fix and prompt is already complete and correct just return prompt as is unchanged"},
+        {"text": "EXAMPLE: If the user provides `The first three letters of the alphabet are a, b,` your response MUST be `The first three letters of the alphabet are a, b, c.`"}
+    ]}}'
+
+# Print instructions to generate a commit message
+[group('helper'),no-cd]
+commit-msg-instructions:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    exec jq -nc '{"system_instruction": {"parts": [
+        {"text": "You are an expert programmer who generates commit messages from git diffs."},
+        {"text": "Generate a proper commit message for the git diff provided by the user."},
+        {"text": "Format the output as:\n1. Main commit message line (semantic prefix like feat:, fix:, refactor:, etc.)\n2. Empty line\n3. Marker ''---- BEGIN DESCRIPTION GENERATED BY AI ----''\n4. Details section with bullet points explaining the changes\n\n5. Marker ''---- END DESCRIPTION GENERATED BY AI ----''"},
+        {"text": "Example format:\nfeat: add Amp AI integration and improve development tools\n\n---- BEGIN DESCRIPTION GENERATED BY AI ----\n**Details:**\n- Added Amp configuration with tool restrictions and MCP server setup\n- Created new ai script for AI interactions\n- Removed deprecated ai-request script, improved ai-polite\n- Enhanced git hooks: added post-checkout for submodules, optimized pre-commit\n- Added mkpython script for Python project scaffolding\n- Updated development tool configurations and submodules\n---- END DESCRIPTION GENERATED BY AI ----"},
+        {"text": "Requirements:\n- Main message: max 72 characters, use semantic commit prefixes\n- Details: bullet points with specific changes, no generic descriptions\n- Be descriptive and actionable, avoid vague terms like ''misc updates''\n- Focus on what functionality was added/changed/removed\n- Do not add any additional messages or something which would be outside of described format\n- Do not generate TODOs and do not print them"}
+    ]}}'
+
+# Print default tools
+[group('helper'),no-cd]
+default-tools:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    exec jq -c << 'EO_TOOLS'
+    {
+      "tools": [
+        {
+          "googleMaps": {}
+        },
+        {
+          "google_search": {}
+        }
+      ]
+    }
+    EO_TOOLS
+
+# File tools
+[group('helper'),no-cd]
+file-tools:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    exec jq -c << 'EO_TOOLS'
+    {
+      "tools": [
+        {
+          "functionDeclarations": [
+            {
+              "description": "A program to find entries in your filesystem\n\nUsage: fd [OPTIONS] [pattern]\n\nArguments:\n  [pattern]  the search pattern (a regular expression, unless '--glob' is used; optional)\n\nOptions:\n  -H, --hidden                     Search hidden files and directories\n  -I, --no-ignore                  Do not respect .(git|fd)ignore files\n  -s, --case-sensitive             Case-sensitive search (default: smart case)\n  -i, --ignore-case                Case-insensitive search (default: smart case)\n  -g, --glob                       Glob-based search (default: regular expression)\n  -a, --absolute-path              Show absolute instead of relative paths\n  -l, --list-details               Use a long listing format with file metadata\n  -L, --follow                     Follow symbolic links\n  -p, --full-path                  Search full abs. path (default: filename only)\n  -d, --max-depth <depth>          Set maximum search depth (default: none)\n  -E, --exclude <pattern>          Exclude entries that match the given glob pattern\n  -t, --type <filetype>            Filter by type: file (f), directory (d/dir), symlink (l),\n                                   executable (x), empty (e), socket (s), pipe (p), char-device\n                                   (c), block-device (b)\n  -e, --extension <ext>            Filter by file extension\n  -S, --size <size>                Limit results based on the size of files\n      --changed-within <date|dur>  Filter by file modification time (newer than)\n      --changed-before <date|dur>  Filter by file modification time (older than)\n  -o, --owner <user:group>         Filter by owning user and/or group\n      --format <fmt>               Print results according to template\n  -x, --exec <cmd>...              Execute a command for each search result\n  -X, --exec-batch <cmd>...        Execute a command with all search results at once\n  -c, --color <when>               When to use colors [default: auto] [possible values: auto,\n                                   always, never]\n      --hyperlink[=<when>]         Add hyperlinks to output paths [default: never] [possible\n                                   values: auto, always, never]\n",
+              "name": "find_files",
+              "parameters": {
+                "properties": {
+                  "options": {
+                    "description": "Command line options passed directly to the fd tool",
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "pattern": {
+                    "description": "File name pattern to search for",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "pattern"
+                ],
+                "type": "object"
+              }
+            }
+          ]
+        }
+      ]
+    }
+    EO_TOOLS
+
+# => http --------------------------------------------------------------------------------------------------------- {{{1
+
+[private, no-cd]
+[group('http')]
+http-request method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    uri='{{uri}}' && [[ "$uri" == /* ]] && uri="$GOOGLE_HOST$GOOGLE_API${uri#${GOOGLE_API}}"
+    argv=({{argv}})
+    '{{this}}' generic-http-request '{{method}}' "$uri" \
+        x-goog-api-key:"${GEMINI_API_KEY:-$(credp "$GOOGLE_ACCOUNT@$GOOGLE_HOST")}" "${argv[@]@Q}"
+
+[private, no-cd]
+[group('http')]
+http-stream method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    uri='{{uri}}' && [[ "$uri" == /* ]] && uri="$GOOGLE_HOST$GOOGLE_API${uri#${GOOGLE_API}}"
+    argv=({{argv}})
+    '{{this}}' streaming-http-request '{{method}}' "$uri" \
+        x-goog-api-key:"${GEMINI_API_KEY:-$(credp "$GOOGLE_ACCOUNT@$GOOGLE_HOST")}" "${argv[@]@Q}"
+
+[private, no-cd]
+[group('http')]
+http-request-body method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    argv=({{argv}})
+    '{{this}}' http-request '{{method}}' '{{uri}}' --no-ignore-stdin "${argv[@]@Q}"
+
+[private, no-cd]
+[group('http')]
+http-request-all method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    uri='{{uri}}' && [[ "$uri" == /* ]] && uri="$GOOGLE_HOST$GOOGLE_API${uri#${GOOGLE_API}}"
+    argv=({{argv}})
+    req=(
+        '{{this}}' generic-http-request '{{method}}' "$uri"
+        x-goog-api-key:"${GEMINI_API_KEY:-$(credp "$GOOGLE_ACCOUNT@$GOOGLE_HOST")}" "${argv[@]@Q}"
+    )
+    while res=$("${req[@]}" ${page_token:+pageToken==$page_token}); do
+        jq -c <<< "$res"
+        page_token=$(jq -c '.nextPageToken // empty' <<< "$res")
+        [[ -n "$page_token" ]] || break
+    done
