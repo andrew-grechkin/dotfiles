@@ -1,0 +1,226 @@
+#!/usr/bin/env -S just --one --justfile
+
+# ABSTRACT: access Google Sheets API from cli (basic wrapper, request endpoints directly)
+
+# https://just.systems/man/en/
+# https://ai.google.dev/gemini-api/docs
+
+import 'generic-http'
+
+colored := require('colored-md')
+git := require('git')
+jq := require('jq')
+
+export GEMINI_MODEL := env('GEMINI_MODEL', 'gemini-2.5-flash')
+export GOOGLE_ACCOUNT := env('GOOGLE_ACCOUNT', 'andrew.grechkin.nl')
+export GOOGLE_HOST := env('GOOGLE_HOST', 'generativelanguage.googleapis.com')
+export GOOGLE_API := env('GOOGLE_API', '/v1beta')
+export this := justfile()
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private]
+@default:
+    '{{this}}' --list
+
+# => files -------------------------------------------------------------------------------------------------------- {{{1
+
+[no-cd]
+[group('files')]
+describe file *prompt:
+    #!/usr/bin/env -S bash -Eeu
+
+    prompt='{{prompt}}'
+    mime=$(file -b --mime-type '{{file}}')
+    req=$(jq -n --arg mime "$mime" --rawfile data <(base64 -w0 "{{file}}") --rawfile prompt <(echo "${prompt:-Describe this file}") '{
+      "contents": [
+        {
+          "parts": [
+            {
+              "inline_data": {
+                "data": $data,
+                "mime_type": $mime
+              }
+            },
+            {
+              "text": "Always format your answer as a valid markdown format."
+            },
+            {
+              "text": $prompt
+            }
+          ]
+        }
+      ]
+    }')
+
+    echo "$req" \
+        | memoize -l "$(echo "$req" | md5sum)" "$this" http-request-body POST '/models/{{GEMINI_MODEL}}:generateContent'  \
+        | jq -r '.candidates[].content.parts[].text' \
+        | colored-md
+
+# => images ------------------------------------------------------------------------------------------------------- {{{1
+
+[no-cd]
+[group('images')]
+create-image +prompt:
+    #!/usr/bin/env -S bash -Eeu
+
+    req=$(jq -n --rawfile prompt <(echo '{{prompt}}') '{
+      "contents": [
+        {
+          "parts": [
+            {
+              "text": "Create an image of" + $prompt
+            }
+          ]
+        }
+      ]
+    }')
+
+    echo "$req" \
+        | memoize -l "$(echo "$req" | md5sum)" "$this" http-request-body POST '/models/{{GEMINI_MODEL}}-image:generateContent'  \
+        | jq
+
+      # | grep -o '"data": "[^"]*"' \
+      # | cut -d'"' -f4 \
+      # | base64 --decode > gemini-native-image.png
+
+# => text --------------------------------------------------------------------------------------------------------- {{{1
+
+# rephrase prompt in a polite way
+[no-cd]
+[group('text')]
+polite +prompt:
+    #!/usr/bin/env -S bash -Eeu
+
+    if [[ ! -t 0 ]]; then
+        in=$(< /dev/stdin)
+    fi
+
+    req=$(jq -n --rawfile prompt <(echo '{{prompt}}') --rawfile in <(echo "${in:-}") '{
+      "system_instruction": {
+        "parts": [
+          {
+            "text": "Just return the answer without any additional code examples."
+          },
+          {
+            "text": "Only wording without any additional quotes and your greeting message."
+          },
+          {
+            "text": "Do not add anything from you."
+          },
+          {
+            "text": "Keep all provided urls and other links."
+          },
+          {
+            "text": "Keep only one trailing new line at the end."
+          }
+        ]
+      },
+      "contents": [
+        {
+          "parts": [
+            {
+              "text": "Rephrase the following phrase in a polite form:"
+            },
+            {
+              "text": $prompt
+            },
+            {
+              "text": $in
+            }
+          ]
+        }
+      ]
+    }')
+
+    echo "$req" \
+        | memoize -l "$(echo "$req" | md5sum)" "$this" http-request-body POST '/models/{{GEMINI_MODEL}}:generateContent'  \
+        | jq -r '.candidates[].content.parts[].text' \
+        | tee >(clipcopy)
+
+[no-cd]
+[group('text')]
+prompt +prompt:
+    #!/usr/bin/env -S bash -Eeu
+
+    if [[ ! -t 0 ]]; then
+        in=$(< /dev/stdin)
+    fi
+
+    req=$(jq -n --rawfile prompt <(echo '{{prompt}}') --rawfile in <(echo "${in:-}") '{
+      "contents": [
+        {
+          "parts": [
+            {
+              "text": "Always format your answer as a valid markdown format."
+            },
+            {
+              "text": $prompt
+            },
+            {
+              "text": $in
+            }
+          ]
+        }
+      ]
+    }')
+
+    echo "$req" \
+        | memoize -l "$(echo "$req" | md5sum)" "$this" http-request-body POST '/models/{{GEMINI_MODEL}}:generateContent'  \
+        | jq -r '.candidates[].content.parts[].text' \
+        | colored-md
+
+[no-cd]
+[group('text')]
+prompt-stream +prompt:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ ! -t 0 ]]; then
+        in=$(< /dev/stdin)
+    fi
+
+    jq -n --rawfile prompt <(echo '{{prompt}}') --rawfile in <(echo "${in:-}") '{
+      "contents": [
+        {
+          "parts": [
+            {
+              "text": $prompt
+            },
+            {
+              "text": $in
+            }
+          ]
+        }
+      ]
+    }'  | "$this" http-request-body-stream POST '/models/{{GEMINI_MODEL}}:streamGenerateContent?alt=sse' \
+        | grep --line-buffered -Po '^data: \K.+' \
+        | jq -r '.candidates[].content.parts[].text'
+
+# => http --------------------------------------------------------------------------------------------------------- {{{1
+
+[private, no-cd]
+[group('http')]
+http-request method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    argv=({{argv}})
+    '{{this}}' generic-http-request '{{method}}' "$GOOGLE_HOST${GOOGLE_API}{{uri}}" \
+        x-goog-api-key:"${GEMINI_API_KEY:-$(credp "$GOOGLE_ACCOUNT@$GOOGLE_HOST")}" "${argv[@]@Q}"
+
+[private, no-cd]
+[group('http')]
+http-request-body method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    argv=({{argv}})
+    '{{this}}' http-request '{{method}}' '{{uri}}' --no-ignore-stdin "${argv[@]@Q}"
+
+# xh even with --stream option doesn't do streaming output is piped out. Temporary using curl
+[private, no-cd]
+[group('http')]
+http-request-body-stream method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    curl "https://$GOOGLE_HOST/$GOOGLE_API/models/$GEMINI_MODEL:streamGenerateContent?alt=sse" \
+        -H "x-goog-api-key:${GEMINI_API_KEY:-$(credp "$GOOGLE_ACCOUNT@$GOOGLE_HOST")}" \
+        -H 'Content-Type: application/json' \
+        -Ls --fail-with-body --no-buffer --data-binary @-
