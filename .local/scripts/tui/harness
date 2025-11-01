@@ -1,0 +1,192 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+mod fzf "~/.local/lib/just/fzf"
+mod json "~/.local/lib/just/json"
+
+set export
+export api := require('harness-api')
+export this := justfile()
+export tui := 'auto'
+
+export HARNESS_HOST := `harness-api --evaluate HARNESS_HOST`
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private]
+@default:
+    "$this" projects
+
+# => groups ------------------------------------------------------------------------------------------------------- {{{1
+
+# show groups
+[group('groups')]
+groups:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="{{source_file()}} groups"
+        fzf_args=(
+            --bind="alt-m:execute(sd-tui -m -p {3})"
+            --bind="ctrl-m:toggle-preview"
+            --footer="A-m:members enter:view"
+            --preview="${api@Q} get-group {3} | jq -SC"
+            --prompt="$HARNESS_ORG_ID | groups > "
+            --with-nth="3.."
+        )
+        eval "$FZF_RELOAD_CMD" | "$this" fzf::table-multi "${fzf_args[@]}"
+    else
+        jq_fields=(
+            "id;\(.identifier)"
+            "url;https://$HARNESS_HOST/ng/account/\(.accountIdentifier)/module/cd/\(if .orgIdentifier then \"orgs/\(.orgIdentifier)/\" else \"\" end)\(if .projectIdentifier then \"projects/\(.projectIdentifier)/\" else \"\" end)settings/access-control/user-groups/\(.identifier)?parentScope=\(if .projectIdentifier then \"project\" elif .orgIdentifier then \"organization\" else \"account\" end)"
+            "name;\(.name);teal"
+            "users;\(.users | length);olive"
+            "org_id;\(.orgIdentifier)"
+            "project_id;\(.projectIdentifier)"
+            "managed;\(.harnessManaged);silver"
+            "description;\(.description)"
+        )
+        "$api" list-groups | \
+            "$this" json::to-table "sort_by(.projectIdentifier != null, .name, .projectIdentifier)" "${jq_fields[@]}"
+    fi
+
+# => organizations ------------------------------------------------------------------------------------------------ {{{1
+
+
+# => pipelines ----------------------------------------------------------------------------------------------------- {{{1
+
+# show pipelines
+[group('pipelines')]
+pipelines project:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="{{source_file()}} pipelines ${project@Q}"
+        fzf_args=(
+            --bind="alt-i:execute(${api@Q} get-pipeline ${project@Q} {1} | ${this@Q} json::pretty -Cf {2})"
+            --bind="ctrl-m:execute(${this@Q} executions ${project@Q} {1})"
+            --footer="A-i:inspect enter:executions | A-b:browse A-p:preview"
+            --preview="${api@Q} get-pipeline ${project@Q} {1} | ${this@Q} json::pretty -Cf {3}"
+            --prompt="$HARNESS_ORG_ID | pipelines[$project] > "
+            --with-nth="3.."
+        )
+        eval "$FZF_RELOAD_CMD" | "$this" fzf::table-multi "${fzf_args[@]}"
+    else
+        prefix="https://$HARNESS_HOST/ng/account/$HARNESS_ACCOUNT/module/cd/orgs"
+        project_id=$("$api" get-project-id "$project")
+        jq_fields=(
+            '_id;\(.identifier)'
+            "_url;$prefix/$HARNESS_ORG_ID/projects/$project_id/deployments?searchTerm=\(.name)"
+            # "_url;$prefix/$HARNESS_ORG_ID/projects/$project_id/pipelines/\(.identifier)"
+            'id;\(.identifier);olive'
+            'name;\(.name);teal'
+            # 'created;\(.created / 1000 | todate);gray'
+            'execs;\((.recent_execution_info // []) | map(if .execution_status == "Failed" then "${FG[red]}${FX[normal]}" else "" end) | join(""))'
+            'modified;\(.updated / 1000 | todate| .[:10]);green'
+            'description;\(.description // "")'
+        )
+        "$api" list-pipelines "$project" | "$this" json::to-table "sort_by(.pipeline.name)" "${jq_fields[@]}"
+    fi
+
+# show executions
+[group('pipelines')]
+executions project pipeline_id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="{{source_file()}} executions ${project@Q} ${pipeline_id@Q}"
+        fzf_args=(
+            --bind="alt-I:execute(${api@Q} get-execution ${project@Q} {1} | jq-repl)"
+            --bind="alt-i:execute(${api@Q} get-execution ${project@Q} {1} | ${this@Q} json::pretty -Cf {2})"
+            --bind="alt-c:execute-silent(${api@Q} cancel-execution ${project@Q} {3} {1})+reload-sync($FZF_RELOAD_CMD)"
+            --bind="alt-r:execute-silent(${api@Q} retry-execution ${project@Q} {3} {1})+reload-sync($FZF_RELOAD_CMD)"
+            --footer="A-i:inspect A-c:cancel A-r:retry enter:view | A-b:browse A-p:preview"
+            --preview="${api@Q} get-execution ${project@Q} {1} | ${this@Q} json::pretty -Cf {3}"
+            --prompt="$HARNESS_ORG_ID | pipelines[$project] > "
+            --with-nth="4.."
+        )
+        eval "$FZF_RELOAD_CMD" | "$this" fzf::table-multi "${fzf_args[@]}"
+    else
+        prefix="https://$HARNESS_HOST/ng/account/$HARNESS_ACCOUNT/module/cd/orgs/$HARNESS_ORG_ID/projects"
+        project_id=$("$api" get-project-id "$project")
+        jq_fields=(
+            '_id;\(.planExecutionId)'
+            "_url;$prefix/$project_id/pipelines/$pipeline_id/deployments/\(.planExecutionId)/pipeline?storeType=INLINE"
+            'pipeline_id;\(.pipelineIdentifier)'
+            'id;\(.planExecutionId);olive'
+            'pipeline;\(.name);teal'
+            'status;\(if .status == "Success" then "${FG[lime]}" elif .status == "Running" then "${FG[blue]}" elif .status == "ResourceWaiting" then "${FG[yellow]}" else "${FG[red]}" end + .status)'
+            'finish;\(if .status == "Success" then "${FG[lime]}" else "${FG[red]}" end + if .endTs then .endTs / 1000 | floor | todate?[:19] else "" end)'
+            'start;\((.createdAt / 1000 | floor) | todate? | .[:19]);silver'
+            'comp;\(.moduleInfo.cd.serviceIdentifiers[0])'
+            'inst;\([.layoutNodeMap[]] | map(.moduleInfo.cd.infraExecutionSummary.name // empty) | .[0]);silver'
+            'trigger;\(.executionTriggerInfo.triggeredBy.identifier)'
+        )
+        "$api" list-executions "$project" "$pipeline_id" | "$this" json::to-table "sort_by(.createdAt) | reverse" "${jq_fields[@]}"
+    fi
+
+# => projects ----------------------------------------------------------------------------------------------------- {{{1
+
+# show projects
+[group('projects')]
+projects:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="{{source_file()}} projects"
+        fzf_args=(
+            --bind="alt-i:execute(${api@Q} get-project {3} | ${this@Q} json::pretty -Cf {2})"
+            --bind="alt-s:execute(${this@Q} services {3})"
+            --bind="ctrl-m:execute(${this@Q} pipelines {3})"
+            --footer="A-i:inspect A-s:services enter:pipelines | A-b:browse A-p:preview"
+            --preview="${api@Q} get-project {3} | ${this@Q} json::pretty -Cf {3}"
+            --prompt="$HARNESS_ORG_ID | projects > "
+            --with-nth="3.."
+        )
+        eval "$FZF_RELOAD_CMD" | "$this" fzf::table-multi "${fzf_args[@]}"
+    else
+        prefix="https://$HARNESS_HOST/ng/account/$HARNESS_ACCOUNT/module/cd/orgs"
+        jq_fields=(
+            '_id;\(.project.identifier)'
+            "_url;$prefix/\(.project.orgIdentifier)/projects/\(.project.identifier)/overview"
+            'name;\(.project.name);teal'
+            'org;\(.project.orgIdentifier)'
+            'modified;\(.lastModifiedAt / 1000 | todate);green'
+            'created;\(.createdAt / 1000 | todate);gray'
+            'description;\(.project.description)'
+        )
+        "$api" list-projects | "$this" json::to-table "sort_by(.project.name)" "${jq_fields[@]}"
+    fi
+
+# => services ----------------------------------------------------------------------------------------------------- {{{1
+
+# show services
+[group('services')]
+services project:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="{{source_file()}} services ${project@Q}"
+        fzf_args=(
+            --bind="alt-i:execute(${api@Q} get-service ${project@Q} {3} | ${this@Q} json::pretty -Cf {2})"
+            --bind="ctrl-m:execute(${this@Q} executions ${project@Q} {3})"
+            --footer="A-i:inspect enter:view | A-b:browse A-p:preview"
+            --preview="${api@Q} get-service ${project@Q} {3} | ${this@Q} json::pretty -Cf {3}"
+            --prompt="$HARNESS_ORG_ID | services[$project] > "
+            --with-nth="3.."
+        )
+        eval "$FZF_RELOAD_CMD" | "$this" fzf::table-multi "${fzf_args[@]}"
+    else
+        prefix="https://$HARNESS_HOST/ng/account/$HARNESS_ACCOUNT/module/cd/orgs"
+        jq_fields=(
+            '_id;\(.service.identifier)'
+            "_url;$prefix/\(.service.orgIdentifier)/projects/\(.service.projectIdentifier)/services/\(.service.identifier)"
+            'name;\(.service.name);teal'
+            'org;\(.service.orgIdentifier)'
+            'modified;\(.lastModifiedAt / 1000 | todate);green'
+            'created;\(.createdAt / 1000 | todate);gray'
+            'description;\(.service.description)'
+        )
+        "$api" list-services "$project" | "$this" json::to-table "sort_by(.service.name)" "${jq_fields[@]}"
+    fi
