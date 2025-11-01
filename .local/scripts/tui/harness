@@ -1,0 +1,72 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+set export
+export api := require('harness-api')
+export this := justfile()
+export tui := 'auto'
+
+export HARNESS_HOST := `harness-api --evaluate HARNESS_HOST`
+
+# => groups ------------------------------------------------------------------------------------------------------- {{{1
+
+# show groups
+[group('groups')]
+groups:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="{{source_file()}} groups"
+        fzf_args=(
+            --bind="alt-m:execute(sd-tui -m -p {3})"
+            --bind="ctrl-m:toggle-preview"
+            --footer="A-m:members Enter:view"
+            --preview="${api@Q} get-group {3} | jq -SC"
+            --prompt="$HARNESS_ORG_ID | groups > "
+            --with-nth="3.."
+        )
+        eval "$FZF_RELOAD_CMD" | fzf-table-multi "${fzf_args[@]}"
+    else
+        jq_fields=(
+            "id;\(.identifier)"
+            "url;https://$HARNESS_HOST/ng/account/\(.accountIdentifier)/module/cd/\(if .orgIdentifier then \"orgs/\(.orgIdentifier)/\" else \"\" end)\(if .projectIdentifier then \"projects/\(.projectIdentifier)/\" else \"\" end)settings/access-control/user-groups/\(.identifier)?parentScope=\(if .projectIdentifier then \"project\" elif .orgIdentifier then \"organization\" else \"account\" end)"
+            "name;\(.name);teal"
+            "users;\(.users | length);olive"
+            "org_id;\(.orgIdentifier)"
+            "project_id;\(.projectIdentifier)"
+            "managed;\(.harnessManaged);silver"
+            "description;\(.description)"
+        )
+        "$api" list-groups | json2table "sort_by(.projectIdentifier != null, .name, .projectIdentifier)" "${jq_fields[@]}"
+    fi
+
+# => projects ----------------------------------------------------------------------------------------------------- {{{1
+
+# show projects
+[group('projects')]
+projects:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="{{source_file()}} projects"
+        fzf_args=(
+            # --bind="alt-R:execute-silent(source $0; rb-items-remove {+1})+clear-screen+reload-sync($0)"
+            --bind="ctrl-m:toggle-preview"
+            --footer="A-R:remove Enter:view A-b:browse C-l:reload A-p:preview"
+            # --preview="source $0; ha-project-get {1} | jq -SC '.'"
+            --prompt="$HARNESS_ORG_ID | projects > "
+            --with-nth="3.."
+        )
+        eval "$FZF_RELOAD_CMD" | fzf-table-multi "${fzf_args[@]}"
+    else
+        jq_fields=(
+            "id;\(.project.identifier)"
+            "url;https://$HARNESS_HOST/ng/account/\(.accountIdentifier)/module/cd/orgs/\(.orgIdentifier)/projects/\(.project.identifier)/overview"
+            "name;\(.project.name);teal"
+            "org;\(.project.orgIdentifier)"
+            "modified;\(.lastModifiedAt / 1000 | todate);green"
+            "description;\(.project.description)"
+        )
+        "$api" list-projects | json2table "sort_by(.project.name)" "${jq_fields[@]}"
+    fi
