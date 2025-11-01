@@ -1,0 +1,227 @@
+#!/usr/bin/env -S just --one --justfile
+
+# ABSTRACT: wrapper around Harness API
+
+# https://just.systems/man/en/
+# https://apidocs.harness.io/
+
+import 'generic-http'
+
+export jq := require('jq')
+export this := justfile()
+
+export HARNESS_ACCOUNT := env('HARNESS_ACCOUNT')
+export HARNESS_API := '/ng/api'
+export HARNESS_HOST := env('HARNESS_HOST', 'app.harness.io')
+export HARNESS_ORG_ID := env('HARNESS_ORG_ID', '')
+export HARNESS_PER_PAGE := env('HARNESS_PER_PAGE', '100')
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private, no-cd]
+@default:
+    "$this" --list
+
+# => groups ------------------------------------------------------------------------------------------------------- {{{1
+
+# https://apidocs.harness.io/user-group/getusergrouplist
+# list groups
+[group('groups'), no-cd]
+list-groups:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    mem_args=(-l list-groups-$HARNESS_ORG_ID.jsonl -t 60min -- cat)
+    if ! memoize -c "${mem_args[@]}"; then
+        uri="/ng/api/user-groups"
+        page0="$("$this" http-request GET "$uri" pageIndex==0 pageSize==2000 filterType==INCLUDE_CHILD_SCOPE_GROUPS)"
+        total=$(jq -r '.data.totalPages // 0' <<< "$page0")
+        {
+            jq -c '.data.content[]' <<< "$page0"
+            for (( i=1; i<=total; ++i )); do
+                "$this" http-request GET "$uri" pageIndex==$i pageSize==2000 filterType==INCLUDE_CHILD_SCOPE_GROUPS | jq -c '.data.content[]'
+            done
+        } | memoize "${mem_args[@]}"
+    fi | jq -n '[inputs]'
+
+# https://apidocs.harness.io/user-group/getusergrouplist
+# list account groups
+[group('groups'), no-cd]
+list-account-groups:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    mem_args=(-l list-account-groups.jsonl -t 60min -- cat)
+    if ! memoize -c "${mem_args[@]}"; then
+        unset HARNESS_ORG_ID
+        uri="/ng/api/user-groups"
+        page0="$("$this" http-request GET "$uri" pageIndex==0 pageSize==2000)"
+        total=$(jq -r '.data.totalPages // 0' <<< "$page0")
+        {
+            jq -c '.data.content[]' <<< "$page0"
+            for (( i=1; i<=total; ++i )); do
+                "$this" http-request GET "$uri" pageIndex==$i pageSize==2000 | jq -c '.data.content[]'
+            done
+        } | memoize "${mem_args[@]}"
+    fi | jq -n '[inputs]'
+
+# get group
+[group('groups'), no-cd]
+get-group name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" list-groups | jq --arg name "$name" '.[] | select(.name == $name)'
+
+# get group by id
+[group('groups'), no-cd]
+get-group-by-id id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request GET "/ng/api/user-groups/$id"
+
+# list users in a group by id
+[group('groups'), no-cd]
+list-users-by-id id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request POST "/ng/api/user-groups/$id/users" parentFilter=NO_PARENT_SCOPES
+
+# => projects ----------------------------------------------------------------------------------------------------- {{{1
+
+# https://apidocs.harness.io/project/getprojectlist
+# list projects
+[group('projects'), no-cd]
+list-projects:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    mem_args=(-l list-projects-$HARNESS_ORG_ID.jsonl -t 60min -- cat)
+    if ! memoize -c "${mem_args[@]}"; then
+        uri='/ng/api/projects'
+        page0="$("$this" http-request GET "$uri" pageIndex==0 pageSize==2000)"
+        total=$(jq -r '.data.totalPages // 0' <<< "$page0")
+        {
+            jq -c '.data.content[]' <<< "$page0"
+            for (( i=1; i<=total; ++i )); do
+                "$this" http-request GET "$uri" pageIndex==$i pageSize==2000 | jq -c '.data.content[]'
+            done
+        } | memoize "${mem_args[@]}"
+    fi | jq -n '[inputs]'
+
+# get project id by name
+[group('project'), no-cd]
+get-project-id-by-name name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request GET '/ng/api/projects' "searchTerm==$name" \
+        | jq -r --arg name "$name" '.data.content[] | select(.project.name == $name) | .project.identifier'
+
+# create project
+[group('project'), no-cd]
+create-project name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    body=$(jq -cnR --arg n "$name" --arg i "${name//-/_}" --arg o "$HARNESS_ORG_ID" '
+    {project: {
+        identifier: $i,
+        name: $n,
+        orgIdentifier: $o
+    } }'
+    "$this" POST "/ng/api/projects" --raw "$body"
+    # "${http_cmd[@]::${#http_cmd[@]}-1}" -XPOST "$ha_url/ng/api/file-store$HA_DEFQ&projectIdentifier=${1//-/_}" \
+        #   -H 'Content-Type: multipart/form-data' \
+        #   -F identifier=services \
+        #   -F name=services \
+        #   -F type=FOLDER \
+        #   -F parentIdentifier=Root
+
+# get project by id
+[group('project'), no-cd]
+get-project-by-id id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request GET "/ng/api/projects/$id"
+
+# delete project by id
+[group('projects'), no-cd]
+delete-project id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request DELETE "/ng/api/projects/$id"
+
+# https://apidocs.harness.io/serviceoverrides/getserviceoverrides
+# list service overrides
+[group('projects'), no-cd]
+list-overrides id type='ENV_SERVICE_OVERRIDE':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    memoize -t 60min -- "$this" http-request POST '/ng/api/serviceOverrides/v2/list' \
+        "projectIdentifier==$id" "type==$type" --json --raw='null'
+
+# list services
+[group('projects'), no-cd]
+list-services id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    memoize -t 60min -- "$this" http-request GET '/ng/api/servicesV2' \
+        "projectIdentifier==$id" | jq '.data.content'
+
+# function ha-project-if-empty-by-name() {
+#     id=$(ha-project-name-to-id "$1")
+#     [[ -z "$id" ]] && return 0
+#     res=$(ha-http-request "/ng/api/servicesV2?\$HA_DEFQ&projectIdentifier=$id")
+#     jq -r --arg n "$1" 'if (.status == "SUCCESS" and .data.totalItems == 0) then $n else empty end' <<<"$res"
+# }
+
+# function ha-project-if-not-empty-by-name() {
+#     id=$(ha-project-name-to-id "$1")
+#     [[ -z "$id" ]] && return 0
+#     res=$(ha-http-request "/ng/api/servicesV2?\$HA_DEFQ&projectIdentifier=$id")
+#     jq -r --arg n "$1" 'if (.status == "SUCCESS" and .data.totalItems > 0) then $n else empty end' <<<"$res"
+# }
+
+# => roles -------------------------------------------------------------------------------------------------------- {{{1
+
+# https://apidocs.harness.io/roles/getrolelist
+# search role
+[group('roles'), no-cd]
+search-role term:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request GET 'app.harness.io/authz/api/roles' "searchTerm==$term"
+
+# => users -------------------------------------------------------------------------------------------------------- {{{1
+
+# https://apidocs.harness.io/user/getcurrentuserinfo
+# get current user
+[group('users'), no-cd]
+get-current-user:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request GET '/user/currentUser'
+
+# https://apidocs.harness.io/user/getaggregatedusers
+# search user
+[group('users'), no-cd]
+search-user term:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request POST '/user/aggregate' "searchTerm==$term"
+
+# https://apidocs.harness.io/user/addusertousergroups
+# search user
+[group('users'), no-cd]
+add-user-to-group user_id group_id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -n --arg group "$group_id" '{"userGroupIdsToAdd": [$group]}' \
+        | "$this" http-request PUT "/user/add-user-to-groups/$user_id" --no-ignore-stdin
+
+# make me admin
+[group('users'), no-cd]
+make-me-admin:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    user_id="$(harness-api get-current-user | jq -r ".data.uuid")"
+    jq -n --arg group "Account_Administrator" '{"userGroupIdsToAdd": [$group]}' \
+        | "$this" http-request PUT "/user/add-user-to-groups/$user_id" --no-ignore-stdin
+
+# => http --------------------------------------------------------------------------------------------------------- {{{1
+
+[group('http'), private, no-cd, positional-arguments]
+http-request method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 2
+    [[ "$uri" == /* ]] && uri="$HARNESS_HOST$HARNESS_API${uri#${HARNESS_API}}"
+    args=(
+        "accept:application/json"
+        "harness-account:$HARNESS_ACCOUNT"
+        "x-api-key:${HARNESS_API_KEY:-$(credp $HARNESS_HOST)}"
+        "accountIdentifier==$HARNESS_ACCOUNT"
+        "pageSize==$HARNESS_PER_PAGE"
+    )
+    [[ -n "${HARNESS_ORG_ID:-}" ]] && args+=("orgIdentifier==$HARNESS_ORG_ID")
+    "$this" generic-http-request "$method" "$uri" "${args[@]}" "$@"
