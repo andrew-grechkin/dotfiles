@@ -1,0 +1,267 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+import 'generic-http'
+
+export credp := require('credp')
+export jq := require('jq') # https://jqlang.github.io/jq/download/
+export memoize := require('memoize')
+export spew := require('spew')
+export this := justfile()
+
+export TF_API := env('TF_API', '/api/v2')
+export TF_HOST := env('TF_HOST', 'app.terraform.io')
+export TF_ORG := env('TF_ORG')
+export TF_MAX_PAGES := env('TF_MAX_PAGES', '30')
+export TF_PER_PAGE := env('TF_PER_PAGE', '100')
+export TF_PROJECT := env('TF_PROJECT')
+
+tf_url_base := 'https://' + TF_HOST
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private, no-cd]
+@default:
+    "$this" --list
+
+# => account ------------------------------------------------------------------------------------------------------ {{{1
+
+# https://developer.hashicorp.com/terraform/cloud-docs/api-docs/account#get-your-account-details
+# show current account
+[group('account'), no-cd]
+@show-account: (http-request 'GET' '/account/details')
+
+# get user it
+[group('account'), no-cd]
+get-user-id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request GET '/account/details' | jq -r '.data.id'
+
+# => logs --------------------------------------------------------------------------------------------------------- {{{1
+
+# get logs
+[group('logs'), no-cd]
+get-logs run_id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    url=$("$this" http-request GET "/runs/$run_id/apply" | jq -r '.data.attributes."log-read-url"')
+    "$this" http-request GET "$url" --json
+
+# dump logs
+[group('logs'), no-cd]
+dump-logs run_id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" get-logs "$run_id" \
+        | jq -r '.data' \
+        | jq -nRS 'inputs | fromjson? // {"@message": ., "@level": "info"}' \
+        | jq -r '{"info": "\u001B[0m", "error": "\u001B[91m", "warning": "\u001B[93m"} as $colors |
+            "\($colors[."@level"] // "\u001B[0m")" + ."@message" + "\u001B[0m"'
+
+# => projects ----------------------------------------------------------------------------------------------------- {{{1
+
+# list projects
+[group('projects'), no-cd]
+list-projects:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    args=('GET' "/organizations/$TF_ORG/projects")
+    # memoize called twice here to cache only result of the final operation
+    memoize -cl "${args[*]}" -- jq '.data' \
+        || "$this" http-request "${args[@]}" | memoize -l "${args[*]}" -- jq '.data'
+
+# get project
+[group('projects'), no-cd]
+get-project project:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" get-project-by-id "$("$this" get-project-id "$project")"
+
+# get project by id
+[group('projects'), no-cd]
+get-project-by-id project_id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request 'GET' "/projects/$project_id" | jq -c '.data'
+
+# get project id
+[group('projects'), no-cd]
+get-project-id project=TF_PROJECT:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" list-projects | jq -r --arg name "$project" '.[] | select(.attributes.name== $name) | .id'
+
+# => runs --------------------------------------------------------------------------------------------------------- {{{1
+
+# list runs
+[group('runs'), no-cd]
+list-runs workspace_name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" TF_PER_PAGE=40 list-runs-by-id "$("$this" get-workspace-id "$workspace_name")"
+
+# list runs for workspace by id
+[group('runs'), no-cd]
+list-runs-by-id workspace_id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request GET "/workspaces/$workspace_id/runs" | jq -c '.data'
+
+# get run
+[group('runs'), no-cd]
+get-run run_id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request GET "/runs/$run_id" | jq -c '.data'
+
+# https://developer.hashicorp.com/terraform/cloud-docs/api-docs/run#create-a-run
+# create run
+[group('runs'), no-cd]
+create-run workspace_id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    body=$(cat <<EO_PAYLOAD
+        {
+            "data": {
+                "attributes": {
+                    "message": "Triggered via API"
+                },
+                "type":"runs",
+                "relationships": {
+                    "workspace": {
+                        "data": {
+                          "type": "workspaces",
+                          "id": "{{workspace_id}}"
+                        }
+                    }
+                }
+            }
+        }
+    EO_PAYLOAD
+    )
+    "$this" http-request POST '/runs' --no-ignore-stdin <<< "$body"
+
+# => states ------------------------------------------------------------------------------------------------------- {{{1
+
+# https://developer.hashicorp.com/terraform/cloud-docs/api-docs/state-versions#list-state-versions-for-a-workspace
+# list states
+[group('states'), no-cd]
+list-states workspace_name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request GET '/state-versions' \
+            "filter[workspace][name]==$workspace_name" \
+            "filter[organization][name]==$TF_ORG" \
+        | jq -c '.data'
+
+# https://developer.hashicorp.com/terraform/cloud-docs/api-docs/state-versions#permanently-delete-a-state-version
+# remove state
+[group('states'), no-cd]
+remove-state state_id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request POST "/state-versions/$state_id/actions/soft_delete_backing_data"
+
+# => tokens ------------------------------------------------------------------------------------------------------- {{{1
+
+# https://developer.hashicorp.com/terraform/enterprise/api-docs/team-tokens#list-team-tokens
+# list team tokens
+[group('tokens'), no-cd]
+@list-team-tokens: (http-request 'GET' '/organizations' / TF_ORG / 'team-tokens')
+
+# https://developer.hashicorp.com/terraform/enterprise/api-docs/team-tokens#show-a-team-token
+# show team token
+[group('tokens'), no-cd]
+@show-team-token id: (http-request 'GET' '/authentication-tokens' / id)
+
+# https://developer.hashicorp.com/terraform/enterprise/api-docs/user-tokens#list-user-tokens
+# list tokens
+[group('tokens'), no-cd]
+@list-tokens user_id: (http-request 'GET' '/users' / user_id / 'authentication-tokens')
+
+# => teams -------------------------------------------------------------------------------------------------------- {{{1
+
+# https://developer.hashicorp.com/terraform/cloud-docs/api-docs/teams#list-teams
+# list team
+[group('teams'), no-cd]
+@list-teams: (http-request 'GET'  '/organizations' / TF_ORG / 'teams')
+
+# https://developer.hashicorp.com/terraform/cloud-docs/api-docs/teams#show-team-information
+# show team
+[group('teams'), no-cd]
+@show-team team_id: (http-request 'GET' '/teams' / team_id)
+
+# => users -------------------------------------------------------------------------------------------------------- {{{1
+
+# https://developer.hashicorp.com/terraform/cloud-docs/api-docs/users#show-a-user
+# show user
+[group('users'), no-cd]
+@show-user user_id: (http-request 'GET' '/users' / user_id)
+
+# => workspaces --------------------------------------------------------------------------------------------------- {{{1
+
+# https://developer.hashicorp.com/terraform/cloud-docs/api-docs/workspaces#list-workspaces
+# list workspaces
+[group('workspaces'), no-cd, positional-arguments]
+list-workspaces project=TF_PROJECT *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 1
+    memoize -t 1min -- "$this" http-request-all "/organizations/$TF_ORG/workspaces" \
+        'sort==-latest-change-at' \
+        "filter[project][id]==$("$this" get-project-id "$project")" \
+        "$@"
+
+# https://developer.hashicorp.com/terraform/cloud-docs/api-docs/workspaces#show-workspace
+# get workspace
+[group('workspaces'), no-cd]
+get-workspace workspace_name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request 'GET' "/organizations/$TF_ORG/workspaces/$workspace_name" | jq -c '.data'
+
+# get workspace id
+[group('workspaces'), no-cd]
+get-workspace-id workspace_name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" get-workspace "$workspace_name" | jq -r '.id'
+
+# https://developer.hashicorp.com/terraform/cloud-docs/api-docs/workspaces#list-workspaces
+# count workspeces which are running or pending
+[group('workspaces'), no-cd]
+count-workspaces-running:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    TF_PER_PAGE=5 "$this" http-request GET "/organizations/$TF_ORG/workspaces" \
+            'sort==-latest-change-at' \
+            'filter[current-run][status]==errored,canceled' \
+            'filter[current-run][status]==applying,fetching,planning,pending' \
+            "search[name]==$TF_PROJECT" \
+        | jq -S '.meta.pagination."total-count"'
+
+[group('workspaces'), no-cd]
+wait-while-workspaces-running:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    while (( $("$this" count-workspaces-running) > 4 )); do
+        >&2 echo -n '.'
+        sleep 10
+        waited='1'
+    done
+    [[ -n "${waited:=}" ]] && { echo -n ' '; date --iso-8601=seconds; } >&2
+    exit 0
+
+# => http --------------------------------------------------------------------------------------------------------- {{{1
+
+[group('http'), private, no-cd, positional-arguments]
+http-request method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 2
+    [[ "$uri" == /* ]] && uri="$TF_HOST$TF_API${uri#${TF_API}}"
+    argv=(
+        'content-type:application/vnd.api+json'
+        "page[size]==$TF_PER_PAGE"
+        --auth-type=bearer
+        --auth="${TF_TOKEN:-$(credp "$TF_HOST")}"
+    )
+    "$this" generic-http-request "$method" "$uri" "${argv[@]}" "$@"
+
+[group('http'), private, no-cd, positional-arguments]
+http-request-all uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 1
+    page1="$("$this" http-request GET "$uri" "$@")"
+    pages=$(jq -r '.meta.pagination."total-pages"' <<< "$page1")
+    {
+        jq -cS '.data[]?' <<< "$page1"
+        if [[ -n "${pages:-}" ]] && ((pages > 1)); then
+            (( pages = pages > TF_MAX_PAGES ? TF_MAX_PAGES : pages ))
+            seq 2 "$pages" \
+                | xargs -rI{} -P0 bash -c "${this@Q} http-request GET ${uri@Q} page[number]=={} ${*@Q} | spew jq -cS '.data[]?'"
+        fi
+    } | jq -n '[inputs]'
