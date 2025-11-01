@@ -1,0 +1,162 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+api := require('tf-api')
+pretty := require('json-pretty')
+join := require('text-join')
+tui := 'auto'
+
+export this := justfile()
+
+# precache required environment variables for the session
+export TF_ORG := `tf-api --evaluate TF_ORG`
+export TF_PROJECT := `tf-api --evaluate TF_PROJECT`
+export tf_url_base := `tf-api --evaluate tf_url_base`
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private]
+@default:
+    '{{this}}' --list
+
+# => projects ------------------------------------------------------------------------------------------------------- {{{1
+
+# show projects
+[group('projects')]
+projects:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ "{{tui}}" == 'force' ]] || [[ "{{tui}}" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="'{{source_file()}}' projects"
+        fzf_args=(
+            --bind="ctrl-m:become('{{source_file()}}' workspaces {3})"
+            --footer="enter:select | A-b:browse C-l:reload A-p:preview"
+            --preview="'{{api}}' get-project-by-id {1} | {{pretty}} -Cf {3}"
+            --prompt="{{TF_ORG}} | projects > "
+            --with-nth="3.."
+        )
+        eval "$FZF_RELOAD_CMD" | fzf-table-multi "${fzf_args[@]}"
+    else
+        jq_fields=(
+            'id;\(.id)'
+            'url;{{tf_url_base}}/app/{{TF_ORG}}/projects'
+            'project;\(.attributes.name);blue'
+            'type;\(.type)'
+            'created;\(.attributes."created-at"[0:10]);green'
+            'description;\(.attributes.description)'
+        )
+        '{{api}}' list-projects | json2table 'sort_by(.attributes.name)' "${jq_fields[@]}"
+    fi
+
+# => runs --------------------------------------------------------------------------------------------------------- {{{1
+
+# show runs
+[group('runs')]
+runs workspace_id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ "{{tui}}" == 'force' ]] || [[ "{{tui}}" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="'{{source_file()}}' runs '{{workspace_id}}'"
+        fzf_args=(
+            --bind="alt-A:execute-silent(fzf-run-reload -e TF_ORG,TF_BEARER -- '{{source_file()}}' run-workspaces {-1})"
+            --bind="ctrl-m:execute('{{api}}' get-logs {1} | jq -r '.data' | jq -nRSC '[inputs] | reverse | .[] | fromjson? // {\"@message\": .}' | $PAGER)"
+            --footer="A-A:apply enter:inspect | A-b:browse C-l:reload A-p:preview"
+            --preview="{{api}} get-run {1} | {{pretty}} -Cf {3}"
+            --prompt="{{workspace_id}} | runs > "
+            --scheme=history
+            --track
+            --with-nth="3.."
+        )
+        eval "$FZF_RELOAD_CMD" | fzf-table-multi "${fzf_args[@]}"
+    else
+        jq_fields=(
+            'id;\(.id)'
+            'url;{{tf_url_base}}/app/{{TF_ORG}}/workspaces/{{workspace_id}}/runs/\(.id)'
+            'name;\(.id);blue'
+            'updated;\(.attributes."updated-at"[0:16])'
+            'changes;\(.attributes."has-changes");gray'
+            'status;\(.attributes.status)'
+            'reason;\(.attributes."trigger-reason")'
+            'message;\([.attributes.message] | @tsv);silver'
+            'workspace;{{workspace_id}}'
+        )
+        "{{api}}" list-runs '{{workspace_id}}' | json2table 'sort_by(.attributes."updated-at") | reverse' "${jq_fields[@]}"
+    fi
+
+# => workspaces --------------------------------------------------------------------------------------------------- {{{1
+
+# show workspaces
+[group('workspaces')]
+workspaces project=TF_PROJECT:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ -z "${TF_WORKSPACES_FILTER:-}" ]]; then
+        export TF_WORKSPACES_FILTER="$(mktemp -u --suffix=-tf-workspaces.json --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
+        trap 'rm -f "$TF_WORKSPACES_FILTER"' EXIT
+        json-keys-init 'applying,canceled,errored' 'applied,apply_queued,confirmed,discarded,pending,plan_queued,planned,planned_and_finished,planning' > "$TF_WORKSPACES_FILTER"
+    fi
+    # if [[ -z "${SORTING:-}" ]]; then
+    #     export SORTING="$(mktemp -u --suffix=sorting-tf-workspaces.json --tmpdir="${XDG_RUNTIME_DIR:-/tmp}")"
+    #     trap 'rm -f "$SORTING"' EXIT
+    #     jq -n '{column: "changed", asc: true}' > "$SORTING"
+    # fi
+    if [[ "{{tui}}" == 'force' ]] || [[ "{{tui}}" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="'{{source_file()}}' workspaces '{{project}}'"
+        transform=$(cat <<'EO_TRANSFORM'
+            json-keys-flip "$TF_WORKSPACES_FILTER" "$FZF_CLICK_HEADER_WORD"
+            echo "change-header($(json-keys2flags "$TF_WORKSPACES_FILTER" | '{{join}}' -d $'\t'))+reload($FZF_RELOAD_CMD)"
+    EO_TRANSFORM
+        )
+        fzf_args=(
+            --bind="alt-A:execute-silent(fzf-run-reload -e TF_ORG,TF_BEARER -- '{{source_file()}}' run-workspaces {+3})"
+            --bind="alt-i:execute({{api}} get-workspace {3} | {{pretty}} -Cf {3})"
+            # --bind="alt-y:execute-silent(source $0; echo '$ha_url_base/projects/{-2}/services' | xargs -r git web--browse)"
+            --bind="ctrl-m:execute('{{source_file()}}' runs {3})"
+            --bind="click-header:transform:$transform"
+            # --bind="click-header:transform(echo 'become(echo word clicked _\${FZF_CLICK_HEADER_WORD}_)')"
+            --footer="A-A:apply A-i:inspect enter:select | A-b:browse C-l:reload A-p:preview"
+            --header="$(json-keys2flags "$TF_WORKSPACES_FILTER" | '{{join}}' -d $'\t')"
+            --preview="{{api}} get-workspace {3} | {{pretty}} -Cf {3}"
+            --prompt="{{project}} | workspaces > "
+            --with-nth="3..-4"
+        )
+        eval "$FZF_RELOAD_CMD" | fzf-table-multi "${fzf_args[@]}"
+    else
+        jq_fields=(
+            'id;\(.id)'
+            'url;{{tf_url_base}}\(.links."self-html")'
+            # "url;{{tf_url_base}}\(.relationships."current-run'.links.related)'
+            'workspace;\(.attributes.name);blue'
+            # 'type;\(.type)'
+            'changed;\(.attributes."latest-change-at"[0:16]);green'
+            'updated;\(.attributes."updated-at"[0:16])'
+            'vcs-repo;\(.attributes."vcs-repo"."display-identifier");silver'
+            'ha.p;\(.attributes.name[25:])'
+            '!ha.id!\(.attributes.name[25:] | gsub("-"; "_"))'
+            'project;{{project}}'
+        )
+        if flags=$(json-keys2flags-positive "$TF_WORKSPACES_FILTER") && [[ -n "$flags" ]]; then
+            ws_filter=("filter[current-run][status]==$('{{join}}' -d ',' <<< "$flags")")
+        fi
+        "{{api}}" list-workspaces '{{project}}' "${ws_filter[@]}"\
+            | json2table 'sort_by(.attributes."latest-change-at") | reverse' "${jq_fields[@]}"
+    fi
+
+# run workspaces
+[group('workspaces')]
+run-workspaces +names:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    argv=({{names}})
+    size="${#argv[@]}"
+    echo "triggering workspaces: $size" >&2
+    typeset -i ctr=0
+    for work in "${argv[@]}"; do
+        '{{api}}' wait-while-workspaces-running
+        (( ctr+=1 ))
+        >&2 printf "triggering workspace run (%d/%d): $work\n" "$ctr" "$size"
+        if res="$('{{api}}' create-run "$('{{api}}' get-workspace-id $work)")"; then
+            sleep 4
+        else
+            >&2 echo -n "failed $work: "
+            >&2 jq -cS <<< "$res"
+        fi
+    done
+    exit
