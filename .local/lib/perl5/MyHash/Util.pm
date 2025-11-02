@@ -7,6 +7,7 @@ use utf8;
 use warnings     qw(FATAL utf8);
 use experimental qw(class declared_refs defer refaliasing);
 
+use Carp     qw(croak);
 use JSON::PP qw();
 use Storable qw(dclone);
 
@@ -27,7 +28,7 @@ our @EXPORT_OK = qw(
     merge_inplace_left
 );
 
-sub build_data_cache ($data_href, %caches) {
+sub build_data_cache($data_href, %caches) {
     my \%data = $data_href;
 
     my %result;
@@ -41,7 +42,7 @@ sub build_data_cache ($data_href, %caches) {
     return \%result;
 }
 
-sub build_reverse_indices ($data_href, %indices) {
+sub build_reverse_indices($data_href, %indices) {
     my \%data = $data_href;
 
     my %result;
@@ -56,18 +57,20 @@ sub build_reverse_indices ($data_href, %indices) {
     return \%result;
 }
 
-sub clean_hash_from_key ($data, $key_to_remove) {
+sub clean_hash_from_key($data, $key_to_remove) {
     if (ref $data eq 'ARRAY') {
         __SUB__->($_, $key_to_remove) foreach $data->@*;
     } elsif (ref $data eq 'HASH' || blessed $data) {
         delete $data->{$key_to_remove};
         __SUB__->($_, $key_to_remove) foreach values $data->%*;
+    } else {
+        # keep data as is
     }
 
     return $data;
 }
 
-sub compact ($data) {
+sub compact($data) {
     ref $data eq 'HASH'
         or return $data;
 
@@ -80,7 +83,7 @@ sub compact ($data) {
     return $data;
 }
 
-sub decode_json_recursive_inplace ($data) {
+sub decode_json_recursive_inplace($data) {
     if (!ref $data) {
         try {
             my $decoded = JSON()->decode($data);
@@ -93,11 +96,13 @@ sub decode_json_recursive_inplace ($data) {
         $_ = __SUB__->($_) foreach values $data->%*;
     } elsif (ref $data eq 'ARRAY') {
         $_ = __SUB__->($_) foreach $data->@*;
+    } else {
+        croak 'invalid data type';
     }
     return $data;
 }
 
-sub flatten ($data, $acc = {}, $prefix = undef) {
+sub flatten($data, $acc = {}, $prefix = undef) {
     ref $data eq 'HASH'
         or return $data;
 
@@ -114,22 +119,22 @@ sub flatten ($data, $acc = {}, $prefix = undef) {
     return $acc;
 }
 
-sub merge ($lhs, $rhs) {
+sub merge($lhs, $rhs) {
     $lhs = dclone($lhs) if ref $lhs;
     $rhs = dclone($rhs) if ref $rhs;
     return merge_inplace_both($lhs, $rhs);
 }
 
-sub merge_inplace_left ($lhs, $rhs) {
+sub merge_inplace_left($lhs, $rhs) {
     $rhs = dclone($rhs) if ref $rhs;
     return merge_inplace_both($lhs, $rhs);
 }
 
-sub merge_inplace_both ($lhs, $rhs) {
+sub merge_inplace_both($lhs, $rhs) {
     return $rhs unless ref $lhs eq 'HASH' && ref $rhs eq 'HASH';
 
     while (my ($rkey, $rvalue) = each $rhs->%*) {
-        $lhs->{$rkey} = merge_inplace_both($lhs->{$rkey}, $rvalue);
+        $lhs->{$rkey} = __SUB__->($lhs->{$rkey}, $rvalue);
     }
 
     return $lhs;

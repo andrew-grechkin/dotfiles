@@ -65,7 +65,7 @@ class Processor 3.01 {
         ### Regroup files by dev + size
         my \%by_dev_size = _regroup_arrays(
             $self->_gather(),
-            'key' => sub ($, $value) {
+            'key' => sub($, $value) {
                 return sprintf('d(%d)s(%d)', $value->{'stat'}->dev, $value->{'stat'}->size);
             },
         );
@@ -89,8 +89,8 @@ class Processor 3.01 {
             if (PARTIAL_CHECKSUM_SIZE() < $size) {
                 $group = _regroup_arrays(
                     $group,
-                    'filter' => sub ($,    $value) {$value->@* > 1},
-                    'key'    => sub ($key, $value) {
+                    'filter' => sub($,    $value) {$value->@* > 1},
+                    'key'    => sub($key, $value) {
                         $value->{'partial_checksum'} //= do {
                             map_file(my $map, $value->{'paths'}[0]);
                             sha256_hex(substr($map, 0, PARTIAL_CHECKSUM_SIZE()));
@@ -102,8 +102,8 @@ class Processor 3.01 {
 
             $group = _regroup_arrays(
                 $group,
-                'filter' => sub ($,    $value) {$value->@* > 1},
-                'key'    => sub ($key, $value) {
+                'filter' => sub($,    $value) {$value->@* > 1},
+                'key'    => sub($key, $value) {
                     $value->{'checksum'} //= do {
                         map_file(my $map, $value->{'paths'}[0]);
                         sha256_hex($map);
@@ -129,7 +129,7 @@ class Processor 3.01 {
 
         foreach my $dir (@ARGV ? @ARGV : ('.')) {
             path($dir)->visit(
-                sub ($path, @) {
+                sub($path, @) {
                     $self->_is_valid_path($path)
                         or return;
 
@@ -157,12 +157,12 @@ class Processor 3.01 {
         return \%by_dev_ino;
     }
 
-    method _is_valid_path ($path) {
+    method _is_valid_path($path) {
         return $path->is_file
             && !-l $path;
     }
 
-    method _is_ignored_path ($decoded_path) {
+    method _is_ignored_path($decoded_path) {
         my $result = $decoded_path =~ m/\@eaDir/
             || $decoded_path =~ m/\#snapshot/;
 
@@ -171,11 +171,11 @@ class Processor 3.01 {
         return $result;
     }
 
-    method _is_valid_file ($path, $stat) {
+    method _is_valid_file($path, $stat) {
         return $stat->size >= $min_size;
     }
 
-    method _process_identical_checksums ($checksum, @inodes) {
+    method _process_identical_checksums($checksum, @inodes) {
         @inodes > 1 or do {
             $log->debugf('Skipping subbucket: %s', $checksum);
             return;
@@ -195,7 +195,7 @@ class Processor 3.01 {
         return;
     }
 
-    method _do_hardlink ($path, $new_path) {
+    method _do_hardlink($path, $new_path) {
         my $message = join(' <- ', $path, $new_path);
         $log->infof('Hardlinking: %s', $message);
 
@@ -214,7 +214,7 @@ class Processor 3.01 {
         return;
     }
 
-    sub _regroup_arrays ($current_href, %params) {
+    sub _regroup_arrays($current_href, %params) {
         my \%current = $current_href;
 
         my %result;
@@ -225,7 +225,7 @@ class Processor 3.01 {
         }
 
         return \%result;
-    } ## no critic [CodeLayout::RequireFinalSemicolon]
+    }
 }
 
 exit Processor->new->execute();
