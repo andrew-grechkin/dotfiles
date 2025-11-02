@@ -2,13 +2,11 @@
 
 set -Eeuo pipefail
 
-RECIPIENTS=(
-	53B7256136FC04B09D40D3ABFF125E23B3F82357
-	69A8D5FCB78203FAD961787CAD855A6D0DD0751A
-	D72D548F5F32F1D4772DF64E1EF4C939E2510C07
-)
+[[ -n "${GPG_RECIPIENTS:-}" ]] || { echo 'unknown recipients' >&2; exit 1; }
+
+IFS=',' read -r -a recipients <<< "$GPG_RECIPIENTS"
 
 for FILE in "$@"; do
-	FILENAMEFULL=$(basename "$FILE")
-	command gpg --armor --encrypt --default-recipient-self "${RECIPIENTS[@]/#/'--recipient='}" --output "./${FILENAMEFULL}.gpg" "$FILE"
+    FILENAMEFULL=$(basename "$FILE")
+    gpg --armor --encrypt --default-recipient-self "${recipients[@]/#/'--recipient='}" --output "./${FILENAMEFULL}.gpg" "$FILE"
 done

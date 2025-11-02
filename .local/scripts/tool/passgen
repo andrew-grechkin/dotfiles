@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-
-set -Eeu
-
-tr -dc '[:alnum:]!@#$%^&*' </dev/urandom \
-    | head -c 16 \
-    | pee clipcopy 'cat; echo'
-
-notify-send -i dialog-password 'Password' 'Generated and copied to the clipboard'
