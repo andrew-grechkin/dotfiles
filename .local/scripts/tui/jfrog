@@ -1,0 +1,99 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+mod fzf "~/.local/lib/just/fzf"
+mod json "~/.local/lib/just/json"
+
+set export
+set no-cd
+
+export model := require('jfrog-model')
+export this := justfile()
+export tui := 'auto'
+
+# precache required environment variables for the session
+export JFROG_HOST := `jfrog-model --evaluate JFROG_HOST`
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private]
+@default:
+    "$this" --list
+
+# => images ------------------------------------------------------------------------------------------------------- {{{1
+
+# inspect the image (the output is prunned of redundant data)
+[group('images')]
+inspect image:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$model" inspect "$image" \
+        | jq '.history[0] | del(.fsLayers) | .history |= map(.v1Compatibility)' \
+        | "$this" json::pretty -Cpf "$image"
+
+# show tags of an image
+[group('images')]
+tags url:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    source <("$model" parse-fqin "$url")
+    url="${docker_site}$docker_path"
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="{{source_file()}} tags ${url@Q}"
+        fzf_args=(
+            --bind="alt-R:execute-silent(${this@Q} fzf::run-reload -e JFROG_HOST -- ${model@Q} delete-artifact {2})"
+            --bind="alt-i:execute(${model@Q} inspect ${url@Q}:{1} | ${this@Q} json::pretty -Cpf {-1})"
+            --bind="alt-g:become(echo pulling ${url@Q}:{1}; docker pull ${url@Q}:{1})"
+            --bind="alt-t:become(docker-images -t)"
+            --bind="ctrl-m:become(cat {+f-1})"
+            --bind="ctrl-y:execute-silent(echo -n ${url@Q}:{1} | clipcopy)"
+            --footer="A-R:remove A-g:pull A-i:inspect C-y:yank | A-b:browse A-p:preview"
+            --preview="${model@Q} inspect ${url@Q}:{1} | ${this@Q} json::pretty -Cpf {-1}"
+            --prompt="$url | tags > "
+            --with-nth="3..-2"
+        )
+        eval "$FZF_RELOAD_CMD" | "$this" fzf::table-multi "${fzf_args[@]}"
+    else
+        jq_fields=(
+            '_id;\(.tag)'
+            "_ui;\(\"https://$JFROG_HOST/artifactory/$docker_repo/$docker_name/\(.tag)\")"
+            'repo;\(.repo)'
+            'tag;\(.tag[:40]);olive'
+            'modified;\(.modified[0:16]);green'
+            # 'created;\(if (.created[0:16] != .modified[0:16]) then .created[0:16] else "" end)'
+            'created_by;\(.created_by);silver'
+            'path;\(.path)'
+            'fqin;{{url}}:\(.tag)'
+        )
+        "$model" list-tags "$url" | "$this" json::to-table 'sort_by(.modified) | reverse' "${jq_fields[@]}"
+    fi
+
+# => repositories ------------------------------------------------------------------------------------------------- {{{1
+
+# show repositories
+[group('repositories')]
+repos:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="{{source_file()}} repos"
+        fzf_args=(
+            --bind="ctrl-m:become(cat {+f-1})"
+            --footer="A-b:browse A-p:preview"
+            --preview="memoize ${model@Q} list-repos | jq -c '.[] | select(.key == \"{1}\")' | ${this@Q} json::pretty -Cpf {1}"
+            --prompt="repos > "
+            --tiebreak="begin,chunk"
+            --with-nth="3.."
+        )
+        eval "$FZF_RELOAD_CMD" | "$this" fzf::table "${fzf_args[@]}"
+    else
+        jq_fields=(
+            '_id;\(.key)'
+            '_url;\(.url)'
+            'name;\(.key);teal'
+            'type;\(.type);blue'
+            'packages;\(.packageType)'
+            'desc;\(.description // "");silver'
+        )
+        memoize "$model" list-repos | "$this" json::to-table 'sort_by(.key | ascii_downcase)' "${jq_fields[@]}"
+    fi
