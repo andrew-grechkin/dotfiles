@@ -1,0 +1,730 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC2154
+
+set -Eeuo pipefail
+
+# @describe ABSTRACT:
+#   A modern, minimalist password manager with GPG encryption and hierarchical recipient support
+#
+# DESCRIPTION:
+#   This script provides a clean and modern rewrite of the GNU 'pass' utility.
+#   It's absolutely opinionated and tailored to my needs.
+#   It leverages GPG for secure password encryption and decryption, storing
+#   passwords in a human-readable directory structure.
+#
+# LICENSE:
+#   GPL-2.0-or-later
+#   🄯 2025 Andrew Grechkin
+
+# @meta version 1.0.0
+# @meta combine-shorts
+# @meta require-tools gpg
+#
+# @env PASSWORD_STORE_DIR=`_get_store_dir` Password store
+# @env CLIP_TIME=`_get_clip_time`          Password in clipboard TTL
+
+function fatal() { echo "fatal:" "$@" >&2; exit 1; }
+
+[[ -x "$(command -v argc)" ]] || fatal "'argc' helper is required, install it from https://github.com/sigoden/argc"
+
+function _get_store_dir() { echo "${PASSWORD_STORE_DIR:-${XDG_DATA_HOME}/password-store}"; }
+function _get_clip_time() { echo "${PASSWORD_STORE_CLIP_TIME:-45}"; }
+function _def_len() { echo "${PASSWORD_STORE_GENERATED_LENGTH:-16}"; }
+
+X_SELECTION=${PASSWORD_STORE_X_SELECTION:-clipboard}
+
+umask 077
+
+function assert-subdir() {
+    (
+        local subdir
+        cd "$PASSWORD_STORE_DIR" || fatal "unable to set workdir to password store: $PASSWORD_STORE_DIR"
+        subdir="$(realpath -m --relative-base="$PASSWORD_STORE_DIR" "$1")"
+        [[ "$subdir" == /* ]] && fatal 'provided path it is not in password store'
+        echo "$subdir"
+    )
+}
+
+function decrypt-file() {
+    [[ -r "$1" ]] || fatal "password file is absent: $1"
+    gpg -q --decrypt "$1"
+}
+
+function encrypt-file() {
+    mkdir -p "$(dirname "$2")"
+
+    declare -a recipients
+    detect-recipients recipients "$1"
+
+    gpg --armor --encrypt --default-recipient-self "${recipients[@]/#/'--recipient='}" --output "$2" -
+}
+
+function qrcode() {
+    qrencode -t ANSIUTF8i -o - <(cat)
+}
+
+# Securely copy content to the clipboard, clearing it after a timeout.
+# arg 1: string The content to clip.
+# arg 2: string The name of the item being clipped (for display purposes).
+clip() {
+    clipcopy
+    return 0
+    local content="$1"
+    local pass_name="$2"
+
+    local copy_cmd
+    local paste_cmd
+    local display_name
+    if [[ -n "${WAYLAND_DISPLAY:-}" ]]; then
+        copy_cmd=(wl-copy)
+        paste_cmd=(wl-paste -n)
+        if [[ "$X_SELECTION" == "primary" ]]; then
+            copy_cmd+=(--primary)
+            paste_cmd+=(--primary)
+        fi
+        display_name="$WAYLAND_DISPLAY"
+    elif [[ -n "${DISPLAY:-}" ]]; then
+        copy_cmd=(xclip -selection "$X_SELECTION")
+        paste_cmd=(xclip -o -selection "$X_SELECTION")
+        display_name="$DISPLAY"
+    else
+        fatal "No X11 or Wayland display detected. Could not copy to clipboard."
+    fi
+
+    # Name for the background sleep process, to avoid multiple instances
+    local sleep_argv0="pass-sleep-on-display-$display_name"
+
+    # Kill any previous sleep process to reset the timer
+    pkill -f "^$sleep_argv0" 2>/dev/null && sleep 0.5
+
+    # Store the original clipboard content. base64 is used to handle any binary data.
+    local before
+    before="$( "${paste_cmd[@]}" 2>/dev/null | base64 )"
+
+    # Copy the password to the clipboard
+    echo -n "$content" | "${copy_cmd[@]}" || fatal "Could not copy data to the clipboard."
+
+    # Launch a background process to clear the clipboard after CLIP_TIME
+    (
+        # The sleep process has a specific name so we can kill it if needed
+        ( exec -a "$sleep_argv0" bash <<<"trap 'kill %1' TERM; sleep '$CLIP_TIME' & wait" )
+
+        # Check if another program immediately replaced our password
+        local now
+        now="$( "${paste_cmd[@]}" | base64 )"
+        # If clipboard content changed, assume the 'before' content is what the manager has.
+        [[ "$now" != "$(echo -n "$content" | base64)" ]] && before="$now"
+
+        # Attempt to clear clipboard history for KDE's Klipper
+        qdbus org.kde.klipper /klipper org.kde.klipper.klipper.clearClipboardHistory &>/dev/null
+
+        # After the sleep finishes, restore the original clipboard content
+        echo "$before" | base64 -d | "${copy_cmd[@]}"
+    ) >/dev/null 2>&1 & disown
+
+    echo "Copied '$pass_name' to clipboard. Will clear in $CLIP_TIME seconds."
+}
+
+function detect-recipients() {
+    local -n recipients_ref="$1"
+    local reldir relpath gpg_ids lrecipients
+    relpath="$(assert-subdir "$2")"
+    reldir="$(dirname "$relpath")"
+
+    while [[ -n "$reldir" ]]; do
+        if [[ -r "$PASSWORD_STORE_DIR/$reldir/.gpg-id" ]]; then
+            mapfile -t gpg_ids < <(sed 's/#.*//; /^\s*$/d' "$PASSWORD_STORE_DIR/$reldir/.gpg-id")
+            [[ ${#gpg_ids[@]} -gt 0 ]] || continue
+            recipients_ref=("${gpg_ids[@]}")
+            return 0
+        fi
+        [[ "$reldir" == '.' ]] && break || reldir="$(dirname "$reldir")"
+    done
+
+    if [[ -n "${GPG_RECIPIENTS:-}" ]]; then
+        IFS=',' read -r -a lrecipients <<< "$GPG_RECIPIENTS"
+        recipients_ref=("${lrecipients[@]}")
+        return 0
+    fi
+
+    fatal "gpg-id file not found for '$1', try 'pass init your-gpg-id' or export GPG_RECIPIENTS"
+}
+
+function run-hook() {
+    local hook_script="$PASSWORD_STORE_DIR/.hooks/$1"
+    shift
+
+    [[ -x "$hook_script" ]] && ( "$hook_script" "$@"; )
+}
+
+# @cmd
+# @alias    insert
+# @arg      name!          Password name
+# @flag     -e --echo      Show the password
+# @flag     -f --force     Force overwrite existing password
+# @flag     -m --multiline Always enabled, value is ignored (compatibility)
+# @describe
+# Insert a new password into the password store
+# This will read the new password from STDIN and save it by the name
+add() {
+    local abspath relpath
+    relpath="$(assert-subdir "$argc_name")"
+    abspath="$PASSWORD_STORE_DIR/${relpath%%.gpg}.gpg"
+    # TODO force
+
+    encrypt-file "$relpath" "$abspath"
+    run-hook 'post-add' "$relpath"
+}
+
+# @cmd                Insert a new password or edit an existing one
+# @arg  name!         Password name
+# @meta require-tools vipe
+edit() {
+    local abspath relpath
+    relpath="$(assert-subdir "$argc_name")"
+    abspath="$PASSWORD_STORE_DIR/${relpath%%.gpg}.gpg"
+
+    if [[ -r "$abspath" ]]; then
+        payload="$(decrypt-file "$abspath")"
+    else
+        payload=''
+    fi
+
+    payload="$(vipe <<< "$payload")"
+
+    if [[ -n "$payload" ]]; then
+        encrypt-file "$relpath" "$abspath.new" <<< "$payload" && mv -f "$abspath.new" "$abspath"
+
+        run-hook 'post-edit' "$relpath"
+    else
+        fatal 'payload is empty, skipping'
+    fi
+}
+
+# @cmd
+# @arg length=`_def_len` Password length in characters
+# @flag -c --clip        Save to clipboard
+# @flag -n --no-symbols  Use only alpha-numeric characters
+# @flag -q --qrcode      Show new password as QR-code
+# @describe
+# Generate a new password
+gen() {
+    local filter='[:alnum:]'
+    [[ -n "${argc_no_symbols:-}" ]] || filter+='!@#$%^&*'
+
+    local pass
+    if pass="$(set +o pipefail; tr -dc "$filter" </dev/urandom | head -c "$argc_length")"; then
+        if [[ -n "${argc_clip:-}" ]]; then
+            echo -n "$pass" | clip "password"
+            notify-send -i dialog-password 'Password' 'Generated and copied to the clipboard'
+        elif [[ -n "${argc_qrcode:-}" ]]; then
+            echo -n "$pass" | qrcode
+        else
+            echo "$pass"
+        fi
+    fi
+}
+
+# @cmd
+# @arg name!             Password name
+# @arg length=`_def_len` Password length in characters
+# @flag -c --clip        Save to clipboard
+# @flag -f --force       Overwrite if exists
+# @flag -i --in-place    Replace only the first line of the whole payload
+# @flag -n --no-symbols  Use only alpha-numeric characters
+# @flag -q --qrcode      Show new password as QR-code
+# @describe
+# Generate a new password and store it by the provided name
+# Using /dev/urandom of length pass-length (or PASSWORD_STORE_GENERATED_LENGTH if unspecified)
+generate() {
+    # TODO
+    if [[ -n "${argc_force:-}" && -n "${argc_in_place:-}" ]]; then
+        fatal "--force and --in-place are mutually exclusive"
+    fi
+
+    local pass_name="$argc_name"
+    local abspath="$PASSWORD_STORE_DIR/$(assert-subdir "$pass_name")"
+    abspath="${abspath%%.gpg}.gpg"
+
+    # Check for overwrite unless forced
+    if [[ -z "${argc_force:-}" && -z "${argc_in_place:-}" && -e "$abspath" ]]; then
+        read -p "An entry already exists for '$pass_name'. Overwrite it? [y/N] " -n 1 -r
+        echo
+        if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
+            fatal "generation cancelled."
+        fi
+    fi
+
+    if [[ -n "${argc_in_place:-}" && ! -f "$abspath" ]]; then
+        fatal "--in-place requires an existing password file."
+    fi
+
+    local filter='[:alnum:]'
+    [[ -n "${argc_no_symbols:-}" ]] || filter+='!@#$%^&*'
+
+    local pass
+    pass="$(tr -dc "$filter" </dev/urandom | head -c "$argc_length")"
+
+    if [[ ${#pass} -ne ${argc_length} ]]; then
+        fatal "could not generate password of length ${argc_length}"
+    fi
+
+    declare -a recipients
+    detect-recipients recipients "$pass_name"
+
+    mkdir -p "$(dirname "$abspath")"
+
+    if [[ -n "${argc_in_place:-}" ]]; then
+        # In-place replacement of the first line
+        (
+            echo "$pass"
+            decrypt-file "$abspath" | tail -n +2
+            ) | { encrypt-file "$relpath" "$abspath.new" && mv -f "$abspath.new" "$abspath"; } || {
+            rm -f "$abspath.new"
+            fatal "failed to re-encrypt password"
+        }
+    else
+        # Simple save/overwrite
+        encrypt-file "$relpath" "$abspath" <<< "$pass" || fatal "failed to encrypt password"
+    fi
+
+    run-hook "generate" "$(assert-subdir "$pass_name")"
+
+    if [[ -n "${argc_clip:-}" ]]; then
+        echo -n "$pass" | clip "$pass_name"
+    elif [[ -n "${argc_qrcode:-}" ]]; then
+        echo -n "$pass" | qrcode
+    else
+        echo "The generated password for $pass_name is:"
+        echo "$pass"
+    fi
+
+    if [[ -n "${argc_clip:-}" ]]; then
+        notify-send -i dialog-password 'Password Generated' "Copied '$pass_name' to clipboard."
+    fi
+}
+
+# @cmd              Initialize new password storage
+# @arg    gpg-id+   GPG IDs to use for encryption
+# @option -p --path Subfolder to initialize
+init() {
+    local gpg_file relpath
+    relpath="$(assert-subdir "${argc_path:-.}")"
+    gpg_file="$PASSWORD_STORE_DIR/$relpath/.gpg-id"
+
+    mkdir -p "$(dirname "$gpg_file")"
+    printf "%s\n" "${argc_gpg_id[@]}" > "$gpg_file"
+    run-hook 'post-init' "$relpath"
+}
+
+# @cmd
+# @alias  ls,show
+# @arg    subdir      Subdir to list passwords in
+# @flag   -c --clip   If password listed save result into clipboard
+# @flag   -q --qrcode If password listed encode result as QR-code
+# @option -l --line=1 Line number of the password (starts from 1)
+# @describe
+# List names of passwords inside the tree at subdir by using the tree(1) program
+list() {
+    local abspath relpath payload passwd
+    relpath="$(assert-subdir "${argc_subdir:-.}")"
+    abspath="$PASSWORD_STORE_DIR/$relpath"
+
+    if [[ -r "${abspath%%.gpg}.gpg" ]]; then
+        payload="$(decrypt-file "${abspath%%.gpg}.gpg")"
+        passwd="$(tail -n +"$argc_line" <<< "$payload" | head -n 1)"
+        if [[ -n "${argc_clip:-}" ]]; then
+            echo -n "$passwd" | clip "$relpath"
+        elif [[ -n "${argc_qrcode:-}" ]]; then
+            echo -n "$passwd" | qrcode
+        else
+            echo "$payload"
+        fi
+    elif [[ -d "$abspath" ]]; then
+        tree -N -C -l --noreport "$abspath" | tail -n +2 | sed -E 's/\.gpg(\x1B\[[0-9]+m)?( ->|$)/\1\2/g'
+    else
+        fatal "not found in the password store: $relpath"
+    fi
+}
+
+# # @cmd    Grep
+# grep() {
+#     local passfile
+#     while read -r -d "" passfile; do
+#         # Decrypt and grep in a subshell for efficiency.
+#         # Errors from gpg (e.g., file not encrypted to us) are suppressed.
+#         local grep_results
+#         grep_results="$(gpg -q --decrypt "$passfile" 2>/dev/null | grep --color=always "${argc_args[@]}")"
+
+#         if [[ -n "$grep_results" ]]; then
+#             local display_name="${passfile#"$store/"}"
+#             display_name="${display_name%%.gpg}"
+
+#             # Print filename in blue, similar to `grep`'s default output.
+#             printf "\e[1;34m%s\e[0m:\n" "$display_name"
+#             echo "$grep_results"
+#             echo # Add a newline for better separation between files
+#         fi
+#     done < <(find -L "$PASSWORD_STORE_DIR" -path '*/.git' -prune -o -iname '*.gpg' -print0)
+# }
+
+# # @cmd    Search
+# # @alias  find
+# search() {
+#     local pattern
+#     # Create a pipe-separated glob pattern for tree: *term1*|*term2*
+#     pattern="$(printf '*%s*|' "${argc_term[@]}")"
+#     # Remove the trailing pipe
+#     pattern="${pattern%|}"
+
+#     tree -N -C -l --noreport --prune --matchdirs --ignore-case -P "$pattern" "$PASSWORD_STORE_DIR" \
+    #         | tail -n +2 \
+    #         | sed -E 's/\.gpg(\x1B\[[0-9]+m)?( ->|$)/\1\2/g'
+# }
+
+# # @cmd    Copy
+# # @alias  cp
+# copy() {
+#     local old_name="$argc_old"
+#     local new_name="$argc_new"
+
+#     local old_path_in_store
+#     old_path_in_store="$(assert-subdir "$old_name")"
+#     local new_path_in_store
+#     new_path_in_store="$(assert-subdir "$new_name")"
+
+#     local old_path="$PASSWORD_STORE_DIR/$old_path_in_store"
+#     # If the user gives a name without .gpg, but the file exists with .gpg, use that.
+#     if [[ ! -e "$old_path" && -f "$old_path.gpg" ]]; then
+#         old_path+=".gpg"
+#     fi
+#     [[ -e "$old_path" ]] || fatal "source '$old_name' is not in the password store"
+
+#     local new_path="$PASSWORD_STORE_DIR/$new_path_in_store"
+#     # If copying into an existing directory, append the original filename/dirname.
+#     if [[ -d "$new_path" ]]; then
+#         new_path="$new_path/$(basename "$old_path")"
+#     # If not a directory copy, and not ending in .gpg, add it for file copies.
+#     elif [[ ! -d "$old_path" && "${new_path: -4}" != ".gpg" ]]; then
+#         new_path+=".gpg"
+#     fi
+
+#     if [[ -z "${argc_force:-}" && -e "$new_path" ]]; then
+#         read -p "overwrite '$new_name'? [y/N] " -n 1 -r
+#         echo
+#         if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
+#             fatal "copy cancelled."
+#         fi
+#     fi
+
+#     mkdir -p "$(dirname "$new_path")"
+
+#     local cp_opts=("-v")
+#     if [[ -d "$old_path" ]]; then
+#         cp_opts+=("-r")
+#     fi
+
+#     # Overwrite with -f if force is used, otherwise default cp behavior
+#     if [[ -n "${argc_force:-}" ]]; then
+#         cp_opts+=("-f")
+#     fi
+
+#     if ! cp "${cp_opts[@]}" "$old_path" "$new_path"; then
+#         fatal "failed to copy '$old_name' to '$new_name'"
+#     fi
+
+#     run-hook "copy" "$old_path_in_store" "$new_path_in_store"
+
+#     echo "Note: password file was copied, but not re-encrypted. If the new location uses a different GPG key, you may want to 'pass edit' the file to update its encryption."
+# }
+
+# # @cmd    Rename
+# # @alias  mv
+# rename() {
+#     local old_name="$argc_old"
+#     local new_name="$argc_new"
+
+#     local old_path_in_store
+#     old_path_in_store="$(assert-subdir "$old_name")"
+#     local new_path_in_store
+#     new_path_in_store="$(assert-subdir "$new_name")"
+
+#     local old_path="$PASSWORD_STORE_DIR/$old_path_in_store"
+#     # If the user gives a name without .gpg, but the file exists with .gpg, use that.
+#     if [[ ! -e "$old_path" && -f "$old_path.gpg" ]]; then
+#         old_path+=".gpg"
+#     fi
+#     [[ -e "$old_path" ]] || fatal "source '$old_name' is not in the password store"
+
+#     local new_path="$PASSWORD_STORE_DIR/$new_path_in_store"
+#     # If moving a file to a directory, append the original filename
+#     if [[ -d "$new_path" ]]; then
+#         new_path="$new_path/$(basename "$old_path")"
+#     # If not a directory move, and not ending in .gpg, add it for file moves.
+#     elif [[ ! -d "$old_path" && "${new_path: -4}" != ".gpg" ]]; then
+#         new_path+=".gpg"
+#     fi
+
+#     if [[ -z "${argc_force:-}" && -e "$new_path" ]]; then
+#         read -p "overwrite '$new_name'? [y/N] " -n 1 -r
+#         echo
+#         if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
+#             fatal "rename cancelled."
+#         fi
+#     fi
+
+#     mkdir -p "$(dirname "$new_path")"
+
+#     if ! mv -v "$old_path" "$new_path"; then
+#         fatal "failed to move '$old_name' to '$new_name'"
+#     fi
+
+#     # Clean up empty parent directories from the old location
+#     local parent_dir
+#     parent_dir="$(dirname "$old_path")"
+#     if [[ "$parent_dir" != "$PASSWORD_STORE_DIR" && -d "$parent_dir" ]]; then
+#         rmdir -p -v "$parent_dir" 2>/dev/null || true
+#     fi
+
+#     run-hook "rename" "$old_path_in_store" "$new_path_in_store"
+
+#     echo "Note: password file was moved, but not re-encrypted. If the new location uses a different GPG key, you may want to 'pass edit' the file to update its encryption."
+# }
+
+# @cmd       Reencrypt existing password
+# @arg name! Password name
+reencrypt() {
+    local abspath relpath
+    relpath="$(assert-subdir "$argc_name")"
+    abspath="$PASSWORD_STORE_DIR/$relpath"
+    abspath="${abspath%%.gpg}.gpg"
+
+    if [[ -r "$abspath" ]] && payload="$(gpg --quiet --decrypt "$abspath")" && [[ -n "$payload" ]]; then
+        { encrypt-file "$relpath" "$abspath.reencrypt" <<< "$payload" && mv -f "$abspath.reencrypt" "$abspath"; } || {
+            rm -f "$abspath.reencrypt"
+            fatal "failed to re-encrypt password"
+        }
+    fi
+}
+
+# @cmd    Remove
+# @alias  delete,rm
+# @arg    name!          Password name
+# @flag   -f --force     Do not prompt before deletion
+# @flag   -r --recursive Recursive operation
+remove() {
+    local abspath relpath
+    relpath="$(assert-subdir "$argc_name")"
+    abspath="$PASSWORD_STORE_DIR/$relpath"
+
+    if [[ -d "$abspath" ]]; then
+        [[ -n "${argc_recursive:-}" ]] || fatal "dir detected, use --recursive to remove: $relpath"
+    else
+        abspath="${abspath%%.gpg}.gpg"
+        [[ -r "$abspath" ]] || fatal "not found in the password store: $relpath"
+    fi
+
+    if [[ -z "${argc_force:-}" ]]; then
+        read -p "Are you sure you would like to delete '$relpath'? [y/N] " -n 1 -r
+        echo
+        if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
+            fatal "deletion cancelled"
+        fi
+    fi
+
+    rm -vrf "$abspath"
+
+    local parent_dir
+    parent_dir="$(dirname "$abspath")"
+    if [[ "$parent_dir" != "$PASSWORD_STORE_DIR" && -d "$parent_dir" ]]; then
+        rmdir "$parent_dir" 2>/dev/null || true
+    fi
+
+    run-hook "post-remove" "$relpath"
+}
+
+# @cmd
+# @arg    name!       Password name
+# @option -l --line=1 Line number of the password (starts from 1)
+# @describe
+# Populate buffers with all aspects of the password payload
+# Password goes to clipboard
+# OTP goes to primary
+# Account name goes to secondary
+populate() {
+    local abspath relpath payload passwd msg username
+    relpath="$(assert-subdir "$argc_name")"
+    abspath="$PASSWORD_STORE_DIR/${relpath%%.gpg}.gpg"
+    [[ -r "$abspath" ]] || fatal "not found in the password store: $relpath"
+
+    if [[ -r "$abspath" ]]; then
+        payload="$(decrypt-file "$abspath")"
+        passwd="$(tail -n +"$argc_line" <<< "$payload" | head -n 1)"
+        username="$(basename "$relpath")"
+        echo -n "$passwd" | clip "$relpath"
+        echo -n "$username" | secondarycopy
+        msg=$'Password copied to clipboard'
+        if code="$(_otp_code <<< "$payload")" && [[ -n "$code" ]] && echo -n "$code" | primarycopy; then
+            msg+=$'\n'"OTP code copied to primary buffer: $code"
+        else
+            msg+='Username copied to secondary buffer'
+        fi
+        if [[ -x "$(command -v notify-send)" ]]; then
+            notify-send "$msg" "username: $username" -i dialog-password
+        fi
+    else
+        fatal "not found in the password store: $relpath"
+    fi
+}
+
+# => OTP ---------------------------------------------------------------------------------------------------------- {{{1
+
+# Parse a Key URI
+# https://github.com/google/google-authenticator/wiki/Key-Uri-Format
+function _otp_parse_uri() {
+    local -n dr="$1"
+    local pattern params_str params uri="$2"
+
+    uri="${uri//\`/%60}"
+    uri="${uri//\"/%22}"
+
+    pattern='^otpauth:\/\/(totp|hotp)(\/(([^:?]+)?(:([^:?]*))?))?\?(.+)$'
+    [[ "$uri" =~ $pattern ]] || fatal "cannot parse OTP key URI: $uri"
+
+    dr['uri']="${BASH_REMATCH[0]}"
+    dr['type']="${BASH_REMATCH[1]}"
+    dr['label']="${BASH_REMATCH[3]}"
+    dr['account']="$(urldecode <<< "${BASH_REMATCH[6]}")"
+
+    [[ -z "${dr['account']}" ]] && dr['account']="$(urldecode <<< "${BASH_REMATCH[4]}")" || dr['issuer']="$(urldecode <<< "${BASH_REMATCH[4]}")"
+    [[ -z "${dr['account']}" ]] && fatal "invalid key URI (missing account): ${dr['uri']}"
+
+    params_str="${BASH_REMATCH[7]}"
+    local IFS=\&; read -r -a params <<< "$params_str"; unset IFS
+
+    pattern='^([^=]+)=(.+)$'
+    for param in "${params[@]}"; do
+        if [[ "$param" =~ $pattern ]]; then
+            case "${BASH_REMATCH[1]}" in
+                algorithm) dr['algorithm']="${BASH_REMATCH[2]}" ;;
+                counter) dr['counter']="${BASH_REMATCH[2]}" ;;
+                digits) dr['digits']="${BASH_REMATCH[2]}" ;;
+                issuer) dr['issuer']="$(urldecode <<< "${BASH_REMATCH[2]}")" ;;
+                period) dr['period']="${BASH_REMATCH[2]}" ;;
+                secret) dr['secret']="${BASH_REMATCH[2]}" ;;
+                *) ;;
+            esac
+        fi
+    done
+
+    [[ -n "${dr['secret']}" ]] || fatal "invalid key URI (missing secret): ${dr[uri]}"
+
+    if [[ "${dr['type']}" == 'hotp' ]]; then
+        pattern='^[0-9]+$'
+        [[ "${dr['counter']}" =~ $pattern ]] || fatal "invalid key URI (missing counter): ${dr['uri']}"
+    fi
+}
+
+function _otp_code() {
+    declare -A otp
+    local line cmd
+
+    while read -r line; do
+        if [[ "$line" == otpauth://* ]]; then
+            _otp_parse_uri otp "$line"
+            break
+        fi
+    done
+
+    case "${otp['type']}" in
+        totp)
+            cmd=(oathtool -b "--totp${otp[algorithm]:+=${otp[algorithm]@U}}")
+            [[ -n "${otp[period]:-}" ]] && cmd+=(--time-step-size="${otp[period]}"s)
+            [[ -n "${otp[digits]:-}" ]] && cmd+=(--digits="${otp[digits]}")
+            ;;
+        hotp)
+            local counter=$(( otp[counter] + 1))
+            cmd=(oathtool -b --hotp --counter="$counter")
+            [[ -n "${otp[digits]}" ]] && cmd+=(--digits="${otp[digits]}")
+            ;;
+        *) fatal 'OTP secret not found in payload' ;;
+    esac
+
+    "${cmd[@]}" "${otp[secret]}"
+
+    # if [[ "${otp[type]}" == "hotp" ]]; then
+    #     local line replaced uri="${otp[uri]/&counter=${otp[counter]}/&counter=$counter}"
+    #     while read -r line; do
+    #         [[ "$line" == otpauth://* ]] && line="${otp[uri]}"
+    #         [[ -n "$replaced" ]] && replaced+=$'\n'
+    #         replaced+="$line"
+    #     done <<< "$payload"
+
+    #     otp_insert "$path" "$passfile" "$replaced" "Increment HOTP counter for $path."
+    # fi
+}
+
+# @cmd
+# @describe
+# One Time Password (OTP) operations
+function otp() { :; }
+
+# @cmd
+# @alias insert
+# @arg   name!              Password name
+# @describe
+# Appends an OTP key URI to an existing or a new password payload
+function otp::append() {
+    fatal 'not implemented yet'
+}
+
+# @cmd
+# @alias code
+# @arg   name!              Password name
+# @meta  require-tools      oathtool,urldecode
+# @meta  default-subcommand
+# @describe
+# OTP show
+function otp::show() {
+    local abspath relpath
+    relpath="$(assert-subdir "$argc_name")"
+    abspath="$PASSWORD_STORE_DIR/${relpath%%.gpg}.gpg"
+    [[ -r "$abspath" ]] || fatal "not found in the password store: $relpath"
+
+    decrypt-file "$abspath" | _otp_code || fatal "failed to generate OTP code: $relpath"
+}
+
+# @cmd
+# @arg   name!       Password name
+# @flag  -c --clip   Save result into clipboard
+# @flag  -q --qrcode Result is QR-code encoded
+# @describe
+# Display the OTP URI stored in the password payload
+function otp::uri() {
+    local abspath relpath
+    relpath="$(assert-subdir "$argc_name")"
+    abspath="$PASSWORD_STORE_DIR/${relpath%%.gpg}.gpg"
+    [[ -r "$abspath" ]] || fatal "not found in the password store: $relpath"
+
+    decrypt-file "$abspath" | while read -r line; do
+        [[ "$line" == otpauth://* ]] || continue
+        if [[ -n "${argc_clip:-}" ]]; then
+            echo -n "$line" | clip "$relpath"
+        elif [[ -n "${argc_qrcode:-}" ]]; then
+            echo -n "$line" | qrcode
+        else
+            echo "$line"
+        fi
+        break
+    done
+}
+
+# @cmd
+# @arg uri! URI to check
+# @describe
+# Check if the given URI is a valid OTP Key URI
+function otp::validate() {
+    fatal 'not implemented yet'
+}
+
+eval "$(argc --argc-eval "$0" "$@")"
