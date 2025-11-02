@@ -23,22 +23,23 @@ our $VERSION = 1.00;
 
 my %options = (
     'APPLY'         => 0,
+    'EXIF'          => 0,
     'RECURSE'       => 0,
     'SKIP_ON_ERROR' => 0,
     'VERBOSE'       => 0,
 );
 
 my @tm_parsers = (
-    sub ($str) {
+    sub($str) {
         return Time::Moment->from_string($str, 'lenient' => 1);
     },
-    sub ($str) {
+    sub($str) {
         return Time::Moment->from_string($str . 'Z', 'lenient' => 1);
     },
-    sub ($str) {
+    sub($str) {
         return Time::Moment->from_string($str =~ s{:}{}xgr, 'lenient' => 1);
     },
-    sub ($str) {
+    sub($str) {
         $str .= 'Z';
         return Time::Moment->from_string($str =~ s{:}{}xgr, 'lenient' => 1);
     },
@@ -47,6 +48,7 @@ my @tm_parsers = (
 sub main {
     GetOptions(
         'apply|a'    => \$options{'APPLY'},
+        'exif|e'     => \$options{'EXIF'},
         'help|h'     => sub {pod2usage('-verbose' => 99, 'exitval' => 0)},
         'recurse|r'  => \$options{'RECURSE'},
         'skip|s'     => \$options{'SKIP_ON_ERROR'},
@@ -61,7 +63,7 @@ sub main {
 
     foreach my $dir (grep {-d} @ARGV) {
         path($dir)->visit(
-            sub ($path, @) {
+            sub($path, @) {
                 _is_valid_path($path)
                     or return;
 
@@ -94,12 +96,12 @@ sub main {
     return 0;
 }
 
-sub _is_valid_path ($path) {
+sub _is_valid_path($path) {
     return $path->is_file
         && !-l $path;
 }
 
-sub _is_ignored_path ($decoded_path) {
+sub _is_ignored_path($decoded_path) {
     my $result = $decoded_path =~ m/\@eaDir/
         || $decoded_path =~ m/\#snapshot/;
 
@@ -108,24 +110,26 @@ sub _is_ignored_path ($decoded_path) {
     return $result;
 }
 
-sub detect_time ($path) {
+sub detect_time($path) {
     if (my $time_from_name = detect_from_name($path)) {
         return $time_from_name;
     }
 
-    my \@exif_times = fetch_exif_times($path);
-
     my $last_error;
-    foreach my $time_str (@exif_times) {
-        $log->tracef('trying time: %s', $time_str);
+    if ($options{EXIF}) {
+        my \@exif_times = fetch_exif_times($path);
 
-        foreach my $parser (@tm_parsers) {
-            try {
-                my $tm = $parser->($time_str);
-                $log->debugf('Detected "%s" from EXIF: %s', $tm, $time_str);
-                return $tm;
-            } catch ($e) {
-                $last_error = $e;
+        foreach my $time_str (@exif_times) {
+            $log->tracef('trying time: %s', $time_str);
+
+            foreach my $parser (@tm_parsers) {
+                try {
+                    my $tm = $parser->($time_str);
+                    $log->debugf('Detected "%s" from EXIF: %s', $tm, $time_str);
+                    return $tm;
+                } catch ($e) {
+                    $last_error = $e;
+                }
             }
         }
     }
@@ -138,7 +142,7 @@ sub detect_time ($path) {
 }
 
 ## no critic [RegularExpressions::ProhibitComplexRegexes]
-sub detect_from_name ($path) {
+sub detect_from_name($path) {
 
     my $result;
 
@@ -188,7 +192,7 @@ sub detect_from_name ($path) {
     return $result;
 }
 
-sub detect_from_path ($path) {
+sub detect_from_path($path) {
     state $regex = qr{
         \A
             (?<date>[[:digit:]]{4})
@@ -207,7 +211,7 @@ sub detect_from_path ($path) {
     return $result;
 }
 
-sub fetch_exif_times ($path) {
+sub fetch_exif_times($path) {
     state @keys = (qw(
             GPSDateTime
             DateTimeOriginal
@@ -229,7 +233,7 @@ sub fetch_exif_times ($path) {
     return \@result;
 }
 
-sub change_file_mtime ($file, $tm) {
+sub change_file_mtime($file, $tm) {
     my $mtime = $file->stat->mtime;
     if ($tm->epoch < $mtime) {
         if ($options{'APPLY'}) {
