@@ -1,11 +1,25 @@
-#!/usr/bin/env bash
+#!/usr/bin/env -S bash -Eeuo pipefail
 
-set -Eeuo pipefail
+devices=(
+    '/dev/v4l/by-id/usb-MACROSILICON_UGREEN_15389_20230204-video-index0'
+    '/dev/v4l/by-id/usb-MACROSILICON_UGREEN_15389_20210621-video-index0'
+)
 
-cat << EOF | fzf-execute
-Touchpad toggle		$HOME/.local/script/exec-detached $HOME/.local/script/touchpad-toggle
+device='undef'
+for candidate in "${devices[@]}"; do
+    if [[ -e "$candidate" ]]; then
+        device="$candidate"
+        break
+    fi
+done
+
+just -f "$HOME/.local/lib/just/fzf" execute << EO_COMMANDS
+Touchpad toggle	$HOME/.local/script/exec-detached $HOME/.local/script/touchpad-toggle
 QR code to clipboard	$HOME/.local/script/exec-detached $HOME/.local/script/qrcode2text
 Screen to clipboard	$HOME/.local/script/exec-detached $HOME/.local/script/screen2text
-Generage password	$HOME/.local/script/passgen
+Generage password	pass gen -c
 Clear mpv cache	rm -f $HOME/.cache/mpv/*
-EOF
+Start kanata	systemctl --user restart kanata.service
+Stop kanata	systemctl --user stop kanata.service
+Cast xbox	pactl load-module module-loopback; ffplay $(realpath -e "$device")
+EO_COMMANDS
