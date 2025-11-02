@@ -1,14 +1,17 @@
-# vim: filetype=conf foldmethod=marker
 # man: perltidy
 
 # -pbp should be first (-l=78 -i=4 -ci=4 -st -se -vt=2 -cti=0 -pt=1 -bt=1 -sbt=1 -bbt=1 -nsfs -nolq)
 --perl-best-practices
+
+--extended-continuation-indentation
+--minimize-continuation-indentation
 
 # and some redefined
 --maximum-line-length=120
 --indent-columns=4
 --continuation-indentation=4
 --vertical-tightness=0
+--vertical-tightness-closing=0
 # --paren-tightness=2
 # --brace-tightness=2
 # --square-bracket-tightness=2
@@ -19,11 +22,8 @@
 --no-standard-output
 --warning-output
 
---vertical-tightness-closing=0
-
 --cuddled-else
 --default-tabsize=4
---maximum-consecutive-blank-lines=2
 --no-outdent-long-comments
 --no-outdent-long-quotes
 
@@ -35,17 +35,42 @@
 --indent-spaced-block-comments
 --static-side-comments
 
-## block comments
---delete-closing-side-comments
-#--closing-side-comments
-#--closing-side-comment-interval=50
-#--closing-side-comment-warnings
+--add-missing-else
+--maximum-fields-per-table=4
+# --qw-as-function # breaks align of qw in use
+
+## comma
+--add-trailing-commas
+--delete-trailing-commas
+--want-trailing-commas=b
+--break-at-trailing-comma-types=b
+
+## arrows
+--delete-interbracket-arrows
+
+## semicolons
+--delete-semicolons
+--one-line-block-semicolons=0
 
 ## Whitespace Control
 #--tight-secret-operators
 --no-space-keyword-paren
 --space-prototype-paren=0
+--space-signature-paren=0
+
+## blank lines
+--maximum-consecutive-blank-lines=2
+--noblanks-before-comments
+--blank-lines-before-subs=1
+--blank-lines-before-packages=1
+--long-block-line-count=3
+--blanks-before-blocks
 
 --break-at-old-method-breakpoints
 --stack-opening-tokens
 --weld-nested-containers
+--valign-if-unless
+--valign-signed-numbers
+--valign-wide-equals
+
+--use-feature='class'
