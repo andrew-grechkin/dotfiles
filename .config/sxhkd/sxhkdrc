@@ -88,7 +88,7 @@ F9 + super
 # F10 + super
 #	$HOME/.local/script/cliptrans
 F12 + super
-	$HOME/.local/script/passgen
+	$HOME/.local/script/pass gen -c
 
 Return + super
 	wezterm start --always-new-process /usr/bin/zsh
