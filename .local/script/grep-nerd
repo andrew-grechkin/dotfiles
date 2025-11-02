@@ -19,6 +19,7 @@ sub main() {
 
     open(my $fh, '<', $desc_file)
         or die "Can't open $desc_file: $!\n";
+
     while (defined(my $line = <$fh>)) {
         chomp $line;
         say {*STDOUT} $line
@@ -33,12 +34,12 @@ sub convert_glyphnames() {
 
     my $metadata = delete $glyphnames{'METADATA'};
 
-    my $file;
-    open($file, '>', $desc_file)
+    open(my $file, '>', $desc_file)
         or die "Can't open $desc_file: $!\n";
     defer {close $file};
 
     say {$file} 'code', "\t", 'type', "\t", 'name', "\t", 'char';
+
     foreach my $key (sort keys %glyphnames) {
         my ($type, $name) = $key =~ m/\A (.+?) - (.+) \z/xx;
         $name =~ s/_/ /xx;
