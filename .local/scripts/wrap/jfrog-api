@@ -1,0 +1,169 @@
+#!/usr/bin/env -S just --one --justfile
+
+# ABSTRACT: wrapper around Jfrog API
+
+# https://just.systems/man/en/
+
+import 'generic-http'
+
+jq := require('jq')
+
+export this := justfile()
+
+export DOMAIN := env('DOMAIN')
+export JFROG_HOST := env('JFROG_HOST', 'jfrog.' + DOMAIN + '.com')
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private, no-cd]
+@default:
+    '{{this}}' --list
+
+# => artifacts ---------------------------------------------------------------------------------------------------- {{{1
+
+# https://jfrog.com/help/r/jfrog-rest-apis/artifactory-query-language-aql
+# find an artifact by name in a repo
+[group('artifacts')]
+find repo name:
+   #!/usr/bin/env -S bash -Eeuo pipefail
+
+   body='items.find('$(jq -cnrR --arg r '{{repo}}' --arg n '{{name}}' '{repo: {"$match":$r}, "$and": [{name: {"$match":$n}}]}')').sort({"$asc" : ["updated"]})'
+
+   args=(
+       "accept:application/json"
+       "content-type:text/plain"
+   )
+   if payload="$("$this" http-request-body POST '/artifactory/api/search/aql' "${args[@]@Q}" <<< "$body")"; then
+       echo "$payload" | jq '.results'
+   else
+       echo '[]'
+   fi
+
+# delete artifact
+[group('artifacts')]
+delete-artifact url: (print "Deleting: " + url)
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    [[ '{{url}}' =~ ^https://.+/artifactory/.+ ]] || '{{this}}' fatal "Incorrect url: {{url}}
+    Must be something like: https://<DOMAIN>/artifactory/<REPO>/<PATH>/<TAG>"
+
+    '{{this}}' http-request 'DELETE' '{{url}}'
+
+# => images ------------------------------------------------------------------------------------------------------- {{{1
+
+# list tags of an image
+[group('images')]
+list-tags fqin:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    source <("$this" parse-fqin '{{fqin}}')
+
+    body='items.find('$(jq -cnrR --arg r "$docker_repo" --arg p "$docker_path/*" '{repo: {"$match":$r}, "$and": [{path: {"$match":$p}, name:{"$match":"manifest.json"}}]}')').sort({"$asc" : ["updated"]})'
+
+    args=(
+        "accept:application/json"
+        "content-type:text/plain"
+    )
+    if payload="$("$this" http-request-body POST '/artifactory/api/search/aql' "${args[@]@Q}" <<< "$body")"; then
+        echo "$payload" | jq '.results | map(. + {tag: (.path | split("/")[-1])})'
+    else
+        echo '[]'
+    fi
+
+# https://jfrog.com/help/r/jfrog-rest-apis/copy-item
+# copy tag
+[group('images')]
+copy old_repo new_repo path:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    args=(
+        'to==/{{new_repo}}/{{path}}'
+    )
+    "$this" http-request POST '/artifactory/api/copy/{{old_repo}}/{{path}}' "${args[@]@Q}"
+
+# https://jfrog.com/help/r/jfrog-rest-apis/move-item
+# move tag
+[group('images')]
+move old_repo new_repo path:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    args=(
+        'to==/{{new_repo}}/{{path}}'
+    )
+    "$this" http-request POST '/artifactory/api/move/{{old_repo}}/{{path}}' "${args[@]@Q}"
+
+# inspect the image
+[group('images')]
+inspect fqin:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    source <("$this" parse-fqin '{{fqin}}')
+
+    memoize -t 1hour "$this" http-request GET \
+        "/artifactory/api/docker/$docker_repo/v2/$docker_path/manifests/$docker_tag" \
+        'accept:application/vnd.docker.container.image.v2+json' \
+        | jq '. | (.history = [.history[].v1Compatibility |= fromjson])'
+
+# parse image path
+[group('images'), private]
+parse-fqin fqin:
+    #!/usr/bin/env -S perl
+
+    use v5.40;
+    use English qw(-no_match_vars);
+
+    my $qr_artifact = qr{
+        \A
+        (?<artifact>
+            (?<site>
+                (?<repository> [^.:\/]+)
+                [.]
+                (?<domain> [^:\/]+)
+            )
+            (?: :  (?<port> [[:digit:]]{1,5}))?
+            \/
+            (?<path> [[:alnum:]\-\/_.]+)
+        )
+        (?: (?: @(?=sha256:) | :) (?<revision> [[:graph:]]+ ) )?
+        \z
+    }x;
+
+    my $in = trim(q({{fqin}}));
+    if ( $in !~ $qr_artifact ) {
+        say {*STDERR} "unable to parse artifact FQIN: '$in'";
+        exit 1;
+    }
+
+    say 'docker_repo=', ($LAST_PAREN_MATCH{repository} // 'undef');
+    say 'docker_domain=', ($LAST_PAREN_MATCH{domain} // 'undef');
+    say 'docker_path=', ($LAST_PAREN_MATCH{path} // 'undef');
+    say 'docker_tag=', ($LAST_PAREN_MATCH{revision} // 'undef');
+
+# => repositories ------------------------------------------------------------------------------------------------- {{{1
+
+# list repositories
+[group('repositories')]
+@list-repos: (http-request 'GET' '/artifactory/api/repositories')
+
+# get repository
+[group('repositories')]
+@get-repo repo: (http-request 'GET' '/artifactory/api/v2/repositories/' + repo)
+
+# list repository
+[group('repositories')]
+list-repo repo: (http-request 'GET' '/artifactory/api/storage/' + repo 'list==1' 'deep==1')
+
+# => http --------------------------------------------------------------------------------------------------------- {{{1
+
+[group('http'), private, no-cd]
+http-request method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    uri='{{uri}}' && [[ "$uri" == /* ]] && uri="$JFROG_HOST$uri"
+    argv=(
+        --auth-type=basic
+        --auth="${JFROG_AUTH:-passport-user-$USER:$(credp sso.prod.$DOMAIN.com)}"
+        {{argv}}
+    )
+    '{{this}}' generic-http-request '{{method}}' "$uri" "${argv[@]@Q}"
+
+[group('http'), private, no-cd]
+http-request-body method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    argv=({{argv}})
+    '{{this}}' http-request '{{method}}' '{{uri}}' --no-ignore-stdin "${argv[@]@Q}"
