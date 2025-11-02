@@ -19,7 +19,7 @@ sub detect_os() {
     return $name;
 }
 
-sub fetch_packages ($os_name) {
+sub fetch_packages($os_name) {
     state %commands = (
         'Arch Linux'    => ['pacman -Qqd', 'pacman -Qqe', 'pacman -Slq'],
         'CentOS Stream' => [
@@ -42,7 +42,7 @@ sub fetch_packages ($os_name) {
 }
 
 ## no critic [ValuesAndExpressions::ProhibitImplicitNewlines]
-sub preview_command ($os_name) {
+sub preview_command($os_name) {
     state %commands = (
         'Arch Linux' => q{
             if [[ {2} == "available" ]]; then
@@ -72,7 +72,7 @@ sub preview_command ($os_name) {
     return $commands{$os_name};
 }
 
-sub fzf_options ($os_name) {
+sub fzf_options($os_name) {
     state %commands = (
         'Arch Linux' => [
             '--bind', 'alt-a:execute(fzf-run-reload -f -- sudo pacman -S {+1})',
@@ -90,7 +90,7 @@ sub fzf_options ($os_name) {
 
     die "Not found mutator for: $os_name\n" unless exists $commands{$os_name};
 
-    return ($commands{$os_name}->@*, '--header', 'A-a:add A-r:remove',);
+    return ($commands{$os_name}->@*, '--header', 'A-a:add A-r:remove');
 }
 
 sub main() {
@@ -123,7 +123,7 @@ sub main() {
 }
 
 ## no critic [ValuesAndExpressions::RequireInterpolationOfMetachars, ValuesAndExpressions::ProhibitImplicitNewlines]
-sub _start_fzf ($os_name) {
+sub _start_fzf($os_name) {
 
     #     local %ENV = %ENV;
     #     delete $ENV{FZF_DEFAULT_OPTS};
@@ -136,7 +136,7 @@ sub _start_fzf ($os_name) {
         # tidy
         fzf_options($os_name),
         '--bind',    "ctrl-m:execute( ( $preview ) | $ENV{PAGER} >/dev/tty)",
-        '--bind',    'ctrl-y:execute-silent(echo -n {+1} | $HOME/.local/script/clipcopy)',
+        '--bind',    'ctrl-y:execute-silent(echo -n {+1} | clipcopy)',
         '--bind',    'tab:toggle-out,shift-tab:toggle-in,`:clear-selection',
         '--preview', $preview,
         '--listen',  '--preview-window', 'right:50%:wrap:nohidden',
@@ -147,7 +147,7 @@ sub _start_fzf ($os_name) {
     return $pid, $chld_out, $chld_in;
 }
 
-sub _spew_to_fzf ($in, $list) {
+sub _spew_to_fzf($in, $list) {
     foreach my $package ($list->@*) {
         say {$in} sprintf('%s %s %s', $package->@*);
     }
@@ -156,7 +156,7 @@ sub _spew_to_fzf ($in, $list) {
     return;
 }
 
-sub _wait_fzf ($pid, $out) {
+sub _wait_fzf($pid, $out) {
     my @output = <$out>;
 
     waitpid($pid, 0)
@@ -167,7 +167,7 @@ sub _wait_fzf ($pid, $out) {
     return \@output;
 }
 
-sub _trim ($str) {
+sub _trim($str) {
     chomp($str);
     return $str =~ s{\A\s+|\s+\z}{}xgr;
 }
