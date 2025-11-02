@@ -1,14 +1,15 @@
-#!/usr/bin/env -S just --one --justfile
+#!/usr/bin/env -S just --one --unstable --justfile
 
 # https://just.systems/man/en/
 
-# requirements
-fzf-execute := require('fzf-execute')
-json2table := require('json2table')
+mod fzf "~/.local/lib/just/fzf"
+mod json "~/.local/lib/just/json"
 
-tui := 'auto'
-
+set export
+export colored-md := require('colored-md') # https://github.com/andrew-grechkin/colored-md
 export this := justfile()
+export tui := 'auto'
+
 export pass_dir := env('PASSWORD_STORE_DIR', env('XDG_DATA_HOME') + '/password-store')
 
 # => default ------------------------------------------------------------------------------------------------------ {{{1
@@ -17,16 +18,16 @@ export pass_dir := env('PASSWORD_STORE_DIR', env('XDG_DATA_HOME') + '/password-s
 [private]
 default:
     #!/usr/bin/env -S bash -Eeuo pipefail
-    if [[ "{{tui}}" == 'force' ]] || [[ "{{tui}}" == 'auto' && -t 1 ]]; then
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
         "$this" controller
     else
         "$this" view
     fi
 
-set unstable
 # Print help
-[script("/usr/bin/env", "-S", "colored-md")]
 help:
+    #!/usr/bin/env -S colored-md
+
     # ABSTRACT
     Interactive TUI for searching and managing the `pass` password store
 
@@ -50,10 +51,10 @@ help:
 # List all password store entries as a JSON stream
 model:
     #!/usr/bin/env -S bash -Eeuo pipefail
-    fd -g '*.gpg' --base-directory "{{pass_dir}}" --format={.} | jq -nR --arg dir '{{pass_dir}}' '
+    fd -g '*.gpg' --base-directory "$pass_dir" --format={.} | jq -nR --arg dir "$pass_dir" '
     reduce inputs as $line ([]; . + [{
         "path": $line,
-        "command": "pass2clipboard \(($dir + "/" + $line + ".gpg") | @sh) &>/dev/null"
+        "command": "pass populate \($line | @sh) &>/dev/null"
     }])'
 
 # Print password entries as a formatted and colorized table
@@ -63,12 +64,12 @@ view:
         'path;\(.path)'
         '_command;\(.command)'
     )
-    "$this" model | json2table 'sort_by(.path)' "${jq_fields[@]}"
+    "$this" model | "$this" json::to-table 'sort_by(.path)' "${jq_fields[@]}"
 
 # Display the interactive TUI for managing the password store
 controller:
     #!/usr/bin/env -S bash -Eeuo pipefail
-    export FZF_RELOAD_CMD="'$this' view"
+    export FZF_RELOAD_CMD="${this@Q} view"
     fzf_args=(
         --bind="alt-e:execute(pass edit {1})"
         --bind="alt-i:execute(pass show {1} | $PAGER)"
@@ -79,4 +80,4 @@ controller:
         --preview="pass show {1} | tail -n +2"
         --prompt="pass > "
     )
-    "$this" view | fzf-execute -- "${fzf_args[@]}"
+    "$this" view | "$this" fzf::execute -- "${fzf_args[@]}"
