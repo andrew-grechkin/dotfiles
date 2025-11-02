@@ -580,11 +580,11 @@ filetype <application/vnd.efi.iso,application/x-iso9660-image>
 	\ {Mount with fuseiso}
 	\ FUSE_MOUNT|fuseiso %SOURCE_FILE %DESTINATION_DIR,
 	\ {Run with qemu UEFI}
-	\ setsid -f iso-run %c:p %i,
+	\ setsid -f emu run %c:p %i,
 	\ {Run with qemu BIOS}
-	\ setsid -f iso-run -b %c:p %i,
+	\ setsid -f emu run -b %c:p %i,
 	\ {Run with qemu UEFI + USB}
-	\ setsid -f iso-run-usb-stick %c:p %i,
+	\ setsid -f emu run stick %c:p %i,
 
 " => File associations: qemu -------------------------------------------------------------------------------------- {{{1
 
