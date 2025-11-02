@@ -1,0 +1,293 @@
+#!/usr/bin/env -S just --one --justfile
+
+# ABSTRACT: wrapper around Jfrog API
+
+# https://just.systems/man/en/
+
+import   "~/.local/lib/just/common"
+mod http "~/.local/lib/just/http"
+
+export jq := require('jq')
+export this := justfile()
+
+export DOMAIN := env('DOMAIN')
+export JFROG_HOST := env('JFROG_HOST', 'jfrog.' + DOMAIN + '.com')
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private, no-cd]
+@default:
+    "$this" --list
+
+# => artifacts ---------------------------------------------------------------------------------------------------- {{{1
+
+# https://jfrog.com/help/r/jfrog-rest-apis/artifactory-query-language-aql
+# search for artifacts via AQL provided on STDIN
+[group('artifacts'), no-cd]
+aql:
+   #!/usr/bin/env -S bash -Eeuo pipefail
+
+   args=(
+       "accept:application/json"
+       "content-type:text/plain"
+   )
+   "$this" http-request POST '/artifactory/api/search/aql' --no-ignore-stdin "${args[@]}"
+
+# https://docs.jfrog.com/artifactory/docs/artifactory-query-language
+# find an artifact by name glob in a repo
+[group('artifacts'), no-cd]
+find repo_glob name_glob:
+   #!/usr/bin/env -S bash -Eeuo pipefail
+
+   req=$(jq -cn --arg r "$repo_glob" --arg n "$name_glob" '{
+       repo: {"$match":$r},
+       name: {"$match":$n}
+   }')
+   sort=$(jq -cn '{"$asc" : ["updated"]}')
+   include='"*", "stat"'
+
+   "$this" aql <<< "items.find($req).include($include).sort($sort)"| jq '.results'
+
+# https://docs.jfrog.com/artifactory/reference/getstorageitem
+# list artifacts in a repo recursively (consider using find instead)
+[group('artifacts'), no-cd]
+@list-repo-recursive repo: (http-request 'GET' f'/artifactory/api/storage/{{repo}}' 'list==1' 'deep==1')
+
+# https://docs.jfrog.com/artifactory/reference/getstorageitem
+# list artifacts in a repo by path
+[group('artifacts'), no-cd]
+list-repo repo rel_path='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shopt -s extglob
+    # jfrog API is a crap. One cannot just simply get flat structure with dirs and files at once, one can have only
+    # one or the other
+    rel_path="${rel_path##+(/)}"
+    full_list=$("$this" http-request GET "/artifactory/api/storage/${repo}${rel_path:+/$rel_path}")
+    jq -S '.children |= ( del(.[] | select(.folder == false)) + $list[].files)' <<< "$full_list" \
+        --slurpfile list <("$this" http-request GET "/artifactory/api/storage/${repo}${rel_path:+/$rel_path}" 'list==1')
+
+# https://docs.jfrog.com/artifactory/reference/deployartifact (NOTE: doc has wrong link)
+# create dir
+[group('artifacts'), no-cd]
+@create-dir repo path: (http-request 'PUT' f'/artifactory/{{repo}}/{{path}}/')
+
+# https://docs.jfrog.com/artifactory/reference/retrieveartifact
+# read file
+[group('artifacts'), no-cd]
+@get-file repo path: (http-request 'GET' f'/artifactory/{{repo}}/{{path}}')
+
+# https://docs.jfrog.com/artifactory/reference/deployartifact (NOTE: doc has wrong link)
+# upload file
+[group('artifacts'), no-cd]
+upload-file src_path target_repo rel_path :
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    rel_path=$("$this" trim-rel-file-path "$rel_path")
+    args=(
+        "x-checksum-sha1: $(sha1sum "$src_path" | perl -ane 'print $F[0]')"
+        "x-checksum-sha256: $(sha256sum "$src_path" | perl -ane 'print $F[0]')"
+    )
+    "$this" http-request PUT "/artifactory/$target_repo/$rel_path" "${args[@]}" --no-ignore-stdin < "$src_path"
+
+# https://docs.jfrog.com/artifactory/reference/deleteitem
+# delete file
+[group('artifacts'), no-cd]
+delete-file repo rel_path:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    rel_path=$("$this" trim-rel-file-path "$rel_path")
+    "$this" http-request DELETE "/artifactory/$repo/$rel_path"
+
+# https://jfrog.com/help/r/jfrog-rest-apis/copy-item
+# copy tag
+[group('artifacts'), no-cd]
+copy old_repo new_repo path:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request POST "/artifactory/api/copy/$old_repo/$path" "to==/$new_repo/$path.copy"
+
+# https://jfrog.com/help/r/jfrog-rest-apis/move-item
+# move tag
+[group('artifact'), no-cd]
+move old_repo new_repo path:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request POST "/artifactory/api/move/$old_repo/$path" "to==/$new_repo/$path"
+
+# delete artifact by URL
+[group('artifacts'), no-cd]
+delete-artifact url: (print "Deleting: " + url)
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    [[ "$url" =~ ^https://.+/artifactory/.+ ]] || "$this" fatal "Incorrect url: $url
+    Must be something like: https://<DOMAIN>/artifactory/<REPO>/<PATH>/<TAG>"
+
+    "$this" http-request 'DELETE' "$url"
+
+# => images ------------------------------------------------------------------------------------------------------- {{{1
+
+# list tags of an image
+[group('images'), no-cd]
+list-tags fqin:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    source <("$this" parse-fqin "$fqin")
+
+    req=$(jq -cn --arg repo "$docker_repo" --arg path "$docker_name/*" '{
+        "repo": {"$eq": $repo},
+        "name": {"$eq": "manifest.json"},
+        "$and": [{
+            path: {"$match": $path}
+        }]
+    }')
+    sort=$(jq -cn '{"$asc" : ["updated"]}')
+
+    "$this" aql <<< "items.find($req).sort($sort)" \
+        | jq '.results | map(. + {tag: (.path | split("/")[-1])})'
+
+# inspect the image
+[group('images'), no-cd]
+inspect fqin:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    source <("$this" parse-fqin "$fqin")
+
+    args=(
+        "/artifactory/api/docker/$docker_repo/v2/$docker_name/manifests/$docker_tag"
+        'accept:application/vnd.docker.container.image.v2+json'
+    )
+    memoize -t 1hour -- "$this" http-request GET "${args[@]}" \
+        | jq '. | (.history = [.history[].v1Compatibility |= fromjson])'
+
+# => repositories ------------------------------------------------------------------------------------------------- {{{1
+
+# list repositories
+[group('repositories'), no-cd]
+@list-repos: (http-request 'GET' '/artifactory/api/repositories')
+
+# https://docs.jfrog.com/artifactory/reference/getrepositoryconfigurationv2
+# get repository
+[group('repositories'), no-cd]
+@get-repo repo: (http-request 'GET' f'/artifactory/api/v2/repositories/{{repo}}')
+
+# => tokens ------------------------------------------------------------------------------------------------------- {{{1
+
+# https://docs.jfrog.com/administration/reference/createtoken
+# issue token
+[group('tokens'), no-cd]
+issue-token:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request POST "/access/api/v1/tokens" expires_in=60 description='test token'
+
+# https://docs.jfrog.com/administration/reference/gettokenbyid
+# get token
+[group('tokens'), no-cd]
+get-token:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    # TODO: not working because jfrog doesn't have a way to get token info by token value (not by Id)
+    JFROG_BEARER=$(</dev/stdin) "$this" http-request GET "/distribution/api/v1/security/token"
+
+# https://docs.jfrog.com/administration/reference/gettokens
+# list tokens
+[group('tokens'), no-cd]
+@list-tokens: (http-request 'GET' '/access/api/v1/tokens')
+
+# => user --------------------------------------------------------------------------------------------------------- {{{1
+
+# https://docs.jfrog.com/administration/reference/getUserList
+# list users
+[group('users'), no-cd]
+@list-users: (http-request 'GET' '/access/api/v2/users')
+
+# https://docs.jfrog.com/administration/reference/getuserdetails
+# get user
+[group('users'), no-cd]
+@get-user user: (http-request 'GET' f'/access/api/v2/users/{{user}}')
+
+# https://docs.jfrog.com/administration/reference/getgroupdetails
+# get group
+[group('groups'), no-cd]
+get-group group:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    memoize -t 1min -- "$this" http-request GET "/access/api/v2/groups/$group"
+
+# => http --------------------------------------------------------------------------------------------------------- {{{1
+
+[group('http'), private, no-cd, positional-arguments]
+http-request method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 2
+    [[ "$uri" == /* ]] && uri="$JFROG_HOST$uri"
+    if [[ -n "${JFROG_BEARER:-}" ]]; then
+        argv=(
+            --auth-type=bearer
+            --auth="${JFROG_BEARER}"
+        )
+    else
+        argv=(
+            --auth-type=basic
+            --auth="${JFROG_AUTH:-passport-user-$USER:$(credp "sso.prod.$DOMAIN.com")}"
+        )
+    fi
+    "$this" http::request "$method" "$uri" "${argv[@]}" "$@"
+
+# => helpers ------------------------------------------------------------------------------------------------------ {{{1
+
+# trim relative path
+[private, no-cd, no-exit-message]
+trim-rel-file-path rel_path:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shopt -s extglob
+    rel_path="${rel_path##+([[:space:]])}"
+    rel_path="${rel_path%%+([[:space:]])}"
+    rel_path="${rel_path##+(/)}"
+    [[ -z "$rel_path" || "$rel_path" =~ \/$ ]] && "$this" fatal "Incorrect file path: $rel_path"
+    echo "$rel_path"
+
+# parse image path
+[private, no-cd]
+parse-fqin fqin:
+    #!/usr/bin/env -S perl
+
+    use v5.40;
+    use English;
+
+    # this is tailored to jfrog FQIN (not intended to be generic)
+    my $artifact_re = qr{
+        \A
+
+        (?<artifact>
+            (?<site>                            # it has required site which is a combination of repo and domain
+                (?<repository> [^.:\/]+)        # repository is the very first part of the site
+                [.]
+                (?<domain> [^:\/]+)             # domain is the rest of the site
+            )
+
+            (?:                                 # it can have optional port
+                :                               # port starts with colon
+                (?<port> [[:digit:]]{1,5})      # port is 1-5 digits
+            )?
+
+            (?<path>                            # it has required path
+                \/                              # path must start with a slash
+                (?<name>                        # it has required name
+                    [a-z0-9\-\/_.]+
+                )
+            )
+        )
+
+        (?:                                     # it can have optional revision
+            (?: @(?=sha256:) | :)               # revision must start with colon or digest marker
+            (?<revision> [[:graph:]]+ )         # revision must be non-space non-control character
+        )?
+
+        \z
+    }x;
+
+    my $in = builtin::trim(q({{fqin}}));
+    if ( $in !~ $artifact_re ) {
+        say {*STDERR} "unable to parse artifact FQIN: '$in'";
+        exit 1;
+    }
+
+    say 'docker_site=', $LAST_PAREN_MATCH{site};
+    say 'docker_repo=', $LAST_PAREN_MATCH{repository};
+    say 'docker_domain=', $LAST_PAREN_MATCH{domain};
+    say 'docker_port=', $LAST_PAREN_MATCH{port} // '';
+    say 'docker_path=', $LAST_PAREN_MATCH{path};
+    say 'docker_name=', $LAST_PAREN_MATCH{name};
+    say 'docker_tag=', $LAST_PAREN_MATCH{revision} // '';
