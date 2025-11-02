@@ -1,4 +1,4 @@
-#!/usr/bin/env -S perl -CALS
+#!/usr/bin/env -S perl
 
 use v5.40;
 use warnings qw(FATAL utf8);
