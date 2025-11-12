@@ -2,33 +2,35 @@
 
 set -Eeuo pipefail
 
-args=$(getopt --name="$0" --options 'cp' --longoptions 'paging:' -- "$@")
+args=$(getopt --name="$0" --options 'cnp' --longoptions 'number,paging:' -- "$@")
 eval set -- "$args"
 
 color='auto'
 paging='auto'
 
 while ((1)); do
-	case "$1" in
-		-c) color="always"; shift ;;
-		-p) paging="always"; shift ;;
-		--paging) paging="$2"; shift 2 ;;
-		--) shift; break ;;
-	esac
+    case "$1" in
+        -c) color="always"; shift ;;
+        -n) add_args+=(-n); shift ;;
+        -p) paging="always"; shift ;;
+        --number) add_args+=(--number); shift ;;
+        --paging) paging="$2"; shift 2 ;;
+        --) shift; break ;;
+    esac
 done
 
 cmd=(
-	column --table --separator=$'\t' --output-separator=$'\t' "$@"
+    column --table --separator=$'\t' --output-separator=$'\t' "$@"
 )
 
 if [[ "$paging" != 'never' ]] && [[ "$paging" == 'always' || -t 1 ]]; then
-	LESS="${LESS:-"-x4 -iRSw --mouse"}"
-	LESS+=' --header=1'
-	# the below condition disables arrow scrolling for some reason
-	# [[ "$paging" == 'always' ]] || LESS+=' --quit-if-one-screen'
-	"${cmd[@]}" | colored-tsv --color=always | less || true
+    LESS="${LESS:-"-x4 -iRSw --mouse"}"
+    LESS+=' --header=1'
+    # the below condition disables arrow scrolling for some reason
+    # [[ "$paging" == 'always' ]] || LESS+=' --quit-if-one-screen'
+    "${cmd[@]}" | colored-tsv "${add_args[@]}" | less || true
 elif [[ "$color" == "always" ]]; then
-	"${cmd[@]}" | colored-tsv --color=always
+    "${cmd[@]}" | colored-tsv "${add_args[@]}"
 else
-	exec "${cmd[@]}"
+    exec "${cmd[@]}"
 fi

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+{
+    sqlite-utils tables "$1" --schema --table
+    sqlite-utils views "$1" --schema --table
+    echo
+    sqlite-utils indexes "$1" --table
+    echo
+    sqlite-utils analyze-tables "$1"
+} | "${PAGER:-less}"
