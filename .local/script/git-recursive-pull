@@ -8,23 +8,23 @@ set -Euo pipefail
 source "$HOME/.local/lib/shell/color.bash"
 
 if [[ "$#" -eq "1" ]] && [[ "$1" =~ \.git/?$ ]]; then
-	REPO=$(dirname "$1")
+    REPO=$(dirname "$1")
 
-	if [[ -n "$(git -C "$REPO" branch --show-current)" ]]; then
-		echo -e "$FG[olive]Updating ${REPO}$FX[reset]"
+    if [[ -n "$(git -C "$REPO" branch --show-current)" ]]; then
+        echo -e "$FG[olive]Updating ${REPO}$FX[reset]"
 
-		git -C "$REPO" -c color.ui=always fetch --force      \
-			&& nice git -C "$REPO" -c color.ui=always bleach \
-			&& nice git -C "$REPO" -c color.ui=always pull
-	fi
+        git -C "$REPO" -c color.ui=always fetch --force      \
+            && nice git -C "$REPO" -c color.ui=always bleach \
+            && nice git -C "$REPO" -c color.ui=always pull
+    fi
 else
-	fd -0uL -E 'bazel-*' -td -tf '\A\.git\z' "${1:-$PWD}" | sort -z | {
-		if [[ -n "$(command -v parallel)" ]]; then
-			parallel -0j-50% --delay 0.3 "$0" {}
-		else
-			xargs -0rn1 "$0"
-		fi
-	}
+    fd -0uL -E 'bazel-*' -E '/dist/' -td -tf '\A\.git\z' "${1:-$PWD}" | sort -z | {
+        if [[ -n "$(command -v parallel)" ]]; then
+            parallel -0j-50% --delay 0.3 "$0" {}
+        else
+            xargs -0rn1 "$0"
+        fi
+    }
 fi
 
 exit 0
