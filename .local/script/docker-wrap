@@ -7,11 +7,11 @@ name="$(basename "$1")"
 [[ -t 0 && -t 1 ]] && args=(-it) || args=(-i)
 # shellcheck disable=SC2016
 args+=(
-	--rm
-	-e TERM -e USER -e GITLAB_TOKEN --env-merge 'PATH=${PATH}:/mnt'
-	-h "$name"
-	-v '.:/mnt:ro'
-	"$1"
+    --rm
+    -e TERM -e USER -e GITLAB_TOKEN --env-merge 'PATH=${PATH}:/mnt'
+    -h "$name"
+    -v '.:/mnt:ro'
+    "$1"
 )
 
 command docker run "${args[@]}" "$@"
