@@ -2,14 +2,16 @@
 
 set -Eeuo pipefail
 
-[[ -r "$1" ]] || {
-	{
-		echo '#!/usr/bin/env bash'
-		echo
-		echo 'set -Eeuo pipefail'
-	} >> "$1"
+file=${1:-$XDG_RUNTIME_DIR/test.sh}
 
-	chmod a+x "$1"
+[[ -r "$file" ]] || {
+    {
+        echo '#!/usr/bin/env bash'
+        echo
+        echo 'set -Eeuo pipefail'
+    } >> "$file"
+
+    chmod a+x "$file"
 }
 
-"${VISUAL:-vim}" "$1"
+"${VISUAL:-vim}" "$file"

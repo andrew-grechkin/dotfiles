@@ -29,7 +29,7 @@ EO_TRANSFORM
     local fzf_args=(
         --ansi
         --bind="alt-B:execute:${VISUAL:-${EDITOR:-vi}} '$0'"
-        --bind="alt-b:execute-silent:python3 -mwebbrowser {2}"
+        --bind="alt-b:execute-silent:git web--browse {2}"
         --bind="alt-p:toggle-preview,alt-/:toggle-preview-wrap,ctrl-n:preview-down,ctrl-p:preview-up"
         --bind="alt-up:first,alt-down:last"
         --bind="click-footer:transform:$transform"
@@ -37,7 +37,6 @@ EO_TRANSFORM
         --bind="ctrl-g:jump"
         --bind="ctrl-l:clear-screen+reload-sync:${FZF_RELOAD_CMD:-$0}"
         --bind="ctrl-s:toggle-sort,ctrl-t:toggle-track"
-        --bind="esc:cancel"
         --bind="ctrl-y:execute-silent:echo -n {1} | clipcopy"
         --bind="esc:become:true"
         --delimiter="\t"
@@ -116,7 +115,7 @@ FZF_GIT_DEFAULT_ARGS=(
     --bind="ctrl-x:become([[ -n {q} ]] && echo {q} | tee >(clipcopy) >&2; cat {+f})"
     --bind="alt-y:execute-silent($CMD_EXTRACT_COMMIT | xargs -r git show -s --format=%B | trim-whole | clipcopy)"
     --bind="ctrl-y:execute-silent($CMD_EXTRACT_COMMIT | xargs -r git pcommit | trim-whole | clipcopy)"
-    --bind="esc:cancel"
+    --bind="esc:become:true"
     --delimiter=" "
     --no-sort
     --preview="show-commit \$($CMD_EXTRACT_COMMIT) -- ${OPTIONS[*]} | ${LOG_PAGER[*]}"
