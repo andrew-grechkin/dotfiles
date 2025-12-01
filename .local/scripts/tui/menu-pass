@@ -53,7 +53,7 @@ model:
     fd -g '*.gpg' --base-directory "{{pass_dir}}" --format={.} | jq -nR --arg dir '{{pass_dir}}' '
     reduce inputs as $line ([]; . + [{
         "path": $line,
-        "command": "pass2clipboard \(($dir + "/" + $line + ".gpg") | @sh) &>/dev/null"
+        "command": "pass populate \($line | @sh) &>/dev/null"
     }])'
 
 # Print password entries as a formatted and colorized table
