@@ -1,0 +1,5 @@
+#!/usr/bin/env -S just --one --justfile
+
+@build:
+    cargo build --release
+    cp -- "target/release/secret-service-api" "$XDG_CACHE_HOME/go/bin/"
