@@ -3,30 +3,35 @@
 set -Eeuo pipefail
 
 while getopts '' opt; do
-	case ${opt} in
-		:)
-			echo "Option -${OPTARG} requires an argument."
-			exit 1
-			;;
-		?)
-			exit 1
-			;;
-	esac
+    case ${opt} in
+        :)
+            echo "Option -${OPTARG} requires an argument."
+            exit 1
+            ;;
+        ?)
+            exit 1
+            ;;
+    esac
 done
 
 shift $((OPTIND - 1))
 
-yt_dlp_args=(
-	--embed-chapters
-	--embed-metadata
-	--embed-thumbnail
-	--format="ba[ext=m4a]"
-	--list-formats
-	--no-config
-	--no-simulate
-	# --prefer-free-formats
-	--output='%(fulltitle)s {id=%(id)s,up=%(uploader_id)s,ep=%(timestamp)s}.%(ext)s'
+args=(
+    --embed-chapters
+    --embed-metadata
+    --embed-thumbnail
+    --format="ba[ext=m4a]"
+    --no-config
+    --no-simulate
+    --output='%(fulltitle)s {id=%(id)s,up=%(uploader_id)s,ep=%(timestamp)s}.%(ext)s'
+    # --prefer-free-formats
 )
 
-umask 0002
-exec yt-dlp "${yt_dlp_args[@]}" "$@"
+if [[ -t 1 ]]; then
+    args+=(--list-formats)
+else
+    args+=(--no-progress)
+fi
+
+umask 002
+exec yt-dlp "${args[@]}" "$@"

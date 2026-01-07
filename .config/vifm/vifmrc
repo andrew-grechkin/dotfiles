@@ -253,8 +253,8 @@ filextype <text/markdown>,{*.md,*.mkd,*.Rmd,*.mdwiki}
 	\ tsp -q markdown show %c:p %i &,
 
 filextype {*.mmd,*.mermaid,*.plantuml,*.puml,*.pu}
-	\ {Render to svg}
-	\ tsp diagram-render-view -k %c:p %i &,
+	\ {Render to SVG}
+	\ tsp -q diagram-render-view -k %c:p %i &,
 
 " => File associations: PostScript -------------------------------------------------------------------------------- {{{1
 
@@ -266,9 +266,12 @@ filextype {*.ps,*.eps,*.ps.gz}
 
 " => File associations: Video ------------------------------------------------------------------------------------- {{{1
 
+filextype {{*fuse*}}<video/*>
+	\ {Video play using mpv}
+	\ mpv --title="force-focus" %c:p %i &,
 filextype <video/*>
 	\ {Video play using mpv}
-	\ mpv %c:p %i &,
+	\ mpv --title="force-focus" %c:p %i &,
 filetype <video/*>
 	\ {Video play using mpv True color terminal}
 	\ mpv %c:p --really-quiet --ao=pulse --hwdec=no -vo tct 2>/dev/null,
@@ -336,12 +339,12 @@ fileviewer <text/html>,{*.html,*.htm}
 
 filextype <application/x-mimearchive>,{*.mhtml,*.mht}
 	\ {Open with default browser}
-	\ python3 -mwebbrowser %c:p %i &,
+	\ git web--browse %c:p %i &,
 filetype <application/x-mimearchive>,{*.mhtml,*.mht}
 	\ {Extract}
 	\ mhtml-parse %c:p,
 fileviewer <application/x-mimearchive>,{*.mhtml,*.mht}
-	\ mhtml-parse -l %c:p
+	\ mhtml-parse -l %c:p,
 
 " => File associations: Images ------------------------------------------------------------------------------------ {{{1
 
@@ -377,8 +380,10 @@ fileviewer <application/vnd.sqlite3>{*.sqlar,.*.sqlar}
 	\ sqlite3 %c:p -Atv,
 
 filetype <application/vnd.sqlite3>
+	\ {Overview}
+	\ show sqlite %c:p,
 	\ {View}
-	\ sqlite-utils rows %c:p "$(sqlite-tables %c:p | head -1)" --nl | json2tsv | tsv-show | less --header=1,
+	\ sqlite-utils rows %c:p "$(sqlite-tables %c:p | head -1)" --nl | json2tsv | tsv-show -pc,
 	\ {Browse}
 	\ datasette %c:p -o,
 	\ {Dump}
@@ -386,7 +391,7 @@ filetype <application/vnd.sqlite3>
 	\ {Repl}
 	\ dbui-add-connection %c:r sqlite:%c:p; nvim -c 'DBUIToggle' -c '/%c:r' -c 'execute "normal \<CR>"' -c '/Tables' -c 'execute "normal \<CR>"',
 fileviewer <application/vnd.sqlite3>
-	\ sqlite-utils tables %c:p --schema --table; sqlite-utils views %c:p --schema --table; echo; sqlite-utils indexes %c:p --table; echo; sqlite-utils analyze-tables %c:p
+	\ show sqlite %c:p,
 
 " => File associations: misc -------------------------------------------------------------------------------------- {{{1
 
@@ -409,7 +414,7 @@ filetype {*.spec}
 	\ make -f ~/git/public/andrew-grechkin/centos-rpmbuild-docker/Makefile build9 %s,
 
 fileviewer {*.rpm}
-	\ rpm -qi %c:p
+	\ rpm -qi %c:p,
 
 filetype {CMakeLists.txt}
 	\ {Build}
@@ -417,19 +422,19 @@ filetype {CMakeLists.txt}
 
 filetype <application/x-ndjson>,{*.jsonl}
 	\ {View}
-	\ json2tsv %c:p | tsv-show --paging=always,
+	\ json2tsv %c:p | tsv-show -pc,
 	\ {Convert -> sqlite}
 	\ json2sqlite %c:p,
 	\ {Clean json}
-	\ json-clean <%c:p | sponge %c:p
+	\ json-clean <%c:p | sponge %c:p,
 fileviewer <application/x-ndjson>,{*.jsonl}
 	\ head -30 %c:p | json2tsv,
 
-filetype <application/json>
+filetype <application/json>,<application/schema+json>
 	\ {View}
 	\ jq -S --indent 2 < %c:p | colored-json --paging=always,
 	\ {View as yaml}
-	\ json2yaml < %c:p | colored-yaml --paging=always,
+	\ json2yaml < %c:p | colored-yaml --paging=always --file-name=%c,
 	\ {Repl jq}
 	\ jq-repl %c:p,
 	\ {Reformat json}
@@ -441,17 +446,23 @@ filetype <application/json>
 
 filetype <application/yaml>
 	\ {View}
-	\ yaml-sanitize %c:p | colored-yaml --paging=always,
+	\ yaml-sanitize %c:p | colored-yaml --paging=always --file-name=%c,
 	\ {Repl jq}
 	\ yaml2json %c:p | jq-repl,
 	\ {Sanitize yaml}
 	\ yaml-sanitize -i %c:p,
 	\ {Convert yaml -> json}
 	\ yaml2json %c:p > %c:r.json,
+	\ {Detect location by the file}
+	\ gemini-api locate < %c:p | colored-yaml --paging=always --file-name=%c,
+
+filetype <text/csv>
+	\ {View}
+	\ csv2tsv %c:p | tsv-show -pc,
 
 filetype <text/tab-separated-values>
 	\ {View}
-	\ tsv-show %c:p | less --header=1,
+	\ tsv-show -pc %c:p,
 	\ {Edit}
 	\ vi -c "set filetype=csv" %c:p,
 	\ {Repl jq}
@@ -477,21 +488,18 @@ filetype <text/plain>/[.]sha512sum$/
 	\ {Check SHA512 hash sum}
 	\ sha512sum -c %c:p %m,
 
-fileviewer {*.pem,*.crt}
-	\ openssl x509 -inform PEM -text -in %c:p
-
-fileviewer {*.key}
-	\ openssl rsa -check -text -noout -in %c:p || openssl ec -check -text -noout -in %c:p
+fileviewer <application/pkix-cert>,{*.pem,*.crt}
+	\ openssl verify -- %c:p; openssl x509 -inform PEM -text -noout -in %c:p,
 
 fileviewer {*.csr,*.req}
-	\ openssl req -verify -text -noout -in %c:p
+	\ openssl req -verify -text -noout -in %c:p,
 
 filetype {*.key}
 	\ {Convert to p12}
 	\ certtool --to-p12 --empty-password --load-privkey %c:p --outfile %c:r.p12,
 
 fileviewer {*.key}
-	\ openssl x509 -inform PEM -in %c:p -text
+	\ openssl pkey -check -text -noout -in %c:p,
 
 filetype {*.p12}
 	\ {Convert to PEM}
@@ -699,9 +707,9 @@ filetype {cryfs.config}
 	\ {Mount with cryfs}
 	\ FUSE_MOUNT2|cryfs -c %SOURCE_FILE %d %DESTINATION_DIR %FOREGROUND,
 
-filetype {*.encfs}
+filetype {.encfs6.xml}
 	\ {Mount with encfs}
-	\ FUSE_MOUNT2|encfs %PARAM %DESTINATION_DIR %FOREGROUND,
+	\ FUSE_MOUNT2|encfs-mount %SOURCE_FILE %DESTINATION_DIR,
 
 " => File associations: all files --------------------------------------------------------------------------------- {{{1
 
@@ -729,23 +737,31 @@ filetype {main.yaml}
 
 filetype {home-*.conf}
 	\ {Import wireguard config}
-	\ nmcli connection import type wireguard file %c:p
+	\ nmcli connection import type wireguard file %c:p,
 
 " => File associations: ssh --------------------------------------------------------------------------------------- {{{1
 
-fileviewer {id_*-cert.pub}
+fileviewer {id_*-cert.pub},{ssh*-cert.pub}
 	\ ssh-keygen -Lf %c:p,
 
-fileviewer {id_ed25519*}
+fileviewer <text/x-ssh-public-key>,{id_ed25519.pub},{ssh*.pub}
 	\ ssh-keygen -lf %c:p; echo; cat %c:p,
+
+filetype {ssh-sk*},{id_ed25519}
+	\ {Copy public key}
+	\ ssh-keygen -yf %c:p | clipcopy,
+
+fileviewer {ssh-sk*},{id_ed25519}
+	\ echo fingerprint:; ssh-keygen -lf %c:p; echo; echo public key:; ssh-keygen -yf %c:p,
 
 " => File associations: gpg --------------------------------------------------------------------------------------- {{{1
 
 filetype {*.pub}
 	\ {Import public key}
 	\ gpg --import %c:p,
-fileviewer {*.pub}
-	\ gpg-show %c:p
+
+fileviewer !{ssh*.pub}{*.pub}
+	\ gpg-show %c:p,
 
 " => File associations: all dirs ---------------------------------------------------------------------------------- {{{1
 
