@@ -711,7 +711,7 @@ filetype !<inode/directory>
 	\ {View in less}
 	\ less %c:p %n,
 	\ {Show file}
-	\ show-file %c:p | $PAGER,
+	\ show file %c:p | $PAGER,
 
 " => File associations: misc -------------------------------------------------------------------------------------- {{{1
 
@@ -751,7 +751,7 @@ fileviewer {*.pub}
 
 filetype <inode/directory>
 	\ {Show dir}
-	\ show-dir %c:p | $PAGER,
+	\ show dir %c:p | $PAGER,
 	\ {Play dir recursively background}
 	\ exec-detached mpv --quiet --no-osc --term-osd=force --no-audio-display --vid=no -- %c:p,
 	\ {Play dir recursively foreground}
@@ -763,12 +763,12 @@ filetype <inode/directory>
 	\ {Compress (background) as sqlar}
 	\ tsp sqlite3 %c:r.sqlar -Acv %f,
 fileviewer <inode/directory>
-	\ show-dir %c:p,
+	\ show dir %c:p,
 
 " => File associations: all files --------------------------------------------------------------------------------- {{{1
 
 fileviewer !<inode/directory>
-	\ show-file %c:p,
+	\ show file %c:p,
 
 " => Save state between sessions ---------------------------------------------------------------------------------- {{{1
 
@@ -841,7 +841,7 @@ nnoremap ,w :set wrap!<CR>
 
 " Example of standard two-panel file managers mappings
 nnoremap <f2>  :file<CR>
-nnoremap <f3>  :!{ show-dir %c || show-file %c } | less<CR>
+nnoremap <f3>  :!{ show dir %c || show file %c } | less<CR>
 nnoremap <f4>  :edit %"c %n<CR>
 nnoremap <f5>  :copy<CR>
 nnoremap <f6>  :move<CR>
