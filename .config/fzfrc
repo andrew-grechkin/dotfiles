@@ -9,7 +9,7 @@
 --bind="tab:execute-silent(true),shift-tab:execute-silent(true)"
 --listen
 --preview-window="right:60%:border-left:wrap:hidden"
---preview='{ show-dir {} || show-file {}; } 2>&1'
+--preview='{ show dir {} || show file {}; } 2>&1'
 --reverse
 --scroll-off=4
 --tabstop=4
