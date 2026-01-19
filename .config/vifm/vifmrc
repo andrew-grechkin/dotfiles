@@ -377,6 +377,8 @@ fileviewer <application/vnd.sqlite3>{*.sqlar,.*.sqlar}
 	\ sqlite3 %c:p -Atv,
 
 filetype <application/vnd.sqlite3>
+    \ {Overview}
+    \ show sqlite %c:p,
 	\ {View}
 	\ sqlite-utils rows %c:p "$(sqlite-tables %c:p | head -1)" --nl | json2tsv | tsv-show | less --header=1,
 	\ {Browse}
@@ -386,7 +388,7 @@ filetype <application/vnd.sqlite3>
 	\ {Repl}
 	\ dbui-add-connection %c:r sqlite:%c:p; nvim -c 'DBUIToggle' -c '/%c:r' -c 'execute "normal \<CR>"' -c '/Tables' -c 'execute "normal \<CR>"',
 fileviewer <application/vnd.sqlite3>
-	\ sqlite-utils tables %c:p --schema --table; sqlite-utils views %c:p --schema --table; echo; sqlite-utils indexes %c:p --table; echo; sqlite-utils analyze-tables %c:p
+    \ show sqlite %c:p,
 
 " => File associations: misc -------------------------------------------------------------------------------------- {{{1
 
@@ -711,7 +713,7 @@ filetype !<inode/directory>
 	\ {View in less}
 	\ less %c:p %n,
 	\ {Show file}
-	\ show-file %c:p | $PAGER,
+	\ show file %c:p | $PAGER,
 
 " => File associations: misc -------------------------------------------------------------------------------------- {{{1
 
@@ -751,7 +753,7 @@ fileviewer {*.pub}
 
 filetype <inode/directory>
 	\ {Show dir}
-	\ show-dir %c:p | $PAGER,
+	\ show dir %c:p | $PAGER,
 	\ {Play dir recursively background}
 	\ exec-detached mpv --quiet --no-osc --term-osd=force --no-audio-display --vid=no -- %c:p,
 	\ {Play dir recursively foreground}
@@ -763,12 +765,12 @@ filetype <inode/directory>
 	\ {Compress (background) as sqlar}
 	\ tsp sqlite3 %c:r.sqlar -Acv %f,
 fileviewer <inode/directory>
-	\ show-dir %c:p,
+	\ show dir %c:p,
 
 " => File associations: all files --------------------------------------------------------------------------------- {{{1
 
 fileviewer !<inode/directory>
-	\ show-file %c:p,
+	\ show file %c:p,
 
 " => Save state between sessions ---------------------------------------------------------------------------------- {{{1
 
@@ -841,7 +843,7 @@ nnoremap ,w :set wrap!<CR>
 
 " Example of standard two-panel file managers mappings
 nnoremap <f2>  :file<CR>
-nnoremap <f3>  :!{ show-dir %c || show-file %c } | less<CR>
+nnoremap <f3>  :!{ show dir %c || show file %c } | less<CR>
 nnoremap <f4>  :edit %"c %n<CR>
 nnoremap <f5>  :copy<CR>
 nnoremap <f6>  :move<CR>
