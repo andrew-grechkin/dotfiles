@@ -2,15 +2,17 @@
 
 set -Eeuo pipefail
 
-[[ -r "$1" ]] || {
-	{
-		echo '#!/usr/bin/env -S deno --allow-env --allow-ffi --allow-net --allow-read --allow-sys'
-		echo
-		echo '# https://docs.deno.com/api/node/'
-		echo '# https://docs.deno.com/runtime/fundamentals/standard_library/'
-	} >> "$1"
+file=${1:-$XDG_RUNTIME_DIR/test.ts}
 
-	chmod a+x "$1"
+[[ -r "$file" ]] || {
+    {
+        echo '#!/usr/bin/env -S deno --allow-env --allow-ffi --allow-net --allow-read --allow-sys'
+        echo
+        echo '# https://docs.deno.com/api/node/'
+        echo '# https://docs.deno.com/runtime/fundamentals/standard_library/'
+    } >> "$file"
+
+    chmod a+x "$file"
 }
 
-"${VISUAL:-vim}" "$1"
+"${VISUAL:-vim}" "$file"
