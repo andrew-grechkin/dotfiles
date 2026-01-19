@@ -27,6 +27,7 @@ prepend_path () {
 append_dirs=(
     "$HOME/.cache/bin"
     "$GOPATH/bin"
+    "/usr/lib/qt6/bin"
 )
 for p in "${append_dirs[@]}"; do append_path "$p"; done
 export PATH

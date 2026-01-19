@@ -1,34 +1,66 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2154
 
 set -Eeuo pipefail
 
-args=$(getopt --name="$0" --options 'cp' --longoptions 'paging:' -- "$@")
-eval set -- "$args"
+[[ -x "$(command -v argc)" ]] || {
+    echo "'argc' helper command is required, install from https://github.com/sigoden/argc" >&2
+    exit 2
+}
 
-color='auto'
-paging='auto'
+# @describe ABSTRACT:
+#   Pretty-print TSV data
+#
+# DESCRIPTION:
+#   Formats and displays tab-separated values (TSV) in a human-readable table.
+#   Supports optional features like line numbering, colorization, and paging
+#   through 'less'. It can process files or/and standard input.
+#
+# SYNOPSIS:
+#   tsv-show file.tsv -ncp
+#
+# LICENSE:
+#   GPL-2.0-or-later
+#   🄯 2025 Andrew Grechkin
 
-while ((1)); do
-	case "$1" in
-		-c) color="always"; shift ;;
-		-p) paging="always"; shift ;;
-		--paging) paging="$2"; shift 2 ;;
-		--) shift; break ;;
-	esac
-done
+# @meta version 1.0.0
+# @meta combine-shorts
+# @meta require-tools colored-tsv,less
 
-cmd=(
-	column --table --separator=$'\t' --output-separator=$'\t' "$@"
-)
+# @arg    files*                          Files to process, uses stdin if none provided
+# @flag   -n --number                     Number rows
+# @flag   -c $FORCE_COLOR                 Force color, even if not a TTY
+# @flag   -p $FORCE_PAGING                Force paging, even if not a TTY
+# @option    --color[=auto|always|never]  Control color
+# @option    --paging[=auto|always|never] Control paging
 
-if [[ "$paging" != 'never' ]] && [[ "$paging" == 'always' || -t 1 ]]; then
-	LESS="${LESS:-"-x4 -iRSw --mouse"}"
-	LESS+=' --header=1'
-	# the below condition disables arrow scrolling for some reason
-	# [[ "$paging" == 'always' ]] || LESS+=' --quit-if-one-screen'
-	"${cmd[@]}" | colored-tsv --color=always | less || true
-elif [[ "$color" == "always" ]]; then
-	"${cmd[@]}" | colored-tsv --color=always
+eval "$(argc --argc-eval "$0" "$@")"
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+if [[ -n "${argc_c:-}" || "$argc_color" == "always" ]] || [[ "$argc_color" == "auto" && -t 1 ]]; then
+    use_color="1"
+    if [[ -n "${argc_number:-}" ]]; then
+        colored_tsv_args+=(-n)
+    fi
+fi
+
+if [[ -n "${argc_p:-}" || "$argc_paging" == "always" ]] || [[ "$argc_paging" == "auto" && -t 1 ]]; then
+    use_paging="1"
+fi
+
+cat "${argc__positionals[@]}" \
+    | column --table --separator=$'\t' --output-separator=$'\t' \
+    | if [[ -n "${use_color:-}" ]]; then
+    colored-tsv "${colored_tsv_args[@]}"
 else
-	exec "${cmd[@]}"
+    cat
+    fi | if [[ -n "${use_paging:-}" ]]; then
+    LESS="${LESS:-"-x4 -iRSw --mouse"}"
+    LESS+=' --header=1'
+    # the below condition disables arrow scrolling for some reason
+    # LESS+=' --quit-if-one-screen'
+    less || true
+else
+    cat
 fi
