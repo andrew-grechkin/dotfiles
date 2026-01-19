@@ -59,15 +59,15 @@ export FZF_ALT_C_COMMAND='_fzf_compgen_helper . d'
 # )
 # export FZF_FILE_BINDS=(
 #   --bind='ctrl-alt-d:execute(rm -i {+} < /dev/tty > /dev/tty)+abort'
-#   --bind='ctrl-b:execute((show-dir {} || binwalk {}) | $PAGER > /dev/tty 2>&1)'
-#   --bind='ctrl-g:execute((show-dir {} || md5sum {}) | $PAGER > /dev/tty 2>&1)'
-#   --bind='ctrl-t:execute((show-dir {} || sha1sum {}) | $PAGER > /dev/tty 2>&1)'
-#   --bind='ctrl-x:execute((show-dir {} || hexdump -C {}) | $PAGER > /dev/tty 2>&1)'
-#   --bind='f3:execute((show-dir {} || show-file {} ) | $PAGER > /dev/tty 2>&1)'
+#   --bind='ctrl-b:execute((show dir {} || binwalk {}) | $PAGER > /dev/tty 2>&1)'
+#   --bind='ctrl-g:execute((show dir {} || md5sum {}) | $PAGER > /dev/tty 2>&1)'
+#   --bind='ctrl-t:execute((show dir {} || sha1sum {}) | $PAGER > /dev/tty 2>&1)'
+#   --bind='ctrl-x:execute((show dir {} || hexdump -C {}) | $PAGER > /dev/tty 2>&1)'
+#   --bind='f3:execute((show dir {} || show file {} ) | $PAGER > /dev/tty 2>&1)'
 #   --bind='f4:execute($EDITOR {} < /dev/tty > /dev/tty 2>&1)'
 # )
 # export FZF_FILE_PREVIEW=(
-#   --preview='{ show-dir {} || show-file {} } 2>&1 | head -n 100'
+#   --preview='{ show dir {} || show file {} } 2>&1 | head -n 100'
 # )
 
 # export FZF_NO_MULTI_OPTIONS=(
@@ -137,21 +137,22 @@ function _fzf_complete_ssh() {
 
 # => git completion ----------------------------------------------------------------------------------------------- {{{1
 
-function widget-fzf-bks-clusters()       LBUFFER+=$(unset REPORTTIME; bks tui=force               | lines2args)
-function widget-fzf-bks-docker()         LBUFFER+=$(unset REPORTTIME; docker-images tui=force     | lines2args)
-function widget-fzf-bks-namespaces()     LBUFFER+=$(unset REPORTTIME; bks tui=force namespaces    | lines2args)
-function widget-fzf-git-branches()       LBUFFER+=$(unset REPORTTIME; fzf-git-branches --all      | lines2args)
-function widget-fzf-git-files()          LBUFFER+=$(unset REPORTTIME; fzf-git-files               | lines2args)
-function widget-fzf-git-hashes()         LBUFFER+=$(unset REPORTTIME; fzf-git-log-branch-graph    | lines2args)
-function widget-fzf-git-hashes-all()     LBUFFER+=$(unset REPORTTIME; fzf-git-hashes-all          | lines2args)
-function widget-fzf-git-log-all-graph()  LBUFFER+=$(unset REPORTTIME; fzf-git-log-all-graph       | lines2args)
-function widget-fzf-git-mrs()            LBUFFER+=$(unset REPORTTIME; gitlab tui=force mrs        | lines2args)
-function widget-fzf-git-remotes()        LBUFFER+=$(unset REPORTTIME; fzf-git-remotes             | lines2args)
-function widget-fzf-git-search()         LBUFFER+=$(unset REPORTTIME; fzf-git-search              | lines2args)
-function widget-fzf-git-search-file()    LBUFFER+=$(unset REPORTTIME; fzf-git-search-file         | lines2args)
-function widget-fzf-git-search-message() LBUFFER+=$(unset REPORTTIME; fzf-git-search-message      | lines2args)
-function widget-fzf-git-tags()           LBUFFER+=$(unset REPORTTIME; fzf-git-tags                | lines2args)
-function widget-fzf-git-x-status()       LBUFFER+=$(unset REPORTTIME; fzf-git-x-status            | lines2args)
+function widget-fzf-bks-clusters()         LBUFFER+=$(unset REPORTTIME; bks tui=force               | lines2args)
+function widget-fzf-bks-docker()           LBUFFER+=$(unset REPORTTIME; docker-images tui=force     | lines2args)
+function widget-fzf-bks-namespaces()       LBUFFER+=$(unset REPORTTIME; bks tui=force namespaces    | lines2args)
+function widget-fzf-git-branches()         LBUFFER+=$(unset REPORTTIME; fzf-git-branches --all      | lines2args)
+function widget-fzf-git-files()            LBUFFER+=$(unset REPORTTIME; fzf-git-files               | lines2args)
+function widget-fzf-git-hashes()           LBUFFER+=$(unset REPORTTIME; fzf-git-hashes              | lines2args)
+function widget-fzf-git-hashes-all()       LBUFFER+=$(unset REPORTTIME; fzf-git-hashes-all          | lines2args)
+function widget-fzf-git-log-all-graph()    LBUFFER+=$(unset REPORTTIME; fzf-git-log-all-graph       | lines2args)
+function widget-fzf-git-log-branch-graph() LBUFFER+=$(unset REPORTTIME; fzf-git-log-branch-graph    | lines2args)
+function widget-fzf-git-mrs()              LBUFFER+=$(unset REPORTTIME; gitlab tui=force mrs        | lines2args)
+function widget-fzf-git-remotes()          LBUFFER+=$(unset REPORTTIME; fzf-git-remotes             | lines2args)
+function widget-fzf-git-search()           LBUFFER+=$(unset REPORTTIME; fzf-git-search              | lines2args)
+function widget-fzf-git-search-file()      LBUFFER+=$(unset REPORTTIME; fzf-git-search-file         | lines2args)
+function widget-fzf-git-search-message()   LBUFFER+=$(unset REPORTTIME; fzf-git-search-message      | lines2args)
+function widget-fzf-git-tags()             LBUFFER+=$(unset REPORTTIME; fzf-git-tags                | lines2args)
+function widget-fzf-git-x-status()         LBUFFER+=$(unset REPORTTIME; fzf-git-x-status            | lines2args)
 function widget-open-current-script() {
     local ltokens all_tokens token
     ltokens=("${(@f)$( perl -lpE 's/\|//g' <<< "$LBUFFER" | args2lines )}")
@@ -186,7 +187,7 @@ function widget-open-current-script() {
                     "$VISUAL" "$file"
                     break
                 else
-                    show-file "$file" | "${PAGER:-less}"
+                    show file "$file" | "${PAGER:-less}"
                     break
                 fi
             fi
@@ -202,6 +203,7 @@ zle -N widget-fzf-git-files
 zle -N widget-fzf-git-hashes
 zle -N widget-fzf-git-hashes-all
 zle -N widget-fzf-git-log-all-graph
+zle -N widget-fzf-git-log-branch-graph
 zle -N widget-fzf-git-mrs
 zle -N widget-fzf-git-remotes
 zle -N widget-fzf-git-search
@@ -213,11 +215,12 @@ zle -N widget-open-current-script
 
 # F1=\eOP F2=\eOQ F3=\eOR F4=\eOS F5=\e[15~ F6=\e[17~ F7=\e[18~ F8=\e[19~ F9=\e[20~ F10=\e[21~ F12=\e[24~
 bindkey ';;'   widget-fzf-git-x-status
+bindkey ';G'   widget-fzf-git-log-all-graph
 bindkey ';H'   widget-fzf-git-hashes-all
 bindkey ';c'   widget-fzf-bks-clusters
 bindkey ';d'   widget-fzf-bks-docker
 bindkey ';f'   widget-fzf-git-files
-bindkey ';g'   widget-fzf-git-log-all-graph
+bindkey ';g'   widget-fzf-git-log-branch-graph
 bindkey ';h'   widget-fzf-git-hashes
 bindkey ';j'   widget-fzf-git-branches
 bindkey ';m'   widget-fzf-git-mrs
