@@ -10,7 +10,7 @@
 --color="nomatch:dim:strip:gray"
 --listen
 --preview-window="right:60%:border-left:wrap:hidden"
---preview='{ show-dir {} || show-file {}; } 2>&1'
+--preview='{ show dir {} || show file {}; } 2>&1'
 --reverse
 --scroll-off=4
 --tabstop=4
