@@ -1,8 +1,9 @@
 #!/usr/bin/env perl
 
-use v5.36;
+use v5.40;
 
 use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+use List::Util   qw(first);
 
 my %options = (
     'DIFF_LEFT'    => 1,
@@ -12,7 +13,16 @@ my %options = (
     'UNION'        => 0,
 );
 
+my %actions = (
+    DIFF_LEFT    => sub {$_[0] == 1},
+    DIFF_RIGHT   => sub {$_[0] == 2},
+    DIFF_SYMM    => sub {$_[0] <= 2},
+    INTERSECTION => sub {$_[0] > 2},
+    UNION        => sub {true},
+);
+
 GetOptions(
+    'count|c'          => \(my $count_only = 0),
     'diff-left|l'      => \$options{DIFF_LEFT},
     'diff-right|r'     => \$options{DIFF_RIGHT},
     'diff-symmetric|s' => \$options{DIFF_SYMM},
@@ -23,31 +33,25 @@ GetOptions(
 -t 0 and die "STDIN must be provided (left set)\n";
 @ARGV or die "File(s) must be provided (right set)\n";
 
-my %set  = map {chomp; $_ => 2} <<>>;
-my %left = map {chomp; $_ => 1} <STDIN>;
+my %set = map {chomp; $_ => 2} <<>>;
 
-foreach my $left (keys %left) {
-    ++$set{$left};
+while (defined(my $line = <STDIN>)) {
+    chomp $line;
+    ++$set{$line};
 }
 
-if ($options{UNION}) {
-    say {*STDOUT} $_ for keys %set;
-} elsif ($options{INTERSECTION}) {
-    foreach my $key (keys %set) {
-        say {*STDOUT} $key if $set{$key} > 2;
-    }
-} elsif ($options{DIFF_SYMM}) {
-    foreach my $key (keys %set) {
-        say {*STDOUT} $key if $set{$key} <= 2;
-    }
-} elsif ($options{DIFF_RIGHT}) {
-    foreach my $key (keys %set) {
-        say {*STDOUT} $key if $set{$key} == 2;
-    }
-} else {
-    foreach my $key (keys %set) {
-        say {*STDOUT} $key if $set{$key} == 1;
+my $operation_name = first {$options{$_}} reverse sort keys %actions;
+my $operation      = $actions{$operation_name};
+
+my $count = 0;
+foreach my $key (keys %set) {
+    if ($operation->($set{$key})) {
+        $count_only
+            ? ++$count
+            : say {*STDOUT} $key;
     }
 }
+
+say $count if $count_only;
 
 __END__
