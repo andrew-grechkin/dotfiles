@@ -2,8 +2,10 @@
 
 # https://just.systems/man/en/
 
+set export
+
 @default:
-	just --list --justfile {{justfile()}}
+	just --list --justfile '{{justfile()}}'
 
 [no-cd]
 backup-all:
@@ -12,7 +14,7 @@ backup-all:
 	set -Eeuo pipefail
 
 	for volume in "home"; do
-		just --justfile {{justfile()}} backup "$volume"
+		just --justfile '{{justfile()}}' backup "$volume"
 	done
 
 [no-cd]
@@ -22,7 +24,7 @@ backup-all-to-nas host="home3.ams":
 	set -Eeuo pipefail
 
 	for volume in "home" "srv"; do
-		just --justfile {{justfile()}} backup-to-nas '{{host}}' "$volume"
+		just --justfile '{{justfile()}}' backup-to-nas "$host" "$volume"
 	done
 
 [no-cd]
@@ -35,7 +37,6 @@ backup volume:
 		[home]='/volumes/backup/ssd4t'
 	)
 
-	volume="{{volume}}"
 	target="${targets[$volume]}"
 
 	selector='select(
@@ -94,7 +95,6 @@ backup-to-nas host volume:
 		[srv]='/volume1/backup-srv'
 	)
 
-	volume="{{volume}}"
 	target="${targets[$volume]}"
 
 	selector='select(
@@ -124,7 +124,7 @@ backup-to-nas host volume:
 		current_id="$(jq -r '.userdata.id' <<< "$current")"
 		subvolume="$(jq -r '.subvolume' <<< "$current")"
 
-		if [[ -n "$current_id" ]] && ssh -Tx '{{host}}' bash -s <<< "test -d '$target/$current_id/snapshot'"; then
+		if [[ -n "$current_id" ]] && ssh -Tx "$host" bash -s <<< "test -d '$target/$current_id/snapshot'"; then
 			parent=(-p "$subvolume/.snapshots/$current_number/snapshot")
 			break
 		fi
@@ -133,11 +133,11 @@ backup-to-nas host volume:
 	jq -SC <<< "$current"
 
 	target_id="$(date --universal --rfc-3339=seconds)"
-	if id=$(snapper -c "$volume" create -p -c "number" -d "ongoing backup to {{host}}"); then
-		ssh -Tx '{{host}}' bash -s <<< "mkdir -p '$target/$target_id'"
+	if id=$(snapper -c "$volume" create -p -c "number" -d "ongoing backup to $host"); then
+		ssh -Tx "$host" bash -s <<< "mkdir -p '$target/$target_id'"
 		sudo btrfs send "${parent[@]}" "$subvolume/.snapshots/$id/snapshot" \
 			| pv -Wbat \
-			| ssh -Tx '{{host}}' "bash -c \"sudo -S btrfs receive -v '$target/$target_id/'\""
+			| ssh -Tx "$host" "bash -c \"sudo -S btrfs receive -v '$target/$target_id/'\""
 		snapper -c "$volume" modify -d "remote-backup" -u "important=yes,id=$target_id" "$id"
 		exit 0
 	fi
@@ -150,33 +150,33 @@ prepare-btrfs-partition device label prefix:
 	set -Eeuo pipefail
 
 	if (( EUID > 0 )); then
-		echo 'This operation will destroy data on {{device}}' >&2
+		echo "This operation will destroy data on $device" >&2
 		exec sudo -k "$0" "$@"
 	fi
 
 	umask '0022'
 	trap 'umount -R "/mnt-{{label}}"; rmdir "/mnt-{{label}}"' EXIT
-	mkdir                              '/mnt-{{label}}'
+	mkdir                              "/mnt-$label"
 
-	wipefs -a                 '{{device}}'
-	mkfs.btrfs -L '{{label}}' '{{device}}'
+	wipefs -a                 "$device"
+	mkfs.btrfs -L "$label" "$device"
 
-	current='/mnt-{{label}}/{{prefix}}/.snapshots/current'
+	head="/mnt-$label/$prefix/.snapshots/head"
 
-	mount -L '{{label}}' -o subvolid=5 '/mnt-{{label}}'
-	mkdir -p                           '/mnt-{{label}}/{{prefix}}'
-	btrfs subvolume create             '/mnt-{{label}}/{{prefix}}/.snapshots'
-	mkdir -p                           "$current"
-	btrfs subvolume create             "$current/snapshot"
+	mount -L "$label" -o subvolid=5 "/mnt-$label"
+	mkdir -p                           "/mnt-$label/$prefix"
+	btrfs subvolume create             "/mnt-$label/$prefix/.snapshots"
+	mkdir -p                           "$head"
+	btrfs subvolume create             "$head/snapshot"
 
-	if [[ {{label}} =~ ^var ]]; then
+	if [[ "$label" =~ ^var ]]; then
 		chattr +C "$current/snapshot"
 	fi
 
-	chmod a+rX,g+ws                    "$current/snapshot"
-	mkdir  -p                          "$current/snapshot/.snapshots"
+	chmod a+rX,g+ws                    "$head/snapshot"
+	mkdir  -p                          "$head/snapshot/.snapshots"
 
-	# cat <<HEREDOC > "$current/info.xml"
+	# cat <<HEREDOC > "$head/info.xml"
 	# <?xml version="1.0"?>
 	# <snapshot>
 	#   <type>single</type>
@@ -186,8 +186,8 @@ prepare-btrfs-partition device label prefix:
 	# </snapshot>
 	# HEREDOC
 
-	if [[ {{prefix}} = "@" ]]; then
-		btrfs subvolume set-default  "$current/snapshot"
+	if [[ "$prefix" = "@" ]]; then
+		btrfs subvolume set-default  "$head/snapshot"
 	fi
 
 [no-cd]
@@ -196,8 +196,8 @@ prepare-btrfs-cache user:
 	set -Eeuo pipefail
 
 	cache=~{{user}}/.cache
-	u="$(id -un {{user}})"
-	g="$(id -gn {{user}})"
+	u="$(id -un "$user")"
+	g="$(id -gn "$user")"
 
 	if [[ -e "$cache" ]]; then
 		echo "Cache already exists: $cache" >&2
@@ -225,26 +225,26 @@ prepare-btrfs-cache user:
 	npm install --no-audit --no-fund
 
 [no-exit-message]
-@audio dir="/media/nfs/home/music":
-	just -g audio-list "{{dir}}" | fzf-execute
+@audio dir="/media/nfs/home/audio/music":
+	just -g audio-list "$dir" | fzf-execute
 
 [no-exit-message]
 @books dir="/media/nfs/home/doc/@technical":
-	just -g books-list "{{dir}}" | fzf-execute
+	just -g books-list "$dir" | fzf-execute
 
 [no-exit-message]
 @films dir="/media/nfs/home/video":
-	just -g films-list "{{dir}}" | fzf-execute
+	just -g films-list "$dir" | fzf-execute
 
 [no-exit-message]
-audio-list dir="/media/nfs/home/music":
+audio-list dir="/media/nfs/home/audio/music":
 	#!/usr/bin/env bash
 	set -Eeuo pipefail
 
 	{
-		cd "{{dir}}"
+		cd "$dir"
 		while read -r line; do
-			echo -e "$line\tmpv --quiet --no-osc --term-osd=force --no-audio-display -- \"{{dir}}/$line\""
+			echo -e "$line\tmpv --quiet --no-osc --term-osd=force --no-audio-display -- \"$dir/$line\""
 		done < <(fd -t dir --min-depth 2 --max-depth 4 --relative-path)
 	} | sort
 
@@ -254,12 +254,12 @@ books-list dir="/media/nfs/home/doc/@technical":
 	set -Eeuo pipefail
 
 	{
-		cd "{{dir}}"
+		cd "$dir"
 		while read -r LINE; do
 			if [[ "$LINE" =~ \.pdf$|\.djvu$ ]]; then
-				echo -e "$LINE\tzathura - <\"{{dir}}/$LINE\""
+				echo -e "$LINE\tzathura - <\"$dir/$LINE\""
 			elif [[ "$LINE" =~ \.fb2$|\.epub$|\.ePub$ ]]; then
-				echo -e "$LINE\txdg-open \"{{dir}}/$LINE\""
+				echo -e "$LINE\txdg-open \"$dir/$LINE\""
 			fi
 		done < <(fd --no-ignore -t file -e pdf -e djvu -e fb2 -e epub --relative-path)
 	} | sort
@@ -270,9 +270,9 @@ films-list dir="/media/nfs/home/video":
 	set -Eeuo pipefail
 
 	{
-		cd "{{dir}}"
+		cd "$dir"
 		while read -r line; do
-			echo -e "$line\tmpv --quiet -- \"{{dir}}/$line\""
+			echo -e "$line\tmpv --quiet -- \"$dir/$line\""
 		done < <(fd -t file -e webm -e mkv -e avi -e mp4 -e ts --relative-path)
 	} | sort
 
@@ -282,7 +282,7 @@ test-ssh-speed host="localhost":
 
 	for i in `ssh -Q cipher`; do
 		dd if=/dev/urandom bs=1M count=100 2> /dev/null \
-		| ssh -Tx -c $i '{{host}}' "(/usr/bin/env time -p cat) > /dev/null" 2>&1 \
+		| ssh -Tx -c $i "$host" "(/usr/bin/env time -p cat) > /dev/null" 2>&1 \
 		| grep real \
 		| awk '{print "'$i': "100 / $2" MB/s" }'
 	done

@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+version="${DIB_ARCH_VERSION?:version must be provided}"
+
+docker build --pull=always --tag="archlinux-distrobox:$version" --file="$XDG_DATA_HOME/distrobox/archlinux-distrobox.Dockerfile" .
+
+ini=$(epl2text \
+        <(jq -n --arg host "$(hostname)" --arg ver "$version" '{hostname: $host, version: $ver}') \
+        <"$XDG_DATA_HOME/distrobox/distrobox.ini.ep"
+)
+
+distrobox-assemble create --file <(echo "$ini") -n "arch-$version" "$@"

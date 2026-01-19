@@ -4,245 +4,249 @@
 
 # focus to the given desktop
 {1-9,0} + super
-	bspc desktop -f '{1-9,0}'
+    bspc desktop -f '{1-9,0}'
 # send to the given desktop
 {1-9,0} + super + ctrl
-	bspc node -d '{1-9,0}'
+    bspc node -d '{1-9,0}'
 # preselect the ratio
 {1-9} + super + shift
-	bspc node -o 0.{1-9}
+    bspc node -o 0.{1-9}
 
 # focus the last node/desktop
 {Tab,grave} + super
-	bspc {node,desktop} -f last
+    bspc {node,desktop} -f last
 Tab + alt + {_,shift}
-	bspc wm -h off; \
-	bspc node {prev,next} -f; \
-	bspc wm -h on
+    bspc wm -h off; \
+    bspc node {prev,next} -f; \
+    bspc wm -h on
 
 # close/kill node
 q + super + {_,ctrl}
-	bspc node -{c,k}
+    bspc node -{c,k}
 # restart/quit bspwm
 {w,W} + super + ctrl
-	bspc {wm -r,quit}
+    bspc {wm -r,quit}
 # reload sxhkd config
 r + super + ctrl
-	pkill --signal USR1 -x sxhkd
+    pkill --signal USR1 -x sxhkd
 # focus the older or newer node in the focus history
 # super + {o,i}
 p + super + ctrl
-	bspc node -g private
+    bspc node -g private
 
 s + super + ctrl
-	bspc node -g sticky
+    bspc node -g sticky
 f + super + ctrl
-	bspwm-toggle-floating-state
+    bspwm-toggle-floating-state
 f + super + ctrl + shift
-	bspc node -t '~pseudo_tiled'
+    bspc node -t '~pseudo_tiled'
 # focus the node in the given direction
 {h,j,k,l} + super
-	bspc node -f {west,south,north,east}
+    bspc node -f {west,south,north,east}
 # preselect the direction
 {h,j,k,l} + super + ctrl
-	bspc node -p {west,south,north,east}
+    bspc node -p {west,south,north,east}
 # move the node in the given direction
 {h,j,k,l} + super + shift
-	bspc node -s {west,south,north,east}
+    bspc node -s {west,south,north,east}
 k + super + ctrl + shift
-	xkill
+    xkill
 l + super + ctrl + shift
-	bspc node -g locked
+    bspc node -g locked
 
 # fullscreen node
 z + super + ctrl
-	bspc node -t "~fullscreen"
+    bspc node -t "~fullscreen"
 x + super + ctrl
-	xprop > "${XDG_RUNTIME_DIR}/xprop.log"
+    xprop > "${XDG_RUNTIME_DIR}/xprop.log"
 # # swap the current node and the biggest window
 # b + super + ctrl
-# 	bspc node -s biggest.window
+#   bspc node -s biggest.window
 # Focus a floating/tiled window
 n + super + ctrl
-	bspwm-toggle-floating-focus
+    bspwm-toggle-floating-focus
 
 # resise window
 {Left,Down,Up,Right} + super + ctrl
-	bspc node -z {right -50 0,bottom 0 50,bottom 0 -50,right 50 0}
+    bspc node -z {right -50 0,bottom 0 50,bottom 0 -50,right 50 0}
 
 # move window
 {Left,Down,Up,Right} + super + shift
-	bspc node -v {-20 0,0 20,0 -20,20 0}
+    bspc node -v {-20 0,0 20,0 -20,20 0}
 
 # => kde + bspwm -------------------------------------------------------------------------------------------------- {{{1
 
 # super
-#	  qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.activateLauncherMenu
+#     qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.activateLauncherMenu
 
 # => applications ------------------------------------------------------------------------------------------------- {{{1
 
 F5 + super
-	$HOME/.local/script/bing-wallpaper -s
+    $HOME/.local/script/bing-wallpaper -s
 F9 + super
-	$HOME/.local/script/touchpad-toggle
+    $HOME/.local/script/touchpad-toggle
 # F10 + super
-#	$HOME/.local/script/cliptrans
+#   $HOME/.local/script/cliptrans
 F12 + super
-	$HOME/.local/script/pass gen -c
+    $HOME/.local/script/pass gen -c
 
 Return + super
-	wezterm start --always-new-process /usr/bin/zsh
+    wezterm start --always-new-process /usr/bin/zsh
 # not working with kanata
 # Return + super + alt
-# 	wezterm --config="enable_csi_u_key_encoding=false" start --always-new-process /usr/bin/zsh
+#   wezterm --config="enable_csi_u_key_encoding=false" start --always-new-process /usr/bin/zsh
 
 minus + super
-	wezterm start --always-new-process --class 'TermFloatingSmall' "menu-system-misc"
+    wezterm start --always-new-process --class 'TermFloatingSmall' "menu-system-misc"
 equal + super
-	wezterm start --always-new-process --class 'TermFloatingSmall' "menu-system-audio"
+    wezterm start --always-new-process --class 'TermFloatingSmall' "menu-system-audio"
 BackSpace + super
-	wezterm start --always-new-process --class 'TermFloatingSmall' "menu-system-exit"
+    wezterm start --always-new-process --class 'TermFloatingSmall' "menu-system-exit"
 
 # r + super
-#	exo-open --launch FileManager
+#   exo-open --launch FileManager
 r + super
-	busctl --user -j call org.kde.CrowTranslate /org/kde/CrowTranslate/MainWindow org.kde.CrowTranslate.MainWindow translateSelection
+    busctl --user -j call org.kde.CrowTranslate /org/kde/CrowTranslate/MainWindow org.kde.CrowTranslate.MainWindow translateSelection
 t + super
-	wezterm start --always-new-process --class 'Main-Tmux' tmux
+    wezterm start --always-new-process --class 'Main-Tmux' tmux
 t + alt + super
-	wezterm start --always-new-process --class 'Main-Tmux' distrobox enter -n arch -- tmux -L arch
+    wezterm start --always-new-process --class 'Main-Tmux' distrobox enter -n "arch-$DIB_ARCH_VERSION" -- tmux -L arch
 y + super
-	wezterm start --always-new-process bash
-#	wezterm start --always-new-process zellij
+    wezterm start --always-new-process bash
+#   wezterm start --always-new-process zellij
 y + alt + super
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/fzf-select" nerd
+    wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/fzf-select" nerd
 u + super
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/fzf-select" unicode
+    wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/fzf-select" unicode
 u + alt + super
-	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/fzf-select" emoji
+    wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/fzf-select" emoji
 o + super
-	opera
+    opera
 o + alt + super
-	wezterm start --always-new-process --class 'TermFloating' "menu-clipboard"
+    wezterm start --always-new-process --class 'TermFloating' "menu-clipboard"
 bracketleft + super
-	wezterm start --always-new-process --class 'TermFloating' "menu-pacman"
+    wezterm start --always-new-process --class 'TermFloating' "menu-pacman"
 bracketleft + alt + super
-	wezterm start --always-new-process --class 'TermFloating' "menu-pkg-search"
+    wezterm start --always-new-process --class 'TermFloating' "menu-pkg-search"
 bracketright + super
-	wezterm start --always-new-process --class 'TermFloating' "menu-mise"
+    wezterm start --always-new-process --class 'TermFloating' "menu-mise"
 
 a + alt + super
-	wezterm start --always-new-process --class 'TermFloating' just -g audio
+    wezterm start --always-new-process --class 'TermFloating' just -g audio
 s + super
-	wezterm start --always-new-process --class 'TermFloating' "menu-pass"
+    wezterm start --always-new-process --class 'TermFloating' "menu-pass"
 d + super
-	wezterm start --always-new-process --class 'TermFloating' "menu-app"
+    wezterm start --always-new-process --class 'TermFloating' "menu-app"
 f + alt + super
-	wezterm start --always-new-process --class 'TermFloating' just -g films
+    wezterm start --always-new-process --class 'TermFloating' just -g films
 g + alt + super
-	wezterm start --always-new-process --class 'TermFloating' "menu-mpris"
+    wezterm start --always-new-process --class 'TermFloating' "menu-mpris"
 g + super
-	wezterm start --always-new-process --class 'Floating'     "gg"
+    wezterm start --always-new-process --class 'Floating'     "gg"
 h + alt + super
-	wezterm start --always-new-process --class 'TermFloating' "menu-mpv-history"
+    wezterm start --always-new-process --class 'TermFloating' "menu-mpv-history"
 j + alt + super
-	wezterm start --always-new-process --class 'TermFloating' just -g books "/media/nfs/home/doc/@technical"
+    wezterm start --always-new-process --class 'TermFloating' just -g books "/media/nfs/home/doc/@technical"
 k + alt + super
-	wezterm start --always-new-process --class 'TermFloating' "menu-man-keyword"
+    wezterm start --always-new-process --class 'TermFloating' "menu-man-keyword"
 l + alt + super
-	wezterm start --always-new-process --class 'TermFloating' just -g books "/media/nfs/home/doc/@fiction"
+    wezterm start --always-new-process --class 'TermFloating' just -g books "/media/nfs/home/doc/@fiction"
 semicolon + alt + super
-	wezterm start --always-new-process --class 'TermFloating' just -g books "/media/nfs/home/doc/@study"
+    wezterm start --always-new-process --class 'TermFloating' just -g books "/media/nfs/home/doc/@study"
 
 z + super
     qrcode2text
 x + alt + super
-	busctl --user -j call org.kde.CrowTranslate /org/kde/CrowTranslate/MainWindow org.kde.CrowTranslate.MainWindow translateScreenArea
+    busctl --user -j call org.kde.CrowTranslate /org/kde/CrowTranslate/MainWindow org.kde.CrowTranslate.MainWindow translateScreenArea
 x + super
     screen2text
 c + super
-	qalculate-gtk
+    qalculate-gtk
 # b + super
-#	exo-open --launch WebBrowser
+#   exo-open --launch WebBrowser
 # n + alt + super
-# 	wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/open-vim-wiki"
+#   wezterm start --always-new-process --class 'TermFloating' "$HOME/.local/script/open-vim-wiki"
 m + alt + super
-	wezterm start --always-new-process --class 'TermFloating' "menu-man-name"
+    wezterm start --always-new-process --class 'TermFloating' "menu-man-name"
 comma + alt + super
-	wezterm start --always-new-process --class 'TermFloating' "menu-docs" "$HOME/.local/share/wiki"
+    wezterm start --always-new-process --class 'TermFloating' "menu-docs" "$HOME/.local/share/wiki"
 period + alt + super
-	wezterm start --always-new-process --class 'TermFloating' just -g books "${XDG_DATA_HOME}/cheatsheet"
-period + alt + super + shift
-	wezterm start --always-new-process --class 'TermFloating' "menu-docs"
+    wezterm start --always-new-process --class 'TermFloating' just -g books "${XDG_DATA_HOME}/cheatsheet"
+# period + alt + super + shift
+#     wezterm start --always-new-process --class 'TermFloating' "menu-docs"
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1
 
 XF86AudioMedia
-	audacious
+    audacious
 # XF86AudioNext
-#	cmus-remote
+#   cmus-remote
 # XF86AudioPlay
-#	cmus-remote --pause
+#   cmus-remote --pause
 # XF86AudioPrev
-#	cmus-remote
+#   cmus-remote
 # XF86Battery
-#	xfce4-power-manager-settings
+#   xfce4-power-manager-settings
+# XF86MonBrightnessDown
+#     brightnessctl -- set '-10%'
+# XF86MonBrightnessUp
+#     brightnessctl -- set '+10%'
 XF86Calculator
-	qalculate-gtk
+    qalculate-gtk
 # XF86Display
-#	xfce4-display-settings
+#   xfce4-display-settings
 # XF86Favorites
-#	exo-open --launch TerminalEmulator "$HOME/.local/script/tmux-default-session"
+#   exo-open --launch TerminalEmulator "$HOME/.local/script/tmux-default-session"
 # XF86HomePage
-#	exo-open --launch FileManager
+#   exo-open --launch FileManager
 # XF86Launch5
-#	google-chrome-stable
+#   google-chrome-stable
 # XF86Launch6
-#	opera
+#   opera
 # XF86Launch7
-#	code
+#   code
 # XF86Launch8
-#	code
+#   code
 # XF86Launch9
-#	exo-open --launch TerminalEmulator
+#   exo-open --launch TerminalEmulator
 # XF86Mail
-#	exo-open --launch MailReader
+#   exo-open --launch MailReader
 # XF86Search
-#	catfish
+#   catfish
 #XF86WWW
-#	exo-open --launch WebBrowser
+#   exo-open --launch WebBrowser
 # XF86Back
-#	cmus-remote --prev
+#   cmus-remote --prev
 # XF86Forward
-#	cmus-remote --next
+#   cmus-remote --next
 
 # => mouse -------------------------------------------------------------------------------------------------------- {{{1
 
 button8
-	busctl --user -j call org.kde.CrowTranslate /org/kde/CrowTranslate/MainWindow org.kde.CrowTranslate.MainWindow translateSelection
+    busctl --user -j call org.kde.CrowTranslate /org/kde/CrowTranslate/MainWindow org.kde.CrowTranslate.MainWindow translateSelection
 
 button9
-	busctl --user -j call org.kde.klipper /klipper org.kde.klipper.klipper showKlipperPopupMenu
+    busctl --user -j call org.kde.klipper /klipper org.kde.klipper.klipper showKlipperPopupMenu
 
 #button8
-#	cmus-remote --prev
-#	xte "keydown Alt_R" "keydown F1" "keyup Alt_R" "keyup F1"
+#   cmus-remote --prev
+#   xte "keydown Alt_R" "keydown F1" "keyup Alt_R" "keyup F1"
 #button9
-#	cmus-remote --next
-#	xte "keydown Alt_R" "keydown F2" "keyup Alt_R" "keyup F2"
+#   cmus-remote --next
+#   xte "keydown Alt_R" "keydown F2" "keyup Alt_R" "keyup F2"
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1
 
 #super + @x
-#	xdotool key --clearmodifiers ctrl+shift+v
+#   xdotool key --clearmodifiers ctrl+shift+v
 #super + @c
-#	xdotool key --clearmodifiers ctrl+c
+#   xdotool key --clearmodifiers ctrl+c
 #super + @v
-#	xdotool key --clearmodifiers ctrl+shift+v
+#   xdotool key --clearmodifiers ctrl+shift+v
 
 # paste primary buffer
 @p + alt + shift
-	$HOME/.local/script/primarypaste | xdotool type --clearmodifiers --delay 5 --file -
+    $HOME/.local/script/primarypaste | xdotool type --clearmodifiers --delay 5 --file -
 # paste secondary buffer
 @s + alt + shift
-	$HOME/.local/script/secondarypaste | xdotool type --clearmodifiers --delay 5 --file -
+    $HOME/.local/script/secondarypaste | xdotool type --clearmodifiers --delay 5 --file -
