@@ -1,28 +1,54 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2154
 
 set -Eeuo pipefail
 
-command git rev-parse HEAD &>/dev/null || {
-	echo "Unsafe to run outside of a git repo" >&2
-	exit 1
+# @describe Wrapper around ripgrep and perl to make easy search and replace in multiple files
+#
+# EXAMPLE:
+#   $ files-search-replace -r 's/\b(the\w*)/\U$1/g' -- -g '*.yml'
+#   uppercase all words begin with 'the' in all *.yml files recursively
+
+# @meta version 1.0.0
+# @meta combine-shorts
+# @meta require-tools perl,rg,xargs
+
+# @arg    rg-args*       Arguments passed to ripgrep
+# @flag   -d --dry-run*  Dry run (print all matches that would be replaced)
+# @flag   -y --yolo      Allow to run outside git repo (dangerous!)
+# @option -r --regex!    Substitute regex in a form s/// or s{}{}
+
+function fatal() {
+    echo "fatal:" "$@" >&2; exit 1
 }
 
-if [[ "$#" -lt 1 ]]; then
-	echo "Please pass a substitute regex s/// or s{}{}" >&2
-	exit 1
+[[ -x "$(command -v argc)" ]] || fatal "'argc' helper is required. Please install from https://github.com/sigoden/argc"
+
+eval "$(argc --argc-eval "$0" "$@")"
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+if [[ -z "${argc_yolo:-}" ]] && ! command git rev-parse HEAD &>/dev/null; then
+    fatal "unsafe to run outside of a git repo"
 fi
 
-args=("$@")
-regex="${args[-1]}"
-unset "args[-1]"
-
-if [[ "$regex" =~ ^s/ ]]; then
-	search=$(echo "$regex" | grep -o -P '(?<=s/)(.*?)(?=/)')
-elif [[ "$regex" =~ ^s\{ ]]; then
-	search=$(echo "$regex" | grep -o -P '(?<=s{)(.*?)(?=}{)')
+if [[ "$argc_regex" =~ ^s/ ]]; then
+    search=$(echo "$argc_regex"  | perl -lpE 's| ^s/ (.+?) (?<!\\)/ (.+?) (?:/[[:alpha:]]*)?$ |$1|x')
+    replace=$(echo "$argc_regex" | perl -lpE 's| ^s/ (.+?) (?<!\\)/ (.+?) (?:/[[:alpha:]]*)?$ |$2|x')
+elif [[ "$argc_regex" =~ ^s\{ ]]; then
+    search=$(echo "$argc_regex"  | perl -lpE 's| ^s{ (.+?) }{ (.+?) }[[:alpha:]]*$ |$1|x')
+    replace=$(echo "$argc_regex" | perl -lpE 's| ^s{ (.+?) }{ (.+?) }[[:alpha:]]*$ |$2|x')
 else
-	echo "Invalid regex: '$regex'" >&2
-	exit 1
+    fatal "invalid regex: $argc_regex"
 fi
 
-rg "${args[@]}" -0Ll "$search" | xargs -0r perl -i -pE "BEGIN {@ARGV = grep {! -l} @ARGV} $regex"
+[[ -z "$search" ]] && fatal "empty search pattern is not allowed"
+
+unset RIPGREP_CONFIG_PATH
+
+if [[ -n "${argc_dry_run:-}" ]]; then
+    (( argc_dry_run > 1 )) && args+=(--replace="$replace")
+    rg -P   --regexp="$search" "${args[@]}" "${argc__positionals[@]}"
+else
+    rg -P0l --regexp="$search" "${argc__positionals[@]}" | xargs -0r perl -i -pE "$argc_regex"
+fi

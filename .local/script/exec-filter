@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
 
+# ABSTRACT: filter all lines of stdin based on errno of command executed
+
+# example: echo $'13\n22\n32' | exec-filter '[[ {} =~ 2 ]]'
+
 xargs -rI{} bash -c ">&2 eval ${*@Q} && echo {}"
+
 exit 0

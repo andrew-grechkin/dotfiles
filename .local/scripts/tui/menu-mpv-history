@@ -1,26 +1,91 @@
-#!/usr/bin/env bash
+#!/usr/bin/env -S just --one --unstable --justfile
 
-set -Eeuo pipefail
+# https://just.systems/man/en/
 
-file_path="$XDG_STATE_HOME/mpv/play.history.tsv"
+set export
+export fzf-execute2 := require('fzf-execute2')
+export json2table := require('json2table')
+export json2tsv := require('json2tsv')
+export sponge := require('sponge')
+export this := justfile()
+export tsv2json := require('tsv2json')
+export tui := 'auto'
 
-if [[ -t 1 ]]; then
-	fzf_cmd=(
-		fzf-execute2
-		--bind="alt-r:execute-silent(grep -vF {3} '$file_path' | sponge '$file_path')+reload($0)"
-		--bind="ctrl-l:reload($0)"
-		--header-lines=1
-		--with-nth=4..
-	)
+export history_file := env('XDG_STATE_HOME') + '/mpv/play.history.tsv'
 
-	"$0" | "${fzf_cmd[@]}" "$@"
-else
-	enforce_columns=(jq -c 'map({time: (.time // .localtime), type, title, misc, command, path: (.path | (fromjson? // .))})')
+# => default ------------------------------------------------------------------------------------------------------ {{{1
 
-	tsv2json "$file_path"                                                                \
-		| jq -c 'sort_by(.time) | reverse | unique_by(.command, .path) | sort_by(.time)' \
-		| tee >("${enforce_columns[@]}" | json2tsv | sponge "$file_path")                \
-		| jq -c 'reverse | map({command, path, time, type, title, misc})'                \
-		| json2tsv                                                                       \
-		| tsv-align
-fi
+# Run TUI if interactive, otherwise print static view
+[private]
+default:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        "$this" controller
+    else
+        "$this" view
+    fi
+
+# Print help
+[script("/usr/bin/env", "-S", "colored-md")]
+help:
+    # ABSTRACT
+    Interactive TUI for viewing and managing mpv playback history
+
+    # DESCRIPTION
+    `menu-mpv-history` provides a clean, interactive interface for the `mpv` media player's playback history.
+
+    It solves the problem of the raw history file becoming cluttered with duplicate entries by automatically cleaning,
+    deduplicating, and sorting the history on every run. It provides a powerful `fzf`-based TUI to browse the
+    history, replay media, and remove unwanted entries.
+
+    ## Key Features
+
+    * **Automatic History Cleaning:** Deduplicates history on every run, keeping only the most recent entry for each
+      played file.
+    * **Interactive Playback:** The primary action is to replay a selected item from the history.
+    * **History Management:** Provides a key binding to permanently remove entries from the history file.
+    * **Safe File Writes:** Uses `sponge` to ensure the history file is written atomically, preventing data
+      corruption.
+    * **Clean & Composable:** Follows the three-mode pattern, allowing it to be used as an interactive TUI, a static
+      table generator, or a pure JSON data source.
+
+# => MVC ---------------------------------------------------------------------------------------------------------- {{{1
+
+# Read, clean, deduplicate, and output history as a JSON stream
+model:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    # This pipeline reads the raw TSV, cleans it, and writes the clean version back to the file,
+    # while also passing the clean JSON through to the next stage.
+    enforce_columns=(jq -c 'map({time: (.time // .localtime), type, title, misc, command, path: (.path | (fromjson? // .))})')
+    tsv2json "$history_file" \
+        | jq -c 'sort_by(.time) | reverse | unique_by(.command, .path) | sort_by(.time)' \
+        | tee >("${enforce_columns[@]}" | json2tsv | sponge "$history_file")
+
+# Print the cleaned history as a formatted and colorized table
+view:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq_fields=(
+        '_command;\(.command)'
+        '_path;\(.path)'
+        '_id;\(.path)' # Use path as a unique ID for removal
+        'time;\(.time | .[0:16]?)'
+        'type;\(.type);silver'
+        'title;\(.title)'
+        'misc;\(.misc // "");cyan'
+    )
+    "$this" model \
+        | json2table 'sort_by(.time) | reverse' "${jq_fields[@]}"
+
+# Display the interactive TUI for managing mpv history
+controller:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    export FZF_RELOAD_CMD="${this@Q} view"
+    fzf_args=(
+        --bind="alt-H:execute(GLAMOUR_WIDTH=\$(( \${FZF_COLUMNS:-\$(tput cols)} - 8 )) ${this@Q} help | ${PAGER:-less})"
+        --bind="alt-R:execute-silent(grep -vF {3} ${history_file@Q} | sponge ${history_file@Q})+reload($FZF_RELOAD_CMD)"
+        --bind="ctrl-l:reload($FZF_RELOAD_CMD)"
+        --header-lines=1
+        --prompt="mpv history > "
+        --with-nth=5..
+    )
+    "$this" view | fzf-execute2 "${fzf_args[@]}"

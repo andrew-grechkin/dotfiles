@@ -206,571 +206,585 @@ command! avault     avault-edit %c
 " => File associations: ebooks ------------------------------------------------------------------------------------ {{{1
 
 filextype <application/vnd.ms-htmlhelp,application/rtf,text/rtf>,
-	\{*.chm,*.rtf}
-	\ {Open with xdg-open}
-	\ xdg-open %c:p %i &,
+    \{*.chm,*.rtf}
+    \ {Open with xdg-open}
+    \ xdg-open %c:p %i &,
 filextype <application/epub+zip,application/x-zip-compressed-fb2,application/x-fictionbook*>,
-	\{*.epub,*.fb2,*.fb2.zip,*.fbz,*.mobi,*.tcr}
-	\ {Open with xdg-open}
-	\ xdg-open %c:p %i &,
-	\ FBReader %c:p %i &,
-	\ foliate  %c:p %i &,
-	\ calibre  %c:p %i &,
-	\ okular   %c:p %i &,
-	\ cr3      %c:p %i &,
+    \{*.epub,*.fb2,*.fb2.zip,*.fbz,*.mobi,*.tcr}
+    \ {Open with xdg-open}
+    \ xdg-open %c:p %i &,
+    \ FBReader %c:p %i &,
+    \ foliate  %c:p %i &,
+    \ calibre  %c:p %i &,
+    \ okular   %c:p %i &,
+    \ cr3      %c:p %i &,
 
 filextype <application/x-fictionbook+xml>,
-	\{*.fb2,*.xml,*.gpx,*.xsd,*.kdenlive}
-	\ {Open with Kate}
-	\ kate          %c:p %i &,
-	\ {Reformat xml}
-	\ tsp reformat -a %c:p %i &,
-	\ {Reformat hard xml}
-	\ tsp reformat2-fb2 %c:p %i &,
+    \{*.fb2,*.xml,*.gpx,*.xsd,*.kdenlive}
+    \ {Open with Kate}
+    \ kate          %c:p %i &,
+    \ {Reformat xml}
+    \ tsp reformat -a %c:p %i &,
+    \ {Reformat hard xml}
+    \ tsp reformat2-fb2 %c:p %i &,
 
 " => File associations: Djvu, Pdf --------------------------------------------------------------------------------- {{{1
 " cat helps to properly show djvu over nfs volumes
 
 filextype <image/vnd.djvu*,application/pdf>,
-	\{*.djvu,*.pdf}
-	\ {View in zathura}
-	\ zathura - < %c:p %i &,
-	\ {Open with xdg-open}
-	\ xdg-open %c:p %i &,
+    \{*.djvu,*.pdf}
+    \ {View in zathura}
+    \ zathura - < %c:p %i &,
+    \ {Open with xdg-open}
+    \ xdg-open %c:p %i &,
 filextype <application/pdf>,{*.pdf}
-	\ {Open with xpdf}
-	\ xpdf %c:p %i &,
+    \ {Open with xpdf}
+    \ xpdf %c:p %i &,
 fileviewer <application/pdf>,{*.pdf}
-	\ pdftotext -nopgbrk %c:p -,
+    \ pdftotext -nopgbrk %c:p -,
 fileviewer <application/epub*,application/x-mobipocket-ebook>,{*.epub,*.mobi}
-	\ mutool draw -F text %c:p,
+    \ mutool draw -F text %c:p,
 
 filetype <text/markdown>,{*.md,*.mkd,*.Rmd,*.mdwiki}
-	\ {View in color}
-	\ cat %c:p | colored-md | $PAGER,
+    \ {View in color}
+    \ cat %c:p | colored-md | $PAGER,
 filextype <text/markdown>,{*.md,*.mkd,*.Rmd,*.mdwiki}
-	\ {Render to pdf and view}
-	\ tsp -q markdown show %c:p %i &,
+    \ {Render to pdf and view}
+    \ tsp -q markdown show %c:p %i &,
 
 filextype {*.mmd,*.mermaid,*.plantuml,*.puml,*.pu}
-	\ {Render to svg}
-	\ tsp diagram-render-view -k %c:p %i &,
+    \ {Render to SVG}
+    \ tsp -q diagram-render-view -k %c:p %i &,
 
 " => File associations: PostScript -------------------------------------------------------------------------------- {{{1
 
 filextype {*.ps,*.eps,*.ps.gz}
-	\ {View in zathura}
-	\ zathura - < %c:p %i &,
-	\ {View in gv}
-	\ gv %c:p %i &,
+    \ {View in zathura}
+    \ zathura - < %c:p %i &,
+    \ {View in gv}
+    \ gv %c:p %i &,
 
 " => File associations: Video ------------------------------------------------------------------------------------- {{{1
 
+filextype {{*fuse*}}<video/*>
+    \ {Video play using mpv}
+    \ mpv --title="force-focus" %c:p %i &,
 filextype <video/*>
-	\ {Video play using mpv}
-	\ mpv %c:p %i &,
+    \ {Video play using mpv}
+    \ mpv --title="force-focus" %c:p %i &,
 filetype <video/*>
-	\ {Video play using mpv True color terminal}
-	\ mpv %c:p --really-quiet --ao=pulse --hwdec=no -vo tct 2>/dev/null,
+    \ {Video play using mpv True color terminal}
+    \ mpv %c:p --really-quiet --ao=pulse --hwdec=no -vo tct 2>/dev/null,
 filextype <video/*>
-	\ {Video play using ffplay}
-	\ ffplay -fs -autoexit %c:p %i &,
-	\ {Video play using mplayer}
-	\ mplayer %c:p %i &,
+    \ {Video play using ffplay}
+    \ ffplay -fs -autoexit %c:p %i &,
+    \ {Video play using mplayer}
+    \ mplayer %c:p %i &,
 filextype <video/*>{*.avi,*.mkv,*.webm}
-	\ {Video convert to mp4}
-	\ tsp -L video-convert 2mp4 %f:p %i &,
+    \ {Video convert to mp4}
+    \ tsp -L video-convert 2mp4 %f:p %i &,
 
 " => File associations: Audio ------------------------------------------------------------------------------------- {{{1
 
 filetype <audio/*,video/*,application/x-cue>,{*.cue}
-	\ {Audio play using mpv in background}
-	\ exec-detached mpv --quiet --no-osc --term-osd=force --no-audio-display --vid=no -- %c:p,
-	\ {Audio play using mpv}
-	\ mpv --no-osc --term-osd=force --no-audio-display --vid=no -- %c:p %s,
-	\ {Audio play using ffplay}
-	\ ffplay -nodisp -autoexit %c:p %i &,
+    \ {Audio play using mpv in background}
+    \ exec-detached mpv --quiet --no-osc --term-osd=force --no-audio-display --vid=no -- %c:p,
+    \ {Audio play using mpv}
+    \ mpv --no-osc --term-osd=force --no-audio-display --vid=no -- %c:p %s,
+    \ {Audio play using ffplay}
+    \ ffplay -nodisp -autoexit %c:p %i &,
 filetype <audio/*>
-	\ {Audio play using MPlayer}
-	\ mplayer %c:p %i &,
+    \ {Audio play using MPlayer}
+    \ mplayer %c:p %i &,
 
 filetype <audio/x-wav,audio/vnd.wave>,{*.wav}
-	\ {Audio encode to FLAC}
-	\ tsp flac -8 %c:p %i &,
-	\ {Audio encode to mp3}
-	\ tsp lame -b 128 -m j -h -V 1 -B 256 -F %c:p %c:r.mp3 %i &,
+    \ {Audio encode to FLAC}
+    \ tsp flac -8 %c:p %i &,
+    \ {Audio encode to mp3}
+    \ tsp lame -b 128 -m j -h -V 1 -B 256 -F %c:p %c:r.mp3 %i &,
 filetype !{*.mp3}<audio/*>
-	\ {Audio transcode to mp3 with ffmpeg}
-	\ for f in %f; do ffmpeg -i "$f" "${f%%.*}".mp3; done
+    \ {Audio transcode to mp3 with ffmpeg}
+    \ for f in %f; do ffmpeg -i "$f" "${f%%.*}".mp3; done
 filetype !<audio/flac><audio/*>
-	\ {Audio transcode to FLAC with ffmpeg}
-	\ for f in %f; do ffmpeg -i "$f" "${f%%.*}".flac; done
+    \ {Audio transcode to FLAC with ffmpeg}
+    \ for f in %f; do ffmpeg -i "$f" "${f%%.*}".flac; done
 filetype <audio/x-ape>,{*.ape}
-	\ {Audio decode to wav}
-	\ tsp mac %c:p %c:r.wav -d %i &,
+    \ {Audio decode to wav}
+    \ tsp mac %c:p %c:r.wav -d %i &,
 filetype <audio/flac>,{*.flac}
-	\ {Audio decode to wav}
-	\ tsp flac -d %c:p %i &,
+    \ {Audio decode to wav}
+    \ tsp flac -d %c:p %i &,
 filetype <audio/x-wavpack>,{*.wv}
-	\ {Audio decode to wav}
-	\ tsp wvunpack %c:p %i &,
+    \ {Audio decode to wav}
+    \ tsp wvunpack %c:p %i &,
 
 filextype <audio/midi>,{*.kar,*.mid,*.midi}
-	\ timidity -ig -- %c:p %i &,
+    \ timidity -ig -- %c:p %i &,
 
 " => File associations: HTML -------------------------------------------------------------------------------------- {{{1
 
 filetype <text/html>{*.ep}
-	\ {Edit in vim}
-	\ vi %c:p %n,
+    \ {Edit in vim}
+    \ vi %c:p %n,
 
 filextype <text/html>,{*.html,*.htm}
-	\ {Open with default browser}
-	\ xdg-open %c:p %i &,
-	\ exo-open --launch WebBrowser %c:p %i &,
+    \ {Open with default browser}
+    \ xdg-open %c:p %i &,
+    \ exo-open --launch WebBrowser %c:p %i &,
 filetype <text/html>,{*.html,*.htm}
-	\ links %c:p,
-	\ lynx %c:p,
+    \ links %c:p,
+    \ lynx %c:p,
 fileviewer <text/html>,{*.html,*.htm}
-	\ html2text2 %c:p
+    \ html2text2 %c:p
 
 filextype <application/x-mimearchive>,{*.mhtml,*.mht}
-	\ {Open with default browser}
-	\ python3 -mwebbrowser %c:p %i &,
+    \ {Open with default browser}
+    \ git web--browse %c:p %i &,
 filetype <application/x-mimearchive>,{*.mhtml,*.mht}
-	\ {Extract}
-	\ mhtml-parse %c:p,
+    \ {Extract}
+    \ mhtml-parse %c:p,
 fileviewer <application/x-mimearchive>,{*.mhtml,*.mht}
-	\ mhtml-parse -l %c:p
+    \ mhtml-parse -l %c:p,
 
 " => File associations: Images ------------------------------------------------------------------------------------ {{{1
 
 filextype !<image/vnd.djvu*><image/*>
-	\ {View in sxiv}
-	\ sxiv     %f %i &,
-	\ {Open with xdg-open}
-	\ xdg-open %c:p %i &,
-	\ {View in vimiv}
-	\ vimiv    %c:p %i &,
-	\ {View in pqiv}
-	\ pqiv -i  %c:p %c:h %i &,
-	\ {View in gpicview}
-	\ gpicview %c:p %i &,
+    \ {View in sxiv}
+    \ sxiv     %f %i &,
+    \ {Open with xdg-open}
+    \ xdg-open %c:p %i &,
+    \ {View in vimiv}
+    \ vimiv    %c:p %i &,
+    \ {View in pqiv}
+    \ pqiv -i  %c:p %c:h %i &,
+    \ {View in gpicview}
+    \ gpicview %c:p %i &,
 fileviewer !<image/vnd.djvu*><image/*>
-	\ chafa --clear -c 240 --view-size %pwx%ph -f symbols --polite on %c:p,
-	\ viu -t -w %pw -h %ph %c:p,
-	\ mediainfo %c:p,
-	\ identify -verbose %c:p,
+    \ chafa --clear -c 240 --view-size %pwx%ph -f symbols --polite on %c:p,
+    \ viu -t -w %pw -h %ph %c:p,
+    \ mediainfo %c:p,
+    \ identify -verbose %c:p,
 
 filetype <image/jpeg>
-	\ {Exif}
-	\ exiftool %c:p | $PAGER,
-	\ {Metadata}
-	\ identify -verbose %c:p | $PAGER,
+    \ {Exif}
+    \ exiftool %c:p | $PAGER,
+    \ {Metadata}
+    \ identify -verbose %c:p | $PAGER,
 
 " => File associations: sqlite ------------------------------------------------------------------------------------ {{{1
 
 filetype <application/vnd.sqlite3>{*.sqlar,.*.sqlar}
-	\ {Extract (foreground) sqlar}
-	\ sqlite3 %c:p -Ax &,
+    \ {Extract (foreground) sqlar}
+    \ sqlite3 %c:p -Ax &,
 fileviewer <application/vnd.sqlite3>{*.sqlar,.*.sqlar}
-	\ sqlite3 %c:p -Atv,
+    \ sqlite3 %c:p -Atv,
 
 filetype <application/vnd.sqlite3>
     \ {Overview}
     \ show sqlite %c:p,
-	\ {View}
-	\ sqlite-utils rows %c:p "$(sqlite-tables %c:p | head -1)" --nl | json2tsv | tsv-show | less --header=1,
-	\ {Browse}
-	\ datasette %c:p -o,
-	\ {Dump}
-	\ sqlite-utils rows %c:p "$(sqlite-tables %c:p | head -1)" --nl | jq -c >%c:r.jsonl %i,
-	\ {Repl}
-	\ dbui-add-connection %c:r sqlite:%c:p; nvim -c 'DBUIToggle' -c '/%c:r' -c 'execute "normal \<CR>"' -c '/Tables' -c 'execute "normal \<CR>"',
+    \ {View}
+    \ sqlite-utils rows %c:p "$(sqlite-tables %c:p | head -1)" --nl | json2tsv | tsv-show -pc,
+    \ {Browse}
+    \ datasette %c:p -o,
+    \ {Dump}
+    \ sqlite-utils rows %c:p "$(sqlite-tables %c:p | head -1)" --nl | jq -c >%c:r.jsonl %i,
+    \ {Repl}
+    \ dbui-add-connection %c:r sqlite:%c:p; nvim -c 'DBUIToggle' -c '/%c:r' -c 'execute "normal \<CR>"' -c '/Tables' -c 'execute "normal \<CR>"',
 fileviewer <application/vnd.sqlite3>
     \ show sqlite %c:p,
 
 " => File associations: misc -------------------------------------------------------------------------------------- {{{1
 
 filetype {PKGBUILD}
-	\ {Build Arch package}
-	\ makepkg -sf,
+    \ {Build Arch package}
+    \ makepkg -sf,
 
 filetype {*.oci.image,*.Dockerfile,Dockerfile}
-	\ {Build OCI image}
-	\ oci-build %c:p,
+    \ {Build OCI image}
+    \ oci-build %c:p,
 
 filetype {*.svct}
-	\ {Execute service-test}
-	\ test-service -vv %c:p,
+    \ {Execute service-test}
+    \ test-service -vv %c:p,
 
 filetype {*.spec}
-	\ {Edit}
-	\ vi %c:p,
-	\ {Build for centos 9-stream}
-	\ make -f ~/git/public/andrew-grechkin/centos-rpmbuild-docker/Makefile build9 %s,
+    \ {Edit}
+    \ vi %c:p,
+    \ {Build for centos 9-stream}
+    \ make -f ~/git/public/andrew-grechkin/centos-rpmbuild-docker/Makefile build9 %s,
 
 fileviewer {*.rpm}
-	\ rpm -qi %c:p
+    \ rpm -qi %c:p,
 
 filetype {CMakeLists.txt}
-	\ {Build}
-	\ build-cmake %d:p,
+    \ {Build}
+    \ build-cmake %d:p,
 
 filetype <application/x-ndjson>,{*.jsonl}
-	\ {View}
-	\ json2tsv %c:p | tsv-show --paging=always,
-	\ {Convert -> sqlite}
-	\ json2sqlite %c:p,
-	\ {Clean json}
-	\ json-clean <%c:p | sponge %c:p
+    \ {View}
+    \ json2tsv %c:p | tsv-show -pc,
+    \ {Convert -> sqlite}
+    \ json2sqlite %c:p,
+    \ {Clean json}
+    \ json-clean <%c:p | sponge %c:p,
 fileviewer <application/x-ndjson>,{*.jsonl}
-	\ head -30 %c:p | json2tsv,
+    \ head -30 %c:p | json2tsv,
 
-filetype <application/json>
-	\ {View}
-	\ jq -S --indent 2 < %c:p | colored-json --paging=always,
-	\ {View as yaml}
-	\ json2yaml < %c:p | colored-yaml --paging=always,
-	\ {Repl jq}
-	\ jq-repl %c:p,
-	\ {Reformat json}
-	\ reformat -a %c:p,
-	\ {Compact json}
-	\ jq -c < %c:p | sponge %c:p,
-	\ {Convert json -> yaml}
-	\ json2yaml %c:p > %c:r.yaml,
+filetype <application/json>,<application/schema+json>
+    \ {View}
+    \ jq -S --indent 2 < %c:p | colored-json --paging=always,
+    \ {View as yaml}
+    \ json2yaml < %c:p | colored-yaml --paging=always --file-name=%c,
+    \ {Repl jq}
+    \ jq-repl %c:p,
+    \ {Reformat json}
+    \ reformat -a %c:p,
+    \ {Compact json}
+    \ jq -c < %c:p | sponge %c:p,
+    \ {Convert json -> yaml}
+    \ json2yaml %c:p > %c:r.yaml,
 
 filetype <application/yaml>
-	\ {View}
-	\ yaml-sanitize %c:p | colored-yaml --paging=always,
-	\ {Repl jq}
-	\ yaml2json %c:p | jq-repl,
-	\ {Sanitize yaml}
-	\ yaml-sanitize -i %c:p,
-	\ {Convert yaml -> json}
-	\ yaml2json %c:p > %c:r.json,
+    \ {View}
+    \ yaml-sanitize %c:p | colored-yaml --paging=always --file-name=%c,
+    \ {Repl jq}
+    \ yaml2json %c:p | jq-repl,
+    \ {Sanitize yaml}
+    \ yaml-sanitize -i %c:p,
+    \ {Convert yaml -> json}
+    \ yaml2json %c:p > %c:r.json,
+    \ {Detect location by the file}
+    \ gemini-api locate < %c:p | colored-yaml --paging=always --file-name=%c,
+
+filetype <text/csv>
+    \ {View}
+    \ csv2tsv %c:p | tsv-show -pc,
 
 filetype <text/tab-separated-values>
-	\ {View}
-	\ tsv-show %c:p | less --header=1,
-	\ {Edit}
-	\ vi -c "set filetype=csv" %c:p,
-	\ {Repl jq}
-	\ tsv2json %c:p | jq-repl,
-	\ {Dump}
-	\ tsv2jsonl %c:p > %c:r.jsonl %i,
-	\ {Convert -> sqlite}
-	\ tsv2sqlite %c:p,
+    \ {View}
+    \ tsv-show -pc %c:p,
+    \ {Edit}
+    \ vi -c "set filetype=csv" %c:p,
+    \ {Repl jq}
+    \ tsv2json %c:p | jq-repl,
+    \ {Dump}
+    \ tsv2jsonl %c:p > %c:r.jsonl %i,
+    \ {Convert -> sqlite}
+    \ tsv2sqlite %c:p,
 
 filetype <text/plain>/[.]md5sum$/
-	\ {Check MD5 hash sum}
-	\ md5sum -c %c:p %m,
+    \ {Check MD5 hash sum}
+    \ md5sum -c %c:p %m,
 
 filetype <text/plain>/[.]sha1sum$/
-	\ {Check SHA1 hash sum}
-	\ sha1sum -c %c:p %m,
+    \ {Check SHA1 hash sum}
+    \ sha1sum -c %c:p %m,
 
 filetype <text/plain>/[.]sha256sum$/
-	\ {Check SHA256 hash sum}
-	\ sha256sum -c %c:p %m,
+    \ {Check SHA256 hash sum}
+    \ sha256sum -c %c:p %m,
 
 filetype <text/plain>/[.]sha512sum$/
-	\ {Check SHA512 hash sum}
-	\ sha512sum -c %c:p %m,
+    \ {Check SHA512 hash sum}
+    \ sha512sum -c %c:p %m,
 
-fileviewer {*.pem,*.crt}
-	\ openssl x509 -inform PEM -text -in %c:p
-
-fileviewer {*.key}
-	\ openssl rsa -check -text -noout -in %c:p || openssl ec -check -text -noout -in %c:p
+fileviewer <application/pkix-cert>,{*.pem,*.crt}
+    \ openssl verify -- %c:p; openssl x509 -inform PEM -text -noout -in %c:p,
 
 fileviewer {*.csr,*.req}
-	\ openssl req -verify -text -noout -in %c:p
+    \ openssl req -verify -text -noout -in %c:p,
 
 filetype {*.key}
-	\ {Convert to p12}
-	\ certtool --to-p12 --empty-password --load-privkey %c:p --outfile %c:r.p12,
+    \ {Convert to p12}
+    \ certtool --to-p12 --empty-password --load-privkey %c:p --outfile %c:r.p12,
 
 fileviewer {*.key}
-	\ openssl x509 -inform PEM -in %c:p -text
+    \ openssl pkey -check -text -noout -in %c:p,
 
 filetype {*.p12}
-	\ {Convert to PEM}
-	\ openssl pkcs12 -in %c:p -out %c:r.pem -nodes,
-	\ {Import to GPG}
-	\ gpgsm --import %c:p,
+    \ {Convert to PEM}
+    \ openssl pkcs12 -in %c:p -out %c:r.pem -nodes,
+    \ {Import to GPG}
+    \ gpgsm --import %c:p,
 
 filetype {*.torrent}
-	\ ktorrent %f:p &,
+    \ ktorrent %f:p &,
 fileviewer {*.torrent}
-	\ dump_torrent -v %c:p,
+    \ dump_torrent -v %c:p,
 
 fileviewer !<inode/directory>{*.gpg.pub}
-	\ gpg --import-options show-only --import %c:p,
+    \ gpg --import-options show-only --import %c:p,
 
 filetype <application/pgp-encrypted>
-	\ {GPG decrypt}
-	\ tsp gpg-decrypt %f:p %i &,
+    \ {GPG decrypt}
+    \ tsp gpg-decrypt %f:p %i &,
 fileviewer <application/pgp-encrypted>
-	\ gpg --decrypt %c:p,
+    \ gpg --decrypt %c:p,
 
 filetype <application/pgp-signature>
-	\ {GPG signature verify}
-	\ !!gpg --verify %c:p %m,
+    \ {GPG signature verify}
+    \ !!gpg --verify %c:p %m,
 fileviewer <application/pgp-signature>
-	\ gpg --verify %c:p,
+    \ gpg --verify %c:p,
 
 filetype !<inode/directory>{*.base64}
-	\ {Decode base64}
-	\ base64 -id %c:p > %c:r %i &,
+    \ {Decode base64}
+    \ base64 -id %c:p > %c:r %i &,
 fileviewer !<inode/directory>{*.base64}
-	\ base64 -id %c:p,
+    \ base64 -id %c:p,
 
 filetype !<inode/directory>{*.base64c}
-	\ {Decode base64 commented}
-	\ sed -e 's/^#//' %c:p | base64 -id > %c:r %i &,
+    \ {Decode base64 commented}
+    \ sed -e 's/^#//' %c:p | base64 -id > %c:r %i &,
 fileviewer !<inode/directory>{*.base64c}
-	\ sed -e 's/^#//' %c:p | base64 -id,
+    \ sed -e 's/^#//' %c:p | base64 -id,
 
 filetype {*.shx}
-	\ {Decode}
-	\ sed -e '1,,/^### Base64 BEGIN/d' %c:p | sed -e '/^### Base64 END/,,$d' | sed -e 's/^#//g' | base64 -id > %c:r.tgz,
+    \ {Decode}
+    \ sed -e '1,,/^### Base64 BEGIN/d' %c:p | sed -e '/^### Base64 END/,,$d' | sed -e 's/^#//g' | base64 -id > %c:r.tgz,
 
 filetype <text/plain>{*.txt}
-	\ {View in less}
-	\ less %c:p,
-	\ {Recode from cp866}
-	\ text-recode cp866 %c:p,
-	\ {Recode from cp1251}
-	\ text-recode cp1251 %c:p,
-	\ {Recode from koi8}
-	\ text-recode koi8 %c:p,
+    \ {View in less}
+    \ less %c:p,
+    \ {Recode from cp866}
+    \ text-recode cp866 %c:p,
+    \ {Recode from cp1251}
+    \ text-recode cp1251 %c:p,
+    \ {Recode from koi8}
+    \ text-recode koi8 %c:p,
 
 " Qt projects
 filextype {*.pro}
-	\ qtcreator %f:p %i &,
+    \ qtcreator %f:p %i &,
 
 filetype <text/plain>{cpanfile}
-	\ {Install Perl modules}
-	\ cpanm -nq --installdeps %d 2>&1 | grep -Ev 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)',
-	\ {Install Perl modules (background)}
-	\ tsp cpanm -nq --installdeps %d 2>&1 | grep -Ev 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)',
-	\ {Install Perl modules (all)}
-	\ tsp cpanm -nq --installdeps %d --with-develop --with-all-features 2>&1 | grep -Ev 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)',
+    \ {Install Perl modules}
+    \ cpanm -nq --installdeps %d 2>&1 | grep -Ev 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)',
+    \ {Install Perl modules (background)}
+    \ tsp cpanm -nq --installdeps %d 2>&1 | grep -Ev 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)',
+    \ {Install Perl modules (all)}
+    \ tsp cpanm -nq --installdeps %d --with-develop --with-all-features 2>&1 | grep -Ev 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)',
 
 filetype {*.http}
-	\ {Request with http-pure}
-	\ http-pure %c:p,
+    \ {Request with http-pure}
+    \ http-pure %c:p,
 
 " => File associations: office files ------------------------------------------------------------------------------ {{{1
 
 filextype {*.odt,*.doc,*.docx,*.xls,*.xlsx,*.odp,*.pptx}
-	\ libreoffice %f:p %i &,
+    \ libreoffice %f:p %i &,
 fileviewer {*.doc}
-	\ catdoc %c:p,
+    \ catdoc %c:p,
 fileviewer {*.docx}
-	\ docx2txt.pl %c:p -,
+    \ docx2txt.pl %c:p -,
 
 filextype {*.ttf}
-	\ {Open with fontforge}
-	\ fontforge %c:p %i &,
+    \ {Open with fontforge}
+    \ fontforge %c:p %i &,
 
 " => File associations: iso --------------------------------------------------------------------------------------- {{{1
 
 filetype <application/vnd.efi.iso,application/x-iso9660-image>
-	\ {Mount with fuseiso}
-	\ FUSE_MOUNT|fuseiso %SOURCE_FILE %DESTINATION_DIR,
-	\ {Run with qemu UEFI}
-	\ setsid -f emu run %c:p %i,
-	\ {Run with qemu BIOS}
-	\ setsid -f emu run -b %c:p %i,
-	\ {Run with qemu UEFI + USB}
-	\ setsid -f emu run stick %c:p %i,
+    \ {Mount with fuseiso}
+    \ FUSE_MOUNT|fuseiso %SOURCE_FILE %DESTINATION_DIR,
+    \ {Run with qemu UEFI}
+    \ setsid -f emu run %c:p %i,
+    \ {Run with qemu BIOS}
+    \ setsid -f emu run -b %c:p %i,
+    \ {Run with qemu UEFI + USB}
+    \ setsid -f emu run stick %c:p %i,
 
 " => File associations: qemu -------------------------------------------------------------------------------------- {{{1
 
 filetype <application/x-qemu-disk>
-	\ {Run with qemu}
-	\ setsid -f qcow-run %c:p %i,
-	\ {Mount qcow2}
-	\ setsid -f qcow-mount %c:p %i,
+    \ {Run with qemu}
+    \ setsid -f qcow-run %c:p %i,
+    \ {Mount qcow2}
+    \ setsid -f qcow-mount %c:p %i,
 filetype *.raw
-	\ {Run with qemu}
-	\ setsid -f qcow-run %c %i,
+    \ {Run with qemu}
+    \ setsid -f qcow-run %c %i,
 
 " => File associations: archives ---------------------------------------------------------------------------------- {{{1
 
 " figure these out
-" 	*.war,*.ear,*.oxt,*.apkg,*.lha,*.ar,*.mtree,*.xar,*.eu4
+"   *.war,*.ear,*.oxt,*.apkg,*.lha,*.ar,*.mtree,*.xar,*.eu4
 
 " ArchiveMount
 filetype <application/x-tar,application/x-*compressed-tar,application/vnd.efi.img>,
-	\<application/x-cpio*,application/x-rpm>
-	\ {Archive mount with archivemount}
-	\ FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR,
+    \<application/x-cpio*,application/x-rpm>
+    \ {Archive mount with archivemount}
+    \ FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR,
 fileviewer <application/x-tar,application/x-*compressed-tar,application/vnd.efi.img>
-	\ tar tavf %c:p,
+    \ tar tavf %c:p,
 
 " fuse3-p7zip
 filetype <application/x-tar,application/x-*compressed-tar,application/vnd.efi.img>,
-	\<application/x-cpio*,application/x-rpm>,
-	\<application/epub+zip,application/vnd.rar,application/x-7z-compressed,application/java-archive,application/zip>,
-	\<application/x-zip-compressed-fb2>,<application/vnd.ms-cab-compressed>,<application/x-windows-themepack>,
-	\<application/vnd.debian.binary-package>
-	\ {Archive mount with fuse3-p7zip}
-	\ FUSE_MOUNT|fuse3-p7zip %SOURCE_FILE %DESTINATION_DIR,
-	\ {Archive extract to subdir...}
-	\ tsp archive-extract %f %i &,
-	\ {Archive extract here...}
-	\ tsp archive-extract --here %f %i &,
-	\ {Archive convert to tar.zstd...}
-	\ tsp archive-convert %f %i &,
+    \<application/x-cpio*,application/x-rpm>,
+    \<application/epub+zip,application/vnd.rar,application/x-7z-compressed,application/java-archive,application/zip>,
+    \<application/x-zip-compressed-fb2>,<application/vnd.ms-cab-compressed>,<application/x-windows-themepack>,
+    \<application/vnd.debian.binary-package>
+    \ {Archive mount with fuse3-p7zip}
+    \ FUSE_MOUNT|fuse3-p7zip %SOURCE_FILE %DESTINATION_DIR,
+    \ {Archive extract to subdir...}
+    \ tsp archive-extract %f %i &,
+    \ {Archive extract here...}
+    \ tsp archive-extract --here %f %i &,
+    \ {Archive convert to tar.zstd...}
+    \ tsp archive-convert %f %i &,
 fileviewer <application/x-tar,application/x-*compressed-tar,application/vnd.efi.img>,
-	\<application/x-cpio*,application/x-rpm>,
-	\<application/epub+zip,application/vnd.rar,application/x-7z-compressed,application/java-archive,application/zip>,
-	\<application/x-zip-compressed-fb2>,<application/vnd.ms-cab-compressed>,<application/x-windows-themepack>,
-	\<application/vnd.debian.binary-package>
-	\ 7z l %c:p,
+    \<application/x-cpio*,application/x-rpm>,
+    \<application/epub+zip,application/vnd.rar,application/x-7z-compressed,application/java-archive,application/zip>,
+    \<application/x-zip-compressed-fb2>,<application/vnd.ms-cab-compressed>,<application/x-windows-themepack>,
+    \<application/vnd.debian.binary-package>
+    \ 7z l %c:p,
 
 filetype <application/x-tar>
-	\ {Compress zstd}
-	\ tsp zstd --rm %c:p %i &,
-	\ {Compress bzip2}
-	\ tsp bzip2 -v %c:p %i &,
-	\ {Compress gzip}
-	\ tsp gzip -v %c:p %i &,
-	\ {Compress lz4}
-	\ tsp lz4 --rm %c:p %i &,
-	\ {Compress lzma}
-	\ tsp lzma %c:p %i &,
-	\ {Compress xz}
-	\ tsp xz -v %c:p %i &,
+    \ {Compress zstd}
+    \ tsp zstd --rm %c:p %i &,
+    \ {Compress bzip2}
+    \ tsp bzip2 -v %c:p %i &,
+    \ {Compress gzip}
+    \ tsp gzip -v %c:p %i &,
+    \ {Compress lz4}
+    \ tsp lz4 --rm %c:p %i &,
+    \ {Compress lzma}
+    \ tsp lzma %c:p %i &,
+    \ {Compress xz}
+    \ tsp xz -v %c:p %i &,
 filetype /[.](tar[.])?br$/
-	\ {Decompress}
-	\ tsp brotli -d --rm %c:p %i &,
+    \ {Decompress}
+    \ tsp brotli -d --rm %c:p %i &,
 filetype <application/x-bzip2*>
-	\ {Decompress}
-	\ tsp bzip2 -dv %c:p %i &,
+    \ {Decompress}
+    \ tsp bzip2 -dv %c:p %i &,
 filetype <application/lz4,application/x-lz4-compressed-tar>
-	\ {Inspect}
-	\ lz4 --list %c %m,
-	\ {Decompress}
-	\ tsp lz4 -d --rm %c:p %i &,
+    \ {Inspect}
+    \ lz4 --list %c %m,
+    \ {Decompress}
+    \ tsp lz4 -d --rm %c:p %i &,
 filetype <application/lzma,application/x-lzma-compressed-tar>
-	\ {Decompress}
-	\ tsp lzma -d %c:p %i &,
+    \ {Decompress}
+    \ tsp lzma -d %c:p %i &,
 filetype <application/xz,application/x-xz-compressed-tar>
-	\ {Inspect}
-	\ xz -l %c %m,
-	\ {Decompress}
-	\ tsp xz -dv %c:p %i &,
+    \ {Inspect}
+    \ xz -l %c %m,
+    \ {Decompress}
+    \ tsp xz -dv %c:p %i &,
 filetype <application/zstd,application/x-zstd-compressed-tar>
-	\ {Decompress}
-	\ tsp zstd -d --rm %c:p %i &,
+    \ {Decompress}
+    \ tsp zstd -d --rm %c:p %i &,
 
 filetype <application/gzip,application/x-compressed-tar>
-	\ {Inspect}
-	\ gzip -l %c %m,
-	\ {Decompress}
-	\ tsp gunzip -v %c:p %i &,
+    \ {Inspect}
+    \ gzip -l %c %m,
+    \ {Decompress}
+    \ tsp gunzip -v %c:p %i &,
 fileviewer <application/gzip>
-	\ gzip -l %c,
+    \ gzip -l %c,
 
 " => File associations: S3 mount ---------------------------------------------------------------------------------- {{{1
 
 filetype {*.s3fs}
-	\ {Mount with s3fs}
-	\ FUSE_MOUNT2|s3fs %PARAM %DESTINATION_DIR %FOREGROUND,
+    \ {Mount with s3fs}
+    \ FUSE_MOUNT2|s3fs %PARAM %DESTINATION_DIR %FOREGROUND,
 
 " => File associations: ssh mount --------------------------------------------------------------------------------- {{{1
 
 filetype {*.ssh}
-	\ {Mount with sshfs}
-	\ FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR %FOREGROUND,
+    \ {Mount with sshfs}
+    \ FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR %FOREGROUND,
 
 " => File associations: ftp mount --------------------------------------------------------------------------------- {{{1
 
 filetype {*.ftp}
-	\ {Mount with curlftpfs}
-	\ FUSE_MOUNT2|curlftpfs -o ftp_port=-,,disable_eprt %PARAM %DESTINATION_DIR %FOREGROUND,
+    \ {Mount with curlftpfs}
+    \ FUSE_MOUNT2|curlftpfs -o ftp_port=-,,disable_eprt %PARAM %DESTINATION_DIR %FOREGROUND,
 
 " => File associations: encrypted fs mount ------------------------------------------------------------------------ {{{1
 
 filetype {cryfs.config}
-	\ {Mount with cryfs}
-	\ FUSE_MOUNT2|cryfs -c %SOURCE_FILE %d %DESTINATION_DIR %FOREGROUND,
+    \ {Mount with cryfs}
+    \ FUSE_MOUNT2|cryfs -c %SOURCE_FILE %d %DESTINATION_DIR %FOREGROUND,
 
-filetype {*.encfs}
-	\ {Mount with encfs}
-	\ FUSE_MOUNT2|encfs %PARAM %DESTINATION_DIR %FOREGROUND,
+filetype {.encfs6.xml}
+    \ {Mount with encfs}
+    \ FUSE_MOUNT2|encfs-mount %SOURCE_FILE %DESTINATION_DIR,
 
 " => File associations: all files --------------------------------------------------------------------------------- {{{1
 
 filetype !<inode/directory>
-	\ {Edit in vim}
-	\ vi %c:p %n,
-	\ {View in less}
-	\ less %c:p %n,
-	\ {Show file}
-	\ show file %c:p | $PAGER,
+    \ {Edit in vim}
+    \ vi %c:p %n,
+    \ {View in less}
+    \ less %c:p %n,
+    \ {Show file}
+    \ show file %c:p | $PAGER,
 
 " => File associations: misc -------------------------------------------------------------------------------------- {{{1
 
 filetype <text/plain>{*.rec}
-	\ {Convert -> sqlite}
-	\ grep '\*' %c:p | lines-split '(?=\{)' -r | json2sqlite %c:r,
+    \ {Convert -> sqlite}
+    \ grep '\*' %c:p | lines-split '(?=\{)' -r | json2sqlite %c:r,
 
 " => File associations: ansible role ------------------------------------------------------------------------------ {{{1
 
 filetype {main.yaml}
-	\ {Execute ansible role}
-	\ ansible-role  %d:h -K --ask-vault-pass -i localhost,, ,
+    \ {Execute ansible role}
+    \ ansible-role  %d:h -K --ask-vault-pass -i localhost,, ,
 
 " => File associations: vpn --------------------------------------------------------------------------------------- {{{1
 
 filetype {home-*.conf}
-	\ {Import wireguard config}
-	\ nmcli connection import type wireguard file %c:p
+    \ {Import wireguard config}
+    \ nmcli connection import type wireguard file %c:p,
 
 " => File associations: ssh --------------------------------------------------------------------------------------- {{{1
 
-fileviewer {id_*-cert.pub}
-	\ ssh-keygen -Lf %c:p,
+fileviewer {id_*-cert.pub},{ssh_host*-cert.pub}
+    \ ssh-keygen -Lf %c:p,
 
-fileviewer {id_ed25519*}
-	\ ssh-keygen -lf %c:p; echo; cat %c:p,
+filetype {id_ed25519*}!{*.pub}
+    \ {Copy public key}
+    \ ssh-keygen -yf %c:p | clipcopy,
+
+fileviewer {id_ed25519*}!{*.pub}
+    \ echo fingerprint:; ssh-keygen -lf %c:p; echo; echo public key:; ssh-keygen -yf %c:p,
+
+fileviewer <text/x-ssh-public-key>,{id_ed25519*.pub}
+    \ echo fingerprint:; ssh-keygen -lf %c:p; echo; echo public key:; cat %c:p,
 
 " => File associations: gpg --------------------------------------------------------------------------------------- {{{1
 
 filetype {*.pub}
-	\ {Import public key}
-	\ gpg --import %c:p,
-fileviewer {*.pub}
-	\ gpg-show %c:p
+    \ {Import public key}
+    \ gpg --import %c:p,
+
+fileviewer !{ssh*.pub}{*.pub}
+    \ gpg-show %c:p,
 
 " => File associations: all dirs ---------------------------------------------------------------------------------- {{{1
 
 filetype <inode/directory>
-	\ {Show dir}
-	\ show dir %c:p | $PAGER,
-	\ {Play dir recursively background}
-	\ exec-detached mpv --quiet --no-osc --term-osd=force --no-audio-display --vid=no -- %c:p,
-	\ {Play dir recursively foreground}
-	\ mpv --no-osc --term-osd=force --no-audio-display --vid=no -- %c:p %s,
-	\ {Compress (foreground) as tar.zstd}
-	\ tar -c %f | pv | zstd > %c.tzst,
-	\ {Compress (foreground) as tar}
-	\ tar -c %f | pv > %c.tar,
-	\ {Compress (background) as sqlar}
-	\ tsp sqlite3 %c:r.sqlar -Acv %f,
+    \ {Show dir}
+    \ show dir %c:p | $PAGER,
+    \ {Play dir recursively background}
+    \ exec-detached mpv --quiet --no-osc --term-osd=force --no-audio-display --vid=no -- %c:p,
+    \ {Play dir recursively foreground}
+    \ mpv --no-osc --term-osd=force --no-audio-display --vid=no -- %c:p %s,
+    \ {Compress (foreground) as tar.zstd}
+    \ tar -c %f | pv | zstd > %c.tzst,
+    \ {Compress (foreground) as tar}
+    \ tar -c %f | pv > %c.tar,
+    \ {Compress (background) as sqlar}
+    \ tsp sqlite3 %c:r.sqlar -Acv %f,
 fileviewer <inode/directory>
-	\ show dir %c:p,
+    \ show dir %c:p,
 
 " => File associations: all files --------------------------------------------------------------------------------- {{{1
 
 fileviewer !<inode/directory>
-	\ show file %c:p,
+    \ show file %c:p,
 
 " => Save state between sessions ---------------------------------------------------------------------------------- {{{1
 
@@ -790,6 +804,15 @@ set vifminfo=bmarks,bookmarks,chistory,dhistory,dirstack,fhistory,phistory,regis
 " filter! /^.*\.(lo|o|d|class|py[co])$|.*~$/
 
 " => mappings ----------------------------------------------------------------------------------------------------- {{{1
+
+mnoremap <C-j> j
+nnoremap <C-j> j
+qnoremap <C-j> j
+vnoremap <C-j> j
+mnoremap <C-k> k
+nnoremap <C-k> k
+qnoremap <C-k> k
+vnoremap <C-k> k
 
 " disable undo keybinding
 nnoremap u <nop>

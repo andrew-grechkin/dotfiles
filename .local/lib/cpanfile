@@ -14,6 +14,7 @@ requires "Data::Dump";
 requires "Data::Printer";
 requires "DateTime::TimeZone";
 requires "File::Map";
+requires "HTML::Tagset";
 requires "IO::Async";
 requires "Log::Any";
 requires "Path::Tiny";

@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+name="${1?name must be provided}"
+src="${2:-.}"
+
+mkdir -p "$src/etc/extension-release.d"
+echo "Hello World" >"$src/etc/motd"
+
+cat >"$src/etc/extension-release.d/extension-release.$name" << EOF
+ID=fedora
+VERSION_ID=38
+IMAGE_ID=my-motd
+IMAGE_VERSION=7
+EOF
+
+args=(
+    -C
+    # --private-key=privkey.pem
+    # --certificate=cert.crt
+    -s "$src"
+)
+
+systemd-repart "${args[@]}" "$name.confext.raw"
+
+# systemd-confext refresh

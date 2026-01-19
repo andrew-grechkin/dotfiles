@@ -5,7 +5,7 @@ local act = wezterm.action
 local result = {}
 if wezterm.config_builder then result = wezterm.config_builder() end
 
-FONT_SIZE = 16
+FONT_SIZE = 15
 
 local handle = io.popen('hostname')
 if handle then
@@ -60,6 +60,9 @@ local config = {
         {family = 'Symbols Nerd Font Mono', weight = 'Regular', scale = 0.6},
     },
     font_size = FONT_SIZE,
+    initial_cols = 128,
+    initial_rows = 30,
+    selection_word_boundary = ' \t\n{}[]()"\'`,',
     warn_about_missing_glyphs = false,
     window_background_opacity = 0.95,
     window_padding = {left = 0, right = 0, top = 0, bottom = 0},

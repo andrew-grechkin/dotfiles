@@ -8,4 +8,7 @@ QR code to clipboard	$HOME/.local/script/exec-detached $HOME/.local/script/qrcod
 Screen to clipboard	$HOME/.local/script/exec-detached $HOME/.local/script/screen2text
 Generage password	pass gen -c
 Clear mpv cache	rm -f $HOME/.cache/mpv/*
+Start kanata	systemctl --user restart kanata.service
+Stop kanata	systemctl --user stop kanata.service
+Cast xbox	ffplay /dev/video2
 EOF

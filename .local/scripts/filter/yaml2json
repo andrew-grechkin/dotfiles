@@ -15,18 +15,41 @@ use constant {
         Cpanel::JSON::XS->new->allow_nonref(1)->canonical->utf8(0)->unblessed_bool([1])->pretty(0)->indent(0),
 };
 
-my $inject_path = 0;
-GetOptions('path|p' => \$inject_path)
-    or die "Unable to process command line options\n";
+GetOptions(
+    'compact-output|c' => \(my $compact_output = 0),
+    'path|p'           => \(my $inject_path    = 0),
+) or die "Unable to process command line options\n";
 
 my @data;
+
+# processing algorithm should be iterative, never read whole stdin at once or all files at once
+# this reduces memory consumption and works much better when a lot of data piped in
+
 if (@ARGV) {
-    @data = map {my $d = YAML::XS::LoadFile($_); $d->{'__path__'} = $_ if $inject_path; $d} @ARGV;
+    while (@ARGV) {
+        my $file = shift @ARGV;
+        if (@ARGV) {
+            my $data = YAML::XS::LoadFile($file);
+            $data->{'__path__'} = $file if ref($data) eq 'HASH' && $inject_path;
+            say JSON_ONE_LINE()->encode($data);
+            $compact_output = 1;
+        }
+        @data = do {my $d = YAML::XS::LoadFile($file); $d->{'__path__'} = $file if $inject_path; $d};
+    }
 } else {
-    @data = YAML::XS::Load(do {local $/ = undef; <STDIN>});
+    my @lines;
+    while (defined(my $line = <STDIN>)) {
+        if ($line =~ m/^---/ && @lines) {
+            say JSON_ONE_LINE()->encode(YAML::XS::Load(join '', @lines));
+            undef @lines;
+            $compact_output = 1;
+        }
+        push @lines, $line;
+    }
+    push @data, YAML::XS::Load(join '', @lines) if @lines;
 }
 
-if (-t 1 && @data == 1) {
+if (-t 1 && @data == 1 && !$compact_output) {
     print JSON_MULTI_LINE()->encode($data[0]);
 } else {
     say JSON_ONE_LINE()->encode($_) foreach @data;

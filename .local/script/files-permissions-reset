@@ -3,7 +3,7 @@
 set -Eeuo pipefail
 
 if (( EUID > 0 )); then
-	exec sudo "$0" "$@"
+    exec sudo "$0" "$@"
 fi
 
 chmod -R a+rX,ug+w,g-s,o-w .

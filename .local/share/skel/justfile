@@ -1,0 +1,148 @@
+set export
+
+# init monorepo in an empty directory
+[no-exit-message]
+init-monorepo:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    [[ -f "package.json" ]] && just fatal 'directory is not empty'
+    git init
+    npm init -y --init-type module
+    run_packages=(
+        dotenv tsx
+    )
+    dev_packages=(
+        @biomejs/biome
+    )
+    npm install --no-audit --no-fund "${run_packages[@]}"
+    npm install --no-audit --no-fund --save-dev "${dev_packages[@]}"
+    cat << EO_EDITORCONFIG > .editorconfig
+    root = true
+
+    [*]
+    charset                  = utf-8
+    end_of_line              = lf
+    indent_size              = 4
+    indent_style             = space
+    insert_final_newline     = true
+    max_line_length          = 120
+    spelling_language        = en
+    tab_width                = 4
+    trim_trailing_whitespace = true
+
+    [Makefile]
+    indent_style = tab
+
+    [*.json,*.rb,*.yaml]
+    indent_size = 2
+    tab_width   = 2
+    EO_EDITORCONFIG
+    cat << EO_GITIGNORE > .gitignore
+    node_modules/
+    EO_GITIGNORE
+    npx @biomejs/biome init
+    scope="${scope:-@$(just print-monorepo-name)}"
+
+    npm init -y --init-module create-app --scope "$scope" -w "packages/$scope/create-app"
+    ( cd "packages/$scope/create-app" && just init-app-template && npm link )
+
+    npm init -y --init-module create-lib --scope "$scope" -w "packages/$scope/create-lib"
+    ( cd "packages/$scope/create-lib" && just init-lib-template && npm link)
+# {
+#   "$schema": "https://biomejs.dev/schemas/2.3.10/schema.json",
+#   "assist": {
+#     "actions": {
+#       "source": {
+#         "organizeImports": "on"
+#       }
+#     },
+#     "enabled": true
+#   },
+#   "files": {
+#     "ignoreUnknown": false
+#   },
+#   "formatter": {
+#     "enabled": true,
+#     "useEditorconfig": true,
+#     "lineWidth": 120,
+#     "bracketSpacing": false
+#   },
+#   "javascript": {
+#     "formatter": {
+#       "quoteStyle": "single"
+#     }
+#   },
+#   "json": {
+#     "formatter": {
+#       "indentStyle": "space",
+#       "indentWidth": 2
+#     }
+#   },
+#   "linter": {
+#     "enabled": true,
+#     "rules": {
+#       "recommended": true
+#     }
+#   },
+#   "vcs": {
+#     "clientKind": "git",
+#     "enabled": true,
+#     "useIgnoreFile": true
+#   }
+# }
+
+# add an application to the monorepo
+add-app project component:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    scope="${scope:-@$(just print-monorepo-name)}"
+    npm init -y -w "apps/$project/$component" "$scope/app"
+
+# add a library to the monorepo
+add-lib name scope='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    scope="${scope:-@$(just print-monorepo-name)}"
+    npm init -y --scope "$scope" -w "libs/$scope/$name" "$scope/lib"
+
+# => helpers ------------------------------------------------------------------------------------------------------ {{{1
+
+[group('helpers'), private, no-cd, no-exit-message]
+@fatal message:
+    >&2 echo "{{style('error')}}fatal: $message{{NORMAL}}"
+    exit 1
+
+[group('helpers'), private, no-cd]
+@print message:
+    [[ -t 1 ]] && >&2 echo "{{style('warning')}}$message{{NORMAL}}" || true
+
+[group('helpers'), private]
+@print-monorepo-name:
+    jq -r '.name' < package.json
+
+[group('helpers'), private, no-cd]
+init-app-template:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    run_packages=(
+        @minionjs/core @mojojs/core @types/stack-utils @types/ws
+    )
+    mkdir bin && cat << EO_INIT_APP > bin/create-app
+    #!/usr/bin/env bash
+    set -Eeuo pipefail
+    npm init -y --init-type module
+    npm install --no-audit --no-fund ${run_packages[@]@Q}
+    EO_INIT_APP
+    chmod a+x bin/create-app
+    jq --arg bin bin/create-app '.bin |= {"create-app": $bin}' < package.json | ifne sponge package.json
+
+[group('helpers'), private, no-cd]
+init-lib-template:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    run_packages=(
+        @mojojs/core @types/stack-utils
+    )
+    mkdir bin && cat << EO_INIT_LIB > bin/create-lib
+    #!/usr/bin/env bash
+    set -Eeuo pipefail
+    npm init -y --init-type module
+    npm install --no-audit --no-fund ${run_packages[@]@Q}
+    EO_INIT_LIB
+    chmod a+x bin/create-lib
+    jq --arg bin bin/create-lib '.bin |= {"create-lib": $bin}' < package.json | ifne sponge package.json

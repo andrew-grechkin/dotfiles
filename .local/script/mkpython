@@ -2,17 +2,19 @@
 
 set -Eeuo pipefail
 
-[[ -r "$1" ]] || {
-	{
-		echo '#!/usr/bin/env python3'
-		echo
-		echo 'import logging'
-		echo 'from pprint import pprint'
-		echo
-		echo 'logging.basicConfig(format="%(asctime)s " + logging.BASIC_FORMAT, level=logging.DEBUG)'
-	} >> "$1"
+file=${1:-$XDG_RUNTIME_DIR/test.py}
 
-	chmod a+x "$1"
+[[ -r "$file" ]] || {
+    {
+        echo '#!/usr/bin/env python3'
+        echo
+        echo 'import logging'
+        echo 'from pprint import pprint'
+        echo
+        echo 'logging.basicConfig(format="%(asctime)s " + logging.BASIC_FORMAT, level=logging.DEBUG)'
+    } >> "$file"
+
+    chmod a+x "$file"
 }
 
-"${VISUAL:-vim}" "$1"
+"${VISUAL:-vim}" "$file"
