@@ -1,0 +1,288 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC2154
+
+set -Eeuo pipefail
+
+# @describe ABSTRACT:
+#   A utility for displaying detailed information about git commits, directories, and files.
+#
+# DESCRIPTION:
+#   Provides commands to inspect and display detailed attributes and content for various system entities such as git
+#   commits, directories, and files.
+#
+# LICENSE:
+#   GPL-2.0-or-later
+#   🄯 2026 Andrew Grechkin
+
+# @meta version 1.0.0
+# @meta combine-shorts
+
+function _fatal() { echo "fatal:" "$@" >&2; exit 1; }
+
+function _is-git-repo() {
+    git rev-parse HEAD &>/dev/null
+}
+
+function _is-merge-commit() {
+    git rev-parse --verify "${1:?git reference must be provided}^2" &>/dev/null
+}
+
+[[ -x "$(command -v argc)" ]] || _fatal "'argc' helper is required, install it from https://github.com/sigoden/argc"
+
+# @cmd
+# @meta require-tools git
+# @arg       ref                           git reference (default: HEAD)
+# @arg       argv*                         optional args passed through to git
+# @flag   -b --branch                      diff for the whole branch
+# @option -c --color[=auto|never|always]   Color mode
+# @describe
+# Diff for a git commit with sensible defaults
+function commit() {
+    _is-git-repo || _fatal 'must be run only in a git repo'
+
+    if [[ -n "${argc_ref:-}" ]]; then
+        argc__positionals=( "${argc__positionals[@]:1}" )
+    else
+        argc_ref='HEAD'
+    fi
+
+    git rev-parse --verify "$argc_ref" &>/dev/null || _fatal 'invalid git reference provided'
+
+    if [[ "$argc_color" == 'auto' && -t 1 ]]; then
+        argc_color='always'
+    fi
+    log_args=(--color="$argc_color" --ignore-space-change --stat --minimal --patch)
+    show_args=(--color="$argc_color" --ignore-space-change --stat)
+
+    if [[ -t 1 ]]; then
+        if [[ -x "$(command -v delta)" ]]; then
+            pager=("delta")
+        else
+            pager=("$(git config core.pager)")
+        fi
+    else
+        pager=("cat")
+    fi
+
+    if _is-merge-commit "$argc_ref"; then
+        if [[ "${mr_diff:-1}" == "1" ]]; then
+            echo -n 'merge '
+            git --no-pager show "${show_args[@]}" --dd --minimal --patch "$argc_ref" "${argc__positionals[@]}"
+        else
+            git --no-pager show "${show_args[@]}" --no-patch "$argc_ref" "${argc__positionals[@]}"
+            echo
+            echo
+            git --no-pager log "${log_args[@]}" "${argc_ref}^1..${argc_ref}^2"
+        fi
+    else
+        if git main-remote &>/dev/null; then
+            commit="$(git rev-parse "$argc_ref" 2>/dev/null)"
+            main_upstream_branch="$(git main-upstream 2>/dev/null)"
+            main_upstream_commit="$(git rev-parse "$main_upstream_branch" 2>/dev/null)"
+            if [[ "$main_upstream_commit" = "$commit" ]]; then
+                span="$argc_ref"
+            elif git merge-base --is-ancestor "$argc_ref" "$main_upstream_branch"; then
+                span="$argc_ref"
+            else
+                commits="$(git --no-pager log --color="$argc_color" --oneline "$main_upstream_branch..$argc_ref")"
+                if [[ -n "${argc_branch:-}" ]] && (( $(echo "$commits" | wc -l) > 1 )); then
+                    echo "Combined diff for commits: $main_upstream_branch...$argc_ref"
+                    echo "$commits"
+                    echo
+                    git --no-pager diff "${log_args[@]}" "$main_upstream_branch...$argc_ref" "${argc__positionals[@]}"
+                    # echo
+                    # span="$main_upstream_branch..$argc_ref"
+                else
+                    span="$argc_ref"
+                fi
+            fi
+        else
+            span="$argc_ref"
+        fi
+
+        [[ -n "${span:-}" ]] && git --no-pager show "${show_args[@]}" --dd --minimal --patch "$span" "${argc__positionals[@]}"
+    fi | "${pager[@]}"
+}
+
+function _pwd() {
+    pwd
+}
+
+# @cmd
+# @meta require-tools file,xdg-mime
+# @arg       path=`_pwd`    dir path
+# @describe
+# Displays detailed information about a given directory
+# This is including file system stats, type, MIME information, and a structured listing of its contents.
+function dir() {
+    [[ -d "$argc_path" ]] || _fatal 'path to a dir must be provided'
+
+    stat "$argc_path"
+
+    echo "  Type: $(command file -b "$argc_path")"
+    mime=$(command file -bi "$1")
+    echo "  FILE: $mime"
+    echo "  MIME: $(xdg-mime query filetype "$1")"
+    echo
+
+    if [[ -x "$(command -v eza)" ]]; then
+        eza -laTF -L 3 --color=always --time-style=long-iso --group-directories-first "$argc_path"
+    else
+        tree -Chp -L 3 "$argc_path" || ls -la --color=always
+    fi
+}
+
+# @cmd
+# @meta require-tools bat,xdg-mime
+# @arg       path!                         file path
+# @describe
+# Displays detailed information about a given file
+# This is including its file system stats, type, MIME information, and a preview of its contents.
+function file() {
+    local bat_args base ext mime name size
+    size=$(stat -c %s "$argc_path")
+    mime=$(command file -bi "$argc_path")
+
+    stat -- "$argc_path"
+    echo "  Type: $(command file -b "$argc_path")"
+    echo "  FILE: $mime"
+    echo "  MIME: $([[ -n "${SSH_CLIENT:-}" ]] && unset DISPLAY; xdg-mime query filetype "$argc_path")"
+    if (( size <= 10000000 )); then
+        echo "  SHA1: $(sha1sum -b "$argc_path" | awk '{print $1}')"
+    fi
+    echo
+
+    bat_args=(--style=numbers --color=always --tabs=4 -pp)
+    name=$(basename "$argc_path")
+    base="${name%.[^.]*}"
+    ext="${name:${#base} + 1}"
+
+    if [[ "$mime" =~ ^application/json || "$ext" == "json" ]]; then
+        jq -S --indent 2 < "$argc_path" | bat -l json "${bat_args[@]}"; return
+    elif [[ "$mime" =~ application/x-.*executable ]]; then
+        readelf -dW "$argc_path" && echo && nm -DC "$argc_path"; return
+    elif [[ "$mime" =~ ^application/x-sharedlib ]]; then
+        { readelf -dW "$argc_path" && echo && nm -DC "$argc_path"; } || objdump -xfTC "$argc_path"; return
+    elif [[ "$mime" =~ ^text/x-shellscript ]]; then
+        bat -l 'Bourne Again Shell (bash)' "${bat_args[@]}" "$argc_path"; return
+    elif [[ "$mime" =~ ^application/x-object ]]; then
+        nm -ClS "$argc_path"; echo; objdump -afltSd "$argc_path"; return
+    elif [[ "$mime" =~ ^application/x-archive ]]; then
+        nm -C "$argc_path"; return
+    elif [[ "$mime" =~ video/ || "$mime" =~ audio/ ]]; then
+        mediainfo "$argc_path"
+        ffprobe -hide_banner -pretty "$argc_path" 2>&1
+        return
+    elif [[ "$mime" =~ image/vnd.djvu ]]; then
+        return
+    elif [[ "$mime" =~ image/ ]]; then
+        local yaml_file="$base.yml"
+        [[ -r "$yaml_file" ]] && bat -l yaml "${bat_args[@]}" "$yaml_file"
+        if (( size < 10000000 )); then
+            local cols="${FZF_PREVIEW_COLUMNS:-$(tput cols)}"
+            cols=${cols:-120}
+            chafa --clear -c full --view-size "${cols}x" -f symbols --polite on "$argc_path" || true
+        fi
+        return
+    elif [[ "$ext" == "conf" ]]; then
+        bat -l conf "${bat_args[@]}" "$argc_path"; return
+    elif [[ "$ext" =~ yaml?$ ]]; then
+        yaml-sanitize < "$argc_path" | yamlfix - 2>/dev/null | bat -l yaml "${bat_args[@]}"; return
+    elif [[ "$ext" == "tsv" ]]; then
+        tsv-align "$argc_path" | bat -l tsv --wrap=never "${bat_args[@]}" --color=always; return
+    fi
+
+    if (( size > 10000000 )); then
+        return
+    fi
+
+    if [[ "$mime" =~ charset=binary ]]; then
+        hexdump -C "$argc_path"
+    elif (( size < 1000000 )); then
+        bat "${bat_args[@]}" "$argc_path" || cat "$argc_path"
+        if (( size > 255 )); then
+            return
+        fi
+        echo
+        hexdump -C "$argc_path"
+    else
+        cat "$argc_path"
+    fi
+}
+
+# @cmd
+# @arg args*
+# @describe
+# journalctl wrapper with nice output format and colors based on log event severity.
+function journal() {
+    ## journalctl wrapper with nice output format and colors based on log event severity.
+    ## The order is for human consumption only so they are just based on RFC 5424 (without being compliant) and the default journalctl short-iso format.
+    ## The syslog severity is added. This one is missing in all common log formats or not human readable (RFC 5424).
+    ## The time format is based on systemd.time(7) and RFC 3339.
+    ## The colors are made up by ypid because I could not find a proper standard.
+    ## Ref: https://serverfault.com/questions/59262/bash-print-stderr-in-red-color/502019#502019
+    ## Ref: https://serverfault.com/questions/801514/systemd-default-log-output-format
+
+    # shellcheck disable=SC2016
+    # command journalctl "$@" -o json \
+        # | jq --unbuffered --raw-output '"echo \(.PRIORITY|tonumber|@sh) \"$(date --date @\((._SOURCE_REALTIME_TIMESTAMP // .__REALTIME_TIMESTAMP) |tonumber | ./ 1000000 | tostring) '\''+%F %T %Z'\'')\" \(._HOSTNAME|@sh) \(.SYSLOG_IDENTIFIER|@sh): \(.MESSAGE | gsub("\n"; "\n    ") | @sh) "' \
+        # | sh \
+        # | perl -e 'my $c_to_sev = {0 => "48;5;9", 1 => "48;5;5", 2 => "38;5;9", 3 => "38;5;1", 4 => "38;5;5", 5 => "38;5;2", 6 => "38;5;2"}; while (<<>>) { s#^(([0-6])(?: [^ ]+){5})(.*)#\e[$c_to_sev->{$2}m$1\e[m$3#; print; }'
+
+    :
+    # journalctl "${argc_args[@]}" -o json \
+        #     | perl -WE '
+    # use open ":locale";
+    # use strict;
+    # use utf8;
+
+    # use JSON::PP;
+    # use POSIX qw(strftime);
+
+    # my $c_to_sev = {
+    #     0 => "48;5;9",
+    #     1 => "48;5;5",
+    #     2 => "38;5;9",
+    #     3 => "38;5;1",
+    #     4 => "38;5;5",
+    #     5 => "38;5;2",
+    #     6 => "38;5;2",
+    #     7 => "38;5;2",
+    # };
+
+    # my $json = JSON::PP->new->canonical->utf8(0)->pretty->space_before(0);
+
+    # while (defined (my $j = <<>>)) {
+    #     chomp($j);
+    #     next unless $j;
+
+    #     my $data = $json->decode($j);
+    #     my $date = $data->{_SOURCE_REALTIME_TIMESTAMP} // $data->{__REALTIME_TIMESTAMP};
+
+    #     $data->{PRIORITY} //= 0;
+
+    #     say sprintf(
+    #         "\e[$c_to_sev->{$data->{PRIORITY}}m%s:\e[m %s %s %s",
+    #         strftime("%FT%T%z", localtime($date / 1000000)), $data->{_HOSTNAME} // "undefined", $data->{SYSLOG_IDENTIFIER} // "undefined", $data->{MESSAGE} // "undefined",
+    #     );
+    # }
+    # '
+}
+
+# @cmd
+# @meta require-tools sqlite-utils
+# @arg       path!     sqlite db path
+# @describe
+# Displays detailed information about an SQlite db
+function sqlite() {
+    {
+        sqlite-utils tables "$argc_path" --schema --table
+        sqlite-utils views "$argc_path" --schema --table
+        echo
+        sqlite-utils indexes "$argc_path" --table
+        echo
+        sqlite-utils analyze-tables "$argc_path"
+    } | "${PAGER:-less}"
+}
+
+eval "$(argc --argc-eval "$0" "$@")"

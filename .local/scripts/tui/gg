@@ -172,7 +172,7 @@ add-clipboard name:
 add-diff name:
     #!/usr/bin/env -S bash -Eeuo pipefail
     ref=$(fzf-git-log-all-graph) && [[ -n "$ref" ]] || exit 0
-    show-commit "$ref" | "$api" add-text-to-chat "$name" "$ref" "diff for commit"
+    "$show" commit "$ref" | "$api" add-text-to-chat "$name" "$ref" "diff for commit"
 
 # Add file to the context of the chat
 [group('chat'), no-cd, no-exit-message]
