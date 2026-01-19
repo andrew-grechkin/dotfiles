@@ -9,7 +9,7 @@ export colored-md := require('colored-md')
 export fzf-table := require('fzf-table')
 export git := require('git')
 export jq := require('jq')
-export show_commit := require('show-commit')
+export show := require('show')
 export this := justfile()
 export tui := 'auto'
 
@@ -171,7 +171,7 @@ add-clipboard name:
 add-diff name:
     #!/usr/bin/env -S bash -Eeuo pipefail
     ref=$(fzf-git-log-all-graph) && [[ -n "$ref" ]] || exit 0
-    "$show_commit" "$ref" | "$api" add-text-to-chat "$name" "for commit $ref" diff
+    "$show" commit "$ref" | "$api" add-text-to-chat "$name" "for commit $ref" diff
 
 # Add file to the context of the chat
 [group('chat'), no-cd, no-exit-message]

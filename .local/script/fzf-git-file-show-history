@@ -6,8 +6,8 @@ git-in-repo || exit 95
 
 rpth="${*: -1}"
 if [[ -z "$rpth" || "$rpth" == '--' || "$rpth" == "$0" ]]; then
-	echo "Provide relative path to file" >&2
-	exit 1
+    echo "Provide relative path to file" >&2
+    exit 1
 fi
 
 # don't check file existence, it might absent in worktree
@@ -21,26 +21,26 @@ args[-1]="$apth"
 cd -- "$GIT_WORK_TREE" || exit 1
 
 if [[ -t 1 ]]; then
-	export FZF_RELOAD_CMD="${0@Q} ${args[*]@Q}"
-	source "$HOME/.local/lib/shell/fzf.bash"
-	commit="\"\$($CMD_EXTRACT_COMMIT)\""
-	cmtpth="\"\$($CMD_EXTRACT_COMMIT):$apth\""
+    export FZF_RELOAD_CMD="${0@Q} ${args[*]@Q}"
+    source "$HOME/.local/lib/shell/fzf.bash"
+    commit="\"\$($CMD_EXTRACT_COMMIT)\""
+    cmtpth="\"\$($CMD_EXTRACT_COMMIT):$apth\""
 
-	fzf_args=(
-		--bind="alt-b:execute-silent(git browse $commit -- ${apth@Q})"
-		--bind="alt-d:execute(git diff $commit HEAD -- ${apth@Q} | delta --paging=always)"
-		--bind="alt-f:execute(git show $cmtpth | colored --color=always --paging=always --file-name=${apth@Q})"
-		--bind="alt-i:execute(show-commit $commit -- | delta --paging=always)"
-		--bind="alt-o:execute(show-commit $commit -- ${apth@Q} | delta --paging=always)"
-		--bind="ctrl-b:execute(git blame -M -w $commit -- ${apth@Q} | delta --paging=always)"
-		--bind="ctrl-m:become(cat {+f1})"
-		--bind="ctrl-y:execute-silent($commit | clipcopy)"
-		--footer='alt-d:diff alt-f:view alt-i:inspect alt-o:inspect1 ctrl-b:blame enter:change | alt-b:browse alt-p:preview'
-		--preview="show-commit $commit -- ${apth@Q} | delta"
-		--prompt="$apth | history > "
-	)
+    fzf_args=(
+        --bind="alt-b:execute-silent(git browse $commit -- ${apth@Q})"
+        --bind="alt-d:execute(git diff $commit HEAD -- ${apth@Q} | delta --paging=always)"
+        --bind="alt-f:execute(git show $cmtpth | colored --color=always --paging=always --file-name=${apth@Q})"
+        --bind="alt-i:execute(show commit --color=always $commit -- | delta --paging=always)"
+        --bind="alt-o:execute(show commit --color=always $commit -- ${apth@Q} | delta --paging=always)"
+        --bind="ctrl-b:execute(git blame -M -w $commit -- ${apth@Q} | delta --paging=always)"
+        --bind="ctrl-m:become(cat {+f1})"
+        --bind="ctrl-y:execute-silent($commit | clipcopy)"
+        --footer='alt-d:diff alt-f:view alt-i:inspect alt-o:inspect1 ctrl-b:blame enter:change | alt-b:browse alt-p:preview'
+        --preview="show commit --color=always $commit -- ${apth@Q} | delta"
+        --prompt="$apth | history > "
+    )
 
-	eval "$FZF_RELOAD_CMD" | fzf-git "${fzf_args[@]}"
+    eval "$FZF_RELOAD_CMD" | fzf-git "${fzf_args[@]}"
 else
-	git-log-branch --follow "${args[@]}"
+    git-log-branch --follow "${args[@]}"
 fi
