@@ -1,0 +1,16 @@
+#!/usr/bin/env perl
+
+use v5.36;
+use autodie;
+
+my ( $n, $file );
+
+while ( my $line = <<>> ) {
+    if ( $line =~ m/-----BEGIN CERTIFICATE-----/ ... $line =~ m/-----END CERTIFICATE-----/ ) {
+        open( $file, '>', sprintf( 'cert-%06d.pem', ++$n ) ) unless $file;
+        print {$file} $line;
+        next;
+    }
+
+    close $file and undef $file if $file;
+}
