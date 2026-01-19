@@ -1,3 +1,6 @@
 {
+  "credHelpers": {
+    "registry.gitlab.com": "gitlab"
+  },
   "detachKeys": "ctrl-x,x"
 }

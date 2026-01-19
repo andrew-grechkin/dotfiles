@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+source="$(dirname "$1")"
+shift
+
+pass show "dir/$(systemd-escape "$source")" | encfs -S "$source" "$@"

@@ -1,0 +1,28 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+set export
+set no-cd
+
+export this := justfile()
+
+[private]
+@default:
+    "$this" --list
+
+[positional-arguments]
+create *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    version="${DIB_ARCH_VERSION?:version must be provided}"
+
+    args=(
+        --tag="archlinux-distrobox:$version"
+        --file="$XDG_DATA_HOME/distrobox/archlinux-distrobox.Dockerfile"
+    )
+    docker build --pull=always "${args[@]}" .
+
+    ini=$(gotmpl2text < "$XDG_DATA_HOME/distrobox/distrobox.ini.tmpl" <(jq -n --arg ver "$version" '{version: $ver}'))
+
+    distrobox-assemble create --file <(echo "$ini") -n "arch-$version" "$@"

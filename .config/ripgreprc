@@ -25,6 +25,7 @@
 --no-ignore-parent
 # --no-ignore-vcs
 
+--glob=!/.claude/
 --glob=!/.git/
 --glob=!/.venv/
 --glob=!/media/
