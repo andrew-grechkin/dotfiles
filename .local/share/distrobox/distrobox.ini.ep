@@ -1,0 +1,34 @@
+# vim: filetype=dosini
+
+[_defaults]
+init_hooks=ln -sf /usr/bin/distrobox-host-exec /usr/local/bin/flatpak;
+init_hooks=ln -sf /usr/bin/distrobox-host-exec /usr/local/bin/google-chrome-stable;
+init_hooks=ln -sf /usr/bin/distrobox-host-exec /usr/local/bin/google-chrome;
+init_hooks=ln -sf /usr/bin/distrobox-host-exec /usr/local/bin/xdg-open;
+# pre_init_hooks=echo -e 'en_DK.UTF-8 UTF-8\nen_US.UTF-8 UTF-8\nnl_NL.UTF-8 UTF-8\nru_RU.UTF-8 UTF-8' > /etc/locale.gen && locale-gen;
+pull=false
+start_now=true
+#exported_apps="htop"
+#exported_bins="/usr/bin/vim"
+#exported_bins_path="/home/agrechkin/.local/bin"
+
+[arch-<%= $version %>]
+include=_defaults
+additional_packages=ansible base base-devel git just reflector vim tmux xclip xsel zsh
+hostname=arch.<%= $hostname =~ s/^arch[.]//r %>
+image=archlinux-distrobox:<%= $version %>
+
+[centos9]
+include=_defaults
+additional_packages=git tmux vim zsh
+image=quay.io/toolbx-images/centos-toolbox:stream9
+
+[suse]
+include=_defaults
+additional_packages=ansible git terminfo tmux vim zsh
+image=registry.opensuse.org/opensuse/distrobox:latest
+
+[ubuntu16]
+include=_defaults
+additional_packages=python3 python3-pip
+image=quay.io/toolbx/ubuntu-toolbox:16.04

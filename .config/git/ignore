@@ -52,3 +52,5 @@ x64-[Rr]elease*/
 hypnotoad.pid
 
 .venv/
+
+.claude/
