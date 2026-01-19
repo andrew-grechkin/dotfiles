@@ -5,7 +5,7 @@ local act = wezterm.action
 local result = {}
 if wezterm.config_builder then result = wezterm.config_builder() end
 
-FONT_SIZE = 16
+FONT_SIZE = 15
 
 local handle = io.popen('hostname')
 if handle then
@@ -18,7 +18,9 @@ end
 local config = {
     check_for_updates = false,
     adjust_window_size_when_changing_font_size = false,
+    alternate_buffer_wheel_scroll_speed = 1,
     bold_brightens_ansi_colors = false,
+    -- color_scheme = 'Builtin Solarized Dark',
     colors = {
         background = '#000000',
         foreground = '#eaeaea',
@@ -60,10 +62,18 @@ local config = {
         {family = 'Symbols Nerd Font Mono', weight = 'Regular', scale = 0.6},
     },
     font_size = FONT_SIZE,
+    initial_cols = 128,
+    initial_rows = 30,
+    selection_word_boundary = ' \t\n{}[]()"\'`,',
     warn_about_missing_glyphs = false,
     window_background_opacity = 0.95,
+    window_close_confirmation = 'NeverPrompt',
     window_padding = {left = 0, right = 0, top = 0, bottom = 0},
 }
+
+local version_date = wezterm.version:match('^(%d%d%d%d%d%d%d%d)')
+
+if version_date and version_date >= '20240101' then config.mux_enable_ssh_agent = false end
 
 config.keys = {
     {key = 'L', mods = 'CTRL', action = wezterm.action.ShowDebugOverlay},
@@ -75,6 +85,7 @@ config.keys = {
     {key = '=', mods = 'CTRL', action = act.ResetFontSize},
     {key = '+', mods = 'SHIFT|CTRL', action = act.IncreaseFontSize},
     {key = '-', mods = 'CTRL', action = act.DecreaseFontSize},
+    {key = 'F12', mods = 'CTRL', action = act.ResetTerminal},
 }
 
 for k, v in pairs(config) do result[k] = v end

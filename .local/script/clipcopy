@@ -4,36 +4,42 @@ set -Eeuo pipefail
 
 # clipcopy - Copy data to clipboard
 #
+# Works as a filter and always prints STDIN to STDOUT
 # Usage:
 #  <command> | clipcopy      - copies stdin to clipboard
 #  clipcopy <file> <file>... - copies file's contents to clipboard
 
 case "$OSTYPE" in
-	cygwin*|msys*)
-		cat "$@" > /dev/clipboard
-		;;
-	darwin*)
-		cat "$@" | pbcopy
-		;;
-	*)
-		if [[ -n "$*" && -n "$(command -v xclip)" && "$(file -b --mime-type "$1" 2>/dev/null)" =~ ^image/ ]]; then
-			# copy image with correct mime type
-			# print targets: xclip -selection clipboard -t TARGETS -o
-			mime="$(file -b --mime-type "$1")"
-			xclip -in -selection clipboard -target "$mime" "$1"
-		elif [[ -n "$(command -v xsel)" ]]; then
-			# xsel fails to put big payloads into clipboard
-			cat "$@" | xsel --input --clipboard &>/dev/null
-		elif [[ -n "$(command -v xclip)" ]]; then
-			# unlike xsel it [xclip] works better on printing raw bitstream that doesn't fit the current locale.
-			# Nevertheless, it is neater to use xsel instead of xclip, because xclip does not close STDOUT after
-			# it has read from tmux's buffer. As such, tmux doesn't know that the copy task has completed, and
-			# continues to wait for xclip's termination, thereby rendering tmux unresponsive.
-			# A workaround is to redirect STDOUT of xclip to /dev/null
-			cat "$@" | xclip -sel c &>/dev/null
-		else
-			echo "clipcopy: Platform $OSTYPE not supported or xclip/xsel not installed" >&2
-			exit 1
-		fi
-		;;
+    cygwin*|msys*)
+        cat "$@" > /dev/clipboard
+        ;;
+    darwin*)
+        cat "$@" | pbcopy
+        ;;
+    *)
+        if [[ -n "$*" && -n "$(command -v xclip)" && "$(file -b --mime-type "$1" 2>/dev/null)" =~ ^image/ ]]; then
+            # copy image with correct mime type
+            # print targets: xclip -selection clipboard -t TARGETS -o
+            mime="$(file -b --mime-type "$1")"
+            xclip -in -selection clipboard -target "$mime" "$1"
+        elif [[ -n "$(command -v xclip)" ]]; then
+            # unlike xsel it [xclip] works better on printing raw bitstream that doesn't fit the current locale.
+            # Nevertheless, it is neater to use xsel instead of xclip, because xclip does not close STDOUT after
+            # it has read from tmux's buffer. As such, tmux doesn't know that the copy task has completed, and
+            # continues to wait for xclip's termination, thereby rendering tmux unresponsive.
+            # A workaround is to redirect STDOUT of xclip to /dev/null
+            # upd; I don't know why but this stupid xclip doesn't work sometimes if there is no some sleep or other
+            # command after it.
+            cat "$@" | xclip -f -selection clipboard; sleep 0.1
+        elif [[ -n "$(command -v xsel)" ]]; then
+            # I don't remember why I selected xsel over xclip before but I have found already 2 major issues with xsel
+            # and downgrading it now unless xclip proven to be even worse
+            # 1. xsel fails to put big payloads into clipboard
+            # 1. xsel fails to put ansi colored payloads into clipboard
+            cat "$@" | tee >(xsel -i --clipboard)
+        else
+            echo "clipcopy: Platform $OSTYPE not supported or xclip/xsel not installed" >&2
+            exit 1
+        fi
+        ;;
 esac
