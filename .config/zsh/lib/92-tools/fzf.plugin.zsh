@@ -59,15 +59,15 @@ export FZF_ALT_C_COMMAND='_fzf_compgen_helper . d'
 # )
 # export FZF_FILE_BINDS=(
 #   --bind='ctrl-alt-d:execute(rm -i {+} < /dev/tty > /dev/tty)+abort'
-#   --bind='ctrl-b:execute((show-dir {} || binwalk {}) | $PAGER > /dev/tty 2>&1)'
-#   --bind='ctrl-g:execute((show-dir {} || md5sum {}) | $PAGER > /dev/tty 2>&1)'
-#   --bind='ctrl-t:execute((show-dir {} || sha1sum {}) | $PAGER > /dev/tty 2>&1)'
-#   --bind='ctrl-x:execute((show-dir {} || hexdump -C {}) | $PAGER > /dev/tty 2>&1)'
-#   --bind='f3:execute((show-dir {} || show-file {} ) | $PAGER > /dev/tty 2>&1)'
+#   --bind='ctrl-b:execute((show dir {} || binwalk {}) | $PAGER > /dev/tty 2>&1)'
+#   --bind='ctrl-g:execute((show dir {} || md5sum {}) | $PAGER > /dev/tty 2>&1)'
+#   --bind='ctrl-t:execute((show dir {} || sha1sum {}) | $PAGER > /dev/tty 2>&1)'
+#   --bind='ctrl-x:execute((show dir {} || hexdump -C {}) | $PAGER > /dev/tty 2>&1)'
+#   --bind='f3:execute((show dir {} || show file {} ) | $PAGER > /dev/tty 2>&1)'
 #   --bind='f4:execute($EDITOR {} < /dev/tty > /dev/tty 2>&1)'
 # )
 # export FZF_FILE_PREVIEW=(
-#   --preview='{ show-dir {} || show-file {} } 2>&1 | head -n 100'
+#   --preview='{ show dir {} || show file {} } 2>&1 | head -n 100'
 # )
 
 # export FZF_NO_MULTI_OPTIONS=(
@@ -186,7 +186,7 @@ function widget-open-current-script() {
                     "$VISUAL" "$file"
                     break
                 else
-                    show-file "$file" | "${PAGER:-less}"
+                    show file "$file" | "${PAGER:-less}"
                     break
                 fi
             fi

@@ -105,11 +105,11 @@ CMD_EXTRACT_REF='   echo {} | grep -o "[[:xdigit:]]\{6,\}" | head -1 | xargs -r 
 
 FZF_GIT_DEFAULT_ARGS=(
     # --bind="load:pos(git lag | grep -Pnm1 '[^\/]HEAD' - | grep -Po '^\d+')"
-    --bind="alt-I:execute(show-commit \$($CMD_EXTRACT_COMMIT) -- ${OPTIONS[*]} | ${LOG_PAGER[*]} -s)"
+    --bind="alt-I:execute(show commit --color=always \$($CMD_EXTRACT_COMMIT) -- ${OPTIONS[*]} | ${LOG_PAGER[*]} -s)"
     --bind="alt-b:execute-silent(git browse \$($CMD_EXTRACT_COMMIT))"
-    --bind="alt-c:execute(show-commit \$($CMD_EXTRACT_COMMIT) --diff -- ${OPTIONS[*]} | ${LOG_PAGER[*]})"
+    --bind="alt-c:execute(show commit --color=always \$($CMD_EXTRACT_COMMIT) --diff -- ${OPTIONS[*]} | ${LOG_PAGER[*]})"
     --bind="alt-d:execute( { s=\$($CMD_EXTRACT_COMMIT)..HEAD; echo Explicit diff for \$s; echo; git --no-pager diff --color=always --minimal --patch --stat \$s; } | ${LOG_PAGER[*]})"
-    --bind="alt-i:execute(show-commit \$($CMD_EXTRACT_COMMIT) -- ${OPTIONS[*]} | ${LOG_PAGER[*]})"
+    --bind="alt-i:execute(show commit --color=always \$($CMD_EXTRACT_COMMIT) -- ${OPTIONS[*]} | ${LOG_PAGER[*]})"
     --bind="alt-t:become(fzf-git-x-status)"
     --bind="ctrl-m:become(grep -o '[[:xdigit:]]\{6,\}' {+f} | xargs -rn1 git pcommit | clipcopy)"
     --bind="ctrl-x:become([[ -n {q} ]] && echo {q} | clipcopy >&2; cat {+f})"
@@ -118,7 +118,7 @@ FZF_GIT_DEFAULT_ARGS=(
     --bind="esc:become:true"
     --delimiter=" "
     --no-sort
-    --preview="show-commit \$($CMD_EXTRACT_COMMIT) -- ${OPTIONS[*]} | ${LOG_PAGER[*]}"
+    --preview="show commit --color=always \$($CMD_EXTRACT_COMMIT) -- ${OPTIONS[*]} | ${LOG_PAGER[*]}"
     --prompt="log > "
     --scheme=history
     --tiebreak="begin,chunk"
