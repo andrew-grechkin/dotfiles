@@ -5,21 +5,21 @@ Number of commands=8
 Regexp=([^"\\s]+youtube.*watch\\?[^"\\s]+)|([^"\\s]+youtu.be[^"\\s]+)
 
 [Action_0/Command_0]
-Commandline[$e]=mpv --quiet --ytdl-raw-options='format="b[height<=1080]/bv*[height<=480]+ba/b",sub-langs="en,nl,ru,fr,de,it,pt"' -- '%0'
+Commandline[$e]=mpv --quiet --ytdl-raw-options='format="b[height<=1080][protocol=https]/bv*[height<=480]+ba/b",sub-langs="en,nl,ru,fr,de,it,pt"' -- '%0'
 Description=Play youtube video with mpv (fast)
 Enabled=true
 Icon=mpv
 Output=0
 
 [Action_0/Command_1]
-Commandline[$e]=mpv --quiet --ytdl-raw-options='format="b[height>480][height<=720]/bv*[height<=720]+ba/b",prefer-free-formats="",sub-langs="en,nl,ru,fr,de,it,pt"' -- '%0'
+Commandline[$e]=mpv --quiet --ytdl-raw-options='format="b[height>480][height<=720][protocol=https]/bv*[height<=720]+ba/b",prefer-free-formats="",sub-langs="en,nl,ru,fr,de,it,pt"' -- '%0'
 Description=Play youtube video with mpv (720p)
 Enabled=true
 Icon=mpv
 Output=0
 
 [Action_0/Command_2]
-Commandline[$e]=mpv --quiet --ytdl-raw-options='format="b[height>720][height<=1080]/bv*[height<=1080]+ba/b",prefer-free-formats="",sub-langs="en,nl,ru,fr,de,it,pt"' -- '%0'
+Commandline[$e]=mpv --quiet --ytdl-raw-options='format="b[height>720][height<=1080][protocol=https]/bv*[height<=1080]+ba/b",prefer-free-formats="",sub-langs="en,nl,ru,fr,de,it,pt"' -- '%0'
 Description=Play youtube video with mpv (1080p)
 Enabled=true
 Icon=mpv
@@ -40,21 +40,21 @@ Icon=
 Output=0
 
 [Action_0/Command_5]
-Commandline[$e]=tsp ~/.local/script/video-download -h 1080 -- -P '~/videos' '%0'
+Commandline[$e]=tsp ~/.local/scripts/tool/video download '%0' 1080 -P '~/videos'
 Description=Download youtube video (1080p)
 Enabled=true
 Icon=video-webm
 Output=0
 
 [Action_0/Command_6]
-Commandline[$e]=tsp ~/.local/script/video-download -h 1440 -- -P '~/videos' '%0'
+Commandline[$e]=tsp ~/.local/scripts/tool/video download '%0' 1440 -P '~/videos'
 Description=Download youtube video (1440p)
 Enabled=true
 Icon=video-webm
 Output=0
 
 [Action_0/Command_7]
-Commandline[$e]=tsp ~/.local/script/audio-download -- -P '~/music' '%0'
+Commandline[$e]=tsp ~/.local/scripts/tool/audio download '%0' -P '~/music'
 Description=Download youtube audio
 Enabled=true
 Icon=audio-flac
