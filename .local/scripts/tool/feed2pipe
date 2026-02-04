@@ -1,0 +1,69 @@
+#!/usr/bin/env -S bash -Eeuo pipefail
+# shellcheck disable=SC2154
+
+[[ -x "$(command -v argc)" ]] || {
+    echo "'argc' helper command is required, install from https://github.com/sigoden/argc" >&2
+    exit 2
+}
+
+# @describe ABSTRACT:
+#   Daemon that repeatedly executes a command and feeds its output to a named pipe
+#
+# SYNOPSIS:
+#   feed2pipe --pipe ~/.local/state/gitlab.com credp gitlab.com
+#
+# LICENSE:
+#   GPL-2.0-or-later
+#   🄯 2025 Andrew Grechkin
+#
+# This tool creates a named pipe and continuously executes the specified command,
+# writing its output to the pipe. It's useful for creating daemon processes that
+# serve data to clients reading from the pipe. The command is executed in a loop,
+# with each execution's output appended to the pipe.
+
+# @meta version 1.0.0
+# @meta combine-shorts
+
+# @arg    command+         Command to execute
+# @flag   -b --background  Run application in background
+# @option -p --pipe!       Path to named pipe
+
+eval "$(argc --argc-eval "$0" "$@")"
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+if [[ "${argc_background:-}" == "1" ]]; then
+    if [[ -t 0 ]] || [[ -t 1 ]] || [[ -t 2 ]]; then
+        setsid -f "$0" "$@" </dev/null &>/dev/null
+        exit 0
+    fi
+fi
+
+exec &> >(logger -st "$(basename "$0")")
+
+fatal() {
+    echo "fatal:" "$@"
+    exit 1
+}
+
+cleanup() {
+    [[ -p "$argc_pipe" ]] && rm -f -- "$argc_pipe"
+    exit 0
+}
+trap cleanup EXIT INT TERM
+
+if [[ -e "$argc_pipe" ]]; then
+    if [[ ! -p "$argc_pipe" ]]; then
+        fatal "path exists but it is not a pipe: $argc_pipe"
+    fi
+    echo "using existing pipe: $argc_pipe"
+else
+    echo "creating named pipe: $argc_pipe"
+    mkfifo "$argc_pipe" || fatal "unable to create named pipe [$?]: $argc_pipe"
+fi
+
+echo "feed2pipe started, command: ${argc_command[*]}"
+
+while true; do
+    "${argc_command[@]}" >> "$argc_pipe"
+done
