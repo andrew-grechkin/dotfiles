@@ -1,0 +1,129 @@
+#!/usr/bin/env -S just --one --justfile
+
+set export
+
+export this := justfile()
+
+# Run TUI if interactive, otherwise print static view
+[private]
+@default:
+    "$this" --list
+
+# create a temporary bash script
+[no-cd]
+bash file='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    file=${file:-$XDG_RUNTIME_DIR/test.sh}
+
+    [[ -r "$file" ]] || {
+        {
+            echo '#!/usr/bin/env -S bash -Eeuo pipefail'
+            echo
+        } >> "$file"
+
+        chmod a+x "$file"
+    }
+
+    "${VISUAL:-${EDITOR:-vi}}" "$file"
+
+# create a temporary deno script
+[no-cd]
+deno file='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    file=${file:-$XDG_RUNTIME_DIR/test.ts}
+
+    [[ -r "$file" ]] || {
+        {
+            echo '#!/usr/bin/env -S deno --allow-env --allow-ffi --allow-net --allow-read --allow-sys'
+            echo
+            echo '# https://docs.deno.com/api/node/'
+            echo '# https://docs.deno.com/runtime/fundamentals/standard_library/'
+        } >> "$file"
+
+        chmod a+x "$file"
+    }
+
+    "${VISUAL:-${EDITOR:-vi}}" "$file"
+
+# create a temporary json file
+[no-cd]
+json file='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    file=${file:-$XDG_RUNTIME_DIR/test.json}
+
+    touch "$file"
+    "${VISUAL:-${EDITOR:-vi}}" "$file"
+
+# create a temporary perl script
+[no-cd]
+perl file='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    file=${file:-$XDG_RUNTIME_DIR/test.pl}
+
+    [[ -r "$file" ]] || {
+        {
+            echo '#!/usr/bin/env -S perl -CALS'
+            echo
+            echo 'use v5.40;'
+            echo 'use experimental qw(class declared_refs defer refaliasing);'
+            echo
+            echo '__END__'
+        } >> "$file"
+
+        chmod a+x "$file"
+    }
+
+    "${VISUAL:-${EDITOR:-vi}}" "$file"
+
+# create a temporary python script
+[no-cd]
+python file='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    file=${file:-$XDG_RUNTIME_DIR/test.py}
+
+    [[ -r "$file" ]] || {
+        {
+            echo '#!/usr/bin/env python3'
+            echo
+            echo 'import logging'
+            echo 'from pprint import pprint'
+            echo
+            echo 'logging.basicConfig(format="%(asctime)s " + logging.BASIC_FORMAT, level=logging.DEBUG)'
+        } >> "$file"
+
+        chmod a+x "$file"
+    }
+
+    "${VISUAL:-${EDITOR:-vi}}" "$file"
+
+# create a temporary ruby script
+[no-cd]
+ruby file='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    file=${file:-$XDG_RUNTIME_DIR/test.rb}
+
+    [[ -r "$file" ]] || {
+        {
+            echo '#!/usr/bin/env -S ruby'
+        } >> "$file"
+
+        chmod a+x "$file"
+    }
+
+    "${VISUAL:-${EDITOR:-vi}}" "$file"
+
+# create a temporary yaml file
+[no-cd]
+yaml file='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    file=${file:-$XDG_RUNTIME_DIR/test.yaml}
+
+    touch "$file"
+    "${VISUAL:-${EDITOR:-vi}}" "$file"
