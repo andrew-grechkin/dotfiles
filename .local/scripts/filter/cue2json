@@ -1,0 +1,178 @@
+#!/usr/bin/env perl
+
+# https://wyday.com/cuesharp/specification.php
+
+use v5.42;
+use open ':locale';
+use warnings     qw(FATAL utf8);
+use experimental qw(class declared_refs defer refaliasing);
+
+use Encode     qw(decode);
+use English    qw(-no_match_vars);
+use JSON::PP   qw();
+use List::Util qw(zip);
+
+## no critic [RegularExpressions::ProhibitComplexRegexes]
+## no critic [RegularExpressions::RequireBracesForMultiline]
+use constant COMMANDS => {
+    REM => qr{
+        \A
+            (REM) \s+
+            (?<name> ACCURATERIPID|CATALOG|COMPOSER|GENRE|DATE|DISCID|COMMENT|LABEL|ALBUMARTIST|REPLAYGAIN_ALBUM_GAIN|REPLAYGAIN_ALBUM_PEAK|REPLAYGAIN_TRACK_GAIN|REPLAYGAIN_TRACK_PEAK) \s+
+            (?<quote> ['"]?) (?<data> .*?) \g{quote}
+        \z
+    }xi,
+    FILE => qr[
+        \A
+            (FILE) \s+
+            (?<quote> ['"]) (?<path> .+?) \g{quote} \s+
+            (?<format> BINARY|MOTOROLA|AIFF|WAVE|MP3)
+        \z
+    ]xi,
+    TRACK => qr{
+        \A
+            (TRACK) \s+
+            (?<number> \d{2,}) \s+
+            (?<mode> AUDIO|CDG|MODE1\/2048|MODE1\/2352|MODE2\/2336|MODE2\/2352|CDI\/2336|CDI\/2352)
+        \z
+    }xi,
+    INDEX => qr{
+        \A
+            (INDEX) \s+
+            (?<number> \d{2,}) \s+
+            (?<time> \d{2}:\d{2}:\d{2})
+        \z
+    }xi,
+    COMMON => qr[
+        \A
+            (?<name> ARRANGER|COMPOSER|DISC_ID|GENRE|MESSAGE|PERFORMER|SONGWRITER|TITLE|TOC_INFO|TOC_INFO2|UPC_EAN|SIZE_INFO) \s+
+            (?<quote> ['"]?) (?<data> .+?) \g{quote}
+        \z
+    ]xi,
+    CATALOG => qr[
+        \A
+            (?<name> CATALOG) \s+
+            (?<data> \d{13})
+        \z
+    ]xi,
+    GLOBAL_CONTEXT => qr[
+        \A
+            (?<name> CDTEXTFILE) \s+
+            (?<quote> ['"]?) (?<data> .+?) \g{quote}
+        \z
+    ]xi,
+    TRACK_CONTEXT => qr[
+        \A
+            (?:
+                (?<name> FLAGS) \s+
+                (?<data> PRE|DCP|4CH|SCMS)
+            ) | (?:
+                (?<name> ISRC|PREGAP|POSTGAP) \s+
+                (?<data> .+?)
+            )
+        \z
+    ]xi,
+};
+
+sub main {
+    my $last_file = '<';
+    my $buffer    = '';
+
+    while (1) {
+        my $line = <<>>;
+
+        if ($ARGV ne $last_file || !defined $line) {
+            if ($buffer) {
+                my $json_data = parse_cue_sheet($last_file, $buffer);
+                say JSON::PP->new->encode($json_data);
+            }
+            $buffer    = '';
+            $last_file = $ARGV;
+        }
+
+        last unless defined $line;
+        $buffer .= $line;
+    }
+
+    return 0;
+}
+
+exit main();
+
+sub parse_cue_sheet($path, $content) {
+    $content =~ s/^\x{FEFF}//;
+
+    return parse(decode('UTF-8', $path, Encode::FB_CROAK), [map {trim($_)} split m/\R/, $content]);
+}
+
+sub parse($path, $lines_aref) {
+    my \@lines = $lines_aref;
+
+    my %result = (__path__ => $path);
+    my @stack  = (\%result);
+
+    foreach my $line (@lines) {
+        next unless $line;
+
+        if ($line =~ COMMANDS()->{REM}) { ## no critic [ControlStructures::ProhibitCascadingIfElse]
+            $stack[-1]{rem}{lc $LAST_PAREN_MATCH{name}} = $LAST_PAREN_MATCH{data};
+        } elsif ($line =~ COMMANDS()->{FILE}) {
+            pop @stack while @stack > 1;
+
+            my $path        = $LAST_PAREN_MATCH{path};
+            my $args        = '-v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1';
+            my $duration_ms = int((0 + `ffprobe $args '$path'`) * 1000);
+            my $file        = {path => $path, format => $LAST_PAREN_MATCH{'format'}, duration_ms => $duration_ms};
+            push $stack[-1]{files}->@*, $file;
+            push @stack,                $file;
+        } elsif ($line =~ COMMANDS()->{TRACK}) {
+            pop @stack while @stack > 2;
+
+            my $track = {number => int($LAST_PAREN_MATCH{number}), mode => $LAST_PAREN_MATCH{mode}};
+            push $stack[-1]{tracks}->@*, $track;
+            push @stack,                 $track;
+        } elsif ($line =~ COMMANDS()->{INDEX}) {
+            die "unexpected line, context is not TRACK: $line\nin file: $path" if @stack != 3;
+            my $number   = int($LAST_PAREN_MATCH{number});
+            my %indicies = (
+                number => $number,
+                time   => $LAST_PAREN_MATCH{'time'},
+            );
+
+            if ($number == 1) {
+                my @p = map {$_ * 1000} split m/:/, $LAST_PAREN_MATCH{'time'};
+                my $start_ms = int($p[0] * 60 + $p[1] + $p[2] / 75);
+                $stack[-1]{metadata}{start_ms} = $start_ms;
+            }
+            push($stack[-1]{indicies}->@*, \%indicies);
+        } elsif ($line =~ COMMANDS()->{TRACK_CONTEXT}) {
+            die "unexpected line, context is not TRACK $line\nin file: $path" if @stack != 3;
+            $stack[-1]{metadata}{lc $LAST_PAREN_MATCH{name}} = $LAST_PAREN_MATCH{data};
+        } elsif ($line =~ COMMANDS()->{GLOBAL_CONTEXT} || $line =~ COMMANDS()->{CATALOG}) {
+            die "unexpected line, context is not GLOBAL: $line\nin file: $path" if @stack != 1;
+            $stack[-1]{metadata}{lc $LAST_PAREN_MATCH{name}} = $LAST_PAREN_MATCH{data};
+        } elsif ($line =~ COMMANDS()->{COMMON}) {
+            $stack[-1]{metadata}{lc $LAST_PAREN_MATCH{name}} = $LAST_PAREN_MATCH{data};
+        } else {
+            die "Unknown command or malformed line encountered: $line\nin file: $path";
+        }
+    }
+
+    # calculate end_ms for all tracks
+    if ($result{files}) {
+        foreach my \%file ($result{files}->@*) {
+            my $duration_ms = $file{duration_ms};
+            if ($file{tracks}) {
+                my @ends = ((map {$_->{metadata}{start_ms}} $file{tracks}->@*), $duration_ms);
+                shift @ends;
+                foreach my \@tuple(zip $file{tracks}, \@ends) {
+                    $tuple[0]{metadata}{end_ms} = $tuple[1];
+                }
+            }
+        }
+    }
+
+    return \%result;
+}
+
+__END__
