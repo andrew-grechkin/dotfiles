@@ -1,0 +1,205 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+import "~/.local/lib/just/common"
+
+export this := justfile()
+
+[private, no-cd]
+@default:
+    "$this" --list
+
+[no-cd]
+show file:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    ffmpeg -y -loglevel error -i "$file" -map 0:v:0 -frames:v 1 -f image2pipe -vcodec png - 2>/dev/null \
+        | chafa --clear -c full -f symbols --polite on 2>/dev/null || true
+    echo "> mediainfo:"; mediainfo "$file" 2>&1
+    echo "> ffmpeg:"; ffprobe -hide_banner -pretty "$file" 2>&1
+
+[no-cd]
+edit-metadata file:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if metadata=$("$this" fetch-metadata "$file"); then
+        if res=$(vipe <<< "$metadata"); then
+            "$this" update-metadata "$file" <<< "$res"
+        fi
+    fi
+
+[no-cd]
+embed-art file:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ "$file" =~ [.]flac$ ]]; then
+        mapfile -t files < <("$this" list-art)
+
+        [[ "${#files[@]}" == "0" ]] && exit
+
+        args=("--import-picture-from=${files[0]}")
+        for ((i=1; i<${#files[@]}; i++)); do
+            args+=("--import-picture-from=0||||${files[i]}")
+        done
+
+        metaflac "${args[@]}" "$file"
+        rm -f -- "${files[@]}"
+        find . -type d -empty -delete
+        find . -type f -name '*.log' -delete
+    fi
+
+[no-cd]
+embed-cover cover file:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ "$file" =~ [.]flac$ ]]; then
+        metaflac --import-picture-from="$cover" "$file"
+    else
+        ffmpeg -y -loglevel repeat+info -f image2 -pattern_type none -i "$cover" -update 1 -movflags +faststart file:"_tmp_cover.png"
+        trap 'rm -f -- "_tmp_cover.png"' EXIT
+        "$this" embed-thumbnail-flac "$file" "_tmp_cover.png"
+    fi
+
+[no-cd]
+embed-cue cue flac:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    # https://wiki.multimedia.cx/index.php/FFmpeg_Metadata
+    # "title" "author" "album_artist" "composer" "album"
+    # "year" "encoding_tool" "comment" "genre" "copyright"
+    # "grouping" "lyrics" "description" "synopsis" "show"
+    # "episode_id" "network" "keywords" "episode_sort"
+    # "season_number" "media_type" "hd_video" "gapless_playback"
+    # "compilation" "track"
+
+    bom remove "$cue"
+
+    args=(
+        # --import-cuesheet-from="$cue"
+        --add-replay-gain
+        --set-tag-from-file="CUESHEET=$cue"
+    )
+
+    payload=$(cue2json "$cue")
+    if album=$(jq -r '.metadata.title // empty' <<< "$payload") && [[ -n "$album" ]]; then
+        regex="\[([[:digit:]]{4})\][[:space:]]*(.*)"
+        if [[ "$album" =~ $regex ]]; then
+            args+=(--set-tag="YEAR=${BASH_REMATCH[1]}")
+            args+=(--set-tag="ALBUM=${BASH_REMATCH[2]}")
+        else
+            args+=(--set-tag="ALBUM=$album")
+        fi
+    fi
+    if album_artist=$(jq -r '.metadata.performer // empty' <<< "$payload") && [[ -n "$album_artist" ]]; then
+        metadata+=$'\n'"ALBUM_ARTIST=$album_artist"
+    fi
+    if artist=$(jq -r '.metadata.songwriter // empty' <<< "$payload") && [[ -n "$artist" ]]; then
+        args+=(--set-tag="ARTIST=$artist")
+        args+=(--set-tag="AUTHOR=$artist")
+    fi
+    if composer=$(jq -r '.metadata.composer // empty' <<< "$payload") && [[ -n "$composer" ]]; then
+        args+=(--set-tag="COMPOSER=$composer")
+    fi
+    if genre=$(jq -r '.metadata.genre // empty' <<< "$payload") && [[ -n "$genre" ]]; then
+        args+=(--set-tag="GENRE=$genre")
+    fi
+    if message=$(jq -r '.metadata.message // empty' <<< "$payload") && [[ -n "$message" ]]; then
+        args+=(--set-tag="DESCRIPTION=$message")
+    fi
+
+    metaflac "${args[@]}" "$flac"
+    rm -f -- "$cue"
+
+[no-cd, positional-arguments]
+download url *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 1
+    args=(
+        --verbose
+        --embed-chapters
+        --embed-metadata
+        --embed-thumbnail
+        --format="ba[ext=m4a]"
+        --no-config
+        --no-simulate
+        --output='%(fulltitle)s {id=%(id)s,up=%(uploader_id)s,ep=%(timestamp)s}.%(ext)s'
+        # --prefer-free-formats
+    )
+
+    if [[ -t 1 ]]; then
+        args+=(--list-formats)
+    else
+        args+=(--no-progress)
+    fi
+
+    umask 002
+    exec yt-dlp "${args[@]}" "$url" "$@"
+
+# fetch metadata of a file to STDOUT
+[private, no-cd, no-exit-message]
+fetch-metadata file:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    ffmpeg -y -loglevel error -i file:"$file" -f ffmetadata -
+
+# update metadata of a file passed from STDIN
+[private, no-cd]
+update-metadata file:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    filename=$(basename "$file")
+    dir=$(dirname "$file")
+    tmpname="$dir/temp-$filename"
+    trap 'rm -f -- "$tmpname"' EXIT
+    args=(
+        -y -loglevel warning
+        # -vn -sn -dn
+        -codec copy
+        -map "0:a" -map "0:v?"
+        -map_metadata 1 -map_chapters 1
+        -movflags +faststart
+    )
+    umask 002
+    ffmpeg -i "$file" -i /dev/stdin "${args[@]}" "$tmpname" \
+        && mv -f -- "$tmpname" "$file"
+
+[no-cd, no-exit-message]
+embed-thumbnail-mp4 path_audio path_png:
+    #!/usr/bin/env -S python3
+
+    from mutagen.mp4 import MP4, MP4Cover
+
+    audio = MP4("{{path_audio}}")
+
+    with open("{{path_png}}", "rb") as png:
+        audio["covr"] = [MP4Cover(png.read(), imageformat=MP4Cover.FORMAT_PNG)]
+
+    audio.save()
+
+[no-cd, no-exit-message]
+embed-thumbnail-flac path_audio path_png:
+    #!/usr/bin/env -S python3
+
+    from mutagen import File
+    from mutagen.flac import Picture, FLAC
+
+    audio = File("{{path_audio}}")
+
+    image = Picture()
+    image.type = 3
+    albumart="{{path_png}}"
+    if albumart.endswith('png'):
+        mime = 'image/png'
+    else:
+        mime = 'image/jpeg'
+    image.desc = 'cover'
+
+    with open(albumart, 'rb') as f:
+        image.data = f.read()
+
+    audio.add_picture(image)
+    audio.save()
+
+
+[no-cd, no-exit-message]
+list-art:
+    #!/usr/bin/env perl
+    use v5.42;
+    my @files = grep { /\.(jpe?g|png)$/i && -f } glob("{.,./**}/*");
+    my @sorted = sort { ($a =~ tr#/#/# <=> $b =~ tr#/#/#) || ($a cmp $b) } @files;
+
+    say $_ foreach @sorted;

@@ -1,0 +1,141 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+import "~/.local/lib/just/common"
+
+export this := justfile()
+export delete_on_success := ''
+
+[private, no-cd]
+@default:
+    "$this" --list
+
+[no-cd]
+convert-recursive:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    for cue in *.cue; do
+        "$this" convert "$cue"
+    done
+
+[no-cd]
+convert-file-from-cue file:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    payload=$(</dev/stdin)
+
+    cleanup=()
+    trap 'rm -f -- "${cleanup[@]}"' EXIT
+
+    extension="${file##*.}"
+    stem="${file%.*}"
+    temp="${stem}.tmp.m4a"
+
+    if [[ ! -r "$temp" ]]; then
+        cleanup+=("${stem}.tmp1.m4a")
+        ffmpeg -y -loglevel repeat+info -i file:"$file" -map 0 -dn -ignore_unknown -vn -f mp4 -movflags +faststart file:"${stem}.tmp1.m4a" \
+            && mv -f "${stem}.tmp1.m4a" "$temp"
+    fi
+
+    # https://wiki.multimedia.cx/index.php/FFmpeg_Metadata
+    # https://ffmpeg.org/ffmpeg-formats.html#Metadata-2
+    if metadata=$(ffmpeg -y -loglevel error -i file:"$temp" -f ffmetadata -); then
+        if [[ -n "$metadata" ]]; then
+            if [[ "$metadata" =~ ^\[CHAPTER\] ]]; then
+                "$this" fatal "target file already has chapters"
+            fi
+
+            file_descriptor=$(jq -cS --arg file "$file" '.files[] | select(.path == $file)' <<< "$payload")
+
+            metadata=$(grep -viP '^comment=.*?ExactAudioCopy' <<< "$metadata")
+            metadata=$(grep -viP '^encoder=' <<< "$metadata")
+
+            if album=$(jq -r '.metadata.title // empty' <<< "$payload") && [[ -n "$album" ]]; then
+                metadata=$(grep -viP '^album=' <<< "$metadata"; echo "album=$album")
+            fi
+            if artist=$(jq -r '.metadata.songwriter // empty' <<< "$payload") && [[ -n "$artist" ]]; then
+                metadata=$(grep -viP '^artist=' <<< "$metadata"; echo "artist=$artist")
+            fi
+            echo "$metadata"
+
+            if title=$(jq -r '.metadata.title // empty' <<< "$file_descriptor") && [[ -n "$title" ]]; then
+                metadata+=$'\n'"title=$title"
+            elif title=$(jq -r '.metadata.title // empty' <<< "$payload") && [[ -n "$title" ]]; then
+                metadata+=$'\n'"title=$title"
+            fi
+
+            if album_artist=$(jq -r '.metadata.performer // empty' <<< "$file_descriptor") && [[ -n "$album_artist" ]]; then
+                metadata+=$'\n'"album_artist=$album_artist"
+            elif album_artist=$(jq -r '.metadata.performer // empty' <<< "$payload") && [[ -n "$album_artist" ]]; then
+                metadata+=$'\n'"album_artist=$album_artist"
+            fi
+
+            metadata+="$("$this" chapters-for "$file" <<< "$payload")"
+            ffmpeg -y -loglevel repeat+info -i file:"$temp" -i file:<(echo "$metadata") -map 0 -dn -ignore_unknown -vn -acodec copy -map_metadata 1 -movflags +faststart file:"${stem}.m4a"
+            [[ -n "$delete_on_success" ]] && cleanup+=("$temp")
+
+            for cover in "${stem}".{png,jpg} "cover".{png,jpg}; do
+                [[ -r "$cover" ]] || continue
+                ffmpeg -y -loglevel repeat+info -f image2 -pattern_type none -i "$cover" -update 1 -movflags +faststart file:"_tmp_cover.png"
+                cleanup+=("_tmp_cover.png")
+                "$this" embed-thumbnail "${stem}.m4a" "_tmp_cover.png"
+                break
+            done
+
+        fi
+    fi
+
+[no-cd]
+convert cue:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    cd "$(dirname "$cue")"
+    cue="$(basename "$cue")"
+
+    "$this" assert-encoding "$cue"
+
+    parsed=$(cue2json "$cue")
+    mapfile -t files < <(jq -r '.files[].path' <<< "$parsed")
+
+    for file in "${files[@]}"; do
+        [[ -r "$file" ]] || "$this" fatal "unable to open audio file: '$file'"
+        "$this" convert-file-from-cue "$file" <<< "$parsed"
+    done
+
+[no-cd, no-exit-message]
+assert-encoding file:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    encoding=$(file -b --mime-encoding "$file")
+
+    if [[ "$encoding" != "utf-8" ]]; then
+        "$this" fatal "unexpected file encoding [$encoding]: $file"
+    fi
+
+[no-cd, no-exit-message]
+chapters-for file:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -rS --arg file "$file" '.files[] | select(.path == $file) | .tracks | sort_by(.metadata.start_ms)
+        | .[]
+        | "\n[CHAPTER]\nTIMEBASE=1/1000\nSTART=\(.metadata.start_ms)\nEND=\(.metadata.end_ms)\ntitle=\(.metadata.title)"
+    '
+[no-cd, no-exit-message]
+title-for file:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -rS --arg file "$file" '
+        .files[] | select(.path == $file)
+        | .[]
+        | "\n[CHAPTER]\nTIMEBASE=1/1000\nSTART=\(.metadata.start_ms)\nEND=\(.metadata.end_ms)\ntitle=\(.metadata.title)"
+    '
+
+[no-cd, no-exit-message]
+embed-thumbnail path_audio path_png:
+    #!/usr/bin/env -S python3
+
+    from mutagen.mp4 import MP4, MP4Cover
+
+    audio = MP4("{{path_audio}}")
+
+    with open("{{path_png}}", "rb") as png:
+        audio["covr"] = [MP4Cover(png.read(), imageformat=MP4Cover.FORMAT_PNG)]
+
+    audio.save()
