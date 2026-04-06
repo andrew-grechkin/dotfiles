@@ -1,0 +1,67 @@
+#!/usr/bin/env -S bash -Eeuo pipefail
+
+# ABSTRACT:
+#   Run OpenCode in a secure Docker sandbox
+#
+# SYNOPSIS:
+#   $ oc [DOCKER RUN OPTIONS...]
+#
+# DESCRIPTION:
+#   `oc` is a wrapper script for running the OpenCode agent within a Docker container.
+#   It automatically sets up a sandboxed environment for the current Git repository.
+#
+#   Key features:
+#   - Automatic discovery and mounting of the current Git repository root to `/app`
+#   - Security-focused "hiding" of sensitive files (e.g., .env, keys, pem files)
+#     by mounting /dev/null over them inside the container
+#   - Persistent, repository-specific volumes for cache, config, and data,
+#     using a name derived from the repository's Git URL
+#   - Read-only access to host /etc (at /host/etc) and specific config files
+#   - Auth is shared with the host, to make sure all sandboxes authenticated only once
+
+shopt -s globstar dotglob
+
+secrets=(
+    '**/*.env'
+    '**/*.key'
+    '**/*.pem'
+)
+
+for target in "${secrets[@]}"; do
+    mapfile -t matches < <(compgen -G "$target" 2>/dev/null)
+    for path in "${matches[@]}"; do
+        hide_args+=("-v" "/dev/null:/app/${path}:ro")
+    done
+done
+
+config="$XDG_CONFIG_HOME/opencode"
+data="$XDG_DATA_HOME/opencode"
+state="$XDG_STATE_HOME/opencode"
+
+mkdir -p -- "$data" "$state"
+
+git-in-repo || {
+    echo "please run in a git repository" >&2
+    exit 1
+}
+
+cd -- "$(git root)"
+name=$(md5sum <<< "$(git get-url)" | perl -pE 's/\s+-$//')
+
+args=(
+    -it
+    --rm
+    --name "opencode-sandbox-$name"
+    --workdir "/app"
+    -v "$PWD:/app:rw"
+    -v "${name}-cache:/root/.cache/opencode:rw"
+    -v "${name}-config:/root/.config/opencode:rw"
+    -v "$config/tui.json:/root/.config/opencode/tui.json:ro"
+    -v "${name}-data:/root/.local/share/opencode:rw"
+    -v "${name}-state:/root/.local/state/opencode:rw"
+    -v "$data/auth.json:/root/.local/share/opencode/auth.json:rw"
+    "${hide_args[@]}"
+)
+
+# docker build -f .local/lib/oci/opencode.oci.image
+docker run "${args[@]}" "$@" "registry.gitlab.com/andrew-grechkin/dotfiles/opencode"

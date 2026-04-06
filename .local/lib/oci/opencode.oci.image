@@ -1,0 +1,14 @@
+FROM node:24-alpine
+
+RUN <<'EO_INSTALL'
+apk add --no-cache bash curl fd fzf git jq ripgrep tar tzdata unzip
+apk add --no-cache github-cli just make
+apk add --no-cache perl-app-cpanminus perl-cpanel-json-xs perl-module-build perl-mojolicious
+apk add --no-cache cargo go
+curl -fsSL https://opencode.ai/install | bash
+rm -rf -- .npm
+EO_INSTALL
+
+WORKDIR /app
+
+ENTRYPOINT ["/root/.opencode/bin/opencode"]
