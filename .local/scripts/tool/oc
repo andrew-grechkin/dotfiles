@@ -1,0 +1,51 @@
+#!/usr/bin/env -S bash -Eeuo pipefail
+
+shopt -s globstar dotglob
+
+secrets=(
+    '**/.env'
+    '**/*.key'
+    '**/*.pem'
+)
+
+hide_args=()
+for target in "${secrets[@]}"; do
+    mapfile -t matches < <(compgen -G "$target" 2>/dev/null)
+    for path in "${matches[@]}"; do
+        hide_args+=("-v" "/dev/null:/app/${path}")
+    done
+done
+
+config="$XDG_CONFIG_HOME/opencode"
+data="$XDG_DATA_HOME/opencode"
+state="$XDG_STATE_HOME/opencode"
+
+mkdir -p -- "$data" "$state"
+
+name="opencode"
+
+git-in-repo || exit 2
+
+cd -- "$(git root)"
+name=$(md5sum <<< "$(git get-url)" | perl -pE 's/\s+-$//')
+
+args=(
+    -it
+    --rm
+    --name "opencode-sandbox"
+    --workdir "/app"
+    -v "$PWD:/app:rw"
+    -v "$name-cache:/root/.cache/opencode:rw"
+    -v "$name-config:/root/.config/opencode:rw"
+    -v "$config/tui.json:/root/.config/opencode/tui.json:ro"
+    -v "$name-data:/root/.local/share/opencode:rw"
+    -v "$name-state:/root/.local/state/opencode:rw"
+    -v "$data/auth.json:/root/.local/share/opencode/auth.json:rw"
+    -v "/etc:/host/etc:ro"
+    # -v "$data:/root/.local/share/opencode:rw"
+    # -v "$state:/root/.local/state/opencode:rw"
+)
+
+args+=("${hide_args[@]}")
+
+docker run "${args[@]}" "registry.gitlab.com/andrew-grechkin/dotfiles/opencode" "$@"
