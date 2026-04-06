@@ -1,0 +1,35 @@
+FROM node:24-alpine
+
+RUN <<'EO_INSTALL'
+apk add --no-cache bash coreutils curl fd fzf git jq ripgrep tar tzdata unzip
+apk add --no-cache github-cli just make man-db
+apk add --no-cache perl-app-cpanminus perl-cpanel-json-xs perl-module-build perl-mojolicious
+apk add --no-cache cargo go xh
+
+# c++ deps
+apk add --no-cache clang-extra-tools cmake dbus dbus-x11 doxygen ffmpeg-dev g++ glib-dev \
+    mpv-dev pkgconf playerctl socat sound-theme-freedesktop xauth xvfb xvfb-run
+
+rm -rf -- .npm
+
+mkdir -p "$HOME/.config/opencode"
+echo '{
+  "autoupdate": false,
+  "default_agent": "plan",
+  "agent": {
+    "plan": {
+        "planReminder": false
+    }
+  }
+}' > "$HOME/.config/opencode/opencode.json"
+EO_INSTALL
+
+ARG invalidate_cache_here="if provided via --build-arg"
+
+# 1.14.48 is the last version working in a container at all
+RUN curl -fsSL https://opencode.ai/install | bash -s -- --version 1.14.48
+# RUN curl -fsSL https://opencode.ai/install | bash
+
+WORKDIR /app
+
+ENTRYPOINT ["/root/.opencode/bin/opencode"]
