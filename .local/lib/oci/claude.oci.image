@@ -1,0 +1,11 @@
+FROM node:24-alpine
+
+RUN <<'EO_INSTALL'
+apk add --no-cache bash curl git
+mkdir -p -- /root/.claude
+npm install -g @anthropic-ai/claude-code
+EO_INSTALL
+
+WORKDIR /app
+
+ENTRYPOINT ["claude"]
