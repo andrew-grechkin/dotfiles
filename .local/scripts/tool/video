@@ -1,0 +1,33 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+# import "~/.local/lib/just/common"
+
+export this := justfile()
+export default_height := "1440"
+
+[private, no-cd]
+@default:
+    "$this" --list
+
+[no-cd]
+download url height='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    height="${height:-$default_height}"
+
+    # [[ "${#url}" -lt 16 ]] && {
+    # 	url="https://www.youtube.com/watch?v=$URL"
+    # }
+
+    args=(
+        --format="bv*[ext=webm][height<=${height}]+ba/bv*[ext=mp4][height<=${height}]+ba/b"
+        --list-formats
+        --no-simulate
+        --prefer-free-formats
+        # --write-info-json
+        --write-thumbnail
+    )
+
+    umask ug=rwx,o=rx
+    exec yt-dlp "${args[@]}" "$@"
