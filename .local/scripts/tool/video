@@ -1,0 +1,117 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+# import "~/.local/lib/just/common"
+
+set export
+set no-cd
+
+export this := justfile()
+export default_height := "1440"
+common_fmt := ',prefer-free-formats="",sub-langs="en,nl,ru,fr,de,it,pt"'
+
+[private]
+@default:
+    "$this" --list
+
+download url height='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    height="${height:-$default_height}"
+
+    # [[ "${#url}" -lt 16 ]] && {
+    #   url="https://www.youtube.com/watch?v=$URL"
+    # }
+
+    url=$("$this" prune-url <<< "$url")
+    args=(
+        --format="bv*[ext=webm][height<=${height}]+ba/bv*[ext=mp4][height<=${height}]+ba/b"
+        --list-formats
+        --no-simulate
+        --prefer-free-formats
+        # --write-info-json
+        --write-thumbnail
+    )
+
+    umask ug=rwx,o=rx
+    tsp -q yt-dlp "${args[@]}" "$url"
+
+# => mpv ---------------------------------------------------------------------------------------------------------- {{{1
+
+play-low url:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    exec &>/tmp/play-low.log
+    url=$("$this" prune-url <<< "$url")
+    args=(
+        --pause
+        --quiet
+        --ytdl-raw-options='format="b[height<=1080][protocol=https]/bv*[height<=480]+ba/b"{{common_fmt}}'
+    )
+    mpv "${args[@]}" -- "$url"
+
+play-medium url:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    url=$("$this" prune-url <<< "$url")
+    args=(
+        --pause
+        --quiet
+        --ytdl-raw-options='format="b[height>480][height<=720][protocol=https]/bv*[height<=720]+ba/b"{{common_fmt}}'
+    )
+    mpv "${args[@]}" -- "$url"
+
+play-high url:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    url=$("$this" prune-url <<< "$url")
+    args=(
+        --pause
+        --quiet
+        --ytdl-raw-options='format="b[height>720][height<=1080][protocol=https]/bv*[height<=1080]+ba/b"{{common_fmt}}'
+    )
+    mpv "${args[@]}" -- "$url"
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+[private, no-exit-message]
+prune-url:
+    #!/usr/bin/env -S perl
+    use v5.42;
+    use experimental qw(declared_refs refaliasing);
+    use Mojo::URL    qw();
+
+    my $input = <<>>;
+    chomp $input;
+
+    my $url = Mojo::URL->new($input);
+
+    if (   $url->is_abs
+        && defined $url->scheme
+        && lc($url->scheme) eq 'https'
+        && $url->host
+        && $url->host =~ m/youtu[.]?be/)
+
+    {
+        $url->query($url->query->to_hash->%{v});
+        say $url->to_string;
+        exit 0;
+    }
+
+    say $input;
+
+[no-exit-message]
+@list dir="/media/nfs/home/video":
+    memoize -t 1hour -- "$this" _list "$dir" \
+        | just -f "$HOME/.local/lib/just/fzf" execute
+
+[no-exit-message]
+_list dir:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    {
+        cd "$dir"
+        while read -r line; do
+            echo -e "$line\tmpv --quiet -- ${dir@Q}/${line@Q}"
+        done < <(fd -t file -e webm -e mkv -e avi -e mp4 -e ts --relative-path)
+    } | sort
