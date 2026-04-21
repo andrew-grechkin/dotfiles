@@ -5,13 +5,13 @@
 #          GPL-2.0-or-later
 
 use v5.38;
-use autodie;
-use open ':locale';
-use utf8;
 use warnings     qw(FATAL utf8);
 use experimental qw(builtin class declared_refs defer for_list refaliasing try);
 
 class Processor 3.01 {
+    use autodie;
+    use open ':locale';
+
     use Digest::SHA  qw(sha256_hex);
     use Encode       qw(decode);
     use Getopt::Long qw(:config auto_version bundling no_ignore_case);
@@ -21,7 +21,7 @@ class Processor 3.01 {
     use File::Map               qw(map_file);
     use Log::Any                qw($log);
     use Log::Any::Adapter       qw(Syslog), ('options' => 'pid,ndelay');
-    use Log::Any::Adapter::Util qw(INFO TRACE);
+    use Log::Any::Adapter::Util qw(NOTICE TRACE);
     use Path::Tiny              qw(path);
 
     use constant {
@@ -46,13 +46,17 @@ class Processor 3.01 {
             'follow|f'   => \$follow,
             'recurse|r'  => \$recurse,
             'verbose|v+' => \$verbose,
-        ) or die $log->fatal('Unable to process command line options') . "\n";
+            )
+            or do {
+                $log->fatal('Unable to process command line options');
+                die "\n";
+            };
 
         Log::Any::Adapter->set(
             'Multiplex',
             'adapters' => {
                 'Syslog' => ['log_level' => 'warning', 'options' => 'pid,ndelay'],
-                'Stderr' => ['log_level' => min(TRACE(), INFO() + $verbose)],
+                'Stderr' => ['log_level' => min(TRACE(), NOTICE() + $verbose)],
             },
         );
 
@@ -78,6 +82,7 @@ class Processor 3.01 {
         ### Process every size group
         my $counter = 0;
         my $amount  = scalar @order;
+
         foreach my $key (@order) {
             $counter++;
             my \@items = $by_dev_size{$key};
@@ -207,7 +212,9 @@ class Processor 3.01 {
                 link($path, $new_path);
                 $backup->remove;
             } catch ($error) {
-                die $log->fatal("Unable to hardlink files $message: $error") . "\n";
+                $log->errorf(builtin::trim($error));
+                $log->fatalf('Unable to hardlink files: %s', $message);
+                die "\n";
             };
         }
 
