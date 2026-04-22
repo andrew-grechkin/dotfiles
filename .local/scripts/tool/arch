@@ -1,0 +1,47 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+set export := true
+export this := justfile()
+
+[private, no-cd]
+@default:
+    "$this" --list
+
+[no-cd]
+@list-altered-files:
+    sudo pacman -Qkkq || true
+
+# remove all orphaned packages
+[no-cd]
+prune:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if orphan_packages="$(pacman -Qqtd)" && [[ -n "$orphan_packages" ]]; then
+        mapfile -t orphan_packages_array <<< "$orphan_packages"
+        sudo pacman -Rns "${orphan_packages_array[@]}"
+    fi
+
+[no-cd]
+update:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    trizen -Syu --noconfirm --noedit --needed \
+        && sudo pacman -Fy
+
+[no-cd]
+update-mirrors:
+    sudo reflector --country Netherlands --latest 8 --protocol http --protocol https --sort rate --save /etc/pacman.d/mirrorlist
+
+[no-cd]
+upgrade:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    cd ~/git/private/ansible-arch
+    ansible-playbook playbooks/upgrade.yaml --connection=local -i localhost, -K
+    # ansible-playbook playbooks/upgrade.yaml -i hosts -l arch -K
+
+[no-cd]
+upgrade-all:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    cd ~/git/private/ansible-arch
+    ansible-playbook playbooks/upgrade.yaml -i hosts.yaml -K --ask-vault-pass
