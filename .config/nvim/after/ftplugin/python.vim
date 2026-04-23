@@ -12,7 +12,7 @@ setlocal keywordprg=:Pydoc
 command! -nargs=1 Pydoc :setlocal splitright
 	\| :vnew
 	\| :setlocal buftype=nofile bufhidden=hide noswapfile
-	\| :execute ":r !doc-pydoc-wrapper '<args>'"
+	\| :execute ":r !doc python '<args>'"
 	\| :Man!
 	\| :vertical resize 80
 	\| :norm gg
