@@ -35,7 +35,7 @@ setlocal keywordprg=:Perldoc
 command! -nargs=1 Perldoc :setlocal splitright
 	\| :vnew
 	\| :setlocal buftype=nofile bufhidden=hide noswapfile
-	\| :execute ":r !doc-perldoc-wrapper '<args>'"
+	\| :execute ":r !doc perl '<args>'"
 	\| :Man!
 	\| :vertical resize 80
 	\| :norm gg
