@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-
-xmllint --format 2>/dev/null

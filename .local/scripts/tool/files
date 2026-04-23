@@ -1,0 +1,31 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+set export := true
+export this := justfile()
+
+[private, no-cd]
+@default:
+    "$this" --list
+
+[no-cd]
+permissions-reset:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if (( EUID > 0 )); then
+        exec sudo "$0" "$@"
+    fi
+
+    chmod -R a+rX,ug+w,g-s,o-w .
+    find . -type d -exec chmod g+s {} \+
+
+[no-cd]
+permissions-unset-executable:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if (( EUID > 0 )); then
+        exec sudo "$0" "$@"
+    fi
+
+    fd --one-file-system -u -t f -x chmod -c a-x,g-s --
