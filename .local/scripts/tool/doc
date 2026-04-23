@@ -1,0 +1,45 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+set export := true
+export this := justfile()
+
+[private, no-cd]
+@default:
+    "$this" --list
+
+[no-cd, positional-arguments]
+perl *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    exec 2>/dev/null
+
+    args=(-T -M Pod::Man)
+
+    if troff=$(perldoc "${args[@]}" -X "$@" \
+            || perldoc "${args[@]}" -f "$@" \
+            || perldoc "${args[@]}" -v "$@" \
+            || perldoc "${args[@]}" -a "$@" \
+            || perldoc "${args[@]}" -q "$@"); then
+        if [[ -t 1 ]]; then
+            MANPAGER="nvim +Man! -c \":nnoremap <buffer> q :quitall<CR>\"" man -l - <<< "$troff"
+        else
+            MANPAGER="${PAGER:-less}" man -l - <<< "$troff"
+        fi
+    else
+        man "$@" || echo "Nothing found for: $*" >&2
+    fi
+
+[no-cd, positional-arguments]
+python *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    {
+        python -m pydoc "$@" \
+            || echo "Nothing found for: $*"
+    } | if [[ -t 1 ]]; then
+        "${PAGER:-less}"
+    else
+        cat
+    fi
