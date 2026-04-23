@@ -1,0 +1,104 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+set export := true
+export this := justfile()
+
+[private, no-cd]
+@default:
+    "$this" --list
+
+# install modules from a cpanfile in current dir included in specified features
+[no-cd, positional-arguments]
+install-features *feature:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    args=("${@/#/--with-feature=}" )
+
+    [[ -r cpanfile ]] || {
+        cd "$HOME/.local/lib" || exit 2
+    }
+
+    nice cpanm -nq --installdeps . --with-develop "${args[@]}" 2>&1 \
+        | grep --line-buffered -Ev 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)' || true
+
+# install prereqs for a given .pl/.pm files
+[no-cd, positional-arguments]
+install-prereqs *file:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    perl -lnE 'print m/\s* use \s+ ([[:alpha:]:]+)/xx if m/^\s* use \s+ [[:upper:]]/xx' "$@" \
+        | sort \
+        | uniq \
+        | xargs -r cpanm -nq
+
+# install modules from cpanfile
+[no-cd]
+install cpanfile='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ -z "$cpanfile" ]]; then
+        cpanfile="$HOME/.local/lib/cpanfile"
+    fi
+
+    nice cpanm -nq --installdeps "$(dirname "$cpanfile")" 2>&1 \
+        | grep --line-buffered -Ev 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)' || true
+
+# install all modules from cpanfile including features
+[no-cd]
+install-all cpanfile='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ -z "$cpanfile" ]]; then
+        cpanfile="$HOME/.local/lib/cpanfile"
+    fi
+
+    nice cpanm -nq --installdeps "$(dirname "$cpanfile")" --with-develop --with-all-features 2>&1 \
+        | grep --line-buffered -Ev 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)' || true
+
+# install modules modules from cpanfile including devel
+[no-cd]
+install-devel cpanfile='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ -z "$cpanfile" ]]; then
+        cpanfile="$HOME/.local/lib/cpanfile"
+    fi
+
+    nice cpanm -nq --installdeps "$(dirname "$cpanfile")" --with-develop 2>&1 \
+        | grep --line-buffered -Ev 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)' || true
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+# brew perl with perlbrew
+[no-cd]
+brew:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    [[ -d "/volume1/local/arch/usr" ]] && export OPENSSL_PREFIX="/volume1/local/arch/usr"
+
+    site_location="$HOME/.local/lib"
+
+    # install required perl version and define environment variables
+    # shellcheck disable=SC1091
+    source "$site_location/perlbrew-dev.rc"
+
+    # install modules into specific library
+    # shellcheck disable=SC1091
+    echo "Installing additional required modules from '$site_location/cpanfile'"
+
+    {
+        nice perlbrew exec --with "$perlbrew_library_name" cpanm -nq --installdeps "$site_location" --with-develop --with-feature=mojo-extras
+    } 2>&1 | grep --line-buffered -Ev 'LIBARCHIVE[.]xattr[.]com[.](apple|macromates)'
+
+    echo "Switching to '$perlbrew_library_name'"
+    (
+        # shellcheck disable=SC1091
+        source "$PERLBREW_ROOT/etc/bashrc"
+        rm -f "$PERLBREW_ROOT/init" && perlbrew switch "$perlbrew_library_name"
+    )
+
+    # perlbrew install perl-5.38.0 -nf -j "$NPROC" --as='bperl5380' -Accflags="-DSILENT_NO_TAINT_SUPPORT" -Duseshrplib -Doptimize="-O3" -UDEBUGGING
+    # perlbrew install perl-5.38.0 -nf -j "$NPROC" --as='bperl5380-debug' -Accflags="-DSILENT_NO_TAINT_SUPPORT" -Duseshrplib -Doptimize="-Og" -DDEBUGGING --clang
+    # perlbrew install perl-5.38.0 -nf -j "$NPROC" --as='bperl5380-jemalloc' -Accflags="-DSILENT_NO_TAINT_SUPPORT" -Aldflags="-ljemalloc" -Duseshrplib -Doptimize="-O3" -UDEBUGGING
