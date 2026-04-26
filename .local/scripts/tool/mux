@@ -1,0 +1,121 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+set export := true
+export this := justfile()
+
+[private, no-cd]
+@default:
+    "$this" --list
+
+# record tmux session by asciinema
+[no-cd]
+record title='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if ! pgrep tmux &>/dev/null; then
+        echo 'tmux session is not found' >&2
+        exit 2
+    fi
+
+    if [[ -n "${TMUX:-}" ]]; then
+        echo "do not run under tmux, start in separate terminal" >&2
+        exit 1;
+    fi
+
+    args=(
+        --capture-input
+        --headless
+        --idle-time-limit 5
+        --window-size "$(tmux display-message -p '#{client_width}x#{client_height}')"
+        -c "tmux attach"
+    )
+    [[ -n "$title" ]] && args+=(--title "$title")
+
+    asciinema record "${args[@]}" ~/tmux.cast
+
+# print content of the current pane
+[no-cd]
+pane:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    # trim-whole would remove all new lines at the end, it's good to keep the last one
+    tmux capture-pane -pJS - | trim-borders | perl -gpE 's/\A\R+|\R\K\R+\z//g'
+
+# print N last lines of the current pane
+[no-cd]
+pane-lines number:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    term_lines=$(tput lines)
+    grab_lines="$number"
+
+    tmux capture-pane -pJS $((term_lines - grab_lines)) | trim-right
+
+# open the current pane history in an editor
+[no-cd]
+edit-history:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    tmp_file="$(mktemp -u)"
+
+    "$this" pane > "$tmp_file"
+
+    tmux new-window -n pane-history "${VISUAL:-${EDITOR:-vi}} -c 'set nowrap' $tmp_file; rm -f $tmp_file"
+
+# rename the current window
+[no-cd, positional-arguments]
+rename *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ -n "${TMUX:-}" && -n "$*" ]]; then
+        tmux rename-window "$*"
+    fi
+
+# select/create a session in tmux for one of the projects from predefined base dir
+[no-cd]
+sessions:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    # idea from https://github.com/ThePrimeagen/.dotfiles/blob/master/bin/.local/scripts/tmux-sessionizer
+    root1="$HOME/git"
+    root2="/usr/local/git_tree"
+    fd_args=(
+        -HuL
+        --format="{//}"
+        -E 'bazel-*'
+        -td -tf
+        -d 4
+        '\A.git\z'
+    )
+
+    selected=$(
+        cat                                                              \
+            <(                                                           \
+                fd "${fd_args[@]}" --base-directory="$root1" 2>/dev/null \
+                | perl -plE "s{^(.*)}{$root1\t\1}x"                      \
+            )                                                            \
+            <(                                                           \
+                fd "${fd_args[@]}" --base-directory="$root2" 2>/dev/null \
+                | perl -plE "s{^(.*)}{$root2\t\1}x"                      \
+            )                                                            \
+            | sort -u                                                    \
+            | fzf
+    )
+
+    [[ -n "$selected" ]] || exit 0
+
+    IFS=$'\t' read -r -a parts <<< "$selected"
+
+    full_path="${parts[0]}/${parts[1]}"
+    selected_name=$(echo "${parts[1]}" | tr . _)
+
+    if [[ -z "${TMUX:-}" ]] && ! pgrep tmux &>/dev/null; then
+        tmux new-session -s "$selected_name" -c "$full_path"
+        exit 0
+    fi
+
+    # -t= makes has-session to match exactly (not prefix)
+    if ! tmux has-session "-t=$selected_name" &>/dev/null; then
+        tmux new-session -ds "$selected_name" -c "$full_path"
+    fi
+
+    tmux switch-client -t "$selected_name"
