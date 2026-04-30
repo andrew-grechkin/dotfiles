@@ -1,0 +1,34 @@
+#!/usr/bin/env -S bash -Eeuo pipefail
+# shellcheck disable=SC2016
+
+source "$(dirname "$0")/test.bash"
+
+read -r -d '' input <<'EOF' || true
+[
+  {"name": "Alice", "department": "Engineering", "age": 30},
+  {"name": "Bob", "department": "Sales", "age": 25},
+  {"name": "Charlie", "department": "Engineering", "age": 35},
+  {"name": "Diana", "department": "Sales", "age": 28},
+  {"name": "Eve", "department": "HR", "age": 32}
+]
+EOF
+
+read -r -d '' expected <<'EOF' || true
+{
+  "Engineering": [
+    {"name": "Alice", "department": "Engineering", "age": 30},
+    {"name": "Charlie", "department": "Engineering", "age": 35}
+  ],
+  "HR": [
+    {"name": "Eve", "department": "HR", "age": 32}
+  ],
+  "Sales": [
+    {"name": "Bob", "department": "Sales", "age": 25},
+    {"name": "Diana", "department": "Sales", "age": 28}
+  ]
+}
+EOF
+
+filter='include "common"; $input | group_by_key(.department)'
+
+tests "'group_by_key'" "$filter" "$input" "$expected" 'groups array elements by department field'
