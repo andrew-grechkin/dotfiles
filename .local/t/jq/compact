@@ -1,0 +1,16 @@
+#!/usr/bin/env -S bash -Eeuo pipefail
+# shellcheck disable=SC2016
+
+source "$(dirname "$0")/test.bash"
+
+read -r -d '' input <<'EOF' || true
+["apple", null, "banana", null, "cherry", "date", null]
+EOF
+
+read -r -d '' expected <<'EOF' || true
+["apple", "banana", "cherry", "date"]
+EOF
+
+filter='include "common"; $input | compact'
+
+tests "'compact'" "$filter" "$input" "$expected" 'removes null values from array'

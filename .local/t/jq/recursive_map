@@ -1,0 +1,24 @@
+#!/usr/bin/env -S bash -Eeuo pipefail
+# shellcheck disable=SC2016
+
+source "$(dirname "$0")/test.bash"
+
+read -r -d '' input <<'EOF' || true
+{
+  "prices": [100, 200, 300],
+  "discounts": {"summer": 50, "winter": 75},
+  "metadata": {"currency": "USD", "rates": [1.2, 1.5, 1.8]}
+}
+EOF
+
+read -r -d '' expected <<'EOF' || true
+{
+  "discounts": {"summer": 100, "winter": 150},
+  "metadata": {"currency": "USD", "rates": [2.4, 3.0, 3.6]},
+  "prices": [200, 400, 600]
+}
+EOF
+
+filter='include "common"; $input | recursive_map(if type == "number" then . * 2 else . end)'
+
+tests "'recursive_map'" "$filter" "$input" "$expected" 'applies transformation recursively to all nested values'
