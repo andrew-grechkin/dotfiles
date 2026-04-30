@@ -1,0 +1,16 @@
+#!/usr/bin/env -S bash -Eeuo pipefail
+# shellcheck disable=SC2016
+
+source "$(dirname "$0")/test.bash"
+
+FAILED=0
+
+func='camel_case'
+filter='include "common"; $input | camel_case'
+
+tests "$func" "$filter" '"first_name"' '"firstName"' 'converts snake_case to camelCase'
+tests "$func" "$filter" '"last_name"' '"lastName"' 'converts simple snake_case'
+tests "$func" "$filter" '"http_response_code"' '"httpResponseCode"' 'converts multi-word snake_case'
+tests "$func" "$filter" '"api_key_value"' '"apiKeyValue"' 'handles three-word snake_case'
+
+exit "$FAILED"
