@@ -33,9 +33,7 @@
 # }
 
 
-# script='group_by('"$1"') | map({(.[0] | '"$1"' | tostring): .}) | add'
-
 # shellcheck disable=SC2016
-script='reduce .[] as $it ({}; .[$it | '"$1"' | tostring] += [$it])'
+script='include "common"; group_by_key('"${1:?key must be provided}"')'
 
-exec jq -S "$script"
+exec jq -L "${JQ_LIBRARY_PATH:-${HOME}/.local/lib/jq}" -S "$script"
