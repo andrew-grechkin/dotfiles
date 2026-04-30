@@ -1,0 +1,16 @@
+#!/usr/bin/env -S bash -Eeuo pipefail
+# shellcheck disable=SC2016
+
+source "$(dirname "$0")/test.bash"
+
+read -r -d '' input <<'EOF' || true
+["valid string", null, false, "", 0, 42, [], {}, ["item"], {"key": "value"}]
+EOF
+
+read -r -d '' expected <<'EOF' || true
+["valid string", 0, 42, ["item"], {"key": "value"}]
+EOF
+
+filter='include "common"; $input | select_present'
+
+tests "'select_present'" "$filter" "$input" "$expected" 'removes null, false, empty strings, arrays, and objects'

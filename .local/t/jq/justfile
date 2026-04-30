@@ -1,0 +1,60 @@
+set export := true
+
+[private, no-exit-message]
+default: test
+
+[no-exit-message]
+test:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shopt -s globstar
+
+    for test in **/*; do
+        [[ -x "$test" && -r "$test" ]] && tests+=("$test")
+    done
+
+    [[ -n "${tests[*]}" ]] || exit
+
+    statusfile=$(mktemp)
+    trap "rm -f -- $statusfile" EXIT
+
+    for test in "${tests[@]}"; do
+        echo "$test"
+    done | xargs -rn1 -d$'\n' -P0 just _run_test "$statusfile"
+
+    passed=$(grep -c "^PASS$" "$statusfile" || true)
+    failed=$(grep -c "^FAIL:" "$statusfile" || true)
+
+    source "$HOME/.local/lib/shell/color.bash"
+
+    errno=0
+    if [[ "$failed" -eq 0 ]]; then
+        message="${FG[green]}✓ ${FX[reset]} All ($passed/${#tests[@]}) test(s) passed"
+    else
+        message="${FG[red]}✗ ${FX[reset]} (${FG[red]}$failed${FX[reset]} / ${#tests[@]}) test(s) failed"
+        errno=1
+    fi
+
+    printf '%*s' "${#message}" "" | tr ' ' "="
+    echo
+    echo "$message"
+    exit "$errno"
+
+[private, no-exit-message]
+_run_test statusfile test:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    source "$HOME/.local/lib/shell/color.bash"
+
+    if output=$(./"$test" 2>&1); then
+        echo "PASS" >> "$statusfile"
+        echo "${FG[green]}✓ ${FX[reset]} $test"
+        if [[ -n "$output" ]]; then
+            json2yaml <<< "$output" | colored-yaml
+        fi
+    else
+        echo "FAIL:$test" >> "$statusfile"
+        echo "${FG[red]}✗ ${FX[reset]} $test"
+        if [[ -n "$output" ]]; then
+            json2yaml <<< "$output" | colored-yaml
+        fi
+    fi 2>&1 | spew cat
