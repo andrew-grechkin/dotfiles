@@ -1,0 +1,29 @@
+#!/usr/bin/env -S bash -Eeuo pipefail
+# shellcheck disable=SC2016
+
+source "$(dirname "$0")/test.bash"
+
+read -r -d '' input <<'EOF' || true
+{
+  "lhs": {
+    "server": {"host": "localhost", "port": 8080, "ssl": {"enabled": false}},
+    "database": {"name": "mydb"}
+  },
+  "rhs": {
+    "server": {"port": 9090, "ssl": {"enabled": true, "cert": "/path/to/cert"}},
+    "cache": {"enabled": true}
+  }
+}
+EOF
+
+read -r -d '' expected <<'EOF' || true
+{
+  "cache": {"enabled": true},
+  "database": {"name": "mydb"},
+  "server": {"host": "localhost", "port": 9090, "ssl": {"cert": "/path/to/cert", "enabled": true}}
+}
+EOF
+
+filter='include "common"; $input.lhs | deep_merge($input.rhs)'
+
+tests "'deep_merge'" "$filter" "$input" "$expected" 'recursively merges nested objects'
