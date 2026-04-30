@@ -1,0 +1,15 @@
+#!/usr/bin/env -S bash -Eeuo pipefail
+
+# ABSTRACT:
+#   join arrays of hashes by the path expression provided as first argument
+#
+# SYNOPSIS:
+#  json-join .i <(echo '[{"i":2,"n":"a"}, {"i":1,"n":"b"}]') <(echo '[{"i":2,"a":42}]') - <<<'[{"i":1,"h":178}]'
+
+# NOTE: this has to be a bash wrapped to make sure key is injected into filter as jq has limitation and doesn't allow
+# to create path expression from string
+
+key="${1:?key must be provided}"
+shift
+
+jq --slurp 'flatten | group_by('"$key"' | tostring) | map(add)' "$@"
