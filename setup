@@ -30,15 +30,12 @@ ln -sr  .ssh                                                 ~/ 2>/dev/null
 ln -sr  .xprofile                                            ~/ 2>/dev/null
 ln -srf .zshenv                                              ~/
 
-ln -srf .config/chromium-flags.conf                          ~/.config/
-ln -srf .config/chromium-flags.conf                          ~/.config/chrome-flags.conf
 ln -srf .config/environment.d/*                              ~/.config/environment.d/
 ln -srf .config/eza                                          ~/.config/
 ln -srf .config/fd                                           ~/.config/
 ln -srf .config/fontconfig/conf.d                            ~/.config/fontconfig/
 ln -srf .config/fzfrc                                        ~/.config/fzfrc
 ln -srf .config/git                                          ~/.config/
-ln -srf .config/just                                         ~/.config/
 ln -srf .config/luarocks                                     ~/.config/
 ln -srf .config/mpv                                          ~/.config/
 ln -srf .config/picom.conf                                   ~/.config/

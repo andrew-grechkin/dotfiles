@@ -1,13 +1,31 @@
-#!/usr/bin/env bash
-
-set -Eeuo pipefail
+#!/usr/bin/env -S bash -Eeuo pipefail
 
 [[ -x "$(command -v argc)" ]] || {
     echo "'argc' helper command is required, install from https://github.com/sigoden/argc" >&2
     exit 2
 }
 
-# @describe Amend commit wrapper with extended functionality
+# @describe ABSTRACT:
+#   Enhanced `git commit --amend` wrapper with date preservation and AI message generation
+#
+# SYNOPSIS:
+#   # Amend the last commit while preserving both author and commit dates
+#   $ git-x-amend --keep-dates
+#
+#   # Reset author to yourself but keep the original author date
+#   $ git-x-amend --reset-author --keep-author-date
+#
+#   # Use AI to suggest a new commit message and amend
+#   $ git-x-amend --message-generate
+#
+# DESCRIPTION:
+#   `git-x-amend` is a powerful wrapper around `git commit --amend` designed to simplify
+#   common but complex amending tasks. It provides first-class support for date
+#   manipulation and AI-assisted message generation.
+#
+#   A key strength of this tool is its intelligence during rebases. If it detects an
+#   active rebase, it automatically identifies the correct reference commit to
+#   restore dates from, ensuring your commit history remains clean and accurate.
 
 # @meta version 1.0.0
 # @meta combine-shorts
@@ -61,14 +79,14 @@ fi
 
 [[ -s '.git/rebase-merge/rewritten-list' || -s '.git/rebase-merge/done' ]] && {
     in_rebase='1'
-    args+=(-nq)
+    args+=(--no-verify --quiet --no-edit)
 }
 
 if [[ -n "$argc_message_generate" && ! -s "$message" ]]; then
     ai-suggest-commit-msg HEAD > "$message"
-    args+=(-F "$message")
+    args+=(--file="$message")
     if [[ -z "${in_rebase:-}" ]]; then
-        args+=(-e)
+        args+=(--edit)
     fi
 fi
 
