@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-
-set -Eeuo pipefail
-
-if (( EUID > 0 )); then
-	exec sudo "$0" "$@"
-fi
-
-fd --one-file-system -u -t f -x chmod -c a-x,g-s --
