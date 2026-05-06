@@ -1,0 +1,48 @@
+#!/usr/bin/env -S just --one --justfile
+
+# ABSTRACT: access reverse engineered Google Family Link API from cli
+
+# https://just.systems/man/en/
+# https://console.cloud.google.com/cloud-hub/home?project=family-link-cli
+# https://console.cloud.google.com/welcome?project=family-link-cli
+
+# https://github.com/noiwid/HAFamilyLink/blob/main/GOOGLE_FAMILY_LINK_API_ANALYSIS.md
+# https://github.com/noiwid/HAFamilyLink/blob/main/custom_components/familylink/client/api.py
+
+mod http "~/.local/lib/just/http"
+
+set export
+export jq := require('jq') # https://jqlang.org/download/
+export this := justfile()
+
+# Google Family Link API endpoints (reverse-engineered)
+export BASE_URL := "kidsmanagement-pa.clients6.google.com/kidsmanagement/v1"
+export GOOGLE_HOST := env('GOOGLE_HOST', 'familylink.google.com')
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private]
+@default:
+    "$this" --list
+
+# => members ------------------------------------------------------------------------------------------------------ {{{1
+
+# list family members
+[group('members')]
+list-members:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request GET "/families/mine/members"
+
+# => http --------------------------------------------------------------------------------------------------------- {{{1
+
+# generic http request to the configured service, provides diagnostics on failure
+[group('http'), private, no-cd, positional-arguments]
+http-request method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 2
+    [[ "$uri" == /* ]] && uri="$BASE_URL${uri#${BASE_URL}}"
+    args=(
+        --auth-type=bearer
+        --auth="${GOOGLE_TOKEN:-$(credp "$GOOGLE_HOST")}"
+    )
+    "$this" http::request "$method" "$uri" "${args[@]}" "$@"
