@@ -1,0 +1,310 @@
+#!/usr/bin/env -S just --one --justfile
+
+# ABSTRACT: wrapper around REDIS server
+
+# https://just.systems/man/en/
+
+import   "~/.local/lib/just/common"
+
+set export := true
+set no-exit-message := true
+
+export jq := require('jq')
+export this := justfile()
+
+export REDISCLI_HOST := env('REDISCLI_HOST', '127.0.0.1')
+export REDISCLI_PORT := env('REDISCLI_PORT', '6379')
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[no-cd, private]
+@default:
+    "$this" --list
+
+# => hash --------------------------------------------------------------------------------------------------------- {{{1
+
+# set hash field
+[group('hash'), no-cd]
+set-hash key field value:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request HSET "$key" "$field" "$value"
+
+# get entire hash
+[group('hash'), no-cd]
+get-hash key:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request HGETALL "$key"
+
+# get hash field
+[group('hash'), no-cd]
+get-hash-field key field:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request HGET "$key" "$field"
+
+# delete hash field
+[group('hash'), no-cd]
+del-hash key field:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request HDEL "$key" "$field"
+
+# delete entire hash
+[group('hash'), no-cd]
+delall-hash key:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request DEL "$key"
+
+# => list --------------------------------------------------------------------------------------------------------- {{{1
+
+# push value to list
+[group('list'), no-cd]
+push-list key value:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request RPUSH "$key" "$value"
+
+# pop value from list
+[group('list'), no-cd]
+pop-list key:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request RPOP "$key"
+
+# get entire list
+[group('list'), no-cd]
+get-list key:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request LRANGE "$key" 0 -1
+
+# get list range
+[group('list'), no-cd]
+get-list-range key start stop:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request LRANGE "$key" "$start" "$stop"
+
+# get list length
+[group('list'), no-cd]
+len-list key:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request LLEN "$key"
+
+# delete list
+[group('list'), no-cd]
+del-list key:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request DEL "$key"
+
+# => pubsub ------------------------------------------------------------------------------------------------------- {{{1
+
+# base pubsub command
+[group('pubsub'), no-cd, private, positional-arguments]
+pubsub +argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request-raw PUBSUB "$@"
+
+# list active pub/sub channels
+[group('pubsub'), no-cd]
+list-channels:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request PUBSUB CHANNELS
+
+## get channel subscriber count
+#[group('pubsub'), no-cd]
+#get-pubsub-subs channel:
+#    #!/usr/bin/env -S bash -Eeuo pipefail
+#    "$this" send-request PUBSUB NUMSUB "$channel"
+
+## get pattern subscription count
+#[group('pubsub'), no-cd]
+#count-pattern-subs:
+#    #!/usr/bin/env -S bash -Eeuo pipefail
+#    "$this" send-request PUBSUB NUMPAT
+
+# publish json message from STDIN to channel
+[group('pubsub'), no-cd]
+pub channel:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request PUBLISH "$channel" "$(jq -cS)"
+
+# publish message to channel
+[group('pubsub'), no-cd]
+pub-raw channel message:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request PUBLISH "$channel" "$message"
+
+# subscribe to channel (streams JSONL)
+[group('pubsub'), no-cd]
+sub channel:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ "$channel" =~ [\*\?\[] ]]; then
+        args=(PSUBSCRIBE "$channel")
+    else
+        args=(SUBSCRIBE "$channel")
+    fi
+    "$this" send-request-raw "${args[@]}" \
+        | jq --unbuffered -cS '{
+            channel: .[1],
+            msg: .[0],
+            payload: (.[2] | if (type == "string") then . as $it | try (fromjson) catch ($it) end)
+        }'
+
+# => server ------------------------------------------------------------------------------------------------------- {{{1
+
+# show help for a command
+[group('server'), no-cd]
+help command='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    [[ -n "$command" ]] && args+=("${command@U}")
+    "$this" send-request-raw HELP "${args[@]}"
+
+# show server clients
+[group('server'), no-cd]
+clients:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request-raw CLIENT LIST
+
+# show server commands
+[group('server'), no-cd]
+commands:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request COMMAND LIST
+
+# show server info
+[group('server'), no-cd]
+info:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request CONFIG GET '*'
+
+# list loaded modules
+[group('server'), no-cd]
+list-modules:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request MODULE LIST
+
+# show memory statistics
+[group('server'), no-cd]
+memory:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request MEMORY STATS
+
+# send ping
+[group('server'), no-cd]
+ping:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request-raw PING
+
+# show database statistics
+[group('server'), no-cd]
+stats:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request-raw INFO STATS
+    # "$this" send-request DBSIZE
+
+# show command statistics
+[group('server'), no-cd]
+info-commandstats:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request-raw INFO COMMANDSTATS
+
+# show replication information
+[group('server'), no-cd]
+info-replication:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request-raw INFO REPLICATION
+
+# show cluster information
+[group('server'), no-cd]
+info-cluster:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request-raw CLUSTER INFO
+
+# => streams ------------------------------------------------------------------------------------------------------ {{{1
+
+# get stream information
+[group('streams'), no-cd]
+get-stream-info stream:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request XINFO STREAM "$stream"
+
+# get stream consumer groups
+[group('streams'), no-cd]
+get-stream-groups stream:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request XINFO GROUPS "$stream"
+
+# => string ------------------------------------------------------------------------------------------------------- {{{1
+
+# set string value
+[group('string'), no-cd]
+set-string key value:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request SET "$key" "$value"
+
+# get string value
+[group('string'), no-cd]
+get-string key:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request GET "$key"
+
+# delete key
+[group('string'), no-cd]
+del-string key:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request DEL "$key"
+
+# => ttl ---------------------------------------------------------------------------------------------------------- {{{1
+
+# set key expiration time
+[group('ttl'), no-cd]
+set-ttl key seconds:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request EXPIRE "$key" "$seconds"
+
+# get key TTL
+[group('ttl'), no-cd]
+get-ttl key:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request TTL "$key"
+
+# remove key expiration
+[group('ttl'), no-cd]
+remove-ttl key:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" send-request PERSIST "$key"
+
+# => helpers ------------------------------------------------------------------------------------------------------ {{{1
+
+[group('helpers'), no-cd, private]
+fetch-auth:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if auth=$(credp "token://$REDISCLI_HOST/${REDISCLI_USER:-$USER}" 2>/dev/null) && [[ -n "$auth" ]]; then
+        echo "$auth"
+    fi
+
+# generic request to redis with possible authentication
+[group('helpers'), no-cd, positional-arguments]
+connect *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    args=(
+        -h "$REDISCLI_HOST"
+        -p "$REDISCLI_PORT"
+        -e
+    )
+    [[ -n "${REDISCLI_USER:-}" ]] && args+=(--user "$REDISCLI_USER")
+    if [[ -z "${REDISCLI_AUTH:-}" ]]; then
+        if auth=$("$this" fetch-auth) && [[ -n "$auth" ]]; then
+            export REDISCLI_AUTH="$auth"
+        fi
+    fi
+
+    redis-cli "${args[@]}" "$@"
+
+# generic request to redis with possible authentication
+[group('helpers'), no-cd, positional-arguments, private]
+send-request-raw *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" connect --json "$@"
+
+# generic request to redis with possible authentication
+[group('helpers'), no-cd, positional-arguments, private]
+send-request *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" connect --json "$@" | jq -S

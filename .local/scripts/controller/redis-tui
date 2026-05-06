@@ -1,0 +1,41 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+mod fzf "~/.local/lib/just/fzf"
+mod json "~/.local/lib/just/json"
+
+set export
+export model := require('redis-model')
+export this := justfile()
+export tui := 'auto'
+
+# precache required environment variables for the session
+export REDISCLI_HOST := `redis-model --evaluate REDISCLI_HOST`
+
+# => channels ----------------------------------------------------------------------------------------------------- {{{1
+
+# show channels
+[group('channels')]
+channels:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="{{source_file()}} channels"
+        fzf_args=(
+            # --bind="ctrl-m:execute(${this@Q} show {1} '')"
+            # --preview="${model@Q} secrets list -format=json | jq '.[\"{3}\"]' | ${this@Q} pretty -Cpf {1}"
+            --prompt="$REDISCLI_HOST | channels > "
+            --with-nth="3.."
+        )
+        eval "$FZF_RELOAD_CMD" | "$this" fzf::table-multi "${fzf_args[@]}"
+    else
+        jq_fields=(
+            '_id;\(.name)'
+            '_url;'
+            'name;\(.name);olive'
+        )
+        "$model" list-channels \
+            | jq 'map({name: .})' \
+            | "$this" json::to-table 'sort_by(.name)' "${jq_fields[@]}"
+    fi
