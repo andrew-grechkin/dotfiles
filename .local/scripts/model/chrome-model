@@ -1,0 +1,178 @@
+#!/usr/bin/env -S just --one --justfile
+
+# ABSTRACT:
+#   Basic operations on Google chrome compatible local storage
+#
+# DESCRIPTION:
+#   A model for querying Google Chrome and Chromium-compatible local storage.
+#   It provides a unified interface for accessing browser data,
+#   handling master key retrieval from secret storage, and performing
+#   decryption of sensitive fields.
+
+# https://just.systems/man/en/
+
+set no-cd
+
+import "~/.local/lib/just/common"
+
+export jq := require('jq') # https://jqlang.org/download/
+export secret_ctl := require('secret-ctl')
+export sqlite3 := require('sqlite3')
+export this := justfile()
+
+export BROWSER     := env('BROWSER', ```xdg-settings get default-web-browser | perl -lpE 's/.desktop$//g'```)
+export PROFILE     := env('PROFILE', 'Default')
+export CONFIG_HOME := env('XDG_CONFIG_HOME', ```echo -n "${XDG_CONFIG_HOME:-$HOME/.config}"```)
+
+export browser_dir := if BROWSER == "chrome" {
+    "google-chrome"
+} else if BROWSER == "opera" {
+    "opera"
+} else if BROWSER == "chromium" {
+    "chromium"
+} else {
+    "google-chrome"
+}
+
+export PROFILE_PATH   := env('PROFILE_PATH', CONFIG_HOME + "/" + browser_dir + "/" + PROFILE)
+export COOKIES_PATH   := env('COOKIES_PATH', PROFILE_PATH + "/Cookies")
+export PASSWORDS_PATH := env('PASSWORDS_PATH', PROFILE_PATH + "/Login Data")
+export WALLET_PATH    := env('WALLET_PATH', '')
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private]
+@default:
+    "$this" --list
+
+# => cookies ------------------------------------------------------------------------------------------------------ {{{1
+
+# list cookies
+[group('cookies'), no-exit-message]
+list-cookies host:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" fetch-master-key | "$this" decrypt <("$this" list-cookies-raw "$host")
+
+# list cookies as-is
+[group('cookies'), no-exit-message]
+list-cookies-raw host:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    tmpdb=$(mktemp)
+    trap 'rm -f -- "$tmpdb"' EXIT
+
+    cp -f -- "$COOKIES_PATH" "$tmpdb"
+
+    sqlite3 -json "$tmpdb" << 'EO_SELECT' | jq -cS 'map(del(.encrypted_value)).[]'
+        SELECT *, hex(encrypted_value) as value
+        FROM cookies
+        WHERE host_key LIKE '%{{host}}%'
+    EO_SELECT
+
+# => passwords ---------------------------------------------------------------------------------------------------- {{{1
+
+# list decrypted Chrome passwords
+[group('passwords'), no-exit-message]
+list-passwords pattern='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" fetch-master-key | "$this" decrypt <("$this" list-passwords-raw "{{pattern}}")
+
+# list Chrome passwords as-is with encrypted value
+[group('passwords'), no-exit-message]
+list-passwords-raw pattern='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    tmpdb=$(mktemp)
+    trap 'rm -f -- "$tmpdb"' EXIT
+
+    cp -f -- "$PASSWORDS_PATH" "$tmpdb"
+
+    sqlite3 -json "$tmpdb" << 'EO_SELECT' | jq -cS 'map(del(.password_value)).[]'
+        SELECT *, hex(password_value) as value
+        FROM logins
+        WHERE origin_url LIKE '%{{pattern}}%' OR username_value LIKE '%{{pattern}}%'
+    EO_SELECT
+
+# => helper ------------------------------------------------------------------------------------------------------- {{{1
+
+# fetch master key from secret storage
+[group('helper'), no-exit-message, private]
+fetch-master-key wpath=WALLET_PATH:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ -z "$wpath" ]]; then
+        if [[ "$BROWSER" == "opera" || "$BROWSER" == "chromium" ]]; then
+            browser_name="chromium"
+        else
+            browser_name="chrome"
+        fi
+        label="$browser_name keys/$browser_name safe storage"
+
+        wpath=$(secret-ctl list | jq -r --arg lbl "$label" 'map(select(.label | test($lbl; "i"))).[0]?.path // empty')
+    fi
+
+    [[ -n "$wpath" ]] || "$this" fatal "unable to detect master key path in the secret storage"
+
+    secret-ctl fetch "$wpath" | jq -r .secret
+
+# Expects the master key on STDIN and input data as a JSON stream of hashes in a file
+# The encrypted field should be hex-encoded and defaults to 'value'
+# Use ENCRYPTED_KEY environment variable to specify a different field name
+# decrypt Chrome/Chromium encrypted data (cookies, passwords)
+[group('helper'), no-exit-message]
+decrypt jsonl_file:
+    #!/usr/bin/env -S perl
+    use v5.42;
+    use experimental          qw(declared_refs refaliasing);
+    use Crypt::Digest::SHA256 qw(sha256);
+    use Crypt::Mac::HMAC      qw(hmac);
+    use Crypt::Mode::CBC      qw();
+    use JSON::MaybeXS         qw();
+
+    use constant {
+        CIPHER        => Crypt::Mode::CBC->new('AES'),
+        ENCRYPTED_KEY => $ENV{ENCRYPTED_KEY} || 'value',
+        JSON          => JSON::MaybeXS->new(utf8 => 1, canonical => 1, indent => 0, pretty => 0),
+        SALT          => 'saltysalt',
+    };
+
+    push @ARGV, '{{jsonl_file}}';
+
+    my $master_key_raw = <STDIN>;
+    die "unable to read master key from STDIN\n" unless $master_key_raw;
+    $master_key_raw = builtin::trim($master_key_raw);
+    my @key_candidates = map { substr(hmac('SHA1', $_, SALT() . pack("N", 1)), 0, 16) } ($master_key_raw, 'peanuts');
+
+    while (defined(my $line = <<>>)) {
+        my \%record     = JSON()->decode($line);
+        my $payload_hex = delete $record{ENCRYPTED_KEY()};
+        next unless $payload_hex;
+        my $payload_bytes = pack('H*', $payload_hex);
+
+        # if not encrypted (no prefix), keep as is
+        unless ($payload_bytes =~ m/^v1[01]/) {
+            $record{ENCRYPTED_KEY()} = $payload_bytes;
+            say JSON()->encode(\%record);
+            next;
+        }
+
+        $payload_bytes = substr($payload_bytes, 3); # Strip prefix 'v10' or 'v11'
+        for my $key (@key_candidates) {
+            my $payload_decrypted = eval { CIPHER()->decrypt($payload_bytes, $key, ' ' x 16) }
+                or next;
+
+            # cookies must have 32 bytes sha256 of the host_key prefix and thus cannot be smaller than 32 bytes
+            if (defined $record{host_key} && length($payload_decrypted) > 32) {
+                my ($host_hash, $cookie) = unpack('a32 a*', $payload_decrypted);
+                if ($host_hash eq sha256($record{host_key}) && $cookie =~ m/^[[:print:]]+$/) {
+                    $record{ENCRYPTED_KEY()} = $cookie;
+                    last;
+                }
+            }
+
+            # passwords are encrypted without 32 byte hash prefix
+            if ($payload_decrypted =~ m/^[[:print:]]+$/) {
+                $record{ENCRYPTED_KEY()} = $payload_decrypted;
+                last;
+            }
+        }
+        say JSON()->encode(\%record);
+    }
