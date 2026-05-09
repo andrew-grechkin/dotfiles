@@ -1,0 +1,102 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+mod fzf "~/.local/lib/just/fzf"
+mod json "~/.local/lib/just/json"
+
+set export
+set no-cd
+
+export model := require('family-model')
+export this := justfile()
+export tui := 'auto'
+
+# => members ------------------------------------------------------------------------------------------------------ {{{1
+
+# show members
+[group('members')]
+members:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="{{source_file()}} members"
+        export REDISCLI_PORT
+        fzf_args=(
+            --bind="ctrl-m:execute(${this@Q} apps {1})"
+            --preview="${model@Q} get-member {1} | ${this@Q} json::pretty -Cpf {3}"
+            --prompt="members > "
+            --with-nth="3.."
+        )
+        eval "$FZF_RELOAD_CMD" | "$this" fzf::table-multi "${fzf_args[@]}"
+    else
+        jq_fields=(
+            '_id;\(.userId)'
+            '_url;'
+            'name;\(.profile.displayName);olive'
+            'role;\(.role)'
+            'label;\(.ageBandLabel);blue'
+        )
+        "$model" list-members \
+            | jq '.members' \
+            | "$this" json::to-table 'sort_by(.profile.displayName)' "${jq_fields[@]}"
+    fi
+
+# => usage -------------------------------------------------------------------------------------------------------- {{{1
+
+# show apps for user
+[group('usage')]
+apps user_id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="{{source_file()}} apps ${user_id@Q}"
+        export REDISCLI_PORT
+        fzf_args=(
+            # --bind="ctrl-m:execute(${this@Q} usage {1})"
+            --preview="${model@Q} get-member {1} | ${this@Q} json::pretty -Cpf {3}"
+            --prompt="apps | $user_id > "
+            --with-nth="3.."
+        )
+        eval "$FZF_RELOAD_CMD" | "$this" fzf::table-multi "${fzf_args[@]}"
+    else
+        jq_fields=(
+            '_id;\(.packageName)'
+            '_url;'
+            'title;\(.title);olive'
+            'limit;\(.supervisionSetting.usageLimit.dailyUsageLimitMins)'
+        )
+        "$model" list-apps-and-usage "$user_id"\
+            | jq '.apps' \
+            | "$this" json::to-table 'sort_by(.title)' "${jq_fields[@]}"
+    fi
+
+# show usage for user
+[group('usage')]
+usage user_id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        export FZF_RELOAD_CMD="{{source_file()}} usage ${user_id@Q}"
+        export REDISCLI_PORT
+        fzf_args=(
+            # --bind="ctrl-m:execute(${this@Q} usage {1})"
+            --preview="${model@Q} get-member {1} | ${this@Q} json::pretty -Cpf {3}"
+            --prompt="usage > "
+            --with-nth="3.."
+        )
+        eval "$FZF_RELOAD_CMD" | "$this" fzf::table-multi "${fzf_args[@]}"
+    else
+        jq_fields=(
+            '_id;'
+            '_url;'
+            'package;\(.appId.androidAppPackageName)'
+            'date;\(.date | [.year, .month, .day ] | join("-"))'
+            'usage;\(.usage);olive'
+            'mode;\(.modeType)'
+            'device;\(.deviceMudId)'
+        )
+        "$model" list-apps-and-usage "$user_id"\
+            | jq '.appUsageSessions' \
+            | "$this" json::to-table 'sort_by(.appId.androidAppPackageName, .date.year, .date.month, .date.day)' "${jq_fields[@]}"
+    fi
