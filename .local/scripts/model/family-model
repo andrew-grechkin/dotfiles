@@ -1,0 +1,213 @@
+#!/usr/bin/env -S just --one --justfile
+
+# ABSTRACT:
+#   Access non-public Google Familylink API from CLI
+#
+# DESCRIPTION:
+#   Google is being google (synonym of pathetic nowadays) and
+#   [refuses](https://issuetracker.google.com/issues/302210616) to make public API to manage Familylink functionality.
+#   There is nothing left more than to go a reverse engineering path and try to make something out of what we have.
+#   Of course this requires stealing cookies from a browser or using special headless browser which can login
+#   automatically (this option is cumbersome if one have 2FA enabled, need to make peculiar exceptions, which cancels
+#   the purpose of 2FA)
+#
+#   This model steals cookies from browser and uses them to make requests to Familylink API in behalf of browser.
+
+# https://just.systems/man/en/
+
+# attempts of creating API tokens failed because there is no library can be added to a project and provide capabilities
+# https://console.cloud.google.com/cloud-hub/home?project=family-link-cli
+# https://console.cloud.google.com/welcome?project=family-link-cli
+
+# Other existing implementations and reverse engineered specifications
+# https://github.com/noiwid/HAFamilyLink/blob/main/GOOGLE_FAMILY_LINK_API_ANALYSIS.md
+# https://github.com/noiwid/HAFamilyLink/blob/main/custom_components/familylink/client/api.py
+# https://github.com/tducret/familylink/blob/main/src/familylink/client.py
+
+set no-cd
+
+import "~/.local/lib/just/common"
+mod http "~/.local/lib/just/http"
+
+export chrome       := require('chrome-model')
+export jq           := require('jq')
+export memoize      := require('memoize')
+export perl         := require('perl')
+export xdg_settings := require('xdg-settings')
+
+export BROWSER := env('BROWSER', ```xdg-settings get default-web-browser | perl -lpE 's/.desktop$//g'```)
+export this    := justfile()
+
+# Google Family Link API endpoints and client API key (reverse-engineered)
+export FAMILY_HOST := 'kidsmanagement-pa.clients6.google.com'
+export FAMILY_API  := '/kidsmanagement/v1'
+export ORIGIN      := 'https://familylink.google.com'
+export API_KEY     := 'AIzaSyAQb1gupaJhY3CXQy2xmTwJMcjmot3M2hw'
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private]
+@default:
+    "$this" --list
+
+# => members ------------------------------------------------------------------------------------------------------ {{{1
+
+# list family members
+[group('members')]
+list-members:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    memoize -t 1hour -- "$this" http-request GET '/families/mine/members'
+
+# find members by name pattern
+[group('members')]
+find-members name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" list-members | jq --arg name "$name" '.members // [] | map(select(.profile.displayName | test($name;"i")))'
+
+# get member by id
+[group('members')]
+get-member user_id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" list-members | jq --arg id "$user_id" '.members // [] | map(select(.userId == $id)).[]'
+
+# => usage -------------------------------------------------------------------------------------------------------- {{{1
+
+# list app usage and state for a member
+[group('usage')]
+list-apps-and-usage user_id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    args=(
+        'capabilities==CAPABILITY_APP_USAGE_SESSION'
+        'capabilities==CAPABILITY_SUPERVISION_CAPABILITIES'
+    )
+    "$this" http-request GET "/people/$user_id/appsandusage" "${args[@]}" \
+        | "$this" transform-apps-and-usage
+
+# transform apps and usage to a sane form
+[group('usage'), private]
+transform-apps-and-usage:
+    #!/usr/bin/env -S jq --from-file
+    . # TBD
+
+# get applied time limits and used time for a member
+[group('usage')]
+get-applied-time-limits user_id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    args=(
+        'capabilities==TIME_LIMIT_CLIENT_CAPABILITY_SCHOOLTIME'
+    )
+    "$this" http-request GET "/people/$user_id/appliedTimeLimits" "${args[@]}"
+
+# get time used today (per-device and total) for a member
+[group('usage')]
+get-usage user_id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    json=$("$this" get-applied-time-limits "$user_id")
+    jq <<< "$json" '.appliedTimeLimits as $limits |
+        {
+            devices: [
+                ($limits[] | {
+                    key: .deviceId,
+                    value: (.currentUsageUsedMillis | tonumber / 1000)
+                })
+            ] | from_entries,
+            total: ($limits | map(.currentUsageUsedMillis | tonumber) | add / 1000)
+        }
+    '
+
+# get time limit configuration (bedtime/schooltime schedules) for a member
+[group('usage')]
+get-time-limit-config user_id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    args=(
+        'capabilities==TIME_LIMIT_CLIENT_CAPABILITY_SCHOOLTIME'
+        'timeLimitKey.type==SUPERVISED_DEVICES'
+    )
+    "$this" http-request GET "/people/$user_id/timeLimit" "${args[@]}"
+
+# => location ----------------------------------------------------------------------------------------------------- {{{1
+
+# get location and battery status for a member
+[group('location')]
+get-location user_id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    args=(
+        'locationRefreshMode==1'
+        'supportedConsents==SUPERVISED_LOCATION_SHARING'
+    )
+    "$this" http-request GET "/families/mine/location/$user_id" "${args[@]}"
+
+# => notifications ------------------------------------------------------------------------------------------------ {{{1
+
+# get notifications for the current user
+[group('notifications')]
+get-notifications:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    args=(
+        'clientCapabilities==CAPABILITY_TIMEZONE'
+        "userTimeZone==$(timedatectl show --property=Timezone --value)"
+    )
+    "$this" http-request GET "/people/me/notificationElements" "${args[@]}"
+
+# => restrictions ------------------------------------------------------------------------------------------------- {{{1
+
+# block an app for a member
+[group('restrictions')]
+block-app user_id package_name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    # data format: [[package_name], [1]]
+    data='[["{{package_name}}"], [1]]'
+    "$this" update-app-restrictions "{{user_id}}" "$data"
+
+# remove limits/blocks for an app
+[group('restrictions')]
+unlimit-app user_id package_name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    # data format: [[package_name], null, [null, 1]] or similar to reset
+    # based on analysis, sending null for the limit/block parts often resets it
+    # the exact reset payload might vary, trying simple block-removal first
+    data='[["{{package_name}}"], [0]]'
+    "$this" update-app-restrictions "{{user_id}}" "$data"
+
+# generic update app restrictions for a member
+[group('restrictions'), private]
+update-app-restrictions user_id data:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    # payload: [user_id, [data]]
+    echo "[ \"{{user_id}}\", [ {{data}} ] ]" | "$this" http::request-stdin POST "/people/{{user_id}}/apps:updateRestrictions"
+
+# => http --------------------------------------------------------------------------------------------------------- {{{1
+
+# generate sapisidhash out of sapisid and origin
+[group('http'), private]
+generate-sapisid-hash sapisid origin:
+    #!/usr/bin/env perl
+    use v5.40;
+    use Digest::SHA qw(sha1_hex);
+    use Time::HiRes qw(gettimeofday);
+
+    my $timestamp = int(scalar gettimeofday());
+    my $sha1_hash = sha1_hex("$timestamp {{sapisid}} {{origin}}");
+    say "${timestamp}_${sha1_hash}";
+
+# generic http request to the configured service, provides diagnostics on failure
+[group('http'), private, positional-arguments]
+http-request method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 2
+
+    [[ "$uri" == /* ]] && uri="$FAMILY_HOST$FAMILY_API${uri#${FAMILY_API}}"
+
+    cookies=$("$chrome" list-cookies 'google.com')
+    sapisid=$(jq -r <<< "$cookies" 'select(.name == "SAPISID").value // empty' | head -n1)
+    [[ -n "$sapisid" ]] || fatal "unable to fetch SAPISID cookie from browser"
+
+    args=(
+        "authorization:SAPISIDHASH $("$this" generate-sapisid-hash "$sapisid" "$ORIGIN")"
+        "cookie:$(jq <<< "$cookies" -nr '[inputs] | group_by(.name) | map(.[0] | "\(.name)=\(.value)") | join("; ")')"
+        "origin:$ORIGIN"
+        "user-agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0"
+        "x-goog-api-key:$API_KEY"
+    )
+
+    "$this" http::request "$method" "$uri" "${args[@]}" "$@"
