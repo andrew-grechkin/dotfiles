@@ -1,0 +1,126 @@
+#!/usr/bin/env -S just --one --justfile
+
+set export
+set no-cd
+
+export config_dir := ```echo "${XDG_CONFIG_HOME:-$HOME/.config}/kubectl"```
+export this := justfile()
+
+export K3D_FIX_MOUNTS := '1'
+export KUBECONFIG := config_dir / 'k3d.yaml'
+
+[private]
+@default:
+    "$this" --list
+
+# create a local kubernetes cluster using k3d and rootless podman
+up:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    # If cluster exists, check its status
+    if k3d cluster list local-k8s >/dev/null 2>&1; then
+        running=$(k3d cluster list local-k8s --no-headers | awk '{print $2}' | cut -d/ -f1)
+        if [[ "$running" -gt 0 ]]; then
+            echo "Cluster 'local-k8s' is already running."
+            # Ensure config is present even if already running
+            mkdir -p "$config_dir" && k3d kubeconfig get local-k8s > "$config_dir/k3d.yaml"
+            exit 0
+        else
+            echo "Cluster 'local-k8s' exists but is not running. Recreating..."
+            "$this" down
+        fi
+    fi
+
+    # Create registry if it doesn't exist
+    if ! k3d registry list k3d-local-registry >/dev/null 2>&1; then
+        k3d registry create local-registry --port 5000 --default-network podman
+    fi
+
+    # Create cluster with registry
+    args=(
+        --no-lb
+        --registry-use "k3d-local-registry:5000"
+        --k3s-arg "--disable=traefik@server:0"
+        --k3s-arg "--disable=metrics-server@server:0"
+        --k3s-arg "--disable=local-storage@server:0"
+        --k3s-arg "--kubelet-arg=feature-gates=KubeletInUserNamespace=true@server:0"
+        --timeout 120s
+    )
+    k3d cluster create local-k8s "${args[@]}"
+
+    mkdir -p "$config_dir" && k3d kubeconfig get local-k8s > "$config_dir/k3d.yaml"
+
+# delete the local kubernetes cluster
+@down:
+    k3d cluster delete local-k8s && rm -f "$config_dir/k3d.yaml"
+    k3d registry delete k3d-local-registry || true
+
+# list everything in the current context
+@show:
+    kubectl get all -A
+
+# deploy a test nginx application with a sidecar
+test port='8080':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    kubectl delete deployment nginx --ignore-not-found
+    kubectl delete service nginx --ignore-not-found
+
+    kubectl apply -f - << 'EO_MANIFEST'
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: nginx
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: nginx
+      template:
+        metadata:
+          labels:
+            app: nginx
+        spec:
+          containers:
+            - name: nginx
+              image: nginx:alpine
+              ports:
+                - containerPort: 80
+            - name: sidecar
+              image: alpine
+              command: ['/bin/sh', '-c', 'while true; do echo "sidecar is alive at $(date)"; sleep 10; done']
+    EO_MANIFEST
+
+    kubectl expose deployment nginx --port="$port" --target-port=80 --type=ClusterIP
+    kubectl wait --for=condition=available --timeout=60s deployment/nginx
+
+    echo "Bridging app http://localhost:$port"
+    kubectl port-forward svc/nginx "$port:$port"
+
+# forward a service port to localhost
+@forward port='8080' target_port='80' service='nginx':
+    kubectl port-forward "svc/$service" "$port:$target_port"
+
+# tail logs for a deployment
+@logs app='nginx':
+    kubectl logs -f "deployment/$app"
+
+# launch k9s dashboard
+@dash:
+    k9s
+
+# switch or show the current namespace
+ns name='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ -n "${name:-}" ]]; then
+        exec kubectl config set-context --current --namespace="$name"
+    fi
+
+    ns=$(kubectl config view --minify --output 'jsonpath={..namespace}')
+    echo "${ns:-default}"
+
+# show my permissions
+@perms:
+    kubectl auth can-i '*' '*' --all-namespaces
+    kubectl config view -o jsonpath='{.contexts[?(@.name=="k3d-local-k8s")].context.user}' && echo
