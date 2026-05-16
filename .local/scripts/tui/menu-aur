@@ -1,0 +1,86 @@
+#!/usr/bin/env -S just --one --unstable --justfile
+
+# https://just.systems/man/en/
+
+mod fzf "~/.local/lib/just/fzf"
+mod json "~/.local/lib/just/json"
+
+set export
+set no-cd
+
+export model := require('aur-model')
+export colored_md := require('colored-md') # https://github.com/andrew-grechkin/colored-md
+export this := justfile()
+export tui := 'auto'
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+# Run TUI if interactive, otherwise print static view
+[private]
+default:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        "$this" controller
+    else
+        "$this" view
+    fi
+
+# Print help
+help:
+    #!/usr/bin/env -S colored-md
+
+    # ABSTRACT
+
+    Interactive TUI for searching, browsing, and installing AUR packages.
+
+    # DESCRIPTION
+
+    This tool provides a terminal-based user interface (TUI) to search the Arch User Repository (AUR), view package
+    metadata, and initiate installations using trizen.
+
+# => MVC ---------------------------------------------------------------------------------------------------------- {{{1
+
+# Render the package search results table based on the search term
+view term:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq_fields=(
+        '_id;\(.Name)'
+        '_url;https://aur.archlinux.org/packages/\(.Name)'
+        'name;\(.Name);olive'
+        'version;\(.Version);cyan'
+        'votes;\(.NumVotes);gray'
+        'updated;\(.LastModified | todate[0:16]);green'
+        'outdated;\(.OutOfDate | if . then todate[0:10] else "" end);maroon'
+        'description;\(.Description);silver'
+    )
+    "$model" search "$term" \
+        | jq -c '.results' \
+        | "$this" json::to-table '.' "${jq_fields[@]}"
+
+# Display the interactive TUI for managing pacman packages
+controller:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    export FZF_RELOAD_CMD="${this@Q} view {q}"
+    fzf_args=(
+        --bind="alt-A:execute(${this@Q} install {1})"
+        --bind="alt-t:become(menu-pacman)"
+        --bind="change:reload:$FZF_RELOAD_CMD"
+        --bind="start:change-query()"
+        --footer="A-A:install A-t:pacman | A-b:browse A-p:preview"
+        --phony
+        --preview="${model@Q} info {1} | jq '.results[0]' | "$this" json::pretty -Cpf {1}"
+        --prompt='AUR > '
+        --query="⁉"
+        --reverse
+        --with-nth="3.."
+    )
+    echo 'loading...' | "$this" fzf::table-multi "${fzf_args[@]}"
+
+# => helper ------------------------------------------------------------------------------------------------------- {{{1
+
+# Install an AUR package by name
+[private]
+install name:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    # TODO: autoselect installed AUR helper here
+    "$this" fzf::run-reload -t 1 -- trizen -S --noedit --noconfirm "$name"
