@@ -1,0 +1,61 @@
+#!/usr/bin/env -S just --one --justfile
+
+# ABSTRACT: CLI for AUR API
+
+# https://just.systems/man/en/
+# https://aur.archlinux.org/rpc/swagger
+
+mod http "~/.local/lib/just/http"
+
+set export
+set no-cd
+
+export this := justfile()
+
+export AUR_HOST := env('AUR_HOST', 'aur.archlinux.org')
+export AUR_API := env('AUR_API', '/rpc/v5')
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private]
+@default:
+    "$this" --list
+
+# => search ------------------------------------------------------------------------------------------------------- {{{1
+
+# single-term search
+[group('search')]
+search term by='name-desc':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    [[ -n "$term" ]] || exec echo '{"results": []}'
+    "$this" http-request GET "/search/$term" "by==$by"
+
+# list of package-names starting with term
+[group('search')]
+suggest term:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request GET "/suggest/$term"
+
+# list of package-base-names starting with term
+[group('search')]
+pkgbase term:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request GET "/suggest-pkgbase/$term"
+
+# => info --------------------------------------------------------------------------------------------------------- {{{1
+
+# detailed information for package(s)
+[group('info'), positional-arguments]
+info +names:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    args=("${@/#/arg[]==}")
+    "$this" http-request GET "/info" "${args[@]}"
+
+# => http --------------------------------------------------------------------------------------------------------- {{{1
+
+[group('http'), private, positional-arguments]
+http-request method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 2
+    [[ "$uri" == /* ]] && uri="$AUR_HOST${AUR_API}${uri#${AUR_API}}"
+    "$this" http::request "$method" "$uri" "$@"
