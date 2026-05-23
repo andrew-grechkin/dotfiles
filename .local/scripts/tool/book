@@ -1,0 +1,34 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+set export
+set no-cd
+
+export this := justfile()
+
+[private]
+@default:
+    "$this" --list
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+[no-exit-message]
+@list dir="/media/nfs/home/doc/@technical":
+    memoize -t 1hour -- "$this" _list "$dir" \
+        | just -f "$HOME/.local/lib/just/fzf" execute
+
+[no-exit-message]
+_list dir:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    {
+        cd "$dir"
+        while read -r line; do
+            if [[ "$line" =~ \.pdf$|\.djvu$ ]]; then
+                echo -e "$line\tzathura - < ${dir@Q}/${line@Q}"
+            elif [[ "$line" =~ \.fb2$|\.epub$|\.ePub$ ]]; then
+                echo -e "$line\txdg-open ${dir@Q}/${line@Q}"
+            fi
+        done < <(fd --no-ignore -t file -e pdf -e djvu -e fb2 -e epub --relative-path)
+    } | sort
