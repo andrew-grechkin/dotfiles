@@ -1,0 +1,12 @@
+[Unit]
+Description=Logout user after 3 hours of inactivity (X11)
+After=graphical-session.target
+
+[Service]
+Type=simple
+Environment=BASH_ENV=
+ExecStart=%h/.local/scripts/tool/system idle-logout
+Restart=on-failure
+
+[Install]
+WantedBy=graphical-session.target
