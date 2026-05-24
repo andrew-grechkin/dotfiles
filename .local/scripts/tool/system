@@ -1,0 +1,42 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+set export
+set no-cd
+
+export this := justfile()
+export default_idle_timeout_ms := ```echo -n "${IDLE_TIMEOUT_MS:-10800000}"```
+
+[private]
+@default:
+    "$this" --list
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+[no-exit-message]
+logout:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    set -x
+    loginctl terminate-session self \
+        || qdbus org.kde.Shutdown /Shutdown logout \
+        || qdbus org.kde.ksmserver /KSMServer logout 0 0 3
+
+[no-exit-message]
+idle-logout timeout_ms='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    timeout_ms="${timeout_ms:-$default_idle_timeout_ms}"
+    while true; do
+        idle_ms="$(/usr/bin/xprintidle)"
+
+        if [[ -n "$idle_ms" ]] && (( timeout_ms <= idle_ms )); then
+            exec "$this" logout
+        fi
+
+        sleep_seconds=$(( (timeout_ms - idle_ms) / 1000 + 10 ))
+
+        echo "sleeping until: $(date --rfc-3339=seconds -d "+${sleep_seconds} seconds")"
+
+        sleep "$sleep_seconds"
+    done
