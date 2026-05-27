@@ -397,6 +397,18 @@ fileviewer <application/vnd.sqlite3>
 
 " => File associations: misc -------------------------------------------------------------------------------------- {{{1
 
+filetype {*.tmpl}
+    \ {Render go sprig template }
+    \ gotmpl2text < %c:p %m,
+
+filetype {*.tmpl}
+    \ {Render go sprig template (permissive)}
+    \ GOTMPL_ALLOW_MISSING=1 gotmpl2text < %c:p %m,
+
+filetype {*.tmpl}
+    \ {Render go sprig template as YAML (permissive)}
+    \ GOTMPL_ALLOW_MISSING=1 gotmpl2text < %c:p | colored-yaml | ${PAGER}
+
 filetype {PKGBUILD}
     \ {Build Arch package}
     \ makepkg -sf,

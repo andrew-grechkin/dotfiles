@@ -1,6 +1,7 @@
 #!/usr/bin/env -S just --one --justfile
 
 set export
+set no-cd
 
 export this := justfile()
 
@@ -10,7 +11,6 @@ export this := justfile()
     "$this" --list
 
 # create a temporary bash script
-[no-cd]
 bash file='':
     #!/usr/bin/env -S bash -Eeuo pipefail
 
@@ -28,7 +28,6 @@ bash file='':
     "${VISUAL:-${EDITOR:-vi}}" "$file"
 
 # create a temporary deno script
-[no-cd]
 deno file='':
     #!/usr/bin/env -S bash -Eeuo pipefail
 
@@ -48,7 +47,6 @@ deno file='':
     "${VISUAL:-${EDITOR:-vi}}" "$file"
 
 # create a temporary json file
-[no-cd]
 json file='':
     #!/usr/bin/env -S bash -Eeuo pipefail
 
@@ -58,7 +56,6 @@ json file='':
     "${VISUAL:-${EDITOR:-vi}}" "$file"
 
 # create a temporary perl script
-[no-cd]
 perl file='':
     #!/usr/bin/env -S bash -Eeuo pipefail
 
@@ -80,7 +77,6 @@ perl file='':
     "${VISUAL:-${EDITOR:-vi}}" "$file"
 
 # create a temporary python script
-[no-cd]
 python file='':
     #!/usr/bin/env -S bash -Eeuo pipefail
 
@@ -102,7 +98,6 @@ python file='':
     "${VISUAL:-${EDITOR:-vi}}" "$file"
 
 # create a temporary ruby script
-[no-cd]
 ruby file='':
     #!/usr/bin/env -S bash -Eeuo pipefail
 
@@ -118,8 +113,16 @@ ruby file='':
 
     "${VISUAL:-${EDITOR:-vi}}" "$file"
 
+# create a temporary gotmpl file
+tmpl file='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    file=${file:-$XDG_RUNTIME_DIR/test.tmpl}
+
+    touch "$file"
+    "${VISUAL:-${EDITOR:-vi}}" "$file"
+
 # create a temporary yaml file
-[no-cd]
 yaml file='':
     #!/usr/bin/env -S bash -Eeuo pipefail
 
