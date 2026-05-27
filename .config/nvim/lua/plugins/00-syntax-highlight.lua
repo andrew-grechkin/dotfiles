@@ -29,6 +29,7 @@ return {
                     'git_config',
                     'gitattributes',
                     'gpg',
+                    'gotmpl',
                     'html',
                     'http',
                     'javascript',
