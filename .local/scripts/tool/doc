@@ -2,14 +2,16 @@
 
 # https://just.systems/man/en/
 
-set export := true
+set export
+set no-cd
+
 export this := justfile()
 
-[private, no-cd]
+[private]
 @default:
     "$this" --list
 
-[no-cd, positional-arguments]
+[positional-arguments]
 perl *argv:
     #!/usr/bin/env -S bash -Eeuo pipefail
 
@@ -31,7 +33,7 @@ perl *argv:
         man "$@" || echo "Nothing found for: $*" >&2
     fi
 
-[no-cd, positional-arguments]
+[positional-arguments]
 python *argv:
     #!/usr/bin/env -S bash -Eeuo pipefail
 
@@ -43,3 +45,27 @@ python *argv:
     else
         cat
     fi
+
+[no-exit-message, positional-arguments]
+sprig *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    # WARN: less is not working properly and buffering (-b) is not working as expected:
+    # if output is fed to less - broken pipe error occurs always unless less view has reached the end of the data.
+    # The expectation would be that less should fill the buffer prematurely, doesn't matter how
+    # far is the view down in the data, but buffer filled only when view window is moving forward.
+    # Because of above: using buffered memoize.
+    # This breaks the wicked cycle of error 141 just because less is lazy in loading data.
+    # NOTE: pipefail removal or/and trapping SIGPIPE is not helping because less impacts the whole pipeline
+    MEMOIZE_DIR="/var/tmp/memoize" memoize -bl "width-${GLAMOUR_WIDTH:-}" -- "$this" _sprig"${args[@]}"
+
+[no-exit-message, positional-arguments, private]
+_sprig *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    MEMOIZE_DIR="/var/tmp/memoize" memoize -- "$this" _sprig_fetch | colored-md
+
+[no-exit-message, positional-arguments, private]
+_sprig_fetch *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    curl -s 'https://api.github.com/repos/Masterminds/sprig/contents/docs' \
+        | jq -r 'sort_by(.name)[] | select(.name | endswith(".md") and (. != "index.md")) | .download_url' \
+        | xargs -n 1 curl -s
