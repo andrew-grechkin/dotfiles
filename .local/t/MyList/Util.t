@@ -34,8 +34,6 @@ use MyList::Util qw(
     sorted_quantile
 );
 
-## no critic [ValuesAndExpressions::ProhibitMagicNumbers]
-
 tests 'MyList::Util::adjacent_pairs' => sub {
     is(adjacent_pairs([]),                 [],                                    'empty array');
     is(adjacent_pairs([42]),               [],                                    'only one element');
@@ -46,22 +44,22 @@ tests 'MyList::Util::adjacent_pairs' => sub {
 
 tests 'MyList::Util::filter_by' => sub {
     my @array = ({'a' => 1}, {'a' => 2}, {'a' => 3});
-    is(filter_by(sub {$_[0]->{'a'} =~ m/2/},  []),      [],           'empty array');
-    is(filter_by(sub {$_[0]->{'a'} =~ m/4/},  \@array), [],           'nothing mathed');
-    is(filter_by(sub {$_[0]->{'a'} =~ m/2/},  \@array), [{'a' => 2}], 'one mathed');
-    is(filter_by(sub {$_[0]->{'a'} =~ m/\d/}, \@array), \@array,      'many mathed');
+    is(filter_by(sub {$_[0]{'a'} =~ m/2/},  []),      [],           'empty array');
+    is(filter_by(sub {$_[0]{'a'} =~ m/4/},  \@array), [],           'nothing mathed');
+    is(filter_by(sub {$_[0]{'a'} =~ m/2/},  \@array), [{'a' => 2}], 'one mathed');
+    is(filter_by(sub {$_[0]{'a'} =~ m/\d/}, \@array), \@array,      'many mathed');
 };
 
 tests 'MyList::Util::group_by' => sub {
     my @array = ({'a' => 1}, {'a' => 1}, {'a' => 3});
-    is(group_by(sub {$_[0]->{'a'}}, []),      {},                                                     'empty array');
-    is(group_by(sub {$_[0]->{'a'}}, \@array), {'1' => [{'a' => 1}, {'a' => 1}], '3' => [{'a' => 3}]}, 'all grouped');
+    is(group_by(sub {$_[0]{'a'}}, []),      {},                                                     'empty array');
+    is(group_by(sub {$_[0]{'a'}}, \@array), {'1' => [{'a' => 1}, {'a' => 1}], '3' => [{'a' => 3}]}, 'all grouped');
 };
 
 tests 'MyList::Util::partition' => sub {
     my @array = ({'a' => 1}, {'a' => 1}, {'a' => 3});
-    is([partition(sub {$_[0]->{'a'} == 1}, [])], [[], []], 'empty array');
-    is([partition(sub {$_[0]->{'a'} == 1}, \@array)], [[{'a' => 1}, {'a' => 1}], [{'a' => 3}]], 'all grouped');
+    is([partition(sub {$_[0]{'a'} == 1}, [])], [[], []], 'empty array');
+    is([partition(sub {$_[0]{'a'} == 1}, \@array)], [[{'a' => 1}, {'a' => 1}], [{'a' => 3}]], 'all grouped');
 };
 
 tests 'MyList::Util::difference' => sub {
@@ -148,7 +146,8 @@ tests 'MyList::Util::union_by' => sub {
 tests 'MyList::Util::combinations' => sub {
     is(combinations(['a', 'b', 'c', 'd'], 4), [['a', 'b', 'c', 'd']]);
     is(combinations(['a', 'b', 'c', 'd'], 3), [['a', 'b', 'c'], ['a', 'b', 'd'], ['a', 'c', 'd'], ['b', 'c', 'd']]);
-    is(combinations(['a', 'b', 'c', 'd'], 2), [['a', 'b'], ['a', 'c'], ['a', 'd'], ['b', 'c'], ['b', 'd'], ['c', 'd']]);
+    is(combinations(['a', 'b', 'c', 'd'], 2),
+        [['a', 'b'], ['a', 'c'], ['a', 'd'], ['b', 'c'], ['b', 'd'], ['c', 'd']]);
     is(combinations(['a', 'b', 'c', 'd'], 1), [['a'], ['b'], ['c'], ['d']]);
 };
 
