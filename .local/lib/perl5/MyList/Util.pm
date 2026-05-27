@@ -7,7 +7,7 @@ use utf8;
 use warnings     qw(FATAL utf8);
 use experimental qw(class declared_refs defer refaliasing);
 
-use List::Util qw(min sum0);
+use List::Util qw(min sum0 reduce);
 use Storable   qw(dclone);
 
 use Exporter qw(import);
@@ -38,19 +38,15 @@ our @EXPORT_OK = qw(
 
 ## no critic [Subroutines::RequireArgUnpacking, Subroutines::ProhibitSubroutinePrototypes]
 
-sub adjacent_pairs ($aref) {
-    my \@array = $aref;
-    my $pairs = @array - 1;
-
+sub adjacent_pairs($aref) {
     my @result;
-    for (my $i = 0; $i < $pairs; ++$i) {
-        push(@result, [$array[$i], $array[$i + 1]]);
-    }
+
+    reduce {push @result, [$a, $b]; $b} $aref->@*;
 
     return \@result;
 }
 
-sub compact ($aref) {
+sub compact($aref) {
     my @result = grep defined, $aref->@*;
     return \@result;
 }
@@ -140,7 +136,7 @@ sub union_by : prototype(&$$) {
     return [$_[0]->@*, grep {!exists $lhs{$code->()}} $_[1]->@*];
 }
 
-sub combinations ($array_ref, $k, $state = [], $result = []) {
+sub combinations($array_ref, $k, $state = [], $result = []) {
     if ($k == 0) {
         push($result->@*, $state);
         return $result;
@@ -167,7 +163,7 @@ sub combinations ($array_ref, $k, $state = [], $result = []) {
 #    return @combinations;
 #}
 
-sub permutations ($array_ref) {
+sub permutations($array_ref) {
     my @result;
     my @d = (-1) x scalar $array_ref->@*;
 
@@ -178,7 +174,7 @@ sub permutations ($array_ref) {
     return \@result;
 }
 
-sub sjt_next_permutation ($array_ref, $dirs_ref) {
+sub sjt_next_permutation($array_ref, $dirs_ref) {
     my \@array = $array_ref;
     my $n      = @array;
     my $id     = -1;
@@ -203,7 +199,7 @@ sub sjt_next_permutation ($array_ref, $dirs_ref) {
     return 1;
 }
 
-sub mean ($aref) {
+sub mean($aref) {
     my \@values = $aref;
     return undef      if @values == 0;
     return $values[0] if @values == 1;
@@ -211,7 +207,7 @@ sub mean ($aref) {
     return sum0(@values) / scalar @values;
 }
 
-sub sorted_median ($aref) {
+sub sorted_median($aref) {
     my \@values = $aref;
     my $size = @values;
     return undef      if @values == 0;
@@ -221,11 +217,11 @@ sub sorted_median ($aref) {
     return mean(\@middle);
 }
 
-sub sorted_percentile ($p, $aref) {
+sub sorted_percentile($p, $aref) {
     return sorted_quantile($p / 100, $aref);
 }
 
-sub sorted_quantile ($q, $aref) {
+sub sorted_quantile($q, $aref) {
     my \@values = $aref;
     my $size = @values;
     return undef      if $q < 0 || 1 < $q || @values == 0;
