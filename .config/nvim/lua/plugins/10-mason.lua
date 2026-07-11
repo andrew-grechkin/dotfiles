@@ -209,7 +209,7 @@ return {
             }
             local daps = T {'bash-debug-adapter', 'debugpy'}
             local linters = T {'jsonlint', 'shellcheck', 'yamllint'}
-            local formatters = T {'beautysh', 'fixjson', 'yamlfix'}
+            local formatters = T {'beautysh', 'fixjson'}
 
             if not IS_KVM then
                 if IS_WORK then lsps:append{'gitlab-ci-ls'} end
