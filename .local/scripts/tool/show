@@ -237,7 +237,7 @@ function file() {
         return
     elif [[ "$mime" =~ image/ ]]; then
         local yaml_file="$base.yml"
-        [[ -r "$yaml_file" ]] && bat -l yaml "${bat_args[@]}" "$yaml_file"
+        [[ -r "$yaml_file" ]] && format-yaml "$argc_path" | bat -l yaml "${bat_args[@]}"
         if (( size < 10000000 )); then
             local cols="${FZF_PREVIEW_COLUMNS:-$(tput cols)}"
             cols=${cols:-120}
@@ -246,8 +246,8 @@ function file() {
         return
     elif [[ "$ext" == "conf" ]]; then
         bat -l conf "${bat_args[@]}" "$argc_path"; return
-    elif [[ "$ext" =~ yaml?$ ]]; then
-        yaml-sanitize < "$argc_path" | yamlfix - 2>/dev/null | bat -l yaml "${bat_args[@]}"; return
+    elif [[ "$ext" =~ ya?ml$ ]]; then
+        format-yaml "$argc_path" | bat -l yaml "${bat_args[@]}"; return
     elif [[ "$ext" == "tsv" ]]; then
         tsv-align "$argc_path" | bat -l tsv --wrap=never "${bat_args[@]}" --color=always; return
     fi
