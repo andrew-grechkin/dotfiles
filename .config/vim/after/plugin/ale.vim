@@ -1,15 +1,15 @@
-﻿scriptencoding=utf-8
+scriptencoding=utf-8
 
 if plugin#is_loaded('ale')
 	" register custom fixers
 
 	function! YamlSanitize(buffer) abort
 		return {
-		\   'command': 'yaml-sanitize'
+		\   'command': 'format-yaml'
 		\}
 	endfunction
 
-	execute ale#fix#registry#Add('yaml-sanitize', 'YamlSanitize', ['yaml'], 'Sanitize yaml')
+	execute ale#fix#registry#Add('format-yaml', 'YamlSanitize', ['yaml'], 'Sanitize yaml')
 
 	" settings
 
@@ -29,7 +29,7 @@ if plugin#is_loaded('ale')
 	\   'typescript': ['prettier', 'deno', 'tslint', 'xo'],
 	\   'vue':        ['prettier', 'eslint'],
 	\   'xml':        ['xmllint'],
-	\   'yaml':       ['yaml-sanitize', 'prettier'],
+	\   'yaml':       ['format-yaml'],
 	\}
 	let g:ale_fixers = {
 	\   '*':          [                             'remove_trailing_lines', 'trim_whitespace'],
