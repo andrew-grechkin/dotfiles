@@ -460,11 +460,11 @@ filetype <application/json>,<application/schema+json>,{*.identity}
 
 filetype <application/yaml>
     \ {View}
-    \ yaml-sanitize %c:p | colored-yaml --paging=always --file-name=%c,
+    \ format-yaml %c:p | colored-yaml --paging=always --file-name=%c,
     \ {Repl jq}
     \ yaml2json %c:p | jq-repl,
     \ {Sanitize yaml}
-    \ yaml-sanitize -i %c:p,
+    \ format-yaml -i %c:p,
     \ {Convert yaml -> json}
     \ yaml2json %c:p > %c:r.json,
     \ {Detect location by the file}
