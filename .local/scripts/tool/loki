@@ -1,0 +1,567 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+set export
+set no-cd
+
+export credp := require('credp')
+export jq := require('jq')
+export this := justfile()
+
+export DOMAIN := env('DOMAIN')
+export K8S_CONTAINER_NAME := env('K8S_CONTAINER_NAME', 'app')
+export LOKI_API := '/loki/api/v1'
+export LOKI_PRUNE := env('LOKI_PRUNE', 'del(.. | (.dedup_pattern?, .dedup_count?, .dedup_examples?, .observed_timestamp?))')
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private]
+@default:
+     "$this" --list
+
+# => doc ---------------------------------------------------------------------------------------------------------- {{{1
+
+# Print help
+[group('doc'), no-exit-message]
+help:
+    #!/usr/bin/env -S colored-md
+
+    # ABSTRACT
+
+    Wrapper around grafana loki
+
+    # DESCRIPTION
+
+    Just better version than official loki CLI
+
+    # ENVIRONMENT
+
+    - `DOMAIN`: REQUIRED, e.g. `my_company`. Selects the Loki endpoint and auth.
+    - `LOKI_QUERY`: optional LogQL query. When set, used instead of STDIN.
+    - `LOKI_PRUNE`: jq filter applied to raw stream entries. Default drops dedup metadata; set to `.` to keep everything.
+    - `LOKI_PARSE_JSON`: when set (any value), attempt to parse each log line as JSON into `__parsed_line__` field.
+    - `K8S_CONTAINER_NAME`: default container filter for `logs-by-pod` (defaults to `app`).
+
+    # SYNOPSIS
+
+    ```
+    # LOG VIEWERS - same query, different output shape:
+    #   query         -> JSON, folded (common labels deduped)      pipe to jq/scripts
+    #   logs          -> tab-separated time+line                   quick eyeball
+    #   analyze       -> YAML per event                            deep inspection
+    #   logs-by-pod   -> tab-separated grouped by pod (colored)    multi-pod diagnostics
+    #   tail          -> streaming via logcli until Ctrl-C         live tailing
+
+    # discovery: what labels exist in this tenant? (all label NAMES)
+    loki labels deployments
+
+    # discovery: what values does a label take? (values of one label)
+    loki labels deployments/service_name
+
+    # discovery: for a given query, what fields could I filter on? (labels + their cardinality)
+    loki detect deployments <<< '{service_name="api"}'
+
+    # discovery: which labels are shared across ALL results of this query? (get stripped from `query` output)
+    loki common-labels deployments <<< '{service_name="api"}'
+
+    # basic search (which lines mention "feature-flags"?)
+    loki logs deployments <<< '{service_name="api"} |= "feature-flags"'
+
+    # structured filter after parsing JSON logs (which lines have level=ERROR?)
+    loki query deployments <<< '{service_name="api"} | json | level="ERROR"'
+
+    # multi-line query via heredoc
+    loki query deployments << 'LOGQL'
+    {service_name="api", k8s_container_name="app"}
+      | json | level="ERROR" | duration_ms > 100
+    LOGQL
+
+    # auto-parse each log line as JSON so downstream jq can dot-access fields
+    LOKI_PARSE_JSON=1 loki query deployments <<< '{service_name="api"}'
+
+    # reuse the same LogQL across invocations without stdin
+    LOKI_QUERY='{service_name="api"} |= "ERROR"' loki logs deployments
+
+    # YAML view (one YAML document per event; easier to eyeball structured logs)
+    loki analyze deployments <<< '{service_name="api"} | json'
+
+    # multi-pod diagnostics (group lines by pod with alternating colors)
+    loki logs-by-pod deployments api
+
+    # live tail (Ctrl-C to stop; passes through to logcli)
+    loki tail deployments <<< '{service_name="api"} |= "ERROR"'
+
+    # CLI-arg overrides - Loki accepts these as `key==value` xh query params:
+    #   since==5m         lookback duration (Loki alternative to start/end)
+    #   limit==500        max lines returned (default 100)
+    #   direction==forward   or backward (default: backward)
+    loki query deployments since==5m limit==500 <<< '{service_name="api"}'
+
+    # untouched JSON from /query_range (for scripting; skips fold/prune)
+    loki raw-query deployments <<< '{service_name="api"}' | jq '.data.result[0].values'
+
+    # direct request to any Loki endpoint (escape hatch when no recipe fits)
+    loki http-request deployments GET /labels
+
+    # clickable doc links (LogQL, HTTP API, best practices)
+    loki doc
+
+    # printed LogQL cheatsheet (no browser, works over SSH)
+    loki cheatsheet
+    ```
+
+# LogQL / Loki doc links
+[group('doc'), no-exit-message]
+doc:
+    #!/usr/bin/env -S colored-md
+
+    # LogQL / Loki docs
+
+    - [LogQL reference (top-level)](https://grafana.com/docs/loki/latest/query/)
+    - [Log queries - line filters, label filters, parsers](https://grafana.com/docs/loki/latest/query/log_queries/)
+    - [Metric queries - rate, count_over_time, aggregations](https://grafana.com/docs/loki/latest/query/metric_queries/)
+    - [Template functions for line_format / label_format](https://grafana.com/docs/loki/latest/query/template_functions/)
+    - [Query examples cookbook](https://grafana.com/docs/loki/latest/query/query_examples/)
+    - [Loki HTTP API](https://grafana.com/docs/loki/latest/reference/loki-http-api/)
+    - [Best practices for labels and cardinality](https://grafana.com/docs/loki/latest/get-started/labels/bp-labels/)
+
+# LogQL quick reference
+[group('doc'), no-exit-message]
+cheatsheet:
+    #!/usr/bin/env -S colored-md
+
+    # LOGQL QUICK REFERENCE
+
+    ## STREAM SELECTORS (the required starting point of every LogQL query)
+
+    ```
+    {label="v"}              exact-match filter
+        # every stream where service_name="api" (all LogQL queries start with a {})
+        {service_name="api"}
+
+    {label!="v"}             not-equal
+        # every api-service stream except from job=prometheus
+        {service_name="api", job!="prometheus"}
+
+    {label=~"re"}            regex match (RE2 syntax)
+        # streams from any api-* service
+        {service_name=~"api.*"}
+
+    {label!~"re"}            regex not-match
+        # everything NOT from probe.*
+        {service_name!~"probe.*"}
+
+    {a="1", b="2"}           multiple label matchers - AND (commas are never OR)
+        # both labels must match on the same stream
+        {service_name="api", k8s_container_name="app"}
+
+    NOTE: regex label matchers (`=~`, `!~`) are FULLY ANCHORED. `=~"api"` is `=~"^api$"`.
+          Use `.*` on both ends for substring (`=~".*api.*"`), or `=~"api.*"` for prefix.
+          (Line filters below are the OPPOSITE - see the note in that section.)
+    ```
+
+    ## LINE FILTERS (content of raw log line, applied BEFORE parsing - fast)
+
+    ```
+    |= "text"                line contains substring
+        # any line mentioning feature-flags anywhere
+        {service_name="api"} |= "feature-flags"
+
+    != "text"                line does not contain substring
+        # exclude noisy health checks
+        {service_name="api"} != "/healthz"
+
+    |~ "regex"               line matches regex (RE2)
+        # 5xx status codes anywhere in the line
+        {service_name="api"} |~ "status=5[0-9]{2}"
+
+    !~ "regex"               line does not match regex
+        # exclude both healthz and readyz probes
+        {service_name="api"} !~ "GET /(healthz|readyz)"
+
+    (?i) inline flag         case-insensitive within a regex (use inside `|~`/`!~`)
+        # match "error"/"ERROR"/"Error"
+        {service_name="api"} |~ "(?i)error"
+
+    |= ip("cidr")            CIDR match (Loki extension)
+        # log lines whose text contains an IP in the given CIDR
+        {service_name="proxy"} |= ip("10.0.0.0/8")
+
+    NOTE: line filter regexes (`|~`, `!~`) are RE2 SEARCH - NOT anchored (opposite of label matchers).
+          `|~ "error"` matches any line containing "error" anywhere; use `^`/`$` yourself if you need anchoring.
+    ```
+
+    ## LABEL FILTERS (act on labels AFTER parsing - slower than line filters)
+
+    ```
+    | label="v"              filter on a parsed/existing label
+        # `level` becomes a label after `| json`, then filter to ERROR
+        {service_name="api"} | json | level="ERROR"
+
+    | n > NUM                numeric comparison (label auto-coerced)
+        # slow requests, > 100 ms
+        {service_name="api"} | json | duration_ms > 100
+
+    | dur > 500ms            duration comparison (LogQL types: 100us, 5s, 2m, 1h, ...)
+        # requests slower than half a second
+        {service_name="api"} | logfmt | duration > 500ms
+
+    chained filters          each `|` filter is AND; read left-to-right
+        # errors AND slow AND from a specific pod
+        {service_name="api"} | json | level="ERROR" | duration_ms > 100 | pod="api-7f8"
+
+    NOTE: regex label filters (`| foo=~"..."`) are FULLY ANCHORED, same as stream selectors.
+          Wrap with `.*` for substring; line filters (`|~`) remain the unanchored exception.
+    ```
+
+    ## PARSERS (turn line content into structured labels)
+
+    ```
+    | json                   parse JSON body; all top-level fields become labels
+        # after this you can filter on .level, .msg, .duration_ms, etc.
+        {service_name="api"} | json
+
+    | json name="path"       extract one nested field into a named label (dot path)
+        # copy request.duration_ms into label `dur`
+        {service_name="api"} | json dur="request.duration_ms"
+
+    | logfmt                 parse key=value logfmt; each key becomes a label
+        # for lines like `level=info duration=42ms msg="ok"`
+        {service_name="api"} | logfmt
+
+    | regexp "re"            regex with (?P<name>...) named captures -> labels
+        # capture method and path from a request line
+        {service_name="api"} | regexp "(?P<method>[A-Z]+) (?P<path>/[^ ]+)"
+
+    | pattern "<a> <b> <c>"  simpler than regexp - space-delimited placeholders -> labels
+        # split "GET /api 200 42ms" into method/path/status/dur
+        {service_name="api"} | pattern "<method> <path> <status> <dur>"
+
+    | unpack                 unpack Promtail's packed labels (from the `pack` stage)
+        {service_name="api"} | unpack
+    ```
+
+    ## LINE / LABEL FORMAT (reshape output after parsing)
+
+    ```
+    | line_format "tmpl"     rewrite the log line using Go text/template with labels
+        # replace verbose line with compact "<level> <msg>"
+        {service_name="api"} | json | line_format "{{'{{.level}} {{.msg}}'}}"
+
+    | label_format new=old   rename / synthesize labels via templates
+        # add a `slug` label = "<service>-<pod>"
+        {service_name="api"} | label_format slug="{{'{{.service_name}}-{{.pod}}'}}"
+    ```
+
+    ## METRIC QUERIES (turn matching lines into a time series)
+
+    ```
+    rate({..}[5m])           per-second event rate over the 5m window
+        # events per second on this stream
+        rate({service_name="api"}[5m])
+
+    count_over_time({..}[5m])  total number of matching lines in the window
+        # error count in the last 5m
+        count_over_time({service_name="api"} |= "ERROR" [5m])
+
+    bytes_over_time({..}[5m])  total bytes ingested in the window
+        # ingest volume per stream over 5m
+        bytes_over_time({service_name="api"}[5m])
+
+    sum by (label) (...)     group by label (same shape as PromQL)
+        # error rate per pod
+        sum by (pod) (rate({service_name="api"} |= "ERROR" [5m]))
+
+    topk / bottomk           top or bottom N series
+        # 3 loudest pods by log rate
+        topk(3, sum by (pod) (rate({service_name="api"}[5m])))
+    ```
+
+    ## COMMON PATTERNS
+
+    ```
+    # error rate: what fraction of lines are errors in the last 5m?
+    sum(count_over_time({service_name="api"} |= "ERROR" [5m]))
+      / sum(count_over_time({service_name="api"} [5m]))
+
+    # top 5 chattiest pods
+    topk(5, sum by (pod) (rate({service_name="api"}[5m])))
+
+    # count occurrences of a specific event over an hour
+    count_over_time({service_name="api"} |= "user login" [1h])
+
+    # extract a numeric field and filter on it (parsed after `| json`)
+    {service_name="api"} | json | user_id="42"
+
+    # ingest bytes-per-second per service
+    sum by (service_name) (rate({service_name=~".+"}[5m]))
+    ```
+
+    ## SEE ALSO
+
+    - `loki doc` for the full list of LogQL / Loki doc links.
+
+# => logs --------------------------------------------------------------------------------------------------------- {{{1
+
+# Show log events formatted as YAML (query in STDIN)
+[group('logs'), positional-arguments]
+analyze namespace *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 1
+    "$this" query "$namespace" "$@" | jq -c '.[]' | json2yaml | FORMAT_YAML_MODE=full format-yaml | colored-yaml
+
+# Show raw logs without metadata (query in STDIN)
+[group('logs'), positional-arguments]
+logs namespace *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 1
+    echo -e "time\tline"
+    "$this" query "$namespace" "$@" | jq -r '.[] | .time + "\t" + .line'
+
+# Show tail raw logs, streaming until Ctrl-C (query in STDIN, LOKI_QUERY, or `query==...`)
+[group('logs'), positional-arguments, no-exit-message]
+tail namespace *argv:
+    #!/usr/bin/env perl
+    # Implemented with Mojo because xh doesn't support ws and support in curl is not proper
+    # Streams Loki's /loki/api/v1/tail (WebSocket) via Mojo. Extra args are `key==value`
+    # xh-style URL params (limit==N, delay_for==N, start==<ns>, ...). Outputs one log line
+    # per row, matching logcli's `--output raw` behavior.
+    use v5.36;
+    use warnings     qw(FATAL utf8);
+    use experimental qw(builtin declared_refs defer for_list refaliasing try);
+
+    use English qw(-no_match_vars);
+
+    BEGIN {
+        ## no critic [Variables::RequireLocalizedPunctuationVars]
+        $ENV{MOJO_LOG_LEVEL} //= 'error';
+    }
+
+    use Mojo::JSON      qw(decode_json);
+    use Mojo::Promise   qw();
+    use Mojo::URL       qw();
+    use Mojo::UserAgent qw();
+
+    local $OUTPUT_AUTOFLUSH = 1;
+    STDERR->autoflush(1);
+
+    my ($namespace, @argv) = @ARGV;
+    die "usage: tail <namespace> [key==value ...]\n" unless defined $namespace;
+
+    # Build URL params: defaults + CLI `key==value` overrides
+    my %params = (limit => 100, delay_for => 0);
+    for my $a (@argv) {
+        $params{$1} = $2 if $a =~ /^([^=]+)==(.*)$/;
+    }
+
+    # Resolve query if not provided via CLI: LOKI_QUERY > STDIN.
+    # If STDIN is a TTY, print the same hint as the other recipes so the user can
+    # type the query and finish with Ctrl-D.
+    if (!defined $params{query}) {
+        if (defined $ENV{LOKI_QUERY}) {
+            $params{query} = $ENV{LOKI_QUERY};
+        } else {
+            say {*STDERR} "query must be provided via STDIN" if -t 0;
+            my $q = do { local $/; <STDIN> };
+            say {*STDERR} "" if -t 0;
+            chomp $q if defined $q;
+            $params{query} = $q if defined $q && length $q;
+        }
+    }
+
+    die "query must be provided via STDIN, LOKI_QUERY, or `query==...` on the CLI\n"
+        unless defined $params{query} && length $params{query};
+
+    chomp(my $token = qx{credp sso.prod.$ENV{DOMAIN}.com});
+    die "failed to fetch credp token\n" unless length $token;
+
+    my $url = Mojo::URL->new("wss://loki.$ENV{DOMAIN}.com/loki/api/v1/tail");
+    $url->query(\%params);
+
+    my $ua = Mojo::UserAgent->new;
+    $ua->inactivity_timeout(0);
+    $ua->request_timeout(0);
+
+    my $done = Mojo::Promise->new;
+    local $SIG{INT} = local $SIG{TERM} = sub { $done->resolve };
+
+    $ua->websocket_p($url => {
+        "x-scope-orgid"                   => $namespace,
+        "x-$ENV{DOMAIN}-iam-access-token" => $token,
+    })->then(sub ($tx) {
+        $tx->on(text => sub ($tx, $msg) {
+            try {
+                my $data = decode_json($msg);
+                return unless ref $data eq 'HASH';
+                for my $stream (@{ $data->{streams} // [] }) {
+                    for my $v (@{ $stream->{values} // [] }) {
+                        say $v->[1];   # log line only, matches logcli `--output raw`
+                    }
+                }
+            } catch ($e) {
+                # malformed JSON frame - skip silently, keep streaming
+            }
+        });
+        $tx->on(finish => sub ($tx, $code = 1000, $reason = '') {
+            say {*STDERR} "closed: $code $reason" if $code && $code != 1000;
+            $done->resolve;
+        });
+    })->catch(sub ($err) {
+        say {*STDERR} "websocket error: $err";
+        $done->resolve;
+    });
+
+    $done->wait;
+
+# Show raw unfiltered logs bucketed by pod name
+[group('logs'), positional-arguments]
+logs-by-pod namespace service *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 2
+
+    {
+        echo $'pod\ttime\tline'
+        query='{ {{DOMAIN}}_service="{{service}}", k8s_container_name=~"{{K8S_CONTAINER_NAME}}|"}'
+        unset LOKI_QUERY
+        "$this" query "$namespace" "$@" <<< "$query" \
+            | jq -r --arg bucket "k8s_pod_name" --arg odd $'\e[36m' --arg even $'\e[96m' --arg normal $'\e[0m' '
+                group_by(.labels[$bucket])
+                | to_entries[]
+                | (if .key % 2 == 0 then $odd else $even end) as $color
+                | .value[]
+                | $color + "\(.labels[$bucket])\($normal)\t\(.time)\t\(.line)"
+            '
+    } | if [[ -t 1 && -x "$(command -v json2tsv)" && -x "$(command -v tsv-show)" ]]; then
+        tsv-show
+    else
+        cat
+    fi
+
+# => overview ----------------------------------------------------------------------------------------------------- {{{1
+
+# Detect all possible filtering labels and fields (query in STDIN)
+[group('overview'), positional-arguments]
+detect namespace *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 1
+    "$this" query "$namespace" "$@" \
+        | jq '
+        [.[].labels | to_entries[]]
+        | group_by(.key)
+        | map(
+            (map(.value) | unique) as $items
+            | {
+                label: .[0].key,
+                type: (
+                    if   ($items | all(try (tonumber | . == floor) catch false)) then "int"
+                    elif ($items | all(try tonumber                catch false)) then "float"
+                    else "string"
+                    end
+                ),
+                cardinality: ($items | length),
+                items: $items,
+            }
+        )
+    ' | if [[ -t 1 && -x "$(command -v json2tsv)" && -x "$(command -v tsv-show)" ]]; then
+        json2tsv | tsv-show
+    else
+        jq
+    fi
+
+# https://grafana.com/docs/loki/latest/reference/loki-http-api/#query-labels
+# Show tenant labels (or label values if namespace/label)
+[group('overview'), positional-arguments]
+labels namespace_label *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 1
+
+    if [[ "$namespace_label" == */* ]]; then
+        IFS='/' read -r namespace label <<< "$namespace_label"
+        "$this" http-request GET "/label/$label/values" "x-scope-orgid:$namespace" "$@"
+    else
+        "$this" http-request GET "/labels" "x-scope-orgid:$namespace_label" "$@"
+    fi
+
+# Show common labels for a query (query in STDIN)
+[group('overview'), positional-arguments]
+common-labels namespace *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 1
+    "$this" query "$namespace" "$@" | jq -S '.[-1].common_labels'
+
+# => query -------------------------------------------------------------------------------------------------------- {{{1
+
+[group('query'), private]
+extract-common-labels:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -s 'length as $n
+        | [.[].stream | to_entries[]]
+        | group_by([.key,.value])
+        | map(select(length == $n)[0])
+        | from_entries
+    '
+
+# Log events, folded / pruned (query in STDIN, LOKI_PARSE_JSON to auto-parse JSON lines)
+[group('query'), positional-arguments]
+query namespace *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    pruned=$("$this" raw-query "$@" | jq '.data.result[] | {{LOKI_PRUNE}}')
+
+    jq -s --argjson common "$("$this" extract-common-labels <<< "$pruned")" '
+        def ns_to_rfc: (.[:-9]|tonumber|todate|sub("T"; " ")) + "." + .[-9:] + "Z";
+        ($common | keys) as $ck
+        | map(
+            . as $it | .values[] | {
+                labels: ($it.stream | with_entries(select(.key | IN($ck[]) | not))),
+                time: (.[0] | ns_to_rfc),
+                line: .[1]}
+            | if ($ENV.LOKI_PARSE_JSON) then try (. + {__parsed_line__: (.line | fromjson)}) catch . end
+            | if (.labels | length == 0) then del(.labels) end
+        )
+        | if (length > 0 and ($common | length > 0)) then .[-1].common_labels = $common end
+        | sort_by(.time)
+    ' <<< "$pruned"
+
+# https://grafana.com/docs/loki/latest/reference/loki-http-api/#query-logs-within-a-range-of-time
+# Raw /query_range response (untouched JSON; query in STDIN)
+[group('query'), positional-arguments]
+raw-query namespace *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 1
+
+    # Loki (Go's net/url) uses the FIRST value on duplicate query params - skip our default
+    # when the user provided theirs on the CLI so the pass-through behaves as override.
+    have_query=false
+    for a in "$@"; do case "$a" in "query=="*) have_query=true ;; esac; done
+
+    args=(GET "/query_range" "x-scope-orgid:$namespace")
+
+    if ! $have_query; then
+        if [[ -n "${LOKI_QUERY:-}" ]]; then
+            args+=("query==$LOKI_QUERY")
+        else
+            [[ -t 0 ]] && echo "query must be provided via STDIN" >&2
+            args+=("query==$(</dev/stdin)")
+        fi
+    fi
+
+    "$this" http-request "${args[@]}" "$@"
+
+# => http --------------------------------------------------------------------------------------------------------- {{{1
+
+# https://grafana.com/docs/loki/latest/reference/loki-http-api/
+# Request API directly (query in STDIN, extra params as `key==value`)
+[group('http'), positional-arguments]
+http-request namespace uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 2
+
+    [[ "$uri" == /* ]] && uri="loki.$DOMAIN.com$LOKI_API${uri#${LOKI_API}}"
+
+    args=(
+        "x-$DOMAIN-iam-access-token:$(credp sso.prod.$DOMAIN.com)"
+    )
+
+    xhs GET "$uri" "${args[@]}" "$@" --ignore-stdin
