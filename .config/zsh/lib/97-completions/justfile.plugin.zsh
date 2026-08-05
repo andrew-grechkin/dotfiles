@@ -116,6 +116,7 @@ register_justfile_completion() {
 
         artifactory
         bks
+        loki
         passport-model
         rb-model
         sd-model

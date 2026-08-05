@@ -1,0 +1,239 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+set export
+set no-cd
+
+export credp := require('credp')
+export jq := require('jq')
+export this := justfile()
+
+export DOMAIN := env('DOMAIN')
+export K8S_CONTAINER_NAME := env('K8S_CONTAINER_NAME', 'app')
+export LOKI_API := '/loki/api/v1'
+export LOKI_PRUNE := env('LOKI_PRUNE', 'del(.. | (.dedup_pattern?, .dedup_count?, .dedup_examples?, .observed_timestamp?))')
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private]
+@default:
+     "$this" --list
+
+# Print help
+help:
+    #!/usr/bin/env -S colored-md
+
+    # ABSTRACT
+
+    Wrapper around grafana loki
+
+    # DESCRIPTION
+
+    Just better version than official loki CLI
+
+    # ENVIRONMENT
+
+    - `DOMAIN`: REQUIRED, e.g. `my_company`. Selects the Loki endpoint and auth.
+    - `LOKI_PRUNE`: jq filter applied to results. Default drops dedup metadata
+      so you see one line per event. Set to `.` to keep everything.
+
+    # SYNOPSIS
+
+    ```
+    # last 5 min of app logs for the `api` service in the `deployments` tenant
+    loki query deployments since==5m <<< '{service_name="api", k8s_container_name="app"}'
+
+    # filter to a substring
+    loki logs deployments <<< '{service_name="api", k8s_container_name="app"} |~ "feature-flags"'
+
+    # multi-line query via heredoc
+    loki query deployments limit==500 << 'LOGQL'
+    {service_name="api", k8s_container_name="app"}
+      | level = "ERROR"
+    LOGQL
+    ```
+
+# => logs --------------------------------------------------------------------------------------------------------- {{{1
+
+# Show log events formatted as YAML (query in STDIN)
+[group('logs'), positional-arguments]
+analyze namespace *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 1
+    "$this" query "$namespace" "$@" | jq -c '.[]' | json2yaml | FORMAT_YAML_MODE=full format-yaml | colored-yaml
+
+# Show raw logs without metadata (query in STDIN)
+[group('logs'), positional-arguments]
+logs namespace *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 1
+    echo -e "time\tline"
+    "$this" query "$namespace" "$@" | jq -r '.[] | .time + "\t" + .line'
+
+# Show tail raw logs, streaming until ctrl-c (query in STDIN)
+[group('logs'), positional-arguments, no-exit-message]
+tail namespace *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 1
+
+    if [[ -n "${LOKI_QUERY:-}" ]]; then
+        args+=("query==$LOKI_QUERY")
+    else
+        [[ -t 0 ]] && echo "query must be provided via STDIN" >&2
+        args+=("query==$(</dev/stdin)")
+    fi
+
+    args=(
+        --addr "https://loki.$DOMAIN.com"
+        --auth-header "x-$DOMAIN-iam-access-token"
+        --bearer-token "$(credp sso.prod.$DOMAIN.com)"
+        --no-stats
+        --org-id "$namespace"
+        --output raw
+        --quiet
+        --tail
+    )
+
+    logcli query "${args[@]}" "$(</dev/stdin)" "$@"
+
+# Show raw unfiltered logs bucketed by pod name
+[group('logs'), positional-arguments]
+logs-by-pod namespace service *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 2
+
+    {
+        echo $'pod\ttime\tline'
+        query='{ {{DOMAIN}}_service="{{service}}", k8s_container_name=~"{{K8S_CONTAINER_NAME}}|"}'
+        unset LOKI_QUERY
+        "$this" query "$namespace" "$@" <<< "$query" \
+            | jq -r --arg bucket "k8s_pod_name" --arg odd $'\e[36m' --arg even $'\e[96m' --arg normal $'\e[0m' '
+                group_by(.labels[$bucket])
+                | to_entries[]
+                | (if .key % 2 == 0 then $odd else $even end) as $color
+                | .value[]
+                | $color + "\(.labels[$bucket])\($normal)\t\(.time)\t\(.line)"
+            '
+    } | if [[ -t 1 && -x "$(command -v json2tsv)" && -x "$(command -v tsv-show)" ]]; then
+        tsv-show
+    else
+        cat
+    fi
+
+# => overview ----------------------------------------------------------------------------------------------------- {{{1
+
+# Detect all possible filtering labels and fields (query in STDIN)
+[group('overview'), positional-arguments]
+detect namespace *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 1
+    "$this" query "$namespace" "$@" \
+        | jq '
+        [.[].labels | to_entries[]]
+        | group_by(.key)
+        | map(
+            (map(.value) | unique) as $items
+            | {
+                label: .[0].key,
+                type: (
+                    if   ($items | all(try (tonumber | . == floor) catch false)) then "int"
+                    elif ($items | all(try tonumber                catch false)) then "float"
+                    else "string"
+                    end
+                ),
+                cardinality: ($items | length),
+                items: $items,
+            }
+        )
+    ' | if [[ -t 1 && -x "$(command -v json2tsv)" && -x "$(command -v tsv-show)" ]]; then
+        json2tsv | tsv-show
+    else
+        jq
+    fi
+
+# https://grafana.com/docs/loki/latest/reference/loki-http-api/#query-labels
+# Show tenant labels (or label values if namespace/label)
+[group('overview'), positional-arguments]
+labels namespace_label *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 1
+
+    if [[ "$namespace_label" == */* ]]; then
+        IFS='/' read -r namespace label <<< "$namespace_label"
+        "$this" http-request GET "/label/$label/values" "x-scope-orgid:$namespace" "$@"
+    else
+        "$this" http-request GET "/labels" "x-scope-orgid:$namespace_label" "$@"
+    fi
+
+# Show common labels for a query (query in STDIN)
+[group('overview'), positional-arguments]
+common-labels namespace *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 1
+    "$this" query "$namespace" "$@" | jq -S '.[-1].common_labels'
+
+# => query -------------------------------------------------------------------------------------------------------- {{{1
+
+[group('query'), private]
+extract-common-labels:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq -s 'length as $n
+        | [.[].stream | to_entries[]]
+        | group_by([.key,.value])
+        | map(select(length == $n)[0])
+        | from_entries
+    '
+
+# https://grafana.com/docs/loki/latest/reference/loki-http-api/#query-logs-within-a-range-of-time
+# Show log events formatted as JSON (query in STDIN, LOKI_PARSE_JSON to enable auto parsing logs)
+[group('query'), positional-arguments]
+query namespace *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 1
+
+    args=(
+        GET "/query_range"
+        "x-scope-orgid:$namespace"
+    )
+
+    if [[ -n "${LOKI_QUERY:-}" ]]; then
+        args+=("query==$LOKI_QUERY")
+    else
+        [[ -t 0 ]] && echo "query must be provided via STDIN" >&2
+        args+=("query==$(</dev/stdin)")
+    fi
+
+    pruned=$("$this" http-request "${args[@]}" "$@" | jq '.data.result[] | {{LOKI_PRUNE}}')
+
+    jq -s --argjson common "$("$this" extract-common-labels <<< "$pruned")" '
+        def ns_to_rfc: (.[:-9]|tonumber|todate|sub("T"; " ")) + "." + .[-9:] + "Z";
+        ($common | keys) as $ck
+        | map(
+            . as $it | .values[] | {
+                labels: ($it.stream | with_entries(select(.key | IN($ck[]) | not))),
+                time: (.[0] | ns_to_rfc),
+                line: .[1]}
+            | if ($ENV.LOKI_PARSE_JSON) then try (. + {__parsed_line__: (.line | fromjson)}) catch . end
+            | if (.labels | length == 0) then del(.labels) end
+        )
+        | if (length > 0 and ($common | length > 0)) then .[-1].common_labels = $common end
+        | sort_by(.time)
+    ' <<< "$pruned"
+
+# => http --------------------------------------------------------------------------------------------------------- {{{1
+
+# https://grafana.com/docs/loki/latest/reference/loki-http-api/
+# Request API directly (query in STDIN, extra params as `key==value`)
+[group('http'), positional-arguments]
+http-request namespace uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 2
+
+    [[ "$uri" == /* ]] && uri="loki.$DOMAIN.com$LOKI_API${uri#${LOKI_API}}"
+
+    args=(
+        "x-$DOMAIN-iam-access-token:$(credp sso.prod.$DOMAIN.com)"
+    )
+
+    xhs GET "$uri" "${args[@]}" "$@" --ignore-stdin
