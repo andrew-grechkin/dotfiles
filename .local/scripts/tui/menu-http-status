@@ -1,0 +1,105 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+mod common "~/.local/lib/just/common"
+mod fzf "~/.local/lib/just/fzf"
+mod http "~/.local/lib/just/http"
+mod json "~/.local/lib/just/json"
+
+set export
+set no-cd
+
+export colored-md := require('colored-md') # https://github.com/andrew-grechkin/colored-md
+export memoize := require('memoize')
+export this := justfile()
+export tui := 'auto'
+
+export source_url := 'https://status.js.org/codes.json'
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+# Run TUI if interactive, otherwise print static view
+[private]
+default:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        "$this" controller
+    else
+        "$this" view
+    fi
+
+# Print help
+help:
+    #!/usr/bin/env -S colored-md
+
+    # ABSTRACT
+
+    Interactive TUI for browsing HTTP status codes
+
+    # DESCRIPTION
+
+    `menu-http-status` provides a fast, searchable reference for HTTP status codes, their short messages, and full
+    descriptions
+
+    Data is sourced from `https://status.js.org/codes.json`
+
+    ## Key Features
+
+    * **Fuzzy Search:** Instantly find codes by number (e.g. `404`), class (e.g. `4xx`), or message (e.g. `teapot`).
+    * **Colorized Classes:** Each status class (1xx-5xx) is coloured, making the table easy to skim.
+    * **Rich Preview:** Displays the full description of the selected code.
+    * **Clipboard Integration:** Yank the code or the `code message` line to the clipboard.
+
+# => MVC ---------------------------------------------------------------------------------------------------------- {{{1
+
+# Fetch the raw HTTP status codes JSON (cached via memoize)
+model:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    memoize -- "$this" http::request GET "$source_url" \
+        | jq 'map_values(.message |= sub("\\.+$"; "") | .description |= sub("\\.+$"; ""))'
+
+# Print HTTP status codes as a formatted and colorized table
+view:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    jq_fields=(
+        '_key;\(.key)'
+        '_url;https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/\(.key)'
+        'code;\(.key | if (startswith("1")) then "${FG[cyan]}" elif (startswith("2")) then "${FG[green]}" elif (startswith("3")) then "${FG[blue]}" elif (startswith("4")) then "${FG[yellow]}" elif (startswith("5")) then "${FG[red]}" else "${FG[silver]}" end)\(.key)${FX[reset]}'
+        'message;\(.message);olive'
+        'description;\(.description | if (length > 99) then .[0:99] + "…" else . end)'
+    )
+    "$this" model | jq '[to_entries[] | .value + {key: .key}]' \
+        | "$this" json::to-table 'sort_by(.key)' "${jq_fields[@]}"
+
+# Display the interactive TUI for browsing HTTP status codes
+controller:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    export FZF_RELOAD_CMD="${this@Q} view"
+    export SHELL="$BASH"
+    fzf_args=(
+        --bind="alt-i:execute(${this@Q} preview-code {1} | ${PAGER:-less})"
+        --bind="alt-r:execute-silent(${this@Q} refresh)+reload($FZF_RELOAD_CMD)"
+        --bind="alt-y:execute-silent(echo -n {3}' '{4} | clipcopy)"
+        --bind="ctrl-m:become(echo {3})"
+        --bind="ctrl-y:execute-silent(echo -n {3} | clipcopy)"
+        --footer="A-i:inspect A-r:refresh A-y:yank-line C-y:yank-code enter:print"
+        --header-lines=1
+        --preview-window="right:60%:border-left:wrap"
+        --preview="${this@Q} preview-code {1}"
+        --prompt="http-status > "
+        --with-nth="3.."
+    )
+    "$this" view | "$this" fzf::table "${fzf_args[@]}"
+
+# => helper ------------------------------------------------------------------------------------------------------- {{{1
+
+# Generate a formatted preview for a single HTTP status code
+[private]
+preview-code key:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" model \
+        | jq --arg key "$key" '.[$key] // {key: $key, error: "unknown status code"}' \
+        | json2yaml \
+        | FORMAT_YAML_MODE=full FORMAT_YAML_LINE_WIDTH="${FZF_PREVIEW_COLUMNS:-80}" format-yaml \
+        | colored-yaml
