@@ -103,6 +103,7 @@ register_justfile_completion() {
 
         aur-model
         chrome-model
+        calendar-model
         drive-model
         family-model
         gemini-model
