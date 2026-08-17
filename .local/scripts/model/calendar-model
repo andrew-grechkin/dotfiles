@@ -1,0 +1,46 @@
+#!/usr/bin/env -S just --one --justfile
+
+# ABSTRACT: access Google Calendar API from cli (basic wrapper, request endpoints directly)
+
+mod http "~/.local/lib/just/http"
+
+set export
+set no-cd
+
+export git := require('git')
+export jq := require('jq')
+export this := justfile()
+
+export GOOGLE_SITE := env('GOOGLE_SITE', 'https://calendar.google.com')
+export GOOGLE_HOST := env('GOOGLE_HOST', 'www.googleapis.com')
+export GOOGLE_API := env('GOOGLE_API', '/calendar/v3')
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private]
+@default:
+    "$this" --list
+
+# => calendar ----------------------------------------------------------------------------------------------------- {{{1
+
+# list all calendars
+[group('calendar')]
+list-calendars:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request GET '/users/me/calendarList'
+
+# list items (events) in a calendar (defaults to primary)
+[group('calendar')]
+list-events calendar_id='primary':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" http-request GET "/calendars/${calendar_id}/events"
+
+# => http --------------------------------------------------------------------------------------------------------- {{{1
+
+# https://developers.google.com/workspace/calendar/api/guides/overview
+[group('http'), private, positional-arguments]
+http-request method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 2
+    [[ "$uri" == /* ]] && uri="$GOOGLE_HOST${GOOGLE_API}${uri#${GOOGLE_API}}"
+    "$this" http::request "$method" "$uri" --auth-type=bearer --auth="${GOOGLE_TOKEN:-$(credp "$GOOGLE_SITE")}" "$@"
