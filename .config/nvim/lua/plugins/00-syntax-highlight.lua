@@ -39,6 +39,7 @@ return {
                     'pem',
                     'perl',
                     'pod',
+                    'promql',
                     'puppet',
                     'python',
                     'query',

@@ -1,0 +1,899 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+set export
+set no-cd
+
+export jq := require('jq')
+export this := justfile()
+
+export DOMAIN := env('DOMAIN')
+export MIMIR_API := '/prometheus/api/v1'
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private]
+@default:
+     "$this" --list
+
+# => doc ---------------------------------------------------------------------------------------------------------- {{{1
+
+# Print help
+[group('doc'), no-exit-message]
+help:
+    #!/usr/bin/env -S colored-md
+
+    # ABSTRACT
+
+    Wrapper around grafana mimir (prometheus-compatible API). Read-only
+    endpoints on `mimir.$DOMAIN.com` are anonymous; no auth is sent.
+
+    # ENVIRONMENT
+
+    - `DOMAIN`: REQUIRED, e.g. `my-company`. Selects the mimir endpoint.
+    - `MIMIR_QUERY`: optional PromQL / matcher. When set, used instead of STDIN.
+    - `MIMIR_START` / `MIMIR_STEP`: for `find-series` and `query-range` (unix seconds; step in seconds or duration
+        string).
+    - `MIMIR_RANGE`: duration string (`1h`, `2d`, `30m`, `1w`) - lookback from now; alternative to `MIMIR_START`. If
+        both are set, `MIMIR_START` wins.
+    - `MIMIR_LIMIT`: top-N cutoff for `cardinality` (default 20; Mimir's cardinality API caps at 500).
+
+    # SYNOPSIS
+
+    ```
+    # THE QUERY TRIO - pick by what you need to know:
+    #   query        -> ONE value per series, evaluated at "now"       (snapshot)
+    #   query-range  -> MANY values per series, evaluated at each step (evolution over time)
+    #   find-series  -> LABEL SETS ONLY, no values                     (which series exist? cheap existence probe)
+
+    # instant query (what does this PromQL currently return? one value per matching series)
+    mimir query dlb <<< 'up{job="haproxy"}'
+
+    # raw JSON (unfolded) - use in scripts that need `.data.result[0].value[1]` etc
+    mimir raw-query dlb <<< 'up{job="haproxy"}'
+
+    # list every label name in the tenant (what dimensions can I filter series by?)
+    mimir labels dlb
+
+    # values of a specific label (which HAProxy backends does dlb know about?)
+    mimir labels dlb/proxy | grep artifactory
+
+    # range query - PromQL evaluated at each step across a window (how did this evolve over the last 1h?)
+    mimir query-range dlb <<< 'sum(rate(haproxy_backend_http_responses_total{role="artifactory", code="4xx"}[5m]))'
+
+    # bare selector into query-range = per-series evolution (each matching series, with samples)
+    mimir query-range dlb <<< 'haproxy_backend_active_servers{role="artifactory"}'
+
+    # override range window (unix seconds) and step
+    MIMIR_START=$(( $(date +%s) - 7200 )) MIMIR_STEP=30 mimir query-range dlb <<< 'up'
+
+    # same but with a duration string instead of computing epochs
+    MIMIR_RANGE=2h MIMIR_STEP=30 mimir query-range dlb <<< 'up'
+
+    # or pass overrides as CLI args (xh `key==value` for query params - `start`, `end`, `step`, `limit`, ...)
+    mimir query-range dlb start==1700000000 end==1700086400 step==30 <<< 'up'
+    mimir find-series dlb start==1700000000 <<< 'up'
+
+    # /series probe - LABEL SETS ONLY, no sample values (does this label combo exist? cheap; 24h lookback)
+    mimir find-series dlb <<< 'haproxy_backend_active_servers{role="b-sonarqube-sonarqube-dce"}'
+
+    # extend the historical window to 30 days
+    MIMIR_RANGE=30d mimir find-series dlb <<< '<matcher>'
+
+    # all metrics enriched with metadata (what metrics exist and what do they mean?)
+    mimir metrics dlb
+
+    # metadata for one metric (what is the TYPE and HELP for this specific metric?)
+    mimir metrics dlb haproxy_backend_active_servers
+
+    # Perl-style regex filter (which metrics match this pattern?  case-insens. via `i`, etc.)
+    mimir metrics dlb 'm/^haproxy_backend_/'
+    mimir metrics dlb 'm/up/i'
+
+    # just the names, if that is what you want
+    mimir metrics dlb | jq -r '.[].name'
+
+    # find-metrics - same filter, plain-text output (which metric names match? handy for pipes)
+    mimir find-metrics dlb 'm/haproxy/'
+
+    # values a label takes for series matching a matcher (which `role`s emit this metric?)
+    mimir label-values dlb/role <<< 'haproxy_backend_active_servers'
+
+    # cardinality digest (which labels have the most values? which metrics have the most series?)
+    mimir cardinality dlb
+    MIMIR_LIMIT=50 mimir cardinality dlb
+
+    # recording/alerting rules (what rules run in this tenant?  which mention `artifactory`?)
+    mimir rules dlb
+    mimir rules dlb 'm/artifactory/i'
+
+    # raw variants when you need untouched JSON
+    mimir raw-query dlb <<< '<promql>'
+    mimir raw-query-range dlb <<< '<promql>'
+    mimir raw-series dlb <<< '<matcher>'
+
+    # A/B compare Graphite vs PromQL (does the translated PromQL match the original Graphite number?)
+    mimir ab dlb <<AB
+    groupByNode(loadbalancers.group.*.*.haproxy.role.artifactory.backend.artifactory_$DOMAIN_com_https_all.act,6, 'avg')
+    ---
+    avg(haproxy_backend_active_servers{role="artifactory", proxy="artifactory.$DOMAIN.com_https_all"})
+    AB
+
+    # direct request to any endpoint (escape hatch when no recipe covers the endpoint you need)
+    # xh syntax: `key:value` = header, `key==value` = query param
+    mimir http-request GET /label/__name__/values x-scope-orgid:dlb
+    mimir http-request GET /cardinality/label_names x-scope-orgid:dlb limit==10
+
+    # clickable doc links (Prometheus, Mimir, PromLabs) - jump to reference in the browser
+    mimir doc
+
+    # printed PromQL cheatsheet (fast, no browser, works over SSH)
+    mimir cheatsheet
+    ```
+
+# PromQL / Mimir / Prometheus doc links
+[group('doc'), no-exit-message]
+doc:
+    #!/usr/bin/env -S colored-md
+
+    # PromQL / Mimir / Prometheus docs
+
+    - [Prometheus HTTP API](https://prometheus.io/docs/prometheus/latest/querying/api/)
+    - [PromQL basics](https://prometheus.io/docs/prometheus/latest/querying/basics/)
+    - [PromQL functions](https://prometheus.io/docs/prometheus/latest/querying/functions/)
+    - [PromQL operators](https://prometheus.io/docs/prometheus/latest/querying/operators/)
+    - [Mimir HTTP API](https://grafana.com/docs/mimir/latest/references/http-api/)
+    - [Mimir cardinality API](https://grafana.com/docs/mimir/latest/references/http-api/#label-names-cardinality)
+    - [Prometheus rules API](https://prometheus.io/docs/prometheus/latest/querying/api/#rules)
+    - [PromLabs cheat sheet](https://promlabs.com/promql-cheat-sheet/)
+
+# PromQL quick reference
+[group('doc'), no-exit-message]
+cheatsheet:
+    #!/usr/bin/env -S colored-md
+
+    # PROMQL QUICK REFERENCE
+
+    ## SELECTORS
+
+    ```
+    metric{label="v"}       instant vector - exact-match filter
+        # every `up` series where job label is exactly "haproxy" (most recent values in lookback window)
+        up{job="haproxy"}
+
+    metric{label!="v"}      not-equal filter
+        # every `up` series EXCEPT job=prometheus
+        up{job!="prometheus"}
+
+    metric{label=~"re"}     regex match (RE2 syntax)
+        # `up` for any instance ending in :8080
+        up{instance=~".*:8080"}
+
+    metric{label!~"re"}     regex not-match
+        # `up` for jobs whose name does NOT start with "probe"
+        up{job!~"probe.*"}
+
+    metric[5m]              range vector - ALL samples in the last 5 minutes
+        # not useful on its own; feeds functions like rate(), irate(), increase()
+        http_requests_total[5m]
+
+    metric[5m] offset 1h    same window, but shifted 1h back in time
+        # 5m rate, but from 1 week ago - handy for week-over-week comparisons
+        rate(http_requests_total[5m] offset 1w)
+
+    metric @ 1609459200     evaluate at an absolute unix timestamp
+        # value of `up` at 2021-01-01 00:00 UTC (independent of "now")
+        up @ 1609459200
+
+    NOTE: regex label matchers (`=~`, `!~`) are FULLY ANCHORED. `=~"api"` is `=~"^api$"`.
+          Use `.*` on both ends for substring (`=~".*api.*"`), or `=~"api.*"` for prefix.
+    ```
+
+    ## STALENESS / LOOKBACK
+
+    ```
+    lookback_delta (5m)     instant query at T returns last sample within 5m of T (NOT "this second")
+        # `up` stays "1" for ~5m AFTER a target stops responding
+        # scrape_interval (15s, 60s, ...) is separate - lookback governs staleness, not scrape cadence
+        up
+
+    series drop-out         a series disappears from results only after > lookback_delta with no fresh sample
+        # `up == 0` alerts fire slightly DELAYED after real outage (Prometheus waits out the last "1")
+        up{job="dead-target"} == 0
+
+    tuning                  server flag `--query.lookback-delta=<duration>` on Prometheus/Mimir
+        # no per-query override - lookback is server-level, not a PromQL knob
+    ```
+
+    ## COUNTERS (rate family - always wrap counters!)
+
+    ```
+    rate(c[5m])             per-second rate, averaged across a 5m window
+        # requests-per-second, smoothed - typical alerting/graphing input
+        rate(http_requests_total[5m])
+
+    irate(c[5m])            per-second rate from the LAST 2 samples in the window
+        # spiky/instant rate - live dashboards, NOT alerts (too jittery)
+        irate(http_requests_total[1m])
+
+    increase(c[5m])         total counter increase over the window
+        # how many requests happened in the last 5 minutes (rate * window)
+        increase(http_requests_total[5m])
+
+    resets(c[5m])           number of times the counter reset in the window
+        # how many times did the process restart in 24h
+        resets(process_uptime_seconds[24h])
+    ```
+
+    ## AGGREGATION (over instant vector)
+
+    ```
+    sum by (label) (v)      group by label; drop every other label
+        # total request-rate per job (all instances/status/etc collapsed)
+        sum by (job) (rate(http_requests_total[5m]))
+
+    sum without (label) (v) group by every label EXCEPT the one listed
+        # request-rate summed across instances, keeping job/status/etc
+        sum without (instance) (rate(http_requests_total[5m]))
+
+    topk(N, v) / bottomk(N, v)   top or bottom N series
+        # the 3 busiest jobs by request rate
+        topk(3, sum by (job) (rate(http_requests_total[5m])))
+
+    quantile(0.95, v)       p95 ACROSS series (not over time - rarely what you want)
+        # for latency-over-time use histogram_quantile() below
+        quantile(0.95, http_request_duration_seconds)
+
+    sum, avg, min, max, count, stddev, stdvar        # same shape as `sum by`
+    ```
+
+    ## COMPARISON
+
+    ```
+    v > 0                   filter - only keep samples matching the condition
+        # only currently-down series (returns just the down ones)
+        up == 0
+
+    v > bool 0              return 1 (true) or 0 (false) instead of filtering
+        # 1 when error rate exceeds 0.1/s, 0 otherwise - handy for alert expressions
+        (rate(errors[5m]) > bool 0.1)
+
+    v == 1                  equality (also !=, <=, >=)
+        # only the currently-up series
+        up == 1
+    ```
+
+    ## TIME
+
+    ```
+    time()                  current unix time in seconds
+        # process uptime in seconds
+        time() - process_start_time_seconds
+
+    timestamp(v)            timestamp of each sample (unix seconds)
+        # seconds since last scrape - detects stale/lagging targets
+        time() - timestamp(up)
+
+    hour(v), day_of_week(v), month(v), year(v)   calendar helpers (UTC)
+        # true (=1) only during UTC morning hours
+        hour(vector(time())) < 12
+    ```
+
+    ## HISTOGRAMS
+
+    ```
+    histogram_quantile(q, sum by (le) (rate(<metric>_bucket[range])))
+        # p95 request duration over the last 5 minutes
+        # KEY: always sum by (le) FIRST, then quantile - reversing gives garbage
+        histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket[5m])))
+    ```
+
+    ## LABEL MANIPULATION
+
+    ```
+    label_replace(v, "dst", "$1", "src", "re")   extract via regex capture
+        # copy the host part of instance="host:port" into a new "host" label
+        label_replace(up, "host", "$1", "instance", "(.+):.*")
+
+    label_join(v, "dst", "-", "a", "b")          concat labels with separator
+        # create label host_job = "<job>-<instance>"
+        label_join(up, "host_job", "-", "job", "instance")
+    ```
+
+    ## COMMON PATTERNS
+
+    ```
+    # error rate: what fraction of requests returned 5xx over the last 5m?
+    sum(rate(reqs{code=~"5.."}[5m])) / sum(rate(reqs[5m]))
+
+    # p95 latency: what was the 95th-percentile request duration in the last 5m?
+    histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket[5m])))
+
+    # availability: what percentage of the last hour was `up`?
+    avg_over_time(up[1h]) * 100
+
+    # existence probe: did this metric emit ANY sample in the last 24h?
+    count_over_time(metric[24h]) > 0
+
+    # counter delta: how many events happened in the last hour?
+    increase(http_requests_total[1h])
+
+    # week-over-week comparison: how much did request rate change vs a week ago?
+    rate(reqs[5m]) - rate(reqs[5m] offset 1w)
+    ```
+
+    ## SEE ALSO
+
+    - `mimir doc` for the full list of PromQL / Prometheus / Mimir doc links.
+
+# Graphite -> Mimir HAProxy metric map
+[group('doc')]
+graphite-haproxy:
+    #!/usr/bin/env -S colored-md
+
+    # HAProxy: Graphite -> Mimir metric name map
+
+    Prometheus exporter metric names are prefixed with `haproxy_backend_` or
+    `haproxy_frontend_` depending on the stats layer. HTTP response code
+    split (`hrsp_1xx`, `hrsp_2xx`, ...) collapses into a single metric with
+    a `code` label rather than a name suffix.
+
+    | Graphite | Mimir metric                     |
+    | -------- | -------------------------------- |
+    | act      | active_servers                   |
+    | bin      | bytes_in_total                   |
+    | bout     | bytes_out_total                  |
+    | chkfail  | check_failures_total             |
+    | chkdown  | check_up_down_total              |
+    | cli_abrt | client_aborts_total              |
+    | ctime    | connect_time_average_seconds     |
+    | dreq     | requests_denied_total            |
+    | dresp    | responses_denied_total           |
+    | eresp    | response_errors_total            |
+    | econ     | connection_errors_total          |
+    | hrsp     | http_responses_total             |
+    | lbtot    | loadbalanced_total               |
+    | qcur     | current_queue                    |
+    | qmax     | max_queue                        |
+    | rate     | current_session_rate             |
+    | rate_max | max_session_rate                 |
+    | req_tot  | http_requests_total              |
+    | rtime    | response_time_average_seconds    |
+    | scur     | current_sessions                 |
+    | slim     | limit_sessions                   |
+    | smax     | max_sessions                     |
+    | stot     | sessions_total                   |
+    | srv_abrt | server_aborts_total              |
+    | status   | status                           |
+    | weight   | weight                           |
+    | wredis   | redispatch_warnings_total        |
+    | wretr    | retry_warnings_total             |
+
+    # dlb tenant: Graphite path -> Mimir label
+
+    For the classic `loadbalancers.group.<group>.<host>.haproxy.role.<role>.backend.<backend>.<metric>` layout:
+
+    | Graphite path node | Mimir label            |
+    | ------------------ | ---------------------- |
+    | group              | $DOMAIN_persona        |
+    | host (node 3)      | host_name              |
+    | role               | role                   |
+    | backend            | proxy                  |
+
+    Note: `group` in Graphite carbon was derived from hostname; in Mimir the
+    closest equivalent is `$DOMAIN_persona` (e.g. `corporatelb`, `internallb`).
+
+# => overview ----------------------------------------------------------------------------------------------------- {{{1
+
+# https://grafana.com/docs/mimir/latest/references/http-api/#label-names-cardinality
+# https://grafana.com/docs/mimir/latest/references/http-api/#label-values-cardinality
+# Top labels and metrics by cardinality
+[group('overview')]
+cardinality namespace:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    # Prometheus' `/status/tsdb` is 404 on Mimir; these Mimir-native endpoints replace it.
+    # `MIMIR_LIMIT` overrides top-N (default 20).
+    limit="${MIMIR_LIMIT:-20}"
+    labels=$( "$this" http-request GET /cardinality/label_names  "x-scope-orgid:$namespace" "limit==$limit")
+    metrics=$("$this" http-request GET /cardinality/label_values "x-scope-orgid:$namespace" "limit==$limit" "label_names[]==__name__")
+    jq -n --argjson l "$labels" --argjson m "$metrics" '{
+        totals: {
+            label_names:  $l.label_names_count,
+            label_values: $l.label_values_count_total,
+            series:       $m.series_count_total,
+        },
+        top_labels_by_value_count:   ($l.cardinality // []),
+        top_metrics_by_series_count: (($m.labels // [])[0].cardinality // []),
+    }'
+
+# Raw metric names with optional filter
+[group('overview'), positional-arguments]
+find-metrics namespace *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 1
+
+    while read -r line; do
+        [[ "$line" =~ ^mimir_arg_[a-z]+= ]] && declare -g -- "$line"
+    done < <("$this" _match-parse "${1:-}")
+
+    "$this" labels "$namespace/__name__" | jq -r \
+        --arg mode "$mimir_arg_mode" --arg p "$mimir_arg_pattern" --arg fl "$mimir_arg_flags" '
+        .data[] | select(
+            $mode == "all"
+            or ($mode == "exact" and . == $p)
+            or ($mode == "re"    and test($p; $fl))
+        )
+    '
+
+# Label sets by matcher (no values)
+[group('overview'), positional-arguments]
+find-series namespace *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" raw-series "$@" \
+        | jq '[.data[] | {metric: .}]' \
+        | "$this" _fold-common \
+        | json2yaml | colored-yaml
+
+# List all scraper jobs for a tenant
+[group('overview')]
+jobs namespace: (labels f'{{namespace}}/job')
+
+# https://prometheus.io/docs/prometheus/latest/querying/api/#querying-label-values
+# Label values scoped by a matcher
+[group('overview'), positional-arguments]
+label-values namespace_label *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 1
+
+    if [[ "$namespace_label" != */* ]]; then
+        echo "usage: mimir label-values <namespace>/<label> <<< '<matcher>'" >&2
+        exit 2
+    fi
+    IFS='/' read -r namespace label <<< "$namespace_label"
+
+    args=(
+        GET "/label/$label/values"
+        "x-scope-orgid:$namespace"
+    )
+
+    if [[ -n "${MIMIR_QUERY:-}" ]]; then
+        args+=("match[]==$MIMIR_QUERY")
+    else
+        [[ -t 0 ]] && echo "matcher must be provided via STDIN" >&2
+        args+=("match[]==$(</dev/stdin)")
+        echo >&2
+    fi
+
+    "$this" http-request "${args[@]}" "$@"
+
+# https://prometheus.io/docs/prometheus/latest/querying/api/#getting-label-names
+# https://prometheus.io/docs/prometheus/latest/querying/api/#querying-label-values
+# List label names, or values of a label
+[group('overview'), positional-arguments]
+labels namespace_label *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 1
+
+    if [[ "$namespace_label" == */* ]]; then
+        IFS='/' read -r namespace label <<< "$namespace_label"
+        "$this" http-request GET "/label/$label/values" "x-scope-orgid:$namespace" "$@"
+    else
+        "$this" http-request GET "/labels" "x-scope-orgid:$namespace_label" "$@"
+    fi
+
+# Metrics with metadata; optional filter
+[group('overview'), positional-arguments]
+metrics namespace *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    # Combines /label/__name__/values (all names) with /metadata (documented names) via a left-outer join.
+    shift 1
+
+    while read -r line; do
+        [[ "$line" =~ ^mimir_arg_[a-z]+= ]] && declare -g -- "$line"
+    done < <("$this" _match-parse "${1:-}")
+
+    names=$("$this" http-request GET /label/__name__/values "x-scope-orgid:$namespace")
+    meta=$("$this"  http-request GET /metadata              "x-scope-orgid:$namespace")
+    jq -n --argjson n "$names" --argjson m "$meta" \
+          --arg mode "$mimir_arg_mode" --arg p "$mimir_arg_pattern" --arg fl "$mimir_arg_flags" '
+        ($m.data // {}) as $md
+        | $n.data
+        | map(select(
+            $mode == "all"
+            or ($mode == "exact" and . == $p)
+            or ($mode == "re"    and test($p; $fl))
+          ))
+        | sort
+        | map(
+            {name: ., type: $md[.][0].type, help: $md[.][0].help, unit: $md[.][0].unit}
+            | with_entries(select(.value != null and .value != ""))
+          )
+    '
+
+# https://prometheus.io/docs/prometheus/latest/querying/api/#rules
+# List recording/alerting rules
+[group('overview'), positional-arguments]
+rules namespace *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 1
+
+    while read -r line; do
+        [[ "$line" =~ ^mimir_arg_[a-z]+= ]] && declare -g -- "$line"
+    done < <("$this" _match-parse "${1:-}")
+
+    "$this" http-request GET /rules "x-scope-orgid:$namespace" | jq \
+        --arg mode "$mimir_arg_mode" --arg p "$mimir_arg_pattern" --arg fl "$mimir_arg_flags" '
+        [.data.groups[]?.rules[]?
+         | select(
+             $mode == "all"
+             or ($mode == "exact" and .name == $p)
+             or ($mode == "re"    and (.name | test($p; $fl)))
+           )
+         | {type, name, query, health, labels}]
+    '
+
+# => query -------------------------------------------------------------------------------------------------------- {{{1
+
+# Private helper: parse a name-filter arg into three declare-safe lines
+[private, positional-arguments]
+_match-parse filter:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    # Emits `mimir_arg_mode`, `mimir_arg_pattern`, `mimir_arg_flags` for callers to
+    # consume via the declare-loop pattern. Filter grammar: empty -> all;
+    # `m/pattern/flags` -> regex (Perl-style, last `/` is delimiter); else -> exact.
+    if   [[ -z "$1"                     ]]; then printf 'mimir_arg_mode=all\nmimir_arg_pattern=\nmimir_arg_flags=\n'
+    elif [[ "$1" =~ ^m/(.*)/([a-z]*)$   ]]; then printf 'mimir_arg_mode=re\nmimir_arg_pattern=%s\nmimir_arg_flags=%s\n' "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}"
+    else                                         printf 'mimir_arg_mode=exact\nmimir_arg_pattern=%s\nmimir_arg_flags=\n'  "$1"
+    fi
+
+# Private helper: convert a duration string to seconds. Accepts `\d+[smhdw]` or a bare integer.
+[private, positional-arguments]
+_secs value:
+    #!/usr/bin/env perl
+    my $v = $ARGV[0];
+    my %m = (s => 1, m => 60, h => 3600, d => 86400, w => 604800);
+    if    ($v =~ /^(\d+)([smhdw])$/) { print $1 * $m{$2} }
+    elsif ($v =~ /^\d+$/)            { print $v }
+    else { die "invalid duration: $v (expected e.g. 3600, 1h, 2d)\n" }
+
+# Private helper: fold labels common to every entry onto the last entry
+[private]
+_fold-common:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    # Reads array of `{metric: {...}, ...}` on stdin; outputs same shape with `.common` attached to last.
+    jq '
+        . as $r
+        | ($r | length) as $n
+        | ($r
+           | if $n == 0 then {}
+             else [.[].metric | to_entries[]]
+                  | group_by([.key, .value])
+                  | map(select(length == $n)[0])
+                  | from_entries
+             end) as $common
+        | ($common | keys) as $ck
+        | $r
+        | map(.metric |= with_entries(select(.key | IN($ck[]) | not)))
+        | if (length > 0 and ($common | length > 0))
+          then .[-1].common_metric = $common
+          else .
+          end
+    '
+
+# Instant query with folded output
+[group('query'), positional-arguments]
+query namespace *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" raw-query "$@" | jq '.data.result' | "$this" _fold-common
+
+# Range query with folded output
+[group('query'), positional-arguments]
+query-range namespace *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    "$this" raw-query-range "$@" | jq '.data.result' | "$this" _fold-common
+
+# => raw-query ---------------------------------------------------------------------------------------------------- {{{1
+
+# https://prometheus.io/docs/prometheus/latest/querying/api/#instant-queries
+# Raw instant query
+[group('raw-query'), positional-arguments]
+raw-query namespace *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 1
+
+    # NOTE: Prometheus (Go's net/url) uses the FIRST value on duplicate query params,
+    # so need to explicitly skip default when the user supplied their own on the CLI (`key==val`)
+    for a in "$@"; do case "$a" in "query=="*) have_query="1" ;; esac; done
+
+    args=(GET "/query" "x-scope-orgid:$namespace")
+    if [[ -z "${have_query:-}" ]]; then
+        if [[ -n "${MIMIR_QUERY:-}" ]]; then
+            args+=("query==$MIMIR_QUERY")
+        else
+            [[ -t 0 ]] && echo "query must be provided via STDIN" >&2
+            args+=("query==$(</dev/stdin)")
+            echo >&2
+        fi
+    fi
+
+    "$this" http-request "${args[@]}" "$@"
+
+# https://prometheus.io/docs/prometheus/latest/querying/api/#range-queries
+# Raw range query
+[group('raw-query'), positional-arguments]
+raw-query-range namespace *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 1
+
+    for a in "$@"; do case "$a" in
+        "end=="*)   have_end="1" ;;
+        "query=="*) have_query="1" ;;
+        "start=="*) have_start="1" ;;
+        "step=="*)  have_step="1" ;;
+    esac; done
+
+    now=$(date +%s)
+    if   [[ -n "${MIMIR_START:-}" ]]; then start="$MIMIR_START"
+    elif [[ -n "${MIMIR_RANGE:-}" ]]; then start="$((now - $("$this" _secs "$MIMIR_RANGE")))"
+    else                                   start="$((now - 3600))"
+    fi
+
+    args=(GET "/query_range" "x-scope-orgid:$namespace")
+    [[ -n "${have_end:-}" ]]   || args+=("end==$now")
+    [[ -n "${have_start:-}" ]] || args+=("start==$start")
+    [[ -n "${have_step:-}" ]]  || args+=("step==${MIMIR_STEP:-60}")
+
+    if [[ -z "${have_query:-}" ]]; then
+        if [[ -n "${MIMIR_QUERY:-}" ]]; then
+            args+=("query==$MIMIR_QUERY")
+        else
+            [[ -t 0 ]] && echo "query must be provided via STDIN" >&2
+            args+=("query==$(</dev/stdin)")
+            echo >&2
+        fi
+    fi
+
+    "$this" http-request "${args[@]}" "$@"
+
+# https://prometheus.io/docs/prometheus/latest/querying/api/#finding-series-by-label-matchers
+# Raw /series lookup
+[group('raw-query'), positional-arguments]
+raw-series namespace *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 1
+
+    for a in "$@"; do case "$a" in
+        "end=="*)      have_end="1" ;;
+        "match[]=="*)  have_match="1" ;;
+        "start=="*)    have_start="1" ;;
+    esac; done
+
+    now=$(date +%s)
+    if   [[ -n "${MIMIR_START:-}" ]]; then start="$MIMIR_START"
+    elif [[ -n "${MIMIR_RANGE:-}" ]]; then start="$((now - $("$this" _secs "$MIMIR_RANGE")))"
+    else                                   start="$((now - 86400))"
+    fi
+
+    args=(GET "/series" "x-scope-orgid:$namespace")
+    [[ -n "${have_end:-}" ]]   || args+=("end==$now")
+    [[ -n "${have_start:-}" ]] || args+=("start==$start")
+
+    if [[ -z "${have_match:-}" ]]; then
+        if [[ -n "${MIMIR_QUERY:-}" ]]; then
+            args+=("match[]==$MIMIR_QUERY")
+        else
+            [[ -t 0 ]] && echo "matcher must be provided via STDIN" >&2
+            args+=("match[]==$(</dev/stdin)")
+            echo >&2
+        fi
+    fi
+
+    "$this" http-request "${args[@]}" "$@"
+
+# => verify ------------------------------------------------------------------------------------------------------- {{{1
+
+# A/B compare Graphite target vs PromQL
+[group('verify'), positional-arguments]
+ab namespace *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 1
+
+    input=$(</dev/stdin)
+    graphite_query=$(printf '%s\n' "$input" | perl -ne 'exit if /^---$/; print')
+    promql=$(printf '%s\n' "$input" | perl -ne 'if (/^---$/) { $div = 1; next } print if $div')
+
+    if [[ -z "$graphite_query" || -z "$promql" ]]; then
+        echo "usage: mimir ab <namespace> <<< '<graphite>\\n---\\n<promql>'" >&2
+        exit 2
+    fi
+
+    graphite_bin="$(dirname "$this")/graphite"
+    if [[ ! -x "$graphite_bin" ]]; then
+        echo "graphite tool not found next to mimir tool ($graphite_bin)" >&2
+        exit 2
+    fi
+
+    gv=$("$graphite_bin" query <<< "$graphite_query"\
+        | jq -r '.[]? | [.datapoints[] | select(.[0]!=null) | .[0]][-1] // empty' | head -1)
+
+    mv=$("$this" raw-query "$namespace" <<< "$promql" | jq -r '.data.result[0].value[1] // empty')
+
+    gv="${gv:-n/a}"
+    mv="${mv:-n/a}"
+
+    printf '%-10s %s\n' 'graphite:' "$gv"
+    printf '%-10s %s\n' 'mimir:' "$mv"
+
+    if [[ "$gv" != "n/a" && "$mv" != "n/a" ]]; then
+        perl -e '
+            my ($g, $m) = @ARGV;
+            if ($g + 0 == 0 && $m + 0 == 0) { print "OK (both zero)\n"; exit 0 }
+            my $diff = abs($g - $m);
+            my $max  = $g > $m ? $g : $m;
+            my $pct  = $max == 0 ? 0 : $diff / $max * 100;
+            printf("diff:      %.2f%% %s\n", $pct, ($pct > 10 ? "WARN >10%" : "OK"));
+        ' "$gv" "$mv"
+    fi
+
+# => lsp ---------------------------------------------------------------------------------------------------------- {{{1
+
+# Private helper: header-injecting HTTP proxy for the PromQL language server
+[private, positional-arguments, no-exit-message]
+_lsp-proxy port upstream tenant:
+    #!/usr/bin/env perl
+    # Proxies 127.0.0.1:<port> -> <upstream>, injecting `x-scope-orgid: <tenant>` on every request.
+    # Port `0` self-allocates; the chosen port is printed on stdout as a single line for the parent.
+    # Patches `/api/v1/status/buildinfo` (Mimir returns "" for version which promql-langserver rejects);
+    # stub is overridable via `MIMIR_LSP_VERSION_STUB`. `MOJO_LOG_LEVEL` defaults to `error`.
+    use v5.36;
+    use warnings     qw(FATAL utf8);
+    use experimental qw(builtin declared_refs defer for_list refaliasing try);
+
+    use English qw(-no_match_vars);
+
+    BEGIN {
+        ## no critic [Variables::RequireLocalizedPunctuationVars]
+        $ENV{MOJO_LOG_LEVEL} //= 'error';
+    }
+
+    use Mojo::IOLoop         qw();
+    use Mojo::JSON           qw(decode_json encode_json);
+    use Mojo::Server::Daemon qw();
+    use Mojo::URL            qw();
+    use Mojo::UserAgent      qw();
+
+    use constant {
+        'STATUS_BAD_GATEWAY' => 502,
+        'UPSTREAM_TIMEOUT'   => 15,
+    };
+
+    my %HOP_BY_HOP = map { $_ => 1 } qw(
+        connection keep-alive proxy-authenticate proxy-authorization
+        te trailer trailers transfer-encoding upgrade
+    );
+    my %REQ_STRIP = (%HOP_BY_HOP, host             => 1);
+    my %RES_STRIP = (%HOP_BY_HOP, 'content-length' => 1);
+
+    local $OUTPUT_AUTOFLUSH = 1;
+    STDERR->autoflush(1);
+
+    my ($listen_port, $upstream_url, $tenant) = @ARGV;
+    die "usage: _lsp-proxy <port|0> <upstream> <tenant>\n"
+        unless defined $listen_port && defined $upstream_url && defined $tenant;
+    $upstream_url =~ s{/+ $}{}x;
+
+    my $version_stub = $ENV{MIMIR_LSP_VERSION_STUB} // '2.55.0';
+
+    sub patch_buildinfo ($content, $stub) {
+        my $data;
+        try {
+            $data = decode_json($content);
+        } catch ($e) {
+            return $content;
+        }
+        return $content if ref $data ne 'HASH';
+        return $content if (($data->{data}{version} // '') ne '');
+        $data->{data}{version} = $stub;
+        return encode_json($data);
+    }
+
+    my $ua = Mojo::UserAgent->new;
+    $ua->max_response_size(0);
+    $ua->request_timeout(UPSTREAM_TIMEOUT());
+
+    my $daemon = Mojo::Server::Daemon->new(
+        listen => ["http://127.0.0.1:$listen_port"],
+        silent => 1,
+    );
+
+    $daemon->unsubscribe('request')->on(
+        request => sub ($daemon, $tx) {
+            my $req    = $tx->req;
+            my $target = Mojo::URL->new($upstream_url . $req->url->path_query);
+
+            my $utx = $ua->build_tx($req->method => $target);
+            $utx->req->headers->from_hash($req->headers->to_hash);
+            $utx->req->headers->remove($_) for keys %REQ_STRIP;
+            $utx->req->headers->header('x-scope-orgid' => $tenant);
+
+            my $body = $req->body;
+            $utx->req->body($body) if defined $body && length $body;
+
+            $ua->start(
+                $utx => sub ($ua, $utx) {
+                    my $ures = $utx->res;
+
+                    if (!$ures->code) {
+                        my $err = $utx->error;
+                        $tx->res->code(STATUS_BAD_GATEWAY());
+                        $tx->res->body($err->{message} // 'upstream error');
+                        return $tx->resume;
+                    }
+
+                    my $content = $ures->body // '';
+                    if ($req->url->path =~ m{^ /api/v1/status/buildinfo }x) {
+                        $content = patch_buildinfo($content, $version_stub);
+                    }
+
+                    $tx->res->code($ures->code);
+                    for my $name ($ures->headers->names->@*) {
+                        next if $RES_STRIP{lc $name};
+                        $tx->res->headers->header($name => $ures->headers->header($name));
+                    }
+                    $tx->res->body($content);
+                    $tx->res->headers->content_length(length $content);
+                    $tx->resume;
+                },
+            );
+        },
+    );
+
+    $daemon->start;
+    my $bound_port = Mojo::IOLoop->acceptor($daemon->acceptors->[0])->port;
+    say $bound_port;
+    say {*STDERR} "mimir lsp proxy on 127.0.0.1:$bound_port -> $upstream_url (tenant=$tenant)";
+    $daemon->ioloop->start;
+
+# https://github.com/prometheus-community/promql-langserver
+# PromQL language server on stdio
+[group('lsp'), positional-arguments, no-exit-message]
+lsp namespace:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if ! command -v promql-langserver >/dev/null; then
+        cat >&2 <<'EO_HELP'
+    promql-langserver not found in PATH. Install with:
+        go install github.com/prometheus-community/promql-langserver/cmd/promql-langserver@latest
+
+    Note: the upstream repo is archived; consult forks if it stops building
+    EO_HELP
+        exit 127
+    fi
+
+    # Proxy self-allocates its port and announces it on stdout as the first line;
+    # coproc lets us read that line while the proxy keeps running in the background.
+    # `setsid` puts `just` + its perl child into their own process group so we can
+    # signal the whole tree with a single group kill (`kill -- -$pgid`)
+    coproc PROXY { exec setsid "$this" _lsp-proxy 0 "https://mimir.$DOMAIN.com/prometheus" "$namespace"; }
+    proxy_pid=$PROXY_PID
+    trap "kill -TERM -- -$proxy_pid 2>/dev/null || true" EXIT
+
+    read -r port <&"${PROXY[0]}"
+    [[ "$port" =~ ^[0-9]+$ ]] || { echo "proxy failed to report a port: '$port'" >&2; exit 1; }
+
+    # Coproc fds are CLOEXEC in bash, so `promql-langserver` won't inherit them; no explicit close needed.
+    promql-langserver -config-file <(printf 'prometheus_url: http://127.0.0.1:%s\n' "$port")
+
+# => http --------------------------------------------------------------------------------------------------------- {{{1
+
+# https://prometheus.io/docs/prometheus/latest/querying/api/
+# Direct Prometheus API request
+[group('http'), positional-arguments]
+http-request method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 2
+
+    [[ "$uri" == /* ]] && uri="mimir.$DOMAIN.com$MIMIR_API${uri#${MIMIR_API}}"
+
+    xh "$method" "$uri" "$@" --https --ignore-stdin
