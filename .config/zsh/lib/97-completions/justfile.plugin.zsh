@@ -117,7 +117,9 @@ register_justfile_completion() {
 
         artifactory
         bks
+        graphite
         loki
+        mimir
         passport-model
         rb-model
         sd-model
