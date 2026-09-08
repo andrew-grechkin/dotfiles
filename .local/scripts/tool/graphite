@@ -1,0 +1,94 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+set export
+set no-cd
+
+export jq := require('jq')
+export this := justfile()
+
+export DOMAIN := env('DOMAIN')
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private]
+@default:
+     "$this" --list
+
+# Print help
+help:
+    #!/usr/bin/env -S colored-md
+
+    # ABSTRACT
+
+    Wrapper around Graphite HTTP API for read-only queries.
+
+    # ENVIRONMENT
+
+    - `DOMAIN`: REQUIRED, e.g. `my-company`. Selects the graphite endpoint (`graphite.$DOMAIN.com`).
+    - `GRAPHITE_QUERY`: optional target string. When set, used instead of STDIN.
+    - `GRAPHITE_FROM`: optional time range for `query`; defaults to `-5min`.
+    - `GRAPHITE_UNTIL`: optional upper bound; defaults to `now`.
+
+    # SYNOPSIS
+
+    ```
+    # Fetch a render result (target from STDIN, JSON out)
+    graphite query <<< "loadbalancers.group.*.*.haproxy.role.artifactory.backend.artifactory_$DOMAIN_com_https_all.act"
+
+    # Find metrics matching a path glob
+    graphite find 'loadbalancers.group.*'
+
+    # Fetch just the last non-null datapoint per series
+    graphite query <<< '<target>' | jq -r '.[] | "\(.target)  ->  \([.datapoints[] | select(.[0] != null)][-1] // "null")"'
+
+    # Raw HTTP against any graphite endpoint
+    graphite http-request GET /functions format==json
+    ```
+
+# => query -------------------------------------------------------------------------------------------------------- {{{1
+
+# https://graphite.readthedocs.io/en/latest/render_api.html
+# Run a /render query (target in STDIN or `GRAPHITE_QUERY`)
+[group('query'), positional-arguments]
+query *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    args=(
+        GET "/render"
+        format==json
+        "from==${GRAPHITE_FROM:--5min}"
+        "until==${GRAPHITE_UNTIL:-now}"
+    )
+
+    if [[ -n "${GRAPHITE_QUERY:-}" ]]; then
+        args+=("target==$GRAPHITE_QUERY")
+    else
+        [[ -t 0 ]] && echo "target must be provided via STDIN" >&2
+        args+=("target==$(</dev/stdin)")
+    fi
+
+    "$this" http-request "${args[@]}" "$@"
+
+# => overview ----------------------------------------------------------------------------------------------------- {{{1
+
+# https://graphite.readthedocs.io/en/latest/metrics_api.html
+# Find metrics matching a path glob
+[group('overview'), positional-arguments]
+find path *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 1
+    "$this" http-request GET /metrics/find "query==$path" format==json "$@"
+
+# => http --------------------------------------------------------------------------------------------------------- {{{1
+
+# Request API directly (extra params as `key==value`, headers as `key:value`)
+[group('http'), positional-arguments]
+http-request method uri *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    shift 2
+
+    [[ "$uri" == /* ]] && uri="graphite.$DOMAIN.com${uri}"
+
+    xhs "$method" "$uri" "$@" --ignore-stdin

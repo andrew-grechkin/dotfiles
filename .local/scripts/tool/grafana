@@ -1,0 +1,94 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+set export
+set no-cd
+
+export python3 := require('python3')
+export this := justfile()
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+[private]
+@default:
+     "$this" --list
+
+# Print help
+help:
+    #!/usr/bin/env -S colored-md
+
+    # ABSTRACT
+
+    Utilities for graphite -> mimir migrations of Grafana dashboards.
+
+    # SYNOPSIS
+
+    ```
+    # Lint a Grafana v2 dashboard YAML for schema issues we've seen bite
+    grafana lint /tmp/dashboard.yaml
+    ```
+
+# => lint --------------------------------------------------------------------------------------------------------- {{{1
+
+# Lint a Grafana v2 dashboard YAML for schema issues that block re-import
+[group('lint'), positional-arguments]
+lint path:
+    #!/usr/bin/env python3
+    import sys, re
+    try:
+        import yaml
+    except ImportError:
+        sys.exit("PyYAML required: pip install pyyaml")
+
+    with open(sys.argv[1]) as f:
+        d = yaml.safe_load(f)
+
+    issues = []
+
+    def panel_ctx(path_str):
+        m = re.search(r"panel-([^.\[]+)", path_str)
+        if not m:
+            return path_str
+        pid = m.group(1)
+        try:
+            panel = d['spec']['elements'][f'panel-{pid}']
+            title = panel.get('spec', {}).get('title', '?')
+            return f"panel-{pid} ({title})"
+        except Exception:
+            return f"panel-{pid}"
+
+    def walk(node, path=''):
+        if isinstance(node, dict):
+            for k, v in node.items():
+                new = f"{path}.{k}" if path else k
+                # override property missing value
+                if k == 'overrides' and isinstance(v, list):
+                    for i, override in enumerate(v):
+                        if not isinstance(override, dict):
+                            continue
+                        props = override.get('properties') or []
+                        for j, p in enumerate(props):
+                            if isinstance(p, dict) and 'id' in p and 'value' not in p:
+                                issues.append((panel_ctx(new),
+                                    f"overrides[{i}].properties[{j}] id={p.get('id')!r} missing value"))
+                # threshold step missing value
+                if k == 'steps' and isinstance(v, list):
+                    for i, s in enumerate(v):
+                        if isinstance(s, dict) and 'color' in s and 'value' not in s:
+                            issues.append((panel_ctx(new),
+                                f"steps[{i}] color={s.get('color')!r} missing value"))
+                walk(v, new)
+        elif isinstance(node, list):
+            for i, item in enumerate(node):
+                walk(item, f"{path}[{i}]")
+
+    walk(d)
+
+    if not issues:
+        print("no issues found")
+        sys.exit(0)
+
+    for ctx, msg in issues:
+        print(f"{ctx}: {msg}", file=sys.stderr)
+    sys.exit(1)
