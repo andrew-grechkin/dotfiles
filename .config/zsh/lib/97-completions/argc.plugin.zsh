@@ -12,7 +12,6 @@ register_argc_completion() {
         git-credential-pass-cache
         git-x-amend
         jq-repl
-        memoize
         menu-yt
         show
         tap
