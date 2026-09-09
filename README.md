@@ -104,12 +104,8 @@ These tools reinforce the Unix philosophy by making pipelines more powerful, rel
 
 - [jq-repl]: An interactive JQ processor with live preview. It allows for rapid prototyping of complex JSON filters with
   a "dump-to-clipboard" workflow
-- [memoize]: A transparent caching wrapper that stores command output and returns it instantly on subsequent calls,
-  provided the environment is unchanged
 - [tap]: A pipeline debugger that executes commands for each line of STDIN while passing the original data through,
   allowing for side-effect actions (like logging) without breaking the pipe
-- [spew]: A serializer for parallel pipelines. It buffers input from concurrent processes and uses locking to ensure
-  output is written to the next stage without interleaving
 
 **The Modern Pipeline in Action:**
 
@@ -157,11 +153,9 @@ See the `LICENSE` file for details.
 [cred]: .local/scripts/tool/cred
 [git-x-amend]: .local/scripts/tool/git-x-amend
 [jq-repl]: .local/scripts/tui/jq-repl
-[memoize]: .local/scripts/tool/memoize
 [menu-mise]: .local/scripts/tui/menu-mise
 [menu-mpv-history]: .local/scripts/tui/menu-mpv-history
 [menu-pacman]: .local/scripts/tui/menu-pacman
 [setup]: setup
-[spew]: .local/scripts/filter/spew
 [tap]: .local/scripts/filter/tap
 [yk]: .local/scripts/tool/yk
