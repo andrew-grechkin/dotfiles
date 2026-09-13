@@ -84,11 +84,13 @@ register_justfile_completion() {
         cue
         dib
         doc
+        hdd
         kube
         markdown
         mk
         mux
         oci
+        perm
         pl
         system
         video
@@ -104,12 +106,14 @@ register_justfile_completion() {
         aur-model
         chrome-model
         calendar-model
+        deepseek-model
         drive-model
         family-model
         gemini-model
         gitlab-model
         harness-model
         jfrog-model
+        openrouter-model
         people-model
         redis-model
         sheets-model
@@ -125,6 +129,8 @@ register_justfile_completion() {
         sd-model
 
         menu-aur
+        menu-pacman
+        menu-weather
     )
 
     local it
