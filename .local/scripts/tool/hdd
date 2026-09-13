@@ -1,0 +1,373 @@
+#!/usr/bin/env -S just --one --justfile
+
+set export
+set no-cd
+
+export this := justfile()
+
+[private]
+@default:
+    "$this" --list
+
+[positional-arguments]
+diff lhs rhs:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ ! -d "$lhs" || ! -d "$rhs" ]]; then
+        echo "Usage: $0 <dir1> <dir2>"
+        exit 1
+    fi
+
+    lhs="${lhs%%/}"
+    rhs="${rhs%%/}"
+
+    tmp1=$(mktemp)
+    tmp2=$(mktemp)
+    trap 'rm -f "$tmp1" "$tmp2"' EXIT
+
+    # Generate sorted TSV manifest: <hash>\t<relative_path>
+    (cd "$lhs" && fd -t f -H -E .git -X b3sum | sed 's|^\([a-f0-9]\{64\}\)  \./\(.*\)|\1\t\2|') > "$tmp1"
+    (cd "$rhs" && fd -t f -H -E .git -X b3sum | sed 's|^\([a-f0-9]\{64\}\)  \./\(.*\)|\1\t\2|') > "$tmp2"
+
+    # TODO: fix
+    D1="$lhs" D2="$rhs" perl -F'\t' -lane '
+        $h{$F[1]}[$ARGVno] = $F[0];
+        END {
+            my ($d1, $d2) = ($ENV{D1}, $ENV{D2});
+            for my $p (sort keys %h) {
+                my ($v1, $v2) = @{$h{$p}};
+                print "L\t$d1/$p"         if  $v1 && !$v2;
+                print "R\t$d2/$p"         if !$v1 &&  $v2;
+                print "X\t$d1/$p\t$d2/$p" if  $v1 &&  $v2 && $v1 ne $v2;
+            }
+        }
+    ' "$tmp1" "$tmp2"
+
+# zero drive and scan for badblocks
+zero-and-scan drive:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ ! -b "$drive" ]]; then
+        echo "fatal: device '$drive' does not exist or is not a block device" >&2
+        exit 1
+    fi
+
+    cat << EO_WARNING >&2
+    {{style("warning")}} =====================================================
+    WARNING: DESTRUCTIVE WRITE OPERATION AHEAD
+    =====================================================
+
+    You are about to run a destructive badblocks scan on: $drive
+    ALL DATA ON THIS DRIVE WILL BE PERMANENTLY ERASED AND ZEROED OUT{{NORMAL}}
+    EO_WARNING
+
+    read -rp "Type 'YES' to confirm and proceed: " confirm
+    if [[ "$confirm" != "YES" ]]; then
+        echo "fatal: operation aborted by user"
+        exit 1
+    fi
+
+    sudo -k badblocks -wsv -b 4096 -t 0x00 -o "/var/log/badblocks.log" "$drive"
+
+# TODO:
+# check smart status and alarm if something is wrong
+[positional-arguments]
+check-smart drive:
+    #!/usr/bin/env perl
+    use v5.36;
+    use File::Basename;
+
+    # 1. Input Validation
+    my $drive = $ARGV[0];
+    if (!$drive) {
+        die "Usage: sudo $0 /dev/sdX\n";
+    }
+
+    if (! -b $drive) {
+        die "Error: Device '$drive' does not exist or is not a block device.\n";
+    }
+
+    # 2. Re-authenticate sudo session (-k)
+    system("sudo -k true") == 0 or die "Authentication failed.\n";
+
+    print "Running S.M.A.R.T. health check on $drive...\n";
+
+    # 3. Check General SMART Health Status
+    # smartctl -H outputs generic PASSED/FAILED assessment
+    my $health_output = `sudo smartctl -H $drive 2>&1`;
+    my $overall_failed = 0;
+
+    if ($health_output =~ /SMART overall-health self-assessment test result:\040*FAILED/i) {
+        $overall_failed = 1;
+    }
+
+    ## 4. Parse Detailed SMART Attributes
+    #my $attrib_output = `sudo smartctl -A $drive 2>&1`;
+
+    ## Attributes critical to mechanical/flash health and their current raw values
+    #my %critical_attributes = (
+    #    'Reallocated_Sector_Ct' => 0,
+    #    'Current_Pending_Sector' => 0,
+    #    'Offline_Uncorrectable'  => 0,
+    #    'UDMA_CRC_Error_Count'   => 0,
+    #);
+
+    #my @alerts;
+
+    #if ($overall_failed) {
+    #    push @alerts, "CRITICAL: SMART overall-health self-assessment test result: FAILED!";
+    #}
+
+    #for my $line (split /\r?\n/, $attrib_output) {
+    #    for my $attr_name (keys %critical_attributes) {
+    #        if ($line =~ /^\s*\d+\s+$attr_name\s+.*\s+(\d+)\s*$/) {
+    #            my $raw_val = $1;
+    #            if ($raw_val > 0) {
+    #                push @alerts, sprintf("WARNING: %s has a non-zero raw value: %d", $attr_name, $raw_val);
+    #            }
+    #        }
+    #    }
+    #}
+
+    ## 5. Output Summary and Alarm if Needed
+    #print "\n=====================================================\n";
+    #if (@alerts) {
+    #    print "\033[1;31m[ALARM] DRIVE HEALTH ISSUES DETECTED ON $drive\033[0m\n";
+    #    print "=====================================================\n";
+    #    foreach my $alert (@alerts) {
+    #        print "\033[1;31m - $alert\033[0m\n";
+    #    }
+
+    #    # Send alert to system syslog as well
+    #    my $syslog_msg = sprintf("smartctl_wrapper ALARM on %s: %s", $drive, join("; ", @alerts));
+    #    system("logger -t smartctl_wrapper -p daemon.err '$syslog_msg'");
+
+    #    exit 1;
+    #} else {
+    #    print "\033[1;32m[OK] Drive $drive passed all SMART checks. No bad attributes found.\033[0m\n";
+    #    print "=====================================================\n";
+    #    exit 0;
+    #}
+
+# format drive with btrfs and snapper compatible structure
+[positional-arguments]
+format-btrfs drive label prefix='@':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$EUID" -ne 0 ]]; then
+        echo "> elevating privileges..."
+        exec sudo -k "$0" "$@"
+    fi
+
+    # NOTE: under sudo just params are not exported
+    drive="$1"
+    label="$2"
+    prefix="$3"
+    shift 3
+
+    mnt_dir=$(mktemp -d -p /run -t btrfs-mnt.XXXXXXXXXX)
+    chmod 700 "$mnt_dir"
+
+    cleanup() {
+        if mountpoint -q "$mnt_dir"; then
+            umount "$mnt_dir"
+        fi
+        rmdir -- "$mnt_dir"
+    }
+    trap cleanup EXIT
+
+    # NOTE: wipefs will fail if drive is not clean, small layer of protection
+    wipefs "$drive"
+    mkfs.btrfs -L "$label" "$drive"
+
+    mount -o subvolid=5 "$drive" "$mnt_dir"
+    mkdir -p                     "$mnt_dir/$prefix"
+    btrfs subvolume create       "$mnt_dir/$prefix/.snapshots"
+    mkdir -p                     "$mnt_dir/$prefix/.snapshots/head"
+    btrfs subvolume create       "$mnt_dir/$prefix/.snapshots/head/snapshot"
+    btrfs subvolume set-default  "$mnt_dir/$prefix/.snapshots/head/snapshot"
+    chmod -R a+rX,g+ws           "$mnt_dir/$prefix"
+    chown -R root:root           "$mnt_dir/$prefix"
+
+    echo "> subvolumes:" >&2
+    btrfs subvolume list         "$mnt_dir" >&2
+
+# add snapper compatible subvolume
+[positional-arguments]
+add-btrfs-subvolume drive name prefix='@':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$EUID" -ne 0 ]]; then
+        echo "> elevating privileges..."
+        exec sudo -k "$0" "$@"
+    fi
+
+    drive="$1"
+    name="$2"
+    prefix="$3"
+    shift 3
+
+    mnt_dir=$(mktemp -d -p /run -t btrfs-mnt.XXXXXXXXXX)
+    chmod 700 "$mnt_dir"
+
+    cleanup() {
+        if mountpoint -q "$mnt_dir"; then
+            umount "$mnt_dir"
+        fi
+        rmdir -- "$mnt_dir"
+    }
+    trap cleanup EXIT
+
+    mount -o subvolid=5 "$drive" "$mnt_dir"
+    mkdir -p                     "$mnt_dir/${prefix}$name"
+    btrfs subvolume create       "$mnt_dir/${prefix}$name/.snapshots"
+    mkdir -p                     "$mnt_dir/${prefix}$name/.snapshots/head"
+    btrfs subvolume create       "$mnt_dir/${prefix}$name/.snapshots/head/snapshot"
+    chmod -R a+rX,g+ws           "$mnt_dir/${prefix}$name"
+    chown -R root:root           "$mnt_dir/${prefix}$name"
+
+    echo "> subvolumes:" >&2
+    btrfs subvolume list         "$mnt_dir"
+
+# backup all subdirs which have config
+[positional-arguments]
+backup dir='./':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$EUID" -ne 0 ]]; then
+        echo "> elevating privileges..."
+        exec sudo "$0" "$@"
+    fi
+
+    while read -r line; do
+        "{{justfile()}}" _backup "$line"
+    done < <(find "$1" -maxdepth 2 -type f -name backup.json)
+
+# receive and extract btrfs image
+[arg('image', pattern='(.*[.]btrfs[.]img[.]zstd)|(-)$'), positional-arguments]
+receive-image image dest='./':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$EUID" -ne 0 ]]; then
+        echo "> elevating privileges..."
+        exec sudo "$0" "$@"
+    fi
+    echo "> receive: $1 -> $2" >&2
+
+    filename="$(basename "$1")"
+    dir="${filename%%.btrfs.img.zstd}"
+    dest="${2%%/}/$dir"
+    mkdir -p -- "$dest"
+    chmod g+rwXs,o+rX -- "$dest"
+    zstdcat "$1" | pv -Wbat | btrfs receive "$dest/"
+
+[private, no-exit-message]
+_backup-source pth:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    echo "> backup source: $pth" >&2
+    descriptor=$(</dev/stdin)
+
+    {
+        read -r target_path
+        read -r target_type
+        read -r type
+    } < <(jq -r '[.target.path, .target.type, .type]|map(.//"")[]' <<< "$descriptor")
+
+    if [[ "$type" == "snapper-btrfs-send" ]]; then
+        {
+            read -r volume
+        } < <(jq -r '[.volume]|map(.//"")[]' <<< "$descriptor")
+        [[ -n "$volume" ]] || volume=$(basename "$pth")
+        echo "> volume: {{YELLOW}}$volume{{NORMAL}}" >&2
+
+        if info=$(snapper -c "$volume" --jsonout ls 2>/dev/null); then
+            history=$(jq -Sc --arg volume "$volume" <<< "$info" '
+                .[$volume] | sort_by(.date) | reverse | map(
+                    select(
+                        .active == false
+                        and .default == false
+                        and .date != ""
+                        and .type == "single"
+                        and .cleanup == "number"
+                        and has("userdata")
+                        and (.userdata | has("important"))
+                        and (.userdata.important == "yes")
+                    )
+                )'
+            )
+            amount=$(jq -r 'length' <<< "$history")
+
+            if (( amount == 0 )); then
+                snapper -c "$volume" create -c "number" -d "backup" -u important="yes"
+                echo "> initial snapshot created for: $volume" >&2
+                exit 0
+            fi
+
+            dest="$target_path"
+            if [[ "$(basename "$target_path")" != ".snapshots" ]]; then
+                dest+="/$volume"
+            fi
+
+            for i in $(seq 0 1 $(( amount - 1 ))); do
+                it=$(jq -r ".[$i]" <<< "$history")
+                {
+                    read -r number
+                    read -r id
+                    read -r subvolume
+                } < <(jq -r '[.number, .userdata.id, .subvolume]|map(.//"")[]' <<< "$it")
+                subvolume="${subvolume%/}"
+
+                if [[ "$target_type" == "image" && -s "$dest/$id.btrfs.img.zstd" ]]; then
+                    parent=(-p "$subvolume/.snapshots/$number/snapshot")
+                    break
+                fi
+
+                if [[ "$target_type" == "snapshot" && -d "$dest/$id/snapshot" ]]; then
+                    parent=(-p "$subvolume/.snapshots/$number/snapshot")
+                    break
+                fi
+            done
+
+            target_id=$(date --universal --rfc-3339=seconds)
+            if new_id=$(snapper -c "$volume" create -p -c "number"); then
+                snapshot="$subvolume/.snapshots/$new_id/snapshot"
+                mkdir -p -- "$dest"
+                chmod g+rwXs,o+rX -- "$dest"
+                name="$dest/$target_id.btrfs.img.zstd"
+
+                if [[ "$target_type" == "image" ]]; then
+                    trap 'rm -f -- "$name.tmp"' EXIT
+                    umask 0007
+                    btrfs send "${parent[@]}" "$snapshot" | zstd -o "$name.tmp"
+                    mv -- "$name.tmp" "$name"
+                elif [[ "$target_type" == "snapshot" ]]; then
+                    mkdir -p -- "$dest/$target_id"
+                    chmod g+rwXs,o+rX -- "$dest/$target_id"
+                    btrfs send "${parent[@]}" "$snapshot" | pv -Wbat \
+                        | btrfs receive "$dest/$target_id/"
+                fi
+                snapper -c "$volume" modify -d "backup,$target_type" -u "important=yes,id=$target_id" "$new_id"
+                exit 0
+            fi
+            "$this" fatal "couldn't backup volume"
+        fi
+    fi
+    "$this" fatal "unknown type"
+
+[private, no-exit-message]
+_backup config:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    src=$(realpath -e "$(dirname "$config")")
+    while read -r line; do
+        "$this" _backup-source "$src" <<< "$line"
+    done < <(jq -c '.targets[]?' -- "$config")
+
+[group('helper'), private, positional-arguments, no-exit-message]
+@fatal message_or_errno *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    [[ "$message_or_errno" =~ ^[0-9]+$ && "$message_or_errno" -g 0 && "$message_or_errno" -le 255 ]] && {
+        errno="$message_or_errno"
+        shift 1
+    }
+    echo "{{style('error')}}> fatal:" "$@" "{{NORMAL}}" >&2
+    exit "${errno:-1}"

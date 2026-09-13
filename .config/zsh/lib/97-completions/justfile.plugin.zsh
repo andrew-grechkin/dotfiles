@@ -84,6 +84,7 @@ register_justfile_completion() {
         cue
         dib
         doc
+        hdd
         kube
         markdown
         mk
