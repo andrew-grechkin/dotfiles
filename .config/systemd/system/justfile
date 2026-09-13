@@ -1,0 +1,63 @@
+set export
+set no-cd
+
+export dest := '/etc/systemd/system'
+export this := justfile()
+
+[private]
+@default:
+    "$this" --list
+
+# symlink units into /etc/systemd/system and enable timers
+install:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$EUID" -ne 0 ]]; then
+        echo '> elevating privileges...' >&2
+        exec sudo "$0" "$@"
+    fi
+
+    shopt -s nullglob
+    units=(*.service *.timer)
+
+    if (( ${#units[@]} == 0 )); then
+        echo "fatal: no units found" >&2
+        exit 1
+    fi
+
+    for unit in "${units[@]}"; do
+        echo "> install: $(basename "$unit")" >&2
+        ln -srf -- "$unit" "{{dest}}/"
+    done
+
+    systemctl daemon-reload
+
+    for unit in "${units[@]}"; do
+        [[ "$unit" == *.timer ]] || continue
+        echo "> enable: $(basename "$unit")" >&2
+        systemctl enable --now "$(basename "$unit")"
+    done
+
+# disable timers and remove units from /etc/systemd/system
+uninstall:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$EUID" -ne 0 ]]; then
+        echo '> elevating privileges...' >&2
+        exec sudo "$0" "$@"
+    fi
+
+    shopt -s nullglob
+    units=(*.service *.timer)
+
+    for unit in "${units[@]}"; do
+        [[ "$unit" == *.timer ]] || continue
+        echo "> disable: $(basename "$unit")" >&2
+        systemctl disable --now "$(basename "$unit")"
+    done
+
+    for unit in "${units[@]}"; do
+        rm -fv -- "{{dest}}/$(basename "$unit")"
+    done
+
+    systemctl daemon-reload

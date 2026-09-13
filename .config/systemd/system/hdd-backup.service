@@ -1,0 +1,13 @@
+[Unit]
+Description=Backup directories discovered via hdd
+RequiresMountsFor=/pool/cold/
+
+[Service]
+Type=oneshot
+WorkingDirectory=/
+ExecStart=/home/agrechkin/.local/scripts/tool/hdd backup
+TimeoutStartSec=12h
+Nice=19
+IOSchedulingClass=idle
+SyslogIdentifier=hdd-backup
+PrivateTmp=yes
