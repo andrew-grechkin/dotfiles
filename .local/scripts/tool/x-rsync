@@ -1,0 +1,325 @@
+#!/usr/bin/env -S bash -Eeuo pipefail
+# shellcheck disable=SC2154
+
+[[ -x "$(command -v argc)" ]] || {
+    echo "'argc' helper command is required, install from https://github.com/sigoden/argc" >&2
+    exit 2
+}
+
+# @describe ABSTRACT:
+#    Rsync wrapper providing standardized subcommands for copying, comparing, diffing, and moving files with optimal
+#    default parameters.
+#
+# SYNOPSIS:
+#    # Copy source to destination
+#    $ x-rsync copy /src /dst
+#
+#    # Report the scope of differences between two directories
+#    $ x-rsync compare /src /dst
+#
+#    # Full itemized differences
+#    $ x-rsync diff -c /src /dst
+#
+#    # Move files and clean up empty source directories
+#    $ x-rsync move /src /dst
+#
+# DESCRIPTION:
+#    Applies tuned rsync defaults (handling extended attributes, sparse files, system exclusions, and
+#    environment-specific flags) to expose clean subcommands for standard file operations.
+
+# LICENSE:
+#   GPL-2.0-or-later
+#   🄯 2026 Andrew Grechkin
+
+# @meta version 1.0.0
+# @meta combine-shorts
+# @meta require-tools rsync
+
+umask 002
+
+RSYNC_DEFAULT_PARAMS=(
+    --exclude="#recycle"
+    --exclude="#snapshot"
+    --exclude=".Trash-*"
+    --exclude=".local/share/containers"
+    --exclude=".snapshots"
+    --exclude="@eaDir"
+    --hard-links
+    --human-readable
+    --sparse
+)
+
+RSYNC_LOCAL_PARAMS=(
+    # --open-noatime # NOTE: needs sudo permissions
+    --info="stats,nonreg0"
+)
+
+RSYNC_RSH_PARAMS=(
+    --no-group
+    --no-owner
+    --rsh=ssh
+    --info=stats
+)
+
+RSYNC_COPY_PARAMS=(
+    --archive
+    # --acls
+    --one-file-system
+    --partial
+    --xattrs
+)
+
+RSYNC_MOVE_PARAMS=(
+    "${RSYNC_COPY_PARAMS[@]}"
+    --remove-source-files
+)
+
+RSYNC_INFO_TTY=(
+    --itemize-changes
+    --info=progress2
+)
+
+RSYNC_INFO_FILE=(
+    --itemize-changes
+)
+
+if [[ -t 1 ]]; then
+    RSYNC_INFO=("${RSYNC_INFO_TTY[@]}")
+else
+    RSYNC_INFO=("${RSYNC_INFO_FILE[@]}")
+fi
+
+# NOTE: build the shared rsync argument list for a recursive directory comparison (used by both `diff` and `compare`) so
+# that the transfer predicate stays identical across them and cannot drift apart.
+_dir_diff_args() {
+    args=(
+        "${RSYNC_DEFAULT_PARAMS[@]}"
+    )
+
+    # NOTE: quite naive detection if remote module is used
+    if [[ "$*" =~ :: ]]; then
+        args+=("${RSYNC_RSH_PARAMS[@]}")
+    else
+        args+=("${RSYNC_LOCAL_PARAMS[@]}")
+    fi
+
+    args+=(
+        --delete
+        --dry-run
+        --one-file-system
+        --recursive
+        --links
+    )
+
+    if [[ "${argc_checksum:-}" == "1" ]]; then
+        args+=(
+            --checksum
+            --ignore-times
+        )
+    else
+        args+=(
+            --times
+            --omit-dir-times
+        )
+    fi
+}
+
+# @cmd
+# @arg    lhs!           Left hand side path
+# @arg    rhs!           Right hand side path
+# @flag   -c --checksum  Skip based on checksum, not mod-time & size
+# @flag   -p --perms     Force comparison of permissions
+# @flag   -o --owner     Force comparison of owner
+# @flag   -g --group     Force comparison of group
+# @flag   -v --verbose   Print the rsync change code alongside each entry
+# @describe
+# Report how two directories differ, using the same predicate as `copy`
+#
+# DEFAULT OUTPUT
+#---------------
+# L file-only-in-left-dir
+# R file-only-in-right-dir
+# X file-with-any-difference
+#
+# L / R mean that the entry appears only at the `L`eft or `R`ight side.
+# X means the entry exists on both sides but differs.
+#
+# VERBOSE OUTPUT
+#---------------
+# With -v the rsync itemize code is shown between the letter and the path:
+#
+# L >f+++++++++ file-only-in-left-dir
+# R *deleting   file-only-in-right-dir
+# X >f..t...... file-with-dif-size-and-time
+#
+# See `man rsync` (--itemize-changes) for the meaning of the 11 characters. For a fully itemized listing use `x-rsync
+# diff` instead.
+#
+# By default only size & mod-time are compared (fast).
+# Pass -c to compare file contents.
+# Pass -p/-o/-g to also compare permissions/owner/group.
+compare() {
+    _dir_diff_args "$argc_lhs" "$argc_rhs"
+
+    args+=(
+        --out-format='%i %n'
+        # NOTE: RSYNC_LOCAL/RSH_PARAMS enable --info=stats; disable it again so that the trailing summary does not
+        # pollute the parsed stdout stream
+        --info=stats0
+    )
+
+    if [[ "${argc_perms:-}" == "1" ]]; then
+        args+=(--perms)
+    fi
+    if [[ "${argc_owner:-}" == "1" ]]; then
+        args+=(--owner)
+    fi
+    if [[ "${argc_group:-}" == "1" ]]; then
+        args+=(--group)
+    fi
+
+    if [[ "${argc_verbose:-}" == "1" ]]; then
+        echo "rsync" "${args[@]}" "${argc_lhs%%/}"/ "${argc_rhs%%/}"/
+    fi
+
+    local -A label=([L]=L [R]=R [X]=X)
+    if [[ -t 1 ]]; then
+        source "$HOME/.local/lib/shell/color.bash"
+        label[L]="${FG[lime]}${label[L]}${FX[reset]}"
+        label[R]="${FG[red]}${label[R]}${FX[reset]}"
+        label[X]="${FG[yellow]}${label[X]}${FX[reset]}"
+    fi
+
+    local line code name side
+    rsync "${args[@]}" "${argc_lhs%%/}"/ "${argc_rhs%%/}"/ | while IFS= read -r line; do
+        [[ -n "$line" ]] || continue
+        # NOTE: %i is always 11 columns wide, then one space, then the path
+        code="${line:0:11}"
+        name="${line:12}"
+        case "$code" in
+            *deleting*) side=R ;;
+            *)
+                if [[ "${code:2}" == "+++++++++" ]]; then
+                    side=L
+                else
+                    side=X
+                fi
+                ;;
+        esac
+        if [[ "${argc_verbose:-}" == "1" ]]; then
+            printf '%s %s %s\n' "${label[$side]}" "$code" "$name"
+        else
+            printf '%s %s\n' "${label[$side]}" "$name"
+        fi
+    done
+}
+
+# @cmd
+# @arg    argv+          Rsync args
+# @flag   -c --checksum  Skip based on checksum, not mod-time & size
+# @flag   -s --sync      Sync, delete files on destination which removed on source
+# @flag   -v --verbose   Print executed commands
+# @describe
+# Copy files from source to destination
+# Transfers files while preserving attributes, permissions, and applying tuned exclusions
+copy() {
+    args=(
+        "${RSYNC_DEFAULT_PARAMS[@]}"
+        "${RSYNC_COPY_PARAMS[@]}"
+        "${RSYNC_INFO[@]}"
+    )
+
+    if [[ "${argc_sync:-}" == "1" ]]; then
+        args+=(
+            --update
+            --delete
+        )
+    fi
+
+    # NOTE: quite naive detection if remote module is used
+    if [[ "${argc_argv[*]}" =~ :: ]]; then
+        args+=("${RSYNC_RSH_PARAMS[@]}")
+    else
+        args+=("${RSYNC_LOCAL_PARAMS[@]}")
+    fi
+
+    if [[ "${argc_checksum:-}" == "1" ]]; then
+        args+=(--checksum)
+    fi
+
+    if [[ "${argc_verbose:-}" == "1" ]]; then
+        echo "rsync" "${args[@]}" "${argc_argv[@]}"
+    fi
+
+    rsync "${args[@]}" "${argc_argv[@]}"
+}
+
+# @cmd
+# @arg    argv+          Rsync args
+# @flag   -c --checksum  Skip based on checksum, not mod-time & size
+# @flag   -s --sync      Sync, delete files on destination which removed on source
+# @flag   -v --verbose   Print executed commands
+# @describe
+# Compare differences between source and destination
+# Performs a dry-run check displaying modifications, deletions, or missing files
+diff() {
+    _dir_diff_args "${argc_argv[@]}"
+
+    if [[ "${argc_sync:-}" == "1" ]]; then
+        args+=(--archive)
+    fi
+
+    args+=(
+        "${RSYNC_INFO[@]}"
+        --info=name0
+    )
+
+    if [[ "${argc_verbose:-}" == "1" ]]; then
+        echo "rsync" "${args[@]}" "${argc_argv[@]}"
+    fi
+
+    rsync "${args[@]}" "${argc_argv[@]}"
+}
+
+# @cmd
+# @arg    argv+          Rsync args
+# @flag   -c --checksum  Skip based on checksum, not mod-time & size
+# @flag   -v --verbose   Print executed commands
+# @describe
+# Move files from source to destination
+# Transfers files to destination, deletes source files, and cleans up empty source directories
+move() {
+    args=(
+        "${RSYNC_DEFAULT_PARAMS[@]}"
+        "${RSYNC_MOVE_PARAMS[@]}"
+        "${RSYNC_INFO[@]}"
+    )
+
+    if [[ "${argc_checksum:-}" == "1" ]]; then
+        args+=(--checksum)
+    fi
+
+    # NOTE: quite naive detection if remote module is used
+    if [[ "${argc_argv[*]}" =~ :: ]]; then
+        args+=("${RSYNC_RSH_PARAMS[@]}")
+    else
+        args+=("${RSYNC_LOCAL_PARAMS[@]}")
+    fi
+
+    if [[ "${argc_verbose:-}" == "1" ]]; then
+        echo "rsync" "${args[@]}"  "${argc_argv[@]}"
+    fi
+
+    rsync "${args[@]}" "${argc_argv[@]}"
+
+    # cleanup empty dirs for all argv in reverse order (excluding the destination)
+    # stopping on the first item that is not a directory
+    if [[ "${#argc_argv[@]}" -gt 1 ]]; then
+        for (( i=${#argc_argv[@]}-2; i>=0; i-- )); do
+            [[ -d "${argc_argv[i]}" ]] || break
+            find "${argc_argv[i]}" -depth -type d -empty -delete 2>/dev/null || true
+        done
+    fi
+}
+
+eval "$(argc --argc-eval "$0" "$@")"
