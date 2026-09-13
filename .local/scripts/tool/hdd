@@ -1,0 +1,541 @@
+#!/usr/bin/env -S just --one --justfile
+
+set export
+set no-cd
+
+export this := justfile()
+
+jq := require('jq')
+
+[private]
+@default:
+    "$this" --list
+
+# TODO:
+# check smart status and alarm if something is wrong
+[positional-arguments]
+check-smart drive:
+    #!/usr/bin/env perl
+    use v5.36;
+    use File::Basename;
+
+    # 1. Input Validation
+    my $drive = $ARGV[0];
+    if (!$drive) {
+        die "Usage: sudo $0 /dev/sdX\n";
+    }
+
+    if (! -b $drive) {
+        die "Error: Device '$drive' does not exist or is not a block device.\n";
+    }
+
+    # 2. Re-authenticate sudo session (-k)
+    system("sudo -k true") == 0 or die "Authentication failed.\n";
+
+    print "Running S.M.A.R.T. health check on $drive...\n";
+
+    # 3. Check General SMART Health Status
+    # smartctl -H outputs generic PASSED/FAILED assessment
+    my $health_output = `sudo smartctl -H $drive 2>&1`;
+    my $overall_failed = 0;
+
+    if ($health_output =~ /SMART overall-health self-assessment test result:\040*FAILED/i) {
+        $overall_failed = 1;
+    }
+
+    ## 4. Parse Detailed SMART Attributes
+    #my $attrib_output = `sudo smartctl -A $drive 2>&1`;
+
+    ## Attributes critical to mechanical/flash health and their current raw values
+    #my %critical_attributes = (
+    #    'Reallocated_Sector_Ct' => 0,
+    #    'Current_Pending_Sector' => 0,
+    #    'Offline_Uncorrectable'  => 0,
+    #    'UDMA_CRC_Error_Count'   => 0,
+    #);
+
+    #my @alerts;
+
+    #if ($overall_failed) {
+    #    push @alerts, "CRITICAL: SMART overall-health self-assessment test result: FAILED!";
+    #}
+
+    #for my $line (split /\r?\n/, $attrib_output) {
+    #    for my $attr_name (keys %critical_attributes) {
+    #        if ($line =~ /^\s*\d+\s+$attr_name\s+.*\s+(\d+)\s*$/) {
+    #            my $raw_val = $1;
+    #            if ($raw_val > 0) {
+    #                push @alerts, sprintf("WARNING: %s has a non-zero raw value: %d", $attr_name, $raw_val);
+    #            }
+    #        }
+    #    }
+    #}
+
+    ## 5. Output Summary and Alarm if Needed
+    #print "\n=====================================================\n";
+    #if (@alerts) {
+    #    print "\033[1;31m[ALARM] DRIVE HEALTH ISSUES DETECTED ON $drive\033[0m\n";
+    #    print "=====================================================\n";
+    #    foreach my $alert (@alerts) {
+    #        print "\033[1;31m - $alert\033[0m\n";
+    #    }
+
+    #    # Send alert to system syslog as well
+    #    my $syslog_msg = sprintf("smartctl_wrapper ALARM on %s: %s", $drive, join("; ", @alerts));
+    #    system("logger -t smartctl_wrapper -p daemon.err '$syslog_msg'");
+
+    #    exit 1;
+    #} else {
+    #    print "\033[1;32m[OK] Drive $drive passed all SMART checks. No bad attributes found.\033[0m\n";
+    #    print "=====================================================\n";
+    #    exit 0;
+    #}
+
+# format drive with btrfs and snapper compatible structure
+[positional-arguments]
+format-btrfs drive label prefix='@':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$EUID" -ne 0 ]]; then
+        echo "> elevating privileges..." >&2
+        exec sudo -k "$0" "$@"
+    fi
+
+    # NOTE: under sudo just params are not exported
+    drive="$1"
+    label="$2"
+    prefix="$3"
+    shift 3
+
+    mnt_dir=$(mktemp -d -p /run -t btrfs-mnt.XXXXXXXXXX)
+    chmod 700 "$mnt_dir"
+
+    cleanup() {
+        if mountpoint -q "$mnt_dir"; then
+            umount "$mnt_dir"
+        fi
+        rmdir -- "$mnt_dir"
+    }
+    trap cleanup EXIT
+
+    # NOTE: wipefs will fail if drive is not clean, small layer of protection
+    wipefs "$drive"
+    mkfs.btrfs -L "$label" "$drive"
+
+    umask 022
+    mount -o subvolid=5 "$drive" "$mnt_dir"
+    mkdir -p                     "$mnt_dir/$prefix"
+    btrfs subvolume create       "$mnt_dir/$prefix/.snapshots"
+    mkdir -p                     "$mnt_dir/$prefix/.snapshots/head"
+    btrfs subvolume create       "$mnt_dir/$prefix/.snapshots/head/snapshot"
+    btrfs subvolume set-default  "$mnt_dir/$prefix/.snapshots/head/snapshot"
+    chmod -R a+rX,g+ws           "$mnt_dir/$prefix"
+    chown -R root:root           "$mnt_dir/$prefix"
+
+    echo "> subvolumes:" >&2
+    btrfs subvolume list         "$mnt_dir" >&2
+
+# add snapper compatible subvolume
+[positional-arguments]
+add-btrfs-subvolume drive name prefix='@':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$EUID" -ne 0 ]]; then
+        echo "> elevating privileges..." >&2
+        exec sudo -k "$0" "$@"
+    fi
+
+    drive="$1"
+    name="$2"
+    prefix="$3"
+    shift 3
+
+    mnt_dir=$(mktemp -d -p /run -t btrfs-mnt.XXXXXXXXXX)
+    chmod 700 "$mnt_dir"
+
+    cleanup() {
+        if mountpoint -q "$mnt_dir"; then
+            umount "$mnt_dir"
+        fi
+        rmdir -- "$mnt_dir"
+    }
+    trap cleanup EXIT
+
+    umask 022
+    mount -o subvolid=5 "$drive" "$mnt_dir"
+    mkdir -p                     "$mnt_dir/${prefix}$name"
+    btrfs subvolume create       "$mnt_dir/${prefix}$name/.snapshots"
+    mkdir -p                     "$mnt_dir/${prefix}$name/.snapshots/head"
+    btrfs subvolume create       "$mnt_dir/${prefix}$name/.snapshots/head/snapshot"
+    chmod -R a+rX,g+ws           "$mnt_dir/${prefix}$name"
+    chown -R root:root           "$mnt_dir/${prefix}$name"
+
+    echo "> subvolumes:" >&2
+    btrfs subvolume list         "$mnt_dir"
+
+# backup configs: recursive search from cwd, or a single config in the given dir
+[positional-arguments]
+backup dir='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$EUID" -ne 0 ]]; then
+        echo "> elevating privileges..." >&2
+        exec sudo "$0" "$@"
+    fi
+
+    if [[ -n "$1" ]]; then
+        configs=("${1%%/}/backup.json")
+    else
+        mapfile -t configs < <(fd --max-depth 3 -tf "^backup.json$" . | sort)
+    fi
+
+    for config in "${configs[@]}"; do
+        [[ -f "$config" ]] || "{{justfile()}}" fatal "config not found: $config"
+        "{{justfile()}}" _backup "$config"
+    done
+
+# receive and extract btrfs image
+[arg('image', pattern='(.*[.]btrfs[.]img[.]zstd)|(-)$'), positional-arguments]
+receive-image image dest='./':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$EUID" -ne 0 ]]; then
+        echo "> elevating privileges..." >&2
+        exec sudo "$0" "$@"
+    fi
+    echo "> receive: $1 -> $2" >&2
+
+    filename="$(basename "$1")"
+    dir="${filename%%.btrfs.img.zstd}"
+    dest="${2%%/}/$dir"
+    mkdir -p -- "$dest"
+    chmod g+rwXs,o+rX -- "$dest"
+    zstdcat "$1" | pv -Wbat | btrfs receive "$dest/"
+
+# prepare root SSH access to a backup target for non-interactive hdd backups
+[positional-arguments]
+init-backup target path:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$EUID" -ne 0 ]]; then
+        echo "> elevating privileges..." >&2
+        exec sudo -k "$0" "$@"
+    fi
+
+    target="$1"
+    path="$2"
+
+    key='/root/.ssh/id_ed25519'
+    config='/root/.ssh/config'
+    known_hosts='/root/.ssh/known_hosts'
+
+    if [[ "$target" == *@* ]]; then
+        user="${target%%@*}"
+        host="${target#*@}"
+    else
+        host="$target"
+        user="${SUDO_USER:-$(id -un)}"
+    fi
+
+    echo "> user: $user"
+    echo "> host: $host"
+    echo "> path: $path"
+    echo "> key:  $key"
+
+    install -d -m 700 /root/.ssh
+
+    if [[ ! -f "$key" ]]; then
+        ssh-keygen -t ed25519 -N '' -f "$key"
+    else
+        echo "> key already exists, keeping it"
+    fi
+
+    touch "$config"
+    HOST="$host" perl -0777 -i -pe '
+        s/^Host[ \t]+\Q$ENV{HOST}\E[^\n]*\n(?:(?:[ \t]+[^\n]*)?\n)*//mg
+    ' "$config"
+    cat >> "$config" << EOF
+
+    Host $host
+        User $user
+        IdentityFile $key
+        IdentitiesOnly yes
+        WarnWeakCrypto no-pq-kex
+        ControlMaster auto
+        ControlPath /run/ssh-hdd-%C
+        ControlPersist 60
+    EOF
+    chmod 600 "$config"
+
+    if ! ssh-keygen -F "$host" >/dev/null 2>&1; then
+        ssh-keyscan -H "$host" >> "$known_hosts" 2>/dev/null
+    fi
+    chmod 600 "$known_hosts" 2>/dev/null || true
+
+    echo "> installing public key on $user@$host (password prompt)..."
+    ssh-copy-id -i "$key.pub" "$user@$host"
+
+    echo "> verifying..."
+    ssh -o BatchMode=yes "$host" bash -s -- "$path" << 'EO_VERIFY'
+    path="$1"
+    echo OK
+    id -un
+    if [[ -d "$path" ]]; then echo path-exists; else echo path-missing; fi
+    if sudo -n true 2>/dev/null; then echo sudo-ok; else echo sudo-needed; fi
+    EO_VERIFY
+
+[private, no-exit-message]
+_prune_target:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    [[ -t 0 ]] && "$this" fatal "target descriptor required via STDIN"
+    descriptor=$(</dev/stdin)
+    {
+        read -r target_path
+        read -r target_type
+        read -r limit
+        read -r host
+    } < <(jq -r '[.target.path, .target.type, .target.limit//10, .target.host]|map(.//"")[]' <<< "$descriptor")
+    (( limit >= 1 )) || limit=1
+    echo "> prune target: {{MAGENTA}}${host:+$host:}$target_path{{NORMAL}}" >&2
+
+    on_target() {
+        if [[ -n "$host" ]]; then ssh -o BatchMode=yes -Tx "$host" bash -s <<< "$1"
+        else bash -s <<< "$1"; fi
+    }
+
+    priv=''
+    [[ -n "$host" ]] && priv='sudo -n '
+
+    if [[ "$target_type" == "image" ]]; then
+        # NOTE: image targets form an incremental `btrfs send` chain: the first
+        # image is a full send, every later image is parented to the previous
+        # one. Deleting any image would break restore of every image after it,
+        # so image retention is manual - to re-base, remove all images from the
+        # target and the next run starts a fresh full chain. Only stray
+        # temporary files are cleaned automatically.
+        if [[ -n "$host" ]]; then
+            ssh -o BatchMode=yes -Tx "$host" "find '$target_path' -maxdepth 1 -type f -name '*.btrfs.img.zstd.tmp' -delete"
+        else
+            fd --max-depth 1 -tf '[.]btrfs[.]img[.]zstd[.]tmp$' "$target_path" -x rm -f
+        fi
+        exit 0
+    fi
+
+    if [[ -n "$host" ]]; then
+        mapfile -t successful < <(ssh -o BatchMode=yes -Tx "$host" "find '$target_path' -maxdepth 2 -type f -name 'snapshot.json'" | sort)
+    else
+        mapfile -t successful < <(fd --max-depth 2 -tf "snapshot.json" "$target_path" | sort)
+    fi
+    (( ${#successful[@]} > limit )) || exit 0
+
+    for (( i=0; i<${#successful[@]} - limit; i++ )); do
+        snapshot="${successful[$i]}"
+        snapshot="${snapshot%.json}"
+        echo "> removing old snapshot: {{MAGENTA}}${host:+$host:}$snapshot{{NORMAL}}" >&2
+        on_target "${priv}btrfs subvolume delete '$snapshot' && rm -rf -- '$(dirname "$snapshot")'"
+    done
+
+    if [[ -n "$host" ]]; then
+        mapfile -t unknown < <(ssh -o BatchMode=yes -Tx "$host" "find '$target_path' -maxdepth 2 -type d -name 'snapshot'" | sort)
+    else
+        mapfile -t unknown < <(fd --max-depth 2 -td "snapshot" "$target_path" | sort)
+    fi
+
+    for snapshot in "${unknown[@]}"; do
+        snapshot="${snapshot%/}"
+        if [[ -n "$host" ]]; then
+            on_target "test -f '${snapshot}.json'" && continue
+        else
+            [[ -f "${snapshot}.json" ]] && continue
+        fi
+        echo "> removing unsuccessful snapshot: {{MAGENTA}}${host:+$host:}$snapshot{{NORMAL}}" >&2
+        on_target "${priv}btrfs subvolume delete '$snapshot' && rm -rf -- '$(dirname "$snapshot")'"
+    done
+
+[private, no-exit-message]
+_backup-source volume snapshot target_id:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    descriptor=$(</dev/stdin)
+
+    {
+        read -r target_path
+        read -r target_type
+        read -r type
+        read -r host
+    } < <(jq -r '[.target.path, .target.type, .type, .target.host]|map(.//"")[]' <<< "$descriptor")
+
+    [[ "$type" == "snapper-btrfs-send" ]] || "$this" fatal "unknown type: ${type:-<empty>}"
+    [[ "$target_type" == "image" || "$target_type" == "snapshot" ]] \
+        || "$this" fatal "unknown target type: ${target_type:-<empty>}"
+
+    echo "> {{YELLOW}}$volume{{NORMAL}} -> {{YELLOW}}${host:+$host:}$target_path{{NORMAL}}" >&2
+
+    info=$(snapper -c "$volume" --jsonout ls) || "$this" fatal "couldn't list snapshots for volume '$volume'"
+    history=$(jq -Sc --arg volume "$volume" <<< "$info" '
+        .[$volume] | sort_by(.date) | reverse | map(
+            select(
+                .active == false
+                and .default == false
+                and .date != ""
+                and .type == "single"
+                and .cleanup == "number"
+                and has("userdata")
+                and (.userdata | has("important"))
+                and (.userdata.important == "yes")
+            )
+        )'
+    )
+    amount=$(jq -r 'length' <<< "$history")
+
+    dest="$target_path"
+    if [[ "$(basename "$target_path")" != ".snapshots" ]]; then
+        [[ -n "$host" ]] && dest+="/$(hostname)"
+        dest+="/$volume"
+    fi
+
+    on_target() {
+        if [[ -n "$host" ]]; then
+            ssh -o BatchMode=yes -Tx "$host" bash -s <<< "$1"
+        else
+            bash -s <<< "$1"
+        fi
+    }
+
+    priv=''
+    [[ -n "$host" ]] && priv='sudo -n '
+
+    if [[ "$target_type" == "image" ]]; then
+        # the newest image on the target is the chain tip; it must still
+        # have a snapper snapshot to extend the chain, else fail fast
+        on_target "mkdir -p -- '$dest' && chmod g+rwXs,o+rX -- '$dest'"
+        latest=$(on_target "find '$dest' -maxdepth 1 -type f -name '*.btrfs.img.zstd'" | sort | tail -n1)
+        tip_id="${latest##*/}"
+        tip_id="${tip_id%%.btrfs.img.zstd}"
+        if [[ -n "$tip_id" ]]; then
+            parent_path=$(jq -er --arg id "$tip_id" '
+                .[] | select(.userdata.id == $id)
+                | "\(.subvolume | sub("/+$"; ""))/.snapshots/\(.number)/snapshot"
+            ' <<< "$history") || "$this" fatal "image chain broken: snapshot '$tip_id' for '$volume' is missing from snapper; remove images from '$dest' to re-base"
+            parent=(-p "$parent_path")
+            parent_target="$latest"
+        fi
+    else
+        for (( i=0; i<amount; i++ )); do
+            it=$(jq -r ".[$i]" <<< "$history")
+            {
+                read -r number
+                read -r id
+                read -r subvolume
+            } < <(jq -r '[.number, .userdata.id, .subvolume]|map(.//"")[]' <<< "$it")
+            subvolume="${subvolume%/}"
+
+            if on_target "test -d '$dest/$id/snapshot' && test -f '$dest/$id/snapshot.json'"; then
+                parent=(-p "$subvolume/.snapshots/$number/snapshot")
+                parent_target="$dest/$id"
+                break
+            fi
+        done
+    fi
+
+    if [[ -n "${parent_target:-}" ]]; then
+        echo "> {{CYAN}}parent: ${host:+$host:}$parent_target{{NORMAL}}" >&2
+    fi
+
+    name="$dest/$target_id.btrfs.img.zstd"
+
+    if [[ "$target_type" == "image" ]]; then
+        trap 'rm -f -- "$name.tmp"' EXIT
+        if [[ -n "$host" ]]; then
+            btrfs send "${parent[@]}" "$snapshot" | zstd \
+                | ssh -o BatchMode=yes -Tx "$host" "umask 0007; cat > '$name.tmp'"
+            on_target "mv -- '$name.tmp' '$name'"
+        else
+            umask 0007
+            btrfs send "${parent[@]}" "$snapshot" | zstd -o "$name.tmp"
+            mv -- "$name.tmp" "$name"
+        fi
+    else
+        on_target "mkdir -p -- '$dest/$target_id' && chmod g+rwXs,o+rX -- '$dest/$target_id'"
+        if [[ -n "$host" ]]; then
+            btrfs send "${parent[@]}" "$snapshot" | pv -Wbat \
+                | ssh -o BatchMode=yes -Tx "$host" "${priv}btrfs receive '$dest/$target_id/'"
+        else
+            btrfs send "${parent[@]}" "$snapshot" | pv -Wbat \
+                | btrfs receive "$dest/$target_id/"
+        fi
+        # TODO: save snapshot metadata
+        on_target "touch -- '$dest/$target_id/snapshot.json.tmp' && mv -- '$dest/$target_id/snapshot.json.tmp' '$dest/$target_id/snapshot.json'"
+    fi
+
+    created="$dest/$target_id"
+    [[ "$target_type" == "image" ]] && created="$name"
+    echo "> {{GREEN}}created $target_type: ${host:+$host:}$created{{NORMAL}}" >&2
+
+    "$this" _prune_target <<< "$(jq -c --arg dest "${dest:-$target_path}" '.target.path = $dest' <<< "$descriptor")"
+
+[private, no-exit-message]
+_backup config:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    src=$(realpath -e "$(dirname "$config")")
+    volume=$(jq -r '.volume // ""' -- "$config")
+    [[ -n "$volume" ]] || volume=$(basename "$src")
+
+    jq -e '.targets | length > 0' -- "$config" >/dev/null || exit 0
+    [[ -n "$volume" && "$volume" != "/" ]] || "$this" fatal "no volume configured for '$config'"
+    echo "> backup source: {{CYAN}}$src{{NORMAL}}" >&2
+
+    new_id=$(snapper -c "$volume" create -p -c "number") \
+        || "$this" fatal "couldn't create snapshot for volume '$volume'"
+    subvolume=$(snapper -c "$volume" --jsonout ls \
+        | jq -r --arg volume "$volume" --arg id "$new_id" \
+            '.[$volume][] | select((.number|tostring) == $id) | .subvolume') \
+        || "$this" fatal "couldn't resolve subvolume for volume '$volume'"
+    subvolume="${subvolume%/}"
+    snapshot="$subvolume/.snapshots/$new_id/snapshot"
+
+    target_id=$(date --universal --rfc-3339=seconds)
+    snapper -c "$volume" modify -d "backup" -u "important=yes,id=$target_id" "$new_id" \
+        || "$this" fatal "couldn't mark snapshot '$new_id' important"
+
+    while read -r line; do
+        "$this" _backup-source "$volume" "$snapshot" "$target_id" <<< "$line"
+    done < <(jq -c '.targets[]?' -- "$config")
+
+    snapper -c "$volume" modify -u "important=yes,id=$target_id,success=yes" "$new_id" \
+        || "$this" fatal "couldn't mark snapshot '$new_id' successful"
+
+[group('helper'), private, positional-arguments, no-exit-message]
+fatal message_or_errno *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    [[ "$message_or_errno" =~ ^[0-9]+$ && "$message_or_errno" -gt 0 && "$message_or_errno" -le 255 ]] && {
+        errno="$message_or_errno"
+        shift 1
+    }
+    echo "{{style('error')}}> fatal:" "$@" "{{NORMAL}}" >&2
+    exit "${errno:-1}"
+
+# zero drive and scan for badblocks
+zero-and-scan drive:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ ! -b "$drive" ]]; then
+        echo "fatal: device '$drive' does not exist or is not a block device" >&2
+        exit 1
+    fi
+
+    cat << EO_WARNING >&2
+    {{style("warning")}} =====================================================
+    WARNING: DESTRUCTIVE WRITE OPERATION AHEAD
+    =====================================================
+
+    You are about to run a destructive badblocks scan on: $drive
+    ALL DATA ON THIS DRIVE WILL BE PERMANENTLY ERASED AND ZEROED OUT{{NORMAL}}
+    EO_WARNING
+
+    read -rp "Type 'YES' to confirm and proceed: " confirm
+    if [[ "$confirm" != "YES" ]]; then
+        echo "fatal: operation aborted by user"
+        exit 1
+    fi
+
+    sudo -k badblocks -wsv -b 4096 -t 0x00 -o "/var/log/badblocks.log" "$drive"

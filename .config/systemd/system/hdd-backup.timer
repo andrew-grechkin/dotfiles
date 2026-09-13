@@ -1,0 +1,12 @@
+[Unit]
+Description=Trigger hdd backup weekly
+
+[Timer]
+OnCalendar=Fri 08:00
+Persistent=true
+AccuracySec=1s
+RandomizedDelaySec=5s
+WakeSystem=false
+
+[Install]
+WantedBy=timers.target
