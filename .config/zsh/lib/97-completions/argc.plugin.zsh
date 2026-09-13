@@ -16,6 +16,7 @@ register_argc_completion() {
         show
         tap
         tsv-show
+        x-rsync
     )
 
     local it

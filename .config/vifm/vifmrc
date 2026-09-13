@@ -916,33 +916,33 @@ nnoremap <c-@> :sync<CR>
 nnoremap [t    :tabprev<CR>
 nnoremap ]t    :tabnext<CR>
 
-nnoremap <silent> rD :!tsp rsync-diff-cs                -- %f:p %D:p/ %i &<CR>
-vnoremap <silent> rD :!tsp rsync-diff-cs                -- %f:p %D:p/ %i &<CR>
-nnoremap <silent> rP :!tsp rsync-move                   -- %f:p %D:p/ && tsp -d rmdir-recursive %f:p %i &<CR>
-vnoremap <silent> rP :!tsp rsync-move                   -- %f:p %D:p/ && tsp -d rmdir-recursive %f:p %i &<CR>
-nnoremap <silent> rS :!tsp rsync-sync --xattrs --delete -- %f:p %D:p/ %i &<CR>
-vnoremap <silent> rS :!tsp rsync-sync --xattrs --delete -- %f:p %D:p/ %i &<CR>
+nnoremap <silent> rD :!tsp x-rsync diff --checksum     -- %f:p %D:p/ %i &<CR>
+vnoremap <silent> rD :!tsp x-rsync diff --checksum     -- %f:p %D:p/ %i &<CR>
+nnoremap <silent> rP :!tsp x-rsync move                -- %f:p %D:p/ && tsp -d rmdir-recursive %f:p %i &<CR>
+vnoremap <silent> rP :!tsp x-rsync move                -- %f:p %D:p/ && tsp -d rmdir-recursive %f:p %i &<CR>
+nnoremap <silent> rS :!tsp x-rsync copy --sync         -- %f:p %D:p/ %i &<CR>
+vnoremap <silent> rS :!tsp x-rsync copy --sync         -- %f:p %D:p/ %i &<CR>
 
-nnoremap <silent> rd :!tsp rsync-diff                   -- %f:p %D:p/ %i &<CR>
-vnoremap <silent> rd :!tsp rsync-diff                   -- %f:p %D:p/ %i &<CR>
-nnoremap <silent> rp :!tsp rsync-copy                   -- %f:p %D:p/ %i &<CR>
-vnoremap <silent> rp :!tsp rsync-copy                   -- %f:p %D:p/ %i &<CR>
-nnoremap <silent> rs :!tsp rsync-sync                   -- %f:p %D:p/ %i &<CR>
-vnoremap <silent> rs :!tsp rsync-sync                   -- %f:p %D:p/ %i &<CR>
+nnoremap <silent> rd :!tsp x-rsync diff                -- %f:p %D:p/ %i &<CR>
+vnoremap <silent> rd :!tsp x-rsync diff                -- %f:p %D:p/ %i &<CR>
+nnoremap <silent> rp :!tsp x-rsync copy                -- %f:p %D:p/ %i &<CR>
+vnoremap <silent> rp :!tsp x-rsync copy                -- %f:p %D:p/ %i &<CR>
+nnoremap <silent> rs :!tsp x-rsync copy --sync         -- %f:p %D:p/ %i &<CR>
+vnoremap <silent> rs :!tsp x-rsync copy --sync         -- %f:p %D:p/ %i &<CR>
 
-nnoremap          RC :!rsync-copy --checksum            -- %f:p %D:p/ %m<CR>
-vnoremap          RC :!rsync-copy --checksum            -- %f:p %D:p/ %m<CR>
-nnoremap          RD :!rsync-diff-cs                    -- %f:p %D:p/ %m<CR>
-vnoremap          RD :!rsync-diff-cs                    -- %f:p %D:p/ %m<CR>
-nnoremap          RS :!rsync-sync --xattrs --delete     -- %f:p %D:p/ %m<CR>
-vnoremap          RS :!rsync-sync --xattrs --delete     -- %f:p %D:p/ %m<CR>
+nnoremap          RC :!x-rsync copy --checksum          -- %f:p %D:p/ %m<CR>
+vnoremap          RC :!x-rsync copy --checksum          -- %f:p %D:p/ %m<CR>
+nnoremap          RD :!x-rsync diff --checksum          -- %f:p %D:p/ %m<CR>
+vnoremap          RD :!x-rsync diff --checksum          -- %f:p %D:p/ %m<CR>
+nnoremap          RS :!x-rsync copy --sync              -- %f:p %D:p/ %m<CR>
+vnoremap          RS :!x-rsync copy --sync              -- %f:p %D:p/ %m<CR>
 
-nnoremap          Rd :!rsync-diff                       -- %f:p %D:p/ %m<CR>
-vnoremap          Rd :!rsync-diff                       -- %f:p %D:p/ %m<CR>
-nnoremap          Rp :!rsync-copy                       -- %f:p %D:p/ %m<CR>
-vnoremap          Rp :!rsync-copy                       -- %f:p %D:p/ %m<CR>
-nnoremap          Rs :!rsync-sync                       -- %f:p %D:p/ %m<CR>
-vnoremap          Rs :!rsync-sync                       -- %f:p %D:p/ %m<CR>
+nnoremap          Rd :!x-rsync diff                     -- %f:p %D:p/ %m<CR>
+vnoremap          Rd :!x-rsync diff                     -- %f:p %D:p/ %m<CR>
+nnoremap          Rp :!x-rsync copy                     -- %f:p %D:p/ %m<CR>
+vnoremap          Rp :!x-rsync copy                     -- %f:p %D:p/ %m<CR>
+nnoremap          Rs :!x-rsync copy --sync              -- %f:p %D:p/ %m<CR>
+vnoremap          Rs :!x-rsync copy --sync              -- %f:p %D:p/ %m<CR>
 
 " => fzf integration (ctrl-t, ctrl-p) ----------------------------------------------------------------------------- {{{1
 

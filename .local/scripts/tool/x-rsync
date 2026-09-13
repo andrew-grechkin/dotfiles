@@ -1,0 +1,262 @@
+#!/usr/bin/env -S bash -Eeuo pipefail
+# shellcheck disable=SC2154
+
+[[ -x "$(command -v argc)" ]] || {
+    echo "'argc' helper command is required, install from https://github.com/sigoden/argc" >&2
+    exit 2
+}
+
+# @describe ABSTRACT:
+#    Rsync wrapper providing standardized subcommands for copying, diffing, and moving files with optimal default parameters.
+#
+# SYNOPSIS:
+#    # Copy source to destination
+#    $ x-rsync copy /src /dst
+#
+#    # Compare differences using checksums
+#    $ x-rsync diff -c /src /dst
+#
+#    # Move files and clean up empty source directories
+#    $ x-rsync move /src /dst
+#
+# DESCRIPTION:
+#    Applies tuned rsync defaults (handling extended attributes, sparse files, system exclusions, and environment-specific flags)
+#    to expose clean subcommands for standard file operations.
+
+# LICENSE:
+#   GPL-2.0-or-later
+#   🄯 2026 Andrew Grechkin
+
+# @meta version 1.0.0
+# @meta combine-shorts
+# @meta require-tools rsync
+
+umask 002
+
+RSYNC_DEFAULT_PARAMS=(
+    --exclude="#recycle"
+    --exclude="#snapshot"
+    --exclude=".Trash-*"
+    --exclude=".local/share/containers"
+    --exclude=".snapshots"
+    --exclude="@eaDir"
+    --hard-links
+    --human-readable
+    --sparse
+)
+
+RSYNC_LOCAL_PARAMS=(
+    # --open-noatime # NOTE: needs sudo permissions
+    --info=stats,nonreg0
+)
+
+RSYNC_RSH_PARAMS=(
+    --no-group
+    --no-owner
+    --rsh=ssh
+    --info=stats
+)
+
+RSYNC_COPY_PARAMS=(
+    --archive
+    # --acls
+    --one-file-system
+    --partial
+    --xattrs
+)
+
+RSYNC_MOVE_PARAMS=(
+    "${RSYNC_COPY_PARAMS[@]}"
+    --remove-source-files
+)
+
+RSYNC_INFO_TTY=(
+    --itemize-changes
+    --info=progress2
+)
+
+RSYNC_INFO_FILE=(
+    --itemize-changes
+)
+
+if [[ -t 1 ]]; then
+    RSYNC_INFO=("${RSYNC_INFO_TTY[@]}")
+else
+    RSYNC_INFO=("${RSYNC_INFO_FILE[@]}")
+fi
+
+# @cmd
+# @arg    lhs!           Left hand side path
+# @arg    rhs!           Rigth hand side path
+# @flag   -c --checksum  Skip based on checksum, not mod-time & size
+# @describe
+# Compare two directories using rsync and print the differences
+#
+# EXAMPLE OF OUTPUT
+#------------------
+# L             file-only-in-left-dir
+# R             file-only-in-right-dir
+# X >f.st...... file-with-dif-size-and-time
+# X .f...p..... file-with-dif-perms
+#
+# L / R mean that the file/dir appears only at the `L`eft or `R`ight dir.
+#
+# X     means that a file appears on both sides but is not the same (in which
+#       case the next 11 characters give you more info. In most cases knowing
+#       that s,t,T and p depict differences in Size, Time and Permissions
+#       is enough but `man rsync` has more info
+#       (look at the --itemize-changes option)
+#
+# OPTIONS
+#---------
+# All options are passed to rsync. Here are the most useful for the purpose
+# of directory comparisons:
+#
+# -c will force comparison of file contents (otherwise only
+#    time & size is compared which is much faster)
+#
+# -p/-o/-g will force comparison of permissions/owner/group
+compare() {
+    # files that don't exist in rhs
+    rsync "${options[@]}" -rin --ignore-existing "${argc_lhs%%/}"/ "${argc_rhs%%/}"/ | sed -e 's/^[^ ]* /L             /'
+    # files that don't exist in lhs
+    rsync "${options[@]}" -rin --ignore-existing "${argc_lhs%%/}"/ "${argc_rhs%%/}"/ | sed -e 's/^[^ ]* /R             /'
+    # files that exist in both dirs but have differences
+    rsync "${options[@]}" -rin --existing        "${argc_lhs%%/}"/ "${argc_rhs%%/}"/  | sed -e 's/^/X /'
+}
+
+# @cmd
+# @arg    argv+          Rsync args
+# @flag   -c --checksum  Skip based on checksum, not mod-time & size
+# @flag   -s --sync      Sync, delete files on destination which removed on source
+# @flag   -v --verbose   Print executed commands
+# @describe
+# Copy files from source to destination
+# Transfers files while preserving attributes, permissions, and applying tuned exclusions
+copy() {
+    args=(
+        "${RSYNC_DEFAULT_PARAMS[@]}"
+        "${RSYNC_COPY_PARAMS[@]}"
+        "${RSYNC_INFO[@]}"
+    )
+
+    if [[ "${argc_sync:-}" == "1" ]]; then
+        args+=(
+            --update
+            --delete
+        )
+    fi
+
+    # NOTE: quite naive detection if remote module is used
+    if [[ "${argc_argv[*]}" =~ :: ]]; then
+        args+=("${RSYNC_RSH_PARAMS[@]}")
+    else
+        args+=("${RSYNC_LOCAL_PARAMS[@]}")
+    fi
+
+    if [[ "${argc_checksum:-}" == "1" ]]; then
+        args+=(--checksum)
+    fi
+
+    if [[ "${argc_verbose:-}" == "1" ]]; then
+        echo "rsync" "${args[@]}" "${argc_argv[@]}"
+    fi
+
+    rsync "${args[@]}" "${argc_argv[@]}"
+}
+
+# @cmd
+# @arg    argv+          Rsync args
+# @flag   -c --checksum  Skip based on checksum, not mod-time & size
+# @flag   -v --verbose   Print executed commands
+# @describe
+# Compare differences between source and destination
+# Performs a dry-run check displaying modifications, deletions, or missing files
+diff() {
+    args=(
+        "${RSYNC_DEFAULT_PARAMS[@]}"
+    )
+
+    # NOTE: quite naive detection if remote module is used
+    if [[ "${argc_argv[*]}" =~ :: ]]; then
+        args+=("${RSYNC_RSH_PARAMS[@]}")
+    else
+        args+=("${RSYNC_LOCAL_PARAMS[@]}")
+    fi
+
+    RSYNC_DIFF_PARAMS_COMMON=(
+        --delete
+        --dry-run
+        --one-file-system
+        --recursive
+        --links
+    )
+
+    if [[ "${argc_checksum:-}" == "1" ]]; then
+        args+=(
+            "${RSYNC_DIFF_PARAMS_COMMON[@]}"
+            --checksum
+            --ignore-times
+        )
+    else
+        args+=(
+            "${RSYNC_DIFF_PARAMS_COMMON[@]}"
+            --times
+            --omit-dir-times
+        )
+    fi
+
+    args+=(
+        "${RSYNC_INFO[@]}"
+        --info=name0
+    )
+
+    if [[ "${argc_verbose:-}" == "1" ]]; then
+        echo "rsync" "${args[@]}" "${argc_argv[@]}"
+    fi
+
+    rsync "${args[@]}" "${argc_argv[@]}"
+}
+
+# @cmd
+# @arg    argv+          Rsync args
+# @flag   -c --checksum  Skip based on checksum, not mod-time & size
+# @flag   -v --verbose   Print executed commands
+# @describe
+# Move files from source to destination
+# Transfers files to destination, deletes source files, and cleans up empty source directories
+move() {
+    args=(
+        "${RSYNC_DEFAULT_PARAMS[@]}"
+        "${RSYNC_MOVE_PARAMS[@]}"
+        "${RSYNC_INFO[@]}"
+    )
+
+    if [[ "${argc_checksum:-}" == "1" ]]; then
+        args+=(--checksum)
+    fi
+
+    # NOTE: quite naive detection if remote module is used
+    if [[ "${argc_argv[*]}" =~ :: ]]; then
+        args+=("${RSYNC_RSH_PARAMS[@]}")
+    else
+        args+=("${RSYNC_LOCAL_PARAMS[@]}")
+    fi
+
+    if [[ "${argc_verbose:-}" == "1" ]]; then
+        echo "rsync" "${args[@]}"  "${argc_argv[@]}"
+    fi
+
+    rsync "${args[@]}" "${argc_argv[@]}"
+
+    # cleanup empty dirs for all argv in reverse order (excluding the destination)
+    # stopping on the first item that is not a directory
+    if [[ "${#argc_argv[@]}" -gt 1 ]]; then
+        for (( i=${#argc_argv[@]}-2; i>=0; i-- )); do
+            [[ -d "${argc_argv[i]}" ]] || break
+            find "${argc_argv[i]}" -depth -type d -empty -delete 2>/dev/null || true
+        done
+    fi
+}
+
+eval "$(argc --argc-eval "$0" "$@")"
