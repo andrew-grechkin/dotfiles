@@ -1,0 +1,9 @@
+[Unit]
+Description=Ollama Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/ollama serve
+Environment=OLLAMA_HOST=127.0.0.1:11435
+Restart=on-failure

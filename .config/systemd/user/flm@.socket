@@ -1,0 +1,9 @@
+[Unit]
+Description=FLM Model Server Socket (%i)
+
+[Socket]
+ListenStream=52625
+Service=flm-proxy@%i.service
+
+[Install]
+WantedBy=sockets.target
