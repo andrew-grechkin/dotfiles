@@ -1,0 +1,82 @@
+#!/usr/bin/env -S just --one --justfile
+
+# https://just.systems/man/en/
+
+set export
+set no-cd
+
+export colored-md := require('colored-md') # https://github.com/andrew-grechkin/colored-md
+export this := justfile()
+export tui := 'auto'
+
+# => default ------------------------------------------------------------------------------------------------------ {{{1
+
+# Run TUI if interactive, otherwise print static view
+[private]
+default:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    if [[ "$tui" == 'force' ]] || [[ "$tui" == 'auto' && -t 1 ]]; then
+        "$this" controller
+    else
+        "$this" view
+    fi
+
+# Print help
+help:
+    #!/usr/bin/env -S colored-md
+
+    # ABSTRACT
+    Interactive TUI for looking up the weather with wttr.in
+
+    # DESCRIPTION
+    Turn wttr.in into a search-as-you-type weather dashboard.
+
+    Type a location and the current conditions are loaded on the fly.
+    The multi-day forecast graph is available in the preview pane.
+
+    # LINKS
+    - https://github.com/chubin/wttr.in
+    - https://wttr.in/:help
+
+    # KEYS
+    - `alt-p` - toggle the multi-day forecast graph (preview)
+    - `alt-b` - open the current location in a web browser
+
+# => MVC ---------------------------------------------------------------------------------------------------------- {{{1
+
+# Fetch the raw weather JSON for location
+model location='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    memoize -l weather -t 5m -- xh --https "wttr.in/$location?format=j1"
+
+# Render the weather in location
+view location='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    memoize -l weather -t 5m -- xh --https "wttr.in/$location?AF"
+
+# Display the interactive TUI
+controller:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    export FZF_RELOAD_CMD="${this@Q} view {q}"
+    # NOTE: relies global defaults from fzfrc config
+    fzf_args=(
+        --bind="alt-b:execute-silent(git web--browse https://wttr.in/{q})"
+        --bind="ctrl-m:become(xh --https -p=b wttr.in/{q}'?AF&format=4')"
+        --bind="change:reload(sleep 0.3; $FZF_RELOAD_CMD)"
+        --bind="start:change-query()"
+        --footer="A-b:browse A-p:preview"
+        --phony
+        --preview="${this@Q} preview {q}"
+        --preview-window="right:74:border-left:wrap:hidden:noinfo"
+        --prompt='location > '
+        --query="⁉"
+        --reverse
+    )
+    echo 'loading...' | fzf "${fzf_args[@]}"
+
+# => -------------------------------------------------------------------------------------------------------------- {{{1
+
+# Render the multi-day forecast graph in location
+preview location='':
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    memoize -l weather -t 5m -- xh --https "v2d.wttr.in/$location?AFn"
