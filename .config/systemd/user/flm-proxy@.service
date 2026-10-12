@@ -1,0 +1,12 @@
+[Unit]
+Description=FLM Model Server Proxy (%i)
+After=network.target
+Requires=flm@%i.socket
+Wants=flm@%i.service
+
+[Service]
+# Start proxy. We wait for the backend to be ready before execing into the proxy
+# to ensure the first connection doesn't get a "connection refused" error.
+# The socket from systemd is preserved through the exec.
+ExecStart=/usr/bin/sh -c 'until ss -tln | grep -q :52626; do sleep 1; done; exec /usr/lib/systemd/systemd-socket-proxyd 127.0.0.1:52626'
+Restart=on-failure
