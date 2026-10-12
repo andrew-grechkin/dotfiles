@@ -1,0 +1,13 @@
+[Unit]
+Description=FLM Model Server (%i)
+After=network.target
+
+[Service]
+Type=simple
+ExecStartPre=/usr/bin/flm pull %i
+ExecStart=/usr/bin/flm serve %i --port 52626
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target
