@@ -1,0 +1,10 @@
+[Unit]
+Description=Ollama Socket Proxy
+After=network.target
+Requires=ollama.socket
+Wants=ollama.service
+
+[Service]
+# Wait for the backend to be ready before execing into the proxy
+ExecStart=/usr/bin/sh -c 'until ss -tln | grep -q :11435; do sleep 1; done; exec /usr/lib/systemd/systemd-socket-proxyd 127.0.0.1:11435'
+Restart=on-failure

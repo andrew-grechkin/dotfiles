@@ -1,0 +1,9 @@
+[Unit]
+Description=Ollama Socket
+
+[Socket]
+ListenStream=127.0.0.1:11434
+Service=ollama-proxy.service
+
+[Install]
+WantedBy=sockets.target
