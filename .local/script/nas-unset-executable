@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-
-set -Eeuo pipefail
-
-renice -n 5 "$$" > /dev/null
-
-fd --one-file-system -u -E '**/@eaDir/' -t x -x chmod a-x --

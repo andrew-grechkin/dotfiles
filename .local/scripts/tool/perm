@@ -1,0 +1,195 @@
+#!/usr/bin/env -S just --one --justfile
+
+set export
+set no-cd
+
+export this := justfile()
+
+[private]
+@default:
+    "$this" --list
+
+# TODO; maybe this is not necessary any more, haven't used for a while
+#_fix:
+#    #!/usr/bin/env -S bash -Eeuo pipefail
+#
+#    renice -n 5 "$$" > /dev/null
+#
+#    usr="${1:-$USER}"
+#    grp="$(id -ng "$usr")"
+#    usr_home="$(eval echo ~"$usr")"
+#    echo "$usr_home"
+#
+#    shopt -s dotglob
+#    shopt -s extglob
+#
+#    GLOBIGNORE='#snapshot'
+#
+#    sudo chown -c -R "${usr}:${grp}" -- *
+#    sudo chmod -c -R 'a+rX,ug+w,o-w' -- *
+#    sudo fd -u -E '**/#snapshot/' -E '**/@eaDir/' -t d -x chmod -c g+s --
+#
+#    function recursively_remove_write_permission() {
+#    	real_path="$1"
+#    	while [[ "$real_path" != "$usr_home" ]] && [[ "$real_path" != "/home/$usr" ]] && [[ "$real_path" != "/" ]]; do
+#    		real_path="$(dirname "$real_path")"
+#    		[[ "$(basename "$real_path")" == "$usr" ]] && break
+#    		sudo chmod -c 'go-w' "$real_path"
+#    	done
+#    }
+#
+#    source "$HOME/.local/lib/shell/color.bash"
+#
+#    if [[ -e ".gnupg" ]]; then
+#    	echo -e "${FG[olive]}Correcting .gnupg mode${FX[reset]}"
+#    	real_path="$(realpath .gnupg)"
+#    	sudo chmod -c -R 'u=rwX,go-rwx,g-s' "$real_path"
+#    	recursively_remove_write_permission "$real_path"
+#    fi
+#
+#    if [[ -e ".ssh" ]]; then
+#    	echo -e "${FG[olive]}Correcting .ssh mode${FX[reset]}"
+#    	real_path="$(realpath .ssh)"
+#    	sudo chmod -c -R 'u=rwX,go-rwx,g-s' "$real_path"
+#    	recursively_remove_write_permission "$real_path"
+#    fi
+
+[no-exit-message, positional-arguments]
+add-exec *argv:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    renice -n 5 "$$" >/dev/null
+    chmod -c a+rX -- "$@"
+
+[no-exit-message, positional-arguments]
+remove-exec:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+    renice -n 5 "$$" >/dev/null
+    fd --one-file-system -u -t x -X chmod -c a-x --
+
+# restore file ownership and permission according to passed user and their umask
+[no-exit-message, positional-arguments]
+fix-user user:
+    #!/usr/bin/env -S bash -Eeuo pipefail
+
+    if [[ "$EUID" -ne 0 ]]; then
+        echo "> elevating privileges..." >&2
+        exec sudo --preserve-env=XDG_RUNTIME_DIR "$0" "$@"
+    fi
+
+    # outside the jail: a ns-local tmpfs marks an already-created namespace, /tmp/perm marks an already-entered jail
+    if [[ "$0" != /tmp/perm ]]; then
+        : "${XDG_RUNTIME_DIR:?XDG_RUNTIME_DIR is not set}"
+
+        mountpoint -q "$XDG_RUNTIME_DIR/perm-ns" \
+            || exec unshare --mount --propagation private \
+            bash -c 'mkdir -p "$1"; mount -t tmpfs none "$1"; exec "${@:2}"' \
+            bash "$XDG_RUNTIME_DIR/perm-ns" "$0" "$@"
+
+        user="$1"
+        usr_home=$(getent passwd "$user" | cut -d: -f6)
+        [[ -n "$usr_home" ]] || { echo "Unknown user '$user'" >&2; exit 1; }
+        owner="$(id -u "$user"):$(id -g "$user")"
+        usr_umask=$(getent passwd "$user" | grep -Pom1 'umask=\K\d+')
+        [[ -n "$usr_umask" ]] || usr_umask=$(grep -Pom1 '^\s*UMASK\s+\K[0-7]+' /etc/login.defs)
+        [[ "$usr_umask" =~ ^[0-7]{3,4}$ ]] || { echo "unknown umask for '$user'" >&2; exit 1; }
+
+        source "{{justfile_directory()}}/../../lib/shell/color.bash"
+
+        echo "Processing for owner $user ($owner) umask $usr_umask home $usr_home" >&2
+
+        jail=$(mktemp -d -p /run -t perm.XXXXXXXXXX)
+        mkdir -p "$jail"{"/usr","/tmp","$usr_home"}
+        mount -o bind,ro "/usr"      "$jail/usr"
+        mount -o bind    "$usr_home" "$jail$usr_home"
+        for d in bin sbin lib lib64; do ln -sfn "usr/$d" "$jail/$d"; done
+        cp -- "$0" "$jail/tmp/perm"
+
+        args=(
+            PATH=/usr/bin:/bin
+            HOME=/
+            # without a UTF-8 locale GNU coreutils degrade to the C locale and
+            # shell-escape non-ASCII filenames (e.g. $'\320\261...' instead of б...)
+            LANG=C.UTF-8
+            LC_ALL=C.UTF-8
+            PERM_HOME="$usr_home"
+            PERM_OWNER="$owner"
+            PERM_UMASK="$usr_umask"
+            PERM_OLIVE="${FG[olive]}"
+            PERM_RESET="${FX[reset]}"
+        )
+        exec chroot "$jail" /usr/bin/env -i "${args[@]}" /usr/bin/bash /tmp/perm
+    fi
+
+    # 2. everything below runs inside the jail on parameters passed via env
+    usr_home="$PERM_HOME"
+    owner="$PERM_OWNER"
+    umask "$PERM_UMASK"
+    olive="$PERM_OLIVE"
+    reset="$PERM_RESET"
+
+    # Translate the rwx digits of a umask into a symbolic chmod spec that removes
+    # exactly the bits the umask forbids. Applied last it caps the mode granted
+    # below, so e.g. umask 007 never leaves any permission for others.
+    umask-to-symbolic() {
+        local mask="$1"
+        local digits="${mask: -3}"
+        local who=(u g o) what=(r w x) bit=(4 2 1)
+        local spec="" i j
+        for i in 0 1 2; do
+            for j in 0 1 2; do
+                if (( ${digits:$i:1} & bit[j] )); then
+                    spec+="${who[i]}-${what[j]},"
+                fi
+            done
+        done
+        printf '%s' "${spec%,}"
+    }
+
+    umask_spec="$(umask-to-symbolic "$PERM_UMASK")"
+
+    cat > /tmp/ignore <<EO_IGNORE
+    **/.cache/google-chrome/
+    **/.config/google-chrome/
+    **/.gnupg/
+    **/.local/share/3rdparty/
+    **/.local/share/containers/
+    **/.local/share/lilipod/containers/
+    **/.local/share/mise/
+    **/.ssh/
+    EO_IGNORE
+
+    echo -e "${olive}Checking owner/group${reset}" >&2
+    fd      -Lapu --one-file-system --ignore-file=/tmp/ignore --search-path="$usr_home" -X chown -c "$owner"          --
+
+    echo -e "${olive}Checking permissions${reset} (umask $PERM_UMASK${umask_spec:+ -> $umask_spec})" >&2
+    fd      -Lapu --one-file-system --ignore-file=/tmp/ignore --search-path="$usr_home" -X chmod -c "go-rwx,a+rX,u+w${umask_spec:+,$umask_spec}" --
+
+    echo -e "${olive}Checking permissions (dir)${reset}" >&2
+    fd -t d -Lapu --one-file-system --ignore-file=/tmp/ignore --search-path="$usr_home" -X chmod -c 'g+s'             --
+
+    echo -e "${olive}Checking permissions (file)${reset}" >&2
+    fd -t f -Lapu --one-file-system --ignore-file=/tmp/ignore --search-path="$usr_home" -X chmod -c 'g-s'             --
+
+    recursively_remove_write_permission() {
+        local real_path="$1"
+        while [[ "$real_path" != "$usr_home" && "$real_path" != "/" ]]; do
+            real_path=$(dirname "$real_path")
+            chmod -c 'go-w' "$real_path"
+        done
+    }
+
+    for sensitive in .gnupg .ssh; do
+        link="$usr_home/$sensitive"
+        if [[ ! -e "$link" ]]; then
+            echo "Skipping $sensitive (missing or dangling)" >&2
+            continue
+        fi
+        real=$(realpath -e -- "$link") || {
+            echo "Skipping $sensitive (dangling)" >&2
+            continue
+        }
+        echo -e "${olive}Correcting $sensitive mode${reset}" >&2
+        chown -c -R "$owner" "$real"
+        chmod -c -R 'u=rwX,go-rwx,g-s' "$real"
+        recursively_remove_write_permission "$real"
+    done
