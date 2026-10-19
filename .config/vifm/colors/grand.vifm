@@ -2,32 +2,32 @@
 
 highlight clear
 
-highlight TopLine        cterm=none              ctermfg=White        ctermbg=23
-highlight TopLineSel     cterm=bold              ctermfg=Black        ctermbg=36
-highlight StatusLine     cterm=bold              ctermfg=White        ctermbg=23
+highlight TopLine        cterm=none              ctermfg=White        ctermbg=23           gui=none              guifg=#aaaaaa guibg=#005f87
+highlight TopLineSel     cterm=bold              ctermfg=Black        ctermbg=36           gui=bold              guifg=#000000 guibg=#00afaf
+highlight StatusLine     cterm=bold              ctermfg=White        ctermbg=23           gui=bold              guifg=#aaaaaa guibg=#005f87
 if $USER == 'root'
-	highlight TopLine    cterm=none              ctermfg=White        ctermbg=Red
-	highlight TopLineSel cterm=bold              ctermfg=White        ctermbg=9
-	highlight StatusLine cterm=bold              ctermfg=White        ctermbg=Red
+	highlight TopLine    cterm=none              ctermfg=White        ctermbg=Red          gui=none              guifg=#aaaaaa guibg=#bb1111
+	highlight TopLineSel cterm=bold              ctermfg=White        ctermbg=9            gui=bold              guifg=#aaaaaa guibg=#ff5555
+	highlight StatusLine cterm=bold              ctermfg=White        ctermbg=Red          gui=bold              guifg=#aaaaaa guibg=#bb1111
 endif
 
-highlight Border         cterm=bold              ctermfg=White        ctermbg=none
-highlight CmdLine        cterm=bold              ctermfg=White        ctermbg=none
-highlight Win            cterm=none              ctermfg=White        ctermbg=none
-highlight SuggestBox     cterm=none              ctermfg=White        ctermbg=none
+highlight Border         cterm=bold              ctermfg=White        ctermbg=none         gui=bold              guifg=#aaaaaa guibg=default
+highlight CmdLine        cterm=bold              ctermfg=White        ctermbg=none         gui=bold              guifg=#aaaaaa guibg=default
+highlight Win            cterm=none              ctermfg=White        ctermbg=none         gui=none              guifg=#aaaaaa guibg=default
+highlight SuggestBox     cterm=none              ctermfg=White        ctermbg=none         gui=none              guifg=#aaaaaa guibg=default
 
-highlight CurrLine       cterm=bold              ctermfg=none         ctermbg=23
-highlight OtherLine      cterm=bold              ctermfg=none         ctermbg=234
-highlight Selected       cterm=bold              ctermfg=LightYellow  ctermbg=none
-highlight JobLine        cterm=none,reverse      ctermfg=Black        ctermbg=White
+highlight CurrLine       cterm=bold              ctermfg=none         ctermbg=23           gui=bold              guifg=default guibg=#005f87
+highlight OtherLine      cterm=bold              ctermfg=none         ctermbg=234          gui=bold              guifg=default guibg=#1c1c1c
+highlight Selected       cterm=bold              ctermfg=LightYellow  ctermbg=none         gui=bold              guifg=#ffff55 guibg=default
+highlight JobLine        cterm=none,reverse      ctermfg=Black        ctermbg=White        gui=none,reverse      guifg=#000000 guibg=#aaaaaa
 
-highlight WildMenu       cterm=underline,reverse ctermfg=White        ctermbg=none
-highlight ErrorMsg       cterm=none              ctermfg=Red          ctermbg=none
+highlight WildMenu       cterm=underline,reverse ctermfg=White        ctermbg=none         gui=underline,reverse guifg=#aaaaaa guibg=default
+highlight ErrorMsg       cterm=none              ctermfg=Red          ctermbg=none         gui=none              guifg=#bb1111 guibg=default
 
-highlight BrokenLink     cterm=bold              ctermfg=LightRed     ctermbg=none
-highlight Device         cterm=bold              ctermfg=LightYellow  ctermbg=none
-highlight Directory      cterm=bold              ctermfg=LightBlue    ctermbg=none
-highlight Executable     cterm=bold              ctermfg=LightGreen   ctermbg=none
-highlight Fifo           cterm=bold              ctermfg=LightYellow  ctermbg=none
-highlight Link           cterm=bold              ctermfg=LightCyan    ctermbg=none
-highlight Socket         cterm=bold              ctermfg=LightMagenta ctermbg=none
+highlight BrokenLink     cterm=bold              ctermfg=LightRed     ctermbg=none         gui=bold              guifg=#ff5555 guibg=default
+highlight Device         cterm=bold              ctermfg=LightYellow  ctermbg=none         gui=bold              guifg=#ffff55 guibg=default
+highlight Directory      cterm=bold              ctermfg=LightBlue    ctermbg=none         gui=bold              guifg=#6666ff guibg=default
+highlight Executable     cterm=bold              ctermfg=LightGreen   ctermbg=none         gui=bold              guifg=#55ff55 guibg=default
+highlight Fifo           cterm=bold              ctermfg=LightYellow  ctermbg=none         gui=bold              guifg=#ffff55 guibg=default
+highlight Link           cterm=bold              ctermfg=LightCyan    ctermbg=none         gui=bold              guifg=#55ffff guibg=default
+highlight Socket         cterm=bold              ctermfg=LightMagenta ctermbg=none         gui=bold              guifg=#ff55ff guibg=default

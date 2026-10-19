@@ -1,16 +1,16 @@
 " generic file types
-highlight BrokenLink cterm=none ctermfg=LightRed ctermbg=default
-highlight Device cterm=none ctermfg=LightYellow ctermbg=default
-highlight Directory cterm=none ctermfg=LightBlue ctermbg=default
-highlight Executable cterm=none ctermfg=LightGreen ctermbg=default
-highlight Fifo cterm=none ctermfg=Yellow ctermbg=Black
-highlight Link cterm=none ctermfg=LightCyan ctermbg=default
-highlight Socket cterm=none ctermfg=LightMagenta ctermbg=default
+highlight BrokenLink cterm=none ctermfg=LightRed ctermbg=default gui=none guifg=#ff5555 guibg=default
+highlight Device cterm=none ctermfg=LightYellow ctermbg=default gui=none guifg=#ffff55 guibg=default
+highlight Directory cterm=none ctermfg=LightBlue ctermbg=default gui=none guifg=#6666ff guibg=default
+highlight Executable cterm=none ctermfg=LightGreen ctermbg=default gui=none guifg=#55ff55 guibg=default
+highlight Fifo cterm=none ctermfg=Yellow ctermbg=Black gui=none guifg=#888811 guibg=#000000
+highlight Link cterm=none ctermfg=LightCyan ctermbg=default gui=none guifg=#55ffff guibg=default
+highlight Socket cterm=none ctermfg=LightMagenta ctermbg=default gui=none guifg=#ff55ff guibg=default
 
 " file name specific highlight
-highlight /^.*\.(csh|sh|zsh)$/I cterm=none ctermfg=Green ctermbg=default
-highlight /^.*\.(torrent|7z|ace|alz|arc|arj|br|bz|bz2|cab|cpio|deb|dict.dz|dsl.dz|dwm|dz|ear|esd|gz|jar|lha|lrz|lz|lz4|lzh|lzma|lzo|rar|rpm|rz|sar|sqlar|swm|t7z|tar|taz|tbz|tbz2|tgz|tlz|txz|tz|tzo|tzst|war|whl|wim|xz|z|zip|zoo|zst|zstd)$/I cterm=none ctermfg=LightRed ctermbg=default
-highlight /^.*\.(asf|avi|bmp|cgm|dl|emf|flc|fli|flv|gif|gl|jp2|jpeg|jpg|lrv|m2v|m4v|mjpeg|mjpg|mkv|mng|mov|mp4|mp4v|mpeg|mpg|nuv|ogm|ogv|ogx|pbm|pcx|pgm|png|ppm|qt|rm|rmvb|svg|svgz|tga|tif|tiff|ts|vob|webm|webp|wmv|xbm|xcf|xpm|xwd|yuv)$/I cterm=none ctermfg=LightMagenta ctermbg=default
-highlight /^.*\.(aac|ac3|ape|au|flac|kar|m4a|m4b|mid|midi|mka|mp3|mpa|mpc|oga|ogg|opus|ra|spx|wav|wv|xspf)$/I cterm=none ctermfg=LightCyan ctermbg=default
-highlight /^.*\.(editorconfig|json|yaml|yml|toml|conf)$/I cterm=none ctermfg=LightWhite ctermbg=default
-highlight /^.*\.(js|mjs)$/I cterm=bold ctermfg=Magenta ctermbg=default
+highlight /^.*\.(csh|sh|zsh)$/I cterm=none ctermfg=Green ctermbg=default gui=none guifg=#118811 guibg=default
+highlight /^.*\.(torrent|7z|ace|alz|arc|arj|br|bz|bz2|cab|cpio|deb|dict.dz|dsl.dz|dwm|dz|ear|esd|gz|jar|lha|lrz|lz|lz4|lzh|lzma|lzo|rar|rpm|rz|sar|sqlar|swm|t7z|tar|taz|tbz|tbz2|tgz|tlz|txz|tz|tzo|tzst|war|whl|wim|xz|z|zip|zoo|zst|zstd)$/I cterm=none ctermfg=LightRed ctermbg=default gui=none guifg=#ff5555 guibg=default
+highlight /^.*\.(asf|avi|bmp|cgm|dl|emf|flc|fli|flv|gif|gl|jp2|jpeg|jpg|lrv|m2v|m4v|mjpeg|mjpg|mkv|mng|mov|mp4|mp4v|mpeg|mpg|nuv|ogm|ogv|ogx|pbm|pcx|pgm|png|ppm|qt|rm|rmvb|svg|svgz|tga|tif|tiff|ts|vob|webm|webp|wmv|xbm|xcf|xpm|xwd|yuv)$/I cterm=none ctermfg=LightMagenta ctermbg=default gui=none guifg=#ff55ff guibg=default
+highlight /^.*\.(aac|ac3|ape|au|flac|kar|m4a|m4b|mid|midi|mka|mp3|mpa|mpc|oga|ogg|opus|ra|spx|wav|wv|xspf)$/I cterm=none ctermfg=LightCyan ctermbg=default gui=none guifg=#55ffff guibg=default
+highlight /^.*\.(editorconfig|json|yaml|yml|toml|conf)$/I cterm=none ctermfg=LightWhite ctermbg=default gui=none guifg=#ffffff guibg=default
+highlight /^.*\.(js|mjs)$/I cterm=bold ctermfg=Magenta ctermbg=default gui=bold guifg=#aa11aa guibg=default
