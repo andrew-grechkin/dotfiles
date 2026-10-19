@@ -364,7 +364,8 @@ filextype !<image/vnd.djvu*><image/*>
     \ {View in gpicview}
     \ gpicview %c:p %i &,
 fileviewer !<image/vnd.djvu*><image/*>
-    \ chafa --clear -c 240 --view-size %pwx%ph -f symbols --polite on %c:p,
+    \ wezterm imgcat %N --max-pixels 4000000 --position %px,,%py --width %pw --height %ph --no-move-cursor --tmux-passthru detect %c:p >/dev/tty,
+    \ chafa --clear -c full --view-size %pwx%ph -f symbols --polite on %c:p,
     \ viu -t -w %pw -h %ph %c:p,
     \ mediainfo %c:p,
     \ identify -verbose %c:p,

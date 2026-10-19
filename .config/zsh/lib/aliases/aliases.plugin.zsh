@@ -10,7 +10,6 @@ alias :qa='exit'
 # => apps --------------------------------------------------------------------------------------------------------- {{{1
 
 alias dd='command dd oflag=sync conv=sparse,excl status=progress'
-alias fm='vifm . .'
 alias htop='htop -u "$USER"'
 alias j='~/.config/just/justfile'
 alias vi-tsv='vi -c "set filetype=csv"'
