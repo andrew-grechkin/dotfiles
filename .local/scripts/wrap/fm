@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+# Drop this wrapper's directory so the real vifm can be resolved.
+PATH=${PATH//"$(dirname "$0"):"/}
+
+# Custom terminfo lives in XDG_DATA_HOME, not $HOME/.terminfo.
+terminfo_dir=${XDG_DATA_HOME:-$HOME/.local/share}/terminfo
+if [[ -d $terminfo_dir ]]; then
+    export TERMINFO_DIRS="$terminfo_dir:${TERMINFO_DIRS:-}"
+fi
+
+# vifm enables 24-bit output only when terminfo reports COLORS=16777216.
+# COLORTERM=truecolor is enough for most tools, but vifm ignores it.
+# Prefer *-direct256 entries: indices 0-255 stay on the palette and direct
+# RGB is used for values >=256, so palette-based child shells keep working.
+# Don't fall back to plain *-direct, which reinterprets palette indices as RGB.
+if [[ ${COLORTERM:-} == truecolor || ${COLORTERM:-} == 24bit ]]; then
+    case ${TERM:-} in
+        tmux*)
+            if infocmp tmux-direct256 &>/dev/null; then
+                export TERM=tmux-direct256
+            fi
+            ;;
+        *)
+            if infocmp xterm-direct256 &>/dev/null; then
+                export TERM=xterm-direct256
+            fi
+            ;;
+    esac
+fi
+
+exec "$(command -v vifm)" . .
