@@ -1,0 +1,56 @@
+{
+  "a": {
+    "tap": "a",
+    "hold": "LeftCtrl",
+    "hold_timeout": 300,
+    "tap_time": 250
+  },
+  "capslock": {
+    "tap": "esc",
+    "hold": "LeftShift",
+    "hold_timeout": 300,
+    "tap_time": 250
+  },
+  "d": {
+    "tap": "d",
+    "hold": "LeftMeta",
+    "hold_timeout": 300,
+    "tap_time": 250
+  },
+  "f": {
+    "tap": "f",
+    "hold": "LeftAlt",
+    "hold_timeout": 300,
+    "tap_time": 250
+  },
+  "j": {
+    "tap": "j",
+    "hold": "RightAlt",
+    "hold_timeout": 300,
+    "tap_time": 250
+  },
+  "k": {
+    "tap": "k",
+    "hold": "RightMeta",
+    "hold_timeout": 300,
+    "tap_time": 250
+  },
+  "l": {
+    "tap": "l",
+    "hold": "RightShift",
+    "hold_timeout": 300,
+    "tap_time": 250
+  },
+  "s": {
+    "tap": "s",
+    "hold": "LeftShift",
+    "hold_timeout": 300,
+    "tap_time": 250
+  },
+  "semicolon": {
+    "tap": "semicolon",
+    "hold": "RightCtrl",
+    "hold_timeout": 300,
+    "tap_time": 250
+  }
+}
