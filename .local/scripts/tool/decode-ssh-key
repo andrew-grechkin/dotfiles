@@ -1,0 +1,749 @@
+#!/usr/bin/env -S perl -CALS
+
+# ABSTRACT:
+#   Decode an OpenSSH private key container and render its internal structure.
+#   Encrypted keys can be decrypted into a tmpfs copy with --decrypt-in-memory.
+#   Secret key material is redacted unless --show-private is given, so the tool
+#   is safe to run on ordinary private keys.
+#
+# SYNOPSIS:
+#   decode-ssh-key ~/.ssh/id_ed25519_sk
+#   decode-ssh-key --json ~/.ssh/id_ed25519_sk | jq .
+#   decode-ssh-key --show-private ~/.ssh/id_ed25519
+#   decode-ssh-key --decrypt-in-memory ~/.ssh/id_ed25519
+#
+# EXIT CODES:
+#   0  success
+#   1  usage, format, or input error
+
+use v5.40;
+use warnings qw(FATAL utf8);
+
+use English      qw(-no_match_vars);
+use File::Temp   qw(tempdir);
+use Getopt::Long qw(:config bundling no_ignore_case);
+use IPC::Open3   qw(open3);
+use JSON::PP     qw(); ## no critic (Modules::ProhibitEvilModules)
+use MIME::Base64 qw(decode_base64 encode_base64);
+use Symbol       qw(gensym);
+
+use constant {
+    MAGIC         => "openssh-key-v1\0",
+    FLAG_PRESENCE => 0x01,
+    FLAG_VERIFY   => 0x04,
+    FLAG_FORCE    => 0x08,
+    FLAG_RESIDENT => 0x20,
+};
+
+# Field kinds:
+#   hex          opaque bytes, rendered as hex
+#   mpint        SSH mpint, rendered as hex
+#   text         human text, non-printable bytes escaped
+#   flags        one byte of FIDO2/SSH sk flags
+#   secret_hex   secret bytes, redacted unless --show-private
+#   secret_mpint secret mpint, redacted unless --show-private
+my %SCHEMA = (
+    'ssh-ed25519' => {
+        public  => [[public_key => 'hex']],
+        private => [[public_key => 'hex'], [private_key => 'secret_hex']],
+    },
+    'ssh-rsa' => {
+        public  => [[exponent => 'mpint'], [modulus => 'mpint']],
+        private => [
+            [modulus          => 'mpint'],
+            [exponent         => 'mpint'],
+            [private_exponent => 'secret_mpint'],
+            [coefficient      => 'secret_mpint'],
+            [prime1           => 'secret_mpint'],
+            [prime2           => 'secret_mpint'],
+        ],
+    },
+    'sk-ssh-ed25519@openssh.com' => {
+        public  => [[public_key => 'hex'], [application => 'text']],
+        private => [
+            [public_key  => 'hex'],
+            [application => 'text'],
+            [flags       => 'flags'],
+            [key_handle  => 'hex'],
+            [reserved    => 'hex'],
+        ],
+    },
+    'sk-ecdsa-sha2-nistp256@openssh.com' => {
+        public  => [[curve => 'text'], [public_key => 'hex'], [application => 'text']],
+        private => [
+            [curve       => 'text'],
+            [public_key  => 'hex'],
+            [application => 'text'],
+            [flags       => 'flags'],
+            [key_handle  => 'hex'],
+            [reserved    => 'hex'],
+        ],
+    },
+);
+
+for my $curve (qw(nistp256 nistp384 nistp521)) {
+    $SCHEMA{"ecdsa-sha2-$curve"} = {
+        public  => [[curve => 'text'], [public_key => 'hex']],
+        private => [[curve => 'text'], [public_key => 'hex'], [private_key => 'secret_mpint']],
+    };
+}
+
+my %opt = (json => 0, show_private => 0, decrypt_in_memory => 0);
+GetOptions(
+    'json|j'            => \$opt{json},
+    'show-private'      => \$opt{show_private},
+    'decrypt-in-memory' => \$opt{decrypt_in_memory},
+    'help|h'            => \$opt{help},
+) or usage(1);
+
+usage(0) if $opt{help};
+usage(1) unless @ARGV;
+
+warn "decode-ssh-key: --show-private prints secret key material to STDOUT\n" if $opt{show_private};
+
+my @results;
+my $failed = 0;
+
+for my $path (@ARGV) {
+    my ($ok, $result) = load_key($path);
+
+    if ($ok) {
+        push @results, $result;
+    } else {
+        warn "decode-ssh-key: $path: $result\n";
+        $failed = 1;
+    }
+}
+
+if ($opt{json}) {
+    print JSON::PP->new->canonical->pretty->encode([map {json_view($_)} @results]);
+} else {
+    print render_text($_), "\n" for @results;
+}
+
+exit($failed ? 1 : 0);
+
+sub usage($code) {
+    my $text = <<~'USAGE';
+        usage: decode-ssh-key [options] <private-key-file>...
+
+        Decode the structure of an OpenSSH private key container. Secret key
+        material is redacted unless --show-private is given.
+
+        Options:
+          -j, --json          emit a JSON array instead of text
+              --show-private  reveal secret key bytes (dangerous)
+              --decrypt-in-memory
+                              decrypt an encrypted key in a tmpfs copy,
+                              decode it, then shred the copy
+                              (prompts for the key passphrase; needs a tty)
+          -h, --help          show this help
+
+        Examples:
+          decode-ssh-key ~/.ssh/id_ed25519_sk
+          decode-ssh-key --json ~/.ssh/id_ed25519_sk | jq .
+          decode-ssh-key --show-private ~/.ssh/id_ed25519
+          decode-ssh-key --decrypt-in-memory ~/.ssh/id_ed25519
+
+        USAGE
+
+    my $fh = $code ? \*STDERR : \*STDOUT;
+    print {$fh} $text;
+    exit $code;
+}
+
+sub load_key($path) {
+    my $raw = eval {read_input($path)};
+    return (0, trimmed_error()) unless defined $raw;
+
+    my $result = eval {parse_key($path, $raw)};
+    return (0, trimmed_error()) unless defined $result;
+
+    my $needs_decryption
+        = $opt{decrypt_in_memory}
+        && $result->{private_section}{encrypted}
+        && !$result->{private_section}{decoded};
+
+    return (1, $result) unless $needs_decryption;
+
+    my $passphrase = eval {read_passphrase("Enter passphrase for $path: ")};
+    return (0, trimmed_error()) unless defined $passphrase;
+
+    my $decrypted = eval {decrypt_in_memory($raw, $passphrase)};
+    return (0, trimmed_error()) unless defined $decrypted;
+
+    my $decoded = eval {parse_key($path, $decrypted)};
+    return (0, trimmed_error()) unless defined $decoded;
+
+    return (0, 'decryption succeeded but the private section is still not decodable')
+        unless $decoded->{private_section}{decoded};
+
+    $decoded->{decrypted_in_memory} = 1;
+    $decoded->{source_cipher}       = $result->{cipher};
+    $decoded->{source_kdf}          = $result->{kdf};
+
+    return (1, $decoded);
+}
+
+sub trimmed_error() {
+    my $error = $@ || 'unknown error';
+    chomp $error;
+    return $error;
+}
+
+sub parse_key($path, $raw = undef) {
+    $raw = read_input($path) unless defined $raw;
+
+    my $data = decode_pem($raw);
+    my $buf  = {data => $data, pos => length MAGIC};
+
+    my $cipher         = read_string($buf);
+    my $kdf            = read_string($buf);
+    my $kdf_options    = read_string($buf);
+    my $number_of_keys = read_u32($buf);
+    my @public_blobs   = map {read_string($buf)} 1 .. $number_of_keys;
+    my $private        = read_string($buf);
+
+    my @public_keys = map {parse_public_blob($_)} @public_blobs;
+
+    my %result = (
+        file           => $path,
+        magic          => 'openssh-key-v1',
+        cipher         => $cipher,
+        kdf            => $kdf,
+        kdf_options    => {length => length $kdf_options, hex => unpack('H*', $kdf_options)},
+        number_of_keys => $number_of_keys,
+        public_keys    => \@public_keys,
+    );
+
+    if ($cipher eq 'none' && $kdf eq 'none' && $number_of_keys == 1) {
+        $result{private_section} = parse_private_section($private, $public_keys[0], $opt{show_private});
+    } else {
+        my $reason
+            = $cipher ne 'none' || $kdf ne 'none'
+            ? 'private section is encrypted'
+            : 'multiple keys in one container are not supported';
+
+        $result{private_section} = {
+            decoded   => 0,
+            encrypted => $cipher ne 'none' || $kdf ne 'none' ? 1 : 0,
+            length    => length $private,
+            reason    => $reason,
+        };
+    }
+
+    return \%result;
+}
+
+sub parse_public_blob($blob) {
+    my $buf  = {data => $blob, pos => 0};
+    my $type = read_string($buf);
+
+    my $schema = $SCHEMA{$type};
+    return {type => $type, supported => 0, fields => []} unless $schema;
+
+    my @fields = map {read_field($buf, $_)} @{$schema->{public}};
+    die "trailing bytes in public key blob for '$type'\n" if $buf->{pos} != length $blob;
+
+    return {type => $type, supported => 1, fields => \@fields};
+}
+
+sub parse_private_section($private, $public, $show_secret) {
+    my $buf    = {data => $private, pos => 0};
+    my $check1 = read_u32($buf);
+    my $check2 = read_u32($buf);
+    my $type   = read_string($buf);
+
+    my %section = (
+        decoded         => 0,
+        encrypted       => 0,
+        checkint1       => $check1,
+        checkint2       => $check2,
+        checkints_match => $check1 == $check2,
+        type            => $type,
+    );
+
+    my $schema = $SCHEMA{$type};
+    if (!$schema) {
+        $section{reason} = "unsupported private key type '$type'";
+        return \%section;
+    }
+
+    my @fields  = map {read_field($buf, $_, $show_secret)} @{$schema->{private}};
+    my $comment = read_string($buf);
+    my $padding = substr($private, $buf->{pos});
+
+    my $private_public = first_field_value(\@fields,          'public_key');
+    my $public_public  = first_field_value($public->{fields}, 'public_key');
+    my $public_match;
+    $public_match = $private_public eq $public_public ? 1 : 0
+        if defined $private_public && defined $public_public;
+
+    my $secret = 0;
+    for my $field (@fields) {
+        next        unless $field->{kind} =~ /^secret_/x;
+        $secret = 1 if $field->{length} > 0;
+    }
+
+    my $flags = first_field_value(\@fields, 'flags');
+
+    $section{decoded} = 1;
+    $section{fields}  = \@fields;
+    $section{comment} = to_text($comment);
+    $section{padding} = {
+        length => length $padding,
+        hex    => unpack('H*', $padding),
+        valid  => padding_valid($padding),
+    };
+    $section{public_key_match} = $public_match;
+    $section{secret_material}  = $secret;
+    $section{resident}         = defined $flags ? ($flags & FLAG_RESIDENT ? 1 : 0) : undef;
+
+    return \%section;
+}
+
+sub read_field($buf, $spec, $show_secret = 0) {
+    my ($name, $kind) = @{$spec};
+    my $offset = $buf->{pos};
+
+    if ($kind eq 'flags') {
+        my $value = read_u8($buf);
+        return {
+            name    => $name,
+            kind    => $kind,
+            offset  => $offset,
+            length  => 1,
+            value   => $value,
+            display => sprintf('0x%02x (%s)', $value, flags_text($value)),
+        };
+    }
+
+    my $value  = read_string($buf);
+    my $length = length $value;
+    my %field  = (name => $name, kind => $kind, offset => $offset, length => $length, value => $value);
+
+    if ($kind =~ /^secret_/x) {
+        if ($show_secret) {
+            $field{display} = $length ? unpack('H*', $value) : '(empty)';
+        } else {
+            $field{redacted} = 1;
+            $field{display}  = sprintf '[redacted: %d bytes]', $length;
+        }
+    } elsif ($kind eq 'text') {
+        $field{display} = $length ? to_text($value) : '(empty)';
+    } else {
+        $field{display} = $length ? unpack('H*', $value) : '(empty)';
+    }
+
+    return \%field;
+}
+
+sub read_u32($buf) {
+    my $remaining = length($buf->{data}) - $buf->{pos};
+    die "truncated key: expected 4 bytes at offset $buf->{pos}\n" if $remaining < 4;
+
+    my $value = unpack('N', substr($buf->{data}, $buf->{pos}, 4));
+    $buf->{pos} += 4;
+    return $value;
+}
+
+sub read_u8($buf) {
+    my $remaining = length($buf->{data}) - $buf->{pos};
+    die "truncated key: expected 1 byte at offset $buf->{pos}\n" if $remaining < 1;
+
+    my $value = ord substr($buf->{data}, $buf->{pos}, 1);
+    $buf->{pos} += 1;
+    return $value;
+}
+
+sub read_string($buf) {
+    my $length    = read_u32($buf);
+    my $remaining = length($buf->{data}) - $buf->{pos};
+    die "truncated key: expected $length bytes at offset $buf->{pos}, got $remaining\n"
+        if $remaining < $length;
+
+    my $value = substr($buf->{data}, $buf->{pos}, $length);
+    $buf->{pos} += $length;
+    return $value;
+}
+
+sub decode_pem($raw) {
+    my $begin = '-----BEGIN OPENSSH PRIVATE KEY-----';
+    my $end   = '-----END OPENSSH PRIVATE KEY-----';
+
+    my $start = index($raw, $begin);
+    die "not an OpenSSH private key (missing PEM header)\n" if $start < 0;
+
+    $start += length $begin;
+    my $stop = index($raw, $end, $start);
+    die "not an OpenSSH private key (missing PEM footer)\n" if $stop < 0;
+
+    my $body = substr($raw, $start, $stop - $start);
+    $body =~ s/\s+//g;
+    my $data = decode_base64($body);
+    die "invalid base64 payload\n"  unless encode_base64($data, '') eq $body;
+    die "truncated key container\n" if length $data < length MAGIC;
+    die "bad container magic\n"     unless substr($data, 0, length MAGIC) eq MAGIC;
+
+    return $data;
+}
+
+sub read_input($path) {
+    if ($path eq '-') {
+        binmode STDIN, ':raw' or die "stdin: $!\n";
+        local $/ = undef;
+        my $data = <STDIN>;
+        die "cannot read stdin: $!\n" unless defined $data;
+        return $data;
+    }
+
+    open my $fh, '<:raw', $path or die "$!\n";
+    local $/ = undef;
+    my $data = <$fh>;
+    die "cannot read $path: $!\n" unless defined $data;
+    close $fh or die "$!\n";
+
+    return $data;
+}
+
+sub read_passphrase($prompt) {
+    open my $tty, '+<', '/dev/tty'
+        or die "cannot open /dev/tty for the passphrase (a terminal is required): $!\n";
+
+    print {$tty} $prompt;
+
+    system('stty', '-F', '/dev/tty', '-echo') == 0
+        or die "cannot disable terminal echo; refusing to read the passphrase\n";
+
+    local $SIG{INT} = sub {
+        system('stty', '-F', '/dev/tty', 'echo') == 0
+            or warn "warning: failed to restore terminal echo\n";
+        die "interrupted\n";
+    };
+
+    my $passphrase = <$tty>;
+
+    system('stty', '-F', '/dev/tty', 'echo') == 0
+        or warn "warning: failed to restore terminal echo\n";
+    print {$tty} "\n";
+    close $tty;
+
+    die "no passphrase supplied\n" unless defined $passphrase;
+    chomp $passphrase;
+
+    return $passphrase;
+}
+
+sub decrypt_in_memory($raw, $passphrase) {
+    my $use_shm = -d '/dev/shm' && -w '/dev/shm';
+    warn "decode-ssh-key: /dev/shm is not available; using a possibly disk-backed temp dir\n" unless $use_shm;
+
+    my %args = (CLEANUP => 1);
+    $args{DIR} = '/dev/shm' if $use_shm;
+
+    my $dir = tempdir('skdecode.XXXXXX', %args);
+    chmod 0o700, $dir or die "cannot chmod $dir: $!\n";
+
+    my $keyfile  = "$dir/key";
+    my $passfile = "$dir/pass";
+    my $helper   = "$dir/askpass";
+
+    my $decrypted;
+    my $ok = eval {
+        local $SIG{INT}  = sub {die "interrupted\n"};
+        local $SIG{TERM} = sub {die "terminated\n"};
+        local $SIG{HUP}  = sub {die "hangup\n"};
+
+        write_file($keyfile,  $raw,                                           0o600);
+        write_file($passfile, $passphrase . "\n",                             0o600);
+        write_file($helper,   "#!/bin/sh\nexec cat \"\$SSH_ASKPASS_FILE\"\n", 0o700);
+
+        local $ENV{SSH_ASKPASS}         = $helper;
+        local $ENV{SSH_ASKPASS_REQUIRE} = 'force';
+        local $ENV{SSH_ASKPASS_FILE}    = $passfile;
+
+        my ($status, undef, $stderr) = run_capture('ssh-keygen', '-q', '-p', '-f', $keyfile, '-N', '');
+
+        if ($status != 0) {
+            $stderr =~ s/\s+\z//;
+            die 'ssh-keygen failed to decrypt the key'
+                . (length $stderr ? ": $stderr\n" : " (wrong passphrase?)\n");
+        }
+
+        $decrypted = read_input($keyfile);
+        1;
+    };
+
+    my $error = $@;
+    shred_file($keyfile);
+    shred_file("$keyfile.pub");
+    shred_file($passfile);
+    shred_file($helper);
+    die $error if $error;
+
+    return $decrypted;
+}
+
+sub write_file($path, $content, $mode = 0o600) {
+    open my $fh, '>:raw', $path or die "cannot write $path: $!\n";
+    print {$fh} $content;
+    close $fh or die "cannot write $path: $!\n";
+    chmod $mode, $path or die "cannot chmod $path: $!\n";
+    return;
+}
+
+sub shred_file($path) {
+    return unless -e $path;
+
+    my $size = -s $path;
+    if (defined $size && $size > 0) {
+        if (open my $fh, '+<:raw', $path) {
+            print {$fh} "\0" x $size;
+            close $fh;
+        }
+    }
+
+    unlink $path or warn "warning: cannot remove $path: $!\n";
+    return;
+}
+
+sub run_capture(@cmd) {
+    my ($stdin, $stdout);
+    my $stderr = gensym;
+    my $pid    = open3($stdin, $stdout, $stderr, @cmd);
+    close $stdin;
+
+    my $out = do {local $/ = undef; <$stdout>};
+    my $err = do {local $/ = undef; <$stderr>};
+
+    waitpid($pid, 0) == $pid or die "waitpid failed: $!\n";
+
+    my $raw    = $CHILD_ERROR;
+    my $status = $raw & 127 ? 128 + ($raw & 127) : $raw >> 8;
+
+    return ($status, $out, $err);
+}
+
+sub first_field_value($fields, $name) {
+    for my $field (@$fields) {
+        return $field->{value} if $field->{name} eq $name;
+    }
+
+    return undef;
+}
+
+sub padding_valid($padding) {
+    for my $i (0 .. length($padding) - 1) {
+        return 0 if ord(substr($padding, $i, 1)) != $i + 1;
+    }
+
+    return 1;
+}
+
+sub flags_text($flags) {
+    my @names;
+    push @names, 'USER_PRESENCE'     if $flags & FLAG_PRESENCE;
+    push @names, 'USER_VERIFICATION' if $flags & FLAG_VERIFY;
+    push @names, 'FORCE_OPERATION'   if $flags & FLAG_FORCE;
+    push @names, 'RESIDENT_KEY'      if $flags & FLAG_RESIDENT;
+
+    my $known   = FLAG_PRESENCE | FLAG_VERIFY | FLAG_FORCE | FLAG_RESIDENT;
+    my $unknown = $flags & ~$known & 0xff;
+    push @names, sprintf 'UNKNOWN_0x%02x', $unknown if $unknown;
+
+    return @names ? join(' | ', @names) : 'none';
+}
+
+sub to_text($value) {
+    my $text = '';
+
+    for my $byte (split //, $value) {
+        my $ord = ord $byte;
+
+        if ($ord == 0x09) {
+            $text .= '\t';
+        } elsif ($ord == 0x0a) {
+            $text .= '\n';
+        } elsif ($ord == 0x0d) {
+            $text .= '\r';
+        } elsif ($ord >= 0x20 && $ord <= 0x7e) {
+            $text .= $byte;
+        } else {
+            $text .= sprintf '\x%02x', $ord;
+        }
+    }
+
+    return $text;
+}
+
+sub render_text($key) {
+    my @lines;
+    push @lines, "file: $key->{file}";
+
+    if ($key->{decrypted_in_memory}) {
+        push @lines,
+            sprintf(
+                '  decrypted : in memory from %s / %s; temporary copy shredded',
+                $key->{source_cipher}, $key->{source_kdf},
+            );
+    }
+
+    push @lines, "  container : $key->{magic}";
+    push @lines, "  cipher    : $key->{cipher}";
+    push @lines, "  kdf       : $key->{kdf}";
+    push @lines, "  keys      : $key->{number_of_keys}";
+
+    for my $i (0 .. $#{$key->{public_keys}}) {
+        my $public = $key->{public_keys}[$i];
+        my $suffix = $key->{number_of_keys} > 1 ? ' [' . ($i + 1) . ']' : '';
+
+        push @lines, '';
+        push @lines, "  public blob$suffix";
+        push @lines, sprintf('    %-16s : %s', 'type', $public->{type});
+
+        if ($public->{supported}) {
+            push @lines, render_fields($public->{fields}, '    ');
+        } else {
+            push @lines, '    (unsupported for field decoding)';
+        }
+    }
+
+    my $private = $key->{private_section};
+    push @lines, '';
+
+    if (!$private->{decoded}) {
+        push @lines, '  private section';
+        push @lines, sprintf('    %-16s : %s',       'status', $private->{reason});
+        push @lines, sprintf('    %-16s : %d bytes', 'size',   $private->{length});
+        return join("\n", @lines);
+    }
+
+    push @lines, '  private section (plaintext)';
+    push @lines, sprintf('    %-16s : 0x%08x', 'checkint1', $private->{checkint1});
+    push @lines,
+        sprintf(
+            '    %-16s : 0x%08x%s',
+            'checkint2', $private->{checkint2}, $private->{checkints_match} ? '' : ' (MISMATCH)',
+        );
+    push @lines, sprintf('    %-16s : %s', 'key type', $private->{type});
+    push @lines, render_fields($private->{fields}, '    ');
+    push @lines, sprintf('    %-16s : %s', 'comment', $private->{comment}) if length $private->{comment};
+    push @lines,
+        sprintf(
+            '    %-16s : %d bytes%s',
+            'padding',
+            $private->{padding}{length},
+            $private->{padding}{valid} ? '' : ' (INVALID)',
+        );
+
+    if (defined $private->{public_key_match}) {
+        push @lines,
+            sprintf(
+                '    %-16s : %s',
+                'key check',
+                $private->{public_key_match}
+                ? 'public key matches public blob'
+                : 'public key DOES NOT MATCH public blob',
+            );
+    }
+
+    my $verdict;
+    if ($private->{secret_material}) {
+        $verdict = 'this file contains private key material';
+    } elsif ($private->{resident}) {
+        $verdict = 'no private scalar in this file; secret material is on the authenticator (resident key)';
+    } else {
+        $verdict = 'no private scalar in this file; secret material is on the authenticator';
+    }
+    push @lines, sprintf('    %-16s : %s', 'verdict', $verdict);
+
+    return join("\n", @lines);
+}
+
+sub render_fields($fields, $indent) {
+    my @lines;
+
+    for my $field (@$fields) {
+        my $label   = $field->{name} =~ s/_/ /gr;
+        my $display = $field->{display};
+
+        if ($field->{kind} =~ /^(?:hex|mpint|secret_)/x && !$field->{redacted} && $field->{length} > 0) {
+            $display .= sprintf(' (%d bytes)', $field->{length});
+        }
+
+        push @lines, sprintf('%s%-16s : %s', $indent, $label, $display);
+    }
+
+    return @lines;
+}
+
+sub json_view($key) {
+    my %view = (
+        file                => $key->{file},
+        decrypted_in_memory => $key->{decrypted_in_memory} ? \1 : \0,
+        source_cipher       => $key->{source_cipher},
+        source_kdf          => $key->{source_kdf},
+        container           => {
+            magic          => $key->{magic},
+            cipher         => $key->{cipher},
+            kdf            => $key->{kdf},
+            kdf_options    => $key->{kdf_options},
+            number_of_keys => $key->{number_of_keys},
+        },
+        public_keys => [
+            map {{
+                type      => $_->{type},
+                supported => $_->{supported} ? \1 : \0,
+                fields    => [map {field_view($_)} @{$_->{fields}}],
+            }} @{$key->{public_keys}},
+        ],
+    );
+
+    my $private = $key->{private_section};
+
+    if ($private->{decoded}) {
+        $view{private_section} = {
+            decoded         => \1,
+            encrypted       => \0,
+            checkint1       => sprintf('0x%08x', $private->{checkint1}),
+            checkint2       => sprintf('0x%08x', $private->{checkint2}),
+            checkints_match => $private->{checkints_match} ? \1 : \0,
+            type            => $private->{type},
+            fields          => [map {field_view($_)} @{$private->{fields}}],
+            comment         => $private->{comment},
+            padding         => {
+                length => $private->{padding}{length},
+                hex    => $private->{padding}{hex},
+                valid  => $private->{padding}{valid} ? \1 : \0,
+            },
+            public_key_match => defined $private->{public_key_match}
+            ? ($private->{public_key_match} ? \1 : \0)
+            : undef,
+            secret_material => $private->{secret_material}  ? \1                               : \0,
+            resident        => defined $private->{resident} ? ($private->{resident} ? \1 : \0) : undef,
+        };
+    } else {
+        $view{private_section} = {
+            decoded   => \0,
+            encrypted => $private->{encrypted} ? \1 : \0,
+            length    => $private->{length},
+            reason    => $private->{reason},
+        };
+    }
+
+    return \%view;
+}
+
+sub field_view($field) {
+    my %view = (
+        name    => $field->{name},
+        kind    => $field->{kind},
+        offset  => $field->{offset},
+        length  => $field->{length},
+        display => $field->{display},
+    );
+
+    $view{redacted} = \1 if $field->{redacted};
+
+    return \%view;
+}
