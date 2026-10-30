@@ -8,7 +8,7 @@ mkdir -p ~/.cache/bin
 mkdir -p ~/.config/fontconfig
 mkdir -p ~/.config/environment.d
 mkdir -p ~/.config/mise
-mkdir -p ~/.local/{bin,lib,scripts,scripts-ext,share,state}
+mkdir -p ~/.local/{bin,lib,scripts,share,state}
 
 SCRIPT=$(realpath -s "$0")
 WORKDIR=$(dirname "$SCRIPT")
@@ -23,8 +23,7 @@ cd "$WORKDIR" || exit 1
 }
 
 ln -srf .bashrc                                              ~/
-ln -sr  .xprofile                                            ~/ 2>/dev/null
-ln -srf .zshenv                                              ~/
+ln -srf .zprofile                                            ~/
 
 ln -srf .config/environment.d/*                              ~/.config/environment.d/
 ln -srf .config/eza                                          ~/.config/
@@ -32,12 +31,12 @@ ln -srf .config/fd                                           ~/.config/
 ln -srf .config/fontconfig/conf.d                            ~/.config/fontconfig/
 ln -srf .config/fzfrc                                        ~/.config/fzfrc
 ln -srf .config/git                                          ~/.config/
+ln -srf .config/keymapd                                      ~/.config/
 ln -srf .config/luarocks                                     ~/.config/
 ln -srf .config/mpv                                          ~/.config/
-ln -srf .config/picom.conf                                   ~/.config/
+ln -srf .config/plasma-workspace                             ~/.config/
 ln -srf .config/ripgreprc                                    ~/.config/
 ln -srf .config/shell                                        ~/.config/
-ln -srf .config/sxhkd                                        ~/.config/
 ln -srf .config/systemd                                      ~/.config/
 ln -srf .config/tmux                                         ~/.config/
 ln -srf .config/user-tmpfiles.d                              ~/.config/
@@ -47,6 +46,7 @@ ln -srf .config/wezterm                                      ~/.config/
 ln -srf .config/wgetrc                                       ~/.config/
 ln -srf .config/xh                                           ~/.config/
 ln -srf .config/yt-dlp                                       ~/.config/
+ln -srf .config/yubikey-touch-detector                       ~/.config/
 ln -srf .config/zsh                                          ~/.config/
 
 ln -srf .local/lib/*                                         ~/.local/lib/
@@ -54,7 +54,7 @@ ln -srf .local/script                                        ~/.local/
 ln -srf .local/scripts/*                                     ~/.local/scripts/
 ln -srf .local/share/3rdparty                                ~/.local/share/
 ln -srf .local/share/distrobox                               ~/.local/share/
-ln -srf .local/share/skel                                    ~/.local/share/
+ln -srf .local/share/terminfo                                ~/.local/share/
 
 command cp -rf ".config/htop"                                ~/.config/ 2>/dev/null
 command cp -rf ".config/locale.conf"                         ~/.config/ 2>/dev/null
@@ -63,10 +63,8 @@ if [[ "$USER" == "agrechkin" ]]; then
     # [[ -d ~/.config/atuin ]] && rm -rf ~/.config/atuin
 
     # ln -srf .config/atuin                                    ~/.config/
-    ln -srf .config/bspwm                                    ~/.config/
     ln -srf .config/commitlintrc.yaml                        ~/.config/
     ln -srf .config/containers                               ~/.config/
-    ln -srf .config/kanata                                   ~/.config/
     # ln -srf .config/lazygit                                  ~/.config/
     ln -srf .config/luaformatter                             ~/.config/
     ln -srf .config/markdownlint.yaml                        ~/.config/
@@ -79,7 +77,6 @@ if [[ "$USER" == "agrechkin" ]]; then
     ln -srf .config/perlcriticrc                             ~/.perlcriticrc
     ln -srf .config/perlimports                              ~/.config/
     ln -srf .config/perltidyrc                               ~/.perltidyrc
-    ln -srf .config/redshift                                 ~/.config/
     ln -srf .config/sql-formatter.json                       ~/.config/
     ln -srf .config/sqlfluff                                 ~/.config/
     ln -srf .config/wireplumber                              ~/.config/
@@ -119,5 +116,7 @@ ln -srf .config/mise/miserc                                  ~/.config/mise/mise
 [[ -d "$HOME/.config/kdedefaults" ]] || {
     command cp -rf ".config/kdedefaults"                     ~/.config/
 }
+
+git submodule update --init .local/share/3rdparty/zsh
 
 exit 0

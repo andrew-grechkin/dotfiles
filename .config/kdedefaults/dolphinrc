@@ -1,0 +1,8 @@
+[ContentDisplay]
+UseShortRelativeDates=false
+
+[General]
+BrowseThroughArchives=true
+ShowFullPath=true
+ShowStatusBar=FullWidth
+ShowZoomSlider=true

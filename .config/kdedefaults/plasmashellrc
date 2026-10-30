@@ -65,3 +65,9 @@ Number of Actions=1
 
 [Notification Messages]
 klipperClearHistoryAskAgain=false
+
+[PlasmaViews][Panel 2]
+floating=0
+
+[PlasmaViews][Panel 2][Defaults]
+thickness=40

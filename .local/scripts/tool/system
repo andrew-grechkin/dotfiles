@@ -14,6 +14,7 @@ export default_idle_timeout_ms := ```echo -n "${IDLE_TIMEOUT_MS:-10800000}"```
 
 # => -------------------------------------------------------------------------------------------------------------- {{{1
 
+# logout current seat
 [no-exit-message]
 logout:
     #!/usr/bin/env -S bash -Eeuo pipefail
@@ -22,21 +23,229 @@ logout:
         || qdbus org.kde.Shutdown /Shutdown logout \
         || qdbus org.kde.ksmserver /KSMServer logout 0 0 3
 
-[no-exit-message]
+# Wait until the Wayland seat has been idle for the given number of milliseconds.
+[no-exit-message, positional-arguments]
 idle-logout timeout_ms='':
-    #!/usr/bin/env -S bash -Eeuo pipefail
+    #!/usr/bin/env -S perl
 
-    timeout_ms="${timeout_ms:-$default_idle_timeout_ms}"
-    while true; do
-        idle_ms="$(/usr/bin/xprintidle)"
+    # Exits 0 when the idle timeout is reached, non-zero on error.
 
-        if [[ -n "$idle_ms" ]] && (( timeout_ms <= idle_ms )); then
-            exec "$this" logout
-        fi
+    use v5.42;
+    use warnings qw(FATAL utf8);
 
-        sleep_seconds=$(( (timeout_ms - idle_ms) / 1000 + 10 ))
+    use Errno            qw(EINTR);
+    use IO::Socket::UNIX qw();
+    use Socket           qw(SOCK_STREAM);
 
-        echo "sleeping until: $(date --rfc-3339=seconds -d "+${sleep_seconds} seconds")"
+    STDOUT->autoflush(1);
 
-        sleep "$sleep_seconds"
-    done
+    # Wayland object ids used by this minimal client
+    use constant {
+        DISPLAY_ID      => 1,
+        REGISTRY_ID     => 2,
+        SYNC_ID         => 3,
+        NOTIFIER_ID     => 4,
+        SEAT_ID         => 5,
+        NOTIFICATION_ID => 6,
+    };
+
+    # wl_display requests
+    use constant {
+        WL_DISPLAY_SYNC         => 0,
+        WL_DISPLAY_GET_REGISTRY => 1,
+    };
+
+    # wl_registry requests
+    use constant WL_REGISTRY_BIND => 0;
+
+    # ext_idle_notifier_v1 requests
+    use constant EXT_IDLE_NOTIFIER_GET_IDLE_NOTIFICATION => 1;
+
+    # ext_idle_notification_v1 events
+    use constant EXT_IDLE_NOTIFICATION_IDLED => 0;
+
+    sub connect_to_display() {
+        my $display = $ENV{WAYLAND_DISPLAY} // die "WAYLAND_DISPLAY is not set\n";
+        my $path;
+
+        if ($display =~ m{^/}) {
+            $path = $display;
+        } else {
+            my $runtime_dir = $ENV{XDG_RUNTIME_DIR} // die "XDG_RUNTIME_DIR is not set\n";
+            $path = "$runtime_dir/$display";
+        }
+
+        my $socket = IO::Socket::UNIX->new('Peer' => $path, 'Type' => SOCK_STREAM)
+            or die "Unable to connect to Wayland display '$path': $!\n";
+
+        return $socket;
+    }
+
+    sub encode_string($value) {
+        my $length  = length($value) + 1;
+        my $padding = (4 - ($length % 4)) % 4;
+
+        return pack('V', $length) . $value . "\0" . ("\0" x $padding);
+    }
+
+    sub encode_message($object_id, $opcode, $payload) {
+        return pack('V v v', $object_id, $opcode, 8 + length($payload)) . $payload;
+    }
+
+    sub send_request($socket, $object_id, $opcode, $payload) {
+        my $message = encode_message($object_id, $opcode, $payload);
+        my $offset  = 0;
+
+        while ($offset < length($message)) {
+            my $written = syswrite($socket, $message, length($message) - $offset, $offset);
+
+            if (not defined $written) {
+                next if $! == EINTR;
+                die "Unable to write to Wayland socket: $!\n";
+            }
+
+            $offset += $written;
+        }
+
+        return;
+    }
+
+    sub read_exactly($socket, $buffer_ref, $length) {
+        while (length($$buffer_ref) < $length) {
+            my $read = sysread($socket, $$buffer_ref, 65_536, length($$buffer_ref));
+
+            if (not defined $read) {
+                next if $! == EINTR;
+                die "Unable to read from Wayland socket: $!\n";
+            }
+
+            die "Wayland socket closed unexpectedly\n" if $read == 0;
+        }
+
+        return;
+    }
+
+    sub read_message($socket, $buffer_ref) {
+        read_exactly($socket, $buffer_ref, 8);
+
+        my ($object_id, $opcode, $size) = unpack('V v v', substr($$buffer_ref, 0, 8, ''));
+
+        die "Invalid Wayland message size: $size\n" if $size < 8;
+
+        read_exactly($socket, $buffer_ref, $size - 8);
+
+        return ($object_id, $opcode, substr($$buffer_ref, 0, $size - 8, ''));
+    }
+
+    sub decode_string($payload_ref, $offset_ref) {
+        my $length = unpack('V', substr($$payload_ref, $$offset_ref, 4));
+        $$offset_ref += 4;
+
+        my $value   = substr($$payload_ref, $$offset_ref, $length - 1);
+        my $padding = (4 - ($length % 4)) % 4;
+        $$offset_ref += $length + $padding;
+
+        return $value;
+    }
+
+    sub assert_no_protocol_error($object_id, $opcode, $payload) {
+        return unless $object_id == DISPLAY_ID and $opcode == 0;
+
+        my ($failed_object_id, $code) = unpack('V V', substr($payload, 0, 8));
+        my $offset  = 8;
+        my $message = decode_string(\$payload, \$offset);
+
+        die "Wayland protocol error on object $failed_object_id (code $code): $message\n";
+    }
+
+    sub discover_globals($socket) {
+        send_request($socket, DISPLAY_ID, WL_DISPLAY_GET_REGISTRY, pack('V', REGISTRY_ID));
+        send_request($socket, DISPLAY_ID, WL_DISPLAY_SYNC,         pack('V', SYNC_ID));
+
+        my %globals;
+        my $buffer = '';
+
+        while (1) {
+            my ($object_id, $opcode, $payload) = read_message($socket, \$buffer);
+
+            assert_no_protocol_error($object_id, $opcode, $payload);
+
+            if ($object_id == REGISTRY_ID and $opcode == 0) {
+                my $offset = 0;
+                my $name   = unpack('V', substr($payload, $offset, 4));
+                $offset += 4;
+
+                my $interface = decode_string(\$payload, \$offset);
+                my $version   = unpack('V', substr($payload, $offset, 4));
+
+                $globals{$interface} = {'name' => $name, 'interface' => $interface, 'version' => $version};
+
+                next;
+            }
+
+            last if $object_id == SYNC_ID and $opcode == 0;
+        }
+
+        return %globals;
+    }
+
+    sub bind_global($socket, $global, $version, $new_id) {
+        my $payload
+            = pack('V', $global->{'name'}) . encode_string($global->{'interface'}) . pack('V V', $version, $new_id);
+
+        send_request($socket, REGISTRY_ID, WL_REGISTRY_BIND, $payload);
+
+        return;
+    }
+
+    sub main($timeout_ms) {
+        die "Timeout must be an unsigned 32-bit integer\n"
+            if $timeout_ms !~ m{^\d+$} or $timeout_ms > 4_294_967_295;
+
+        my $socket = connect_to_display();
+
+        my %globals = discover_globals($socket);
+
+        my $notifier = $globals{'ext_idle_notifier_v1'}
+            or die "Compositor does not support ext_idle_notifier_v1\n";
+
+        my $seat = $globals{'wl_seat'}
+            or die "Compositor does not expose wl_seat\n";
+
+        bind_global($socket, $notifier, 1, NOTIFIER_ID);
+        bind_global($socket, $seat,     1, SEAT_ID);
+
+        send_request(
+            $socket, NOTIFIER_ID,
+            EXT_IDLE_NOTIFIER_GET_IDLE_NOTIFICATION,
+            pack('V V V', NOTIFICATION_ID, $timeout_ms, SEAT_ID),
+        );
+
+        say "started waiting for ${timeout_ms}ms of inactivity";
+
+        my $buffer = '';
+
+        while (1) {
+            my ($object_id, $opcode, $payload) = read_message($socket, \$buffer);
+
+            assert_no_protocol_error($object_id, $opcode, $payload);
+
+            next unless $object_id == NOTIFICATION_ID;
+
+            if ($opcode == EXT_IDLE_NOTIFICATION_IDLED) {
+                say "idle threshold reached after ${timeout_ms}ms, logging out";
+                return 0;
+            }
+        }
+    }
+
+    my $timeout_ms = shift;
+    $timeout_ms //= $ENV{default_idle_timeout_ms} unless $timeout_ms;
+    $timeout_ms
+        or die "Idle timeout is not set\n";
+
+    main($timeout_ms);
+
+    my $this = $ENV{this} // die "Path to this justfile is not set\n";
+
+    exec($this, 'logout') or die "Unable to execute logout: $!\n";
