@@ -1,2 +1,6 @@
+[Keyboard]
+RepeatDelay=300
+RepeatRate=40
+
 [Mouse]
-cursorTheme=breeze_cursors
+cursorSize=30
