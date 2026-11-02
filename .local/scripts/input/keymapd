@@ -1,0 +1,1184 @@
+#!/usr/bin/env perl
+
+use v5.40;
+use warnings     qw(FATAL utf8);
+use experimental qw(class declared_refs defer refaliasing);
+
+use Errno        qw(EAGAIN EBUSY EINTR);
+use Fcntl        qw(FD_CLOEXEC F_SETFD O_NONBLOCK O_RDONLY O_WRONLY);
+use File::Spec   qw();
+use Getopt::Long qw(:config auto_version bundling no_ignore_case);
+use IO::Select   qw();
+use JSON::PP     qw(); ## no critic (Modules::ProhibitEvilModules)
+use List::Util   qw(first);
+use POSIX        qw(_exit setsid);
+use Time::HiRes  qw(CLOCK_MONOTONIC clock_gettime sleep time);
+
+use constant {
+    DEFAULT_HOLD_TIMEOUT    => 200,
+    DEFAULT_TAP_TIME        => 0,
+    EV_KEY                  => 1,
+    EV_SYN                  => 0,
+    EVIOCGRAB               => 0x40_044_590,
+    INPUT_EVENT_CODES       => '/usr/include/linux/input-event-codes.h',
+    KEY_BITMAP_SIZE         => 96,
+    KEY_MAX                 => 0x2ff,
+    KEY_PRESS               => 1,
+    KEY_RELEASE             => 0,
+    KEY_RELEASE_ATTEMPTS    => 1_250,
+    KEY_RELEASE_POLL        => 0.004,
+    KEY_RELEASE_SETTLE      => 0.0001,
+    KEY_REPEAT              => 2,
+    MICROSECONDS_PER_SECOND => 1_000_000,
+    MS_PER_SECOND           => 1_000,
+    NAME_SIZE               => 256,
+    READ_SIZE               => 4_096,
+    SIGNAL_POLL_TIMEOUT     => 1,
+    SYN_REPORT              => 0,
+    UI_DEV_CREATE           => 0x55_01,
+    UI_DEV_DESTROY          => 0x55_02,
+    UI_SET_EVBIT            => 0x40_045_564,
+    UI_SET_KEYBIT           => 0x40_045_565,
+    UINPUT_ABS_SIZE         => 64,
+    UINPUT_BUS_USB          => 0x03,
+    UINPUT_NAME             => 'keymapd virtual keyboard',
+    UINPUT_PRODUCT          => 0x56_78,
+    UINPUT_VENDOR           => 0x12_34,
+    UINPUT_VERSION          => 0x00_01,
+};
+
+my %keyname;
+my %code_name;
+my %MODIFIER;
+my @MODIFIER_NAMES   = qw(leftalt leftctrl leftmeta leftshift rightalt rightctrl rightmeta rightshift);
+my %LOGICAL_MODIFIER = (
+    alt     => [qw(leftalt rightalt)],
+    control => [qw(leftctrl rightctrl)],
+    ctrl    => [qw(leftctrl rightctrl)],
+    meta    => [qw(leftmeta rightmeta)],
+    shift   => [qw(leftshift rightshift)],
+    super   => [qw(leftmeta rightmeta)],
+);
+
+my $EVENT_SIZE = length pack('l! l! S S l', 0, 0, 0, 0, 0);
+
+my %opt;
+my $remap;
+my $binder;
+my $debug  = 0;
+my $select = IO::Select->new;
+my $uinput_fh;
+my $hold_disable_requested = 0;
+my $reload_requested       = 0;
+my $stop_requested         = 0;
+my $restart_requested      = 0;
+my $cleaned                = 0;
+my %devices;
+my %output_refcount;
+
+sub ioctl_request($direction, $type, $number, $size) {
+    return ($direction << 30) | ($size << 16) | (ord($type) << 8) | $number;
+}
+
+sub eviocgname($size) {
+    return ioctl_request(2, 'E', 0x06, $size);
+}
+
+sub eviocgbit($event_type, $size) {
+    return ioctl_request(2, 'E', 0x20 + $event_type, $size);
+}
+
+sub eviocgkey($size) {
+    return ioctl_request(2, 'E', 0x18, $size);
+}
+
+sub logmsg($message) {
+    print {*STDERR} "keymapd: $message\n";
+}
+
+sub debug($message) {
+    return unless $debug;
+    logmsg($message);
+}
+
+sub usage($status) {
+    print {*STDERR} "Usage: keymapd [--config-dir PATH] [--check] [--debug] [--help]\n";
+    print {*STDERR} "  --config-dir PATH  directory with tap-hold.json and bindings.json\n";
+    print {*STDERR} "  --check            validate the configuration and exit\n";
+    print {*STDERR} "  --debug            log key events and matches\n";
+    print {*STDERR} "  --help             show this help\n";
+    exit $status;
+}
+
+sub load_key_names {
+    open my $fh, '<', INPUT_EVENT_CODES
+        or die 'keymapd: cannot open ' . INPUT_EVENT_CODES . ": $!\n";
+
+    while (my $line = <$fh>) {
+        ## no critic (ProhibitComplexRegexes)
+        next unless $line =~ /\A\s*#define\s+KEY_([[:upper:][:digit:]_]+)\s+(0x[[:xdigit:]]+|\d+)\b/;
+        my $name  = lc $1;
+        my $value = $2;
+        my $code  = $value =~ /\A0x/ ? hex($value) : int($value);
+        $keyname{$name}     = $code;
+        $code_name{$code} //= $name;
+    }
+
+    close $fh;
+
+    $keyname{return}         = $keyname{enter}      if exists $keyname{enter};
+    $keyname{escape}         = $keyname{esc}        if exists $keyname{esc};
+    $keyname{leftcontrol}    = $keyname{leftctrl}   if exists $keyname{leftctrl};
+    $keyname{rightcontrol}   = $keyname{rightctrl}  if exists $keyname{rightctrl};
+    $keyname{bracketleft}    = $keyname{leftbrace}  if exists $keyname{leftbrace};
+    $keyname{bracketright}   = $keyname{rightbrace} if exists $keyname{rightbrace};
+    $keyname{period}         = $keyname{dot}        if exists $keyname{dot};
+    $keyname{xf86calculator} = $keyname{calc}       if exists $keyname{calc};
+    $keyname{xf86audiomedia} = $keyname{media}      if exists $keyname{media};
+
+    for my $name (@MODIFIER_NAMES) {
+        my $code = $keyname{$name};
+        die "keymapd: standard key '$name' not found in " . INPUT_EVENT_CODES . "\n"
+            unless defined $code;
+        $MODIFIER{$code} = 1;
+    }
+}
+
+sub resolve_key($name) {
+    return if !defined $name || ref $name;
+
+    my $normalized = lc $name;
+    $normalized =~ s/\A\s+//;
+    $normalized =~ s/\s+\z//;
+    $normalized =~ s/\Akey_//;
+
+    return $keyname{$normalized};
+}
+
+sub load_json_file($path, $label) {
+    open my $fh, '<:raw', $path
+        or die "keymapd: cannot load $label '$path': $!\n";
+
+    my $content = do {
+        local $/ = undef;
+        <$fh>;
+    };
+    close $fh;
+
+    my $data = eval {JSON::PP->new->utf8->decode($content)};
+    return $data unless $@;
+
+    my $error = $@;
+    $error =~ s/\n+\z//;
+    die "keymapd: cannot load $label '$path': $error\n";
+}
+
+sub load_config($dir) {
+    my $tap_path      = File::Spec->catfile($dir, 'tap-hold.json');
+    my $bindings_path = File::Spec->catfile($dir, 'bindings.json');
+
+    my $tap_hold = load_tap_hold(load_json_file($tap_path, 'tap-hold config'));
+    my $data     = load_json_file($bindings_path, 'bindings config') // {};
+    die "keymapd: bindings config '$bindings_path' must be a mapping\n"
+        unless ref $data eq 'HASH';
+
+    my $bindings     = load_bindings($data->{bindings});
+    my $replacements = load_replacements($data->{replacements});
+    my $binding_marker;
+
+    if (exists $data->{binding_marker}) {
+        my $name = $data->{binding_marker};
+        if (defined $name && !ref $name && lc($name) ne 'none') {
+            $binding_marker = resolve_key($name);
+            die "keymapd: unknown binding_marker '$name' in $bindings_path\n"
+                unless defined $binding_marker;
+            die "keymapd: binding_marker must not be a modifier\n"
+                if $MODIFIER{$binding_marker};
+            die "keymapd: binding_marker must not be a tap_hold key\n"
+                if $tap_hold->{$binding_marker};
+        }
+    }
+
+    return {
+        binding_marker => $binding_marker,
+        bindings       => $bindings,
+        replacements   => $replacements,
+        tap_hold       => $tap_hold,
+    };
+}
+
+sub new_remap($config) {
+    return {
+        backlog         => [],
+        config          => $config // {},
+        disabled_active => {},
+        hold_enabled    => 1,
+        last_press_code => undef,
+        last_tap_start  => {},
+        out             => [],
+        pending         => {},
+        swallow_release => {},
+    };
+}
+
+sub new_binder($config) {
+    return {
+        config         => $config // {},
+        held           => {},
+        marker_emitted => 0,
+        swallowed      => {},
+    };
+}
+
+sub new_binder_config($loaded) {
+    return {
+        binding_marker => $loaded->{binding_marker},
+        bindings       => $loaded->{bindings},
+        replacements   => $loaded->{replacements},
+    };
+}
+
+sub load_tap_hold($tap_hold_in) {
+    $tap_hold_in //= {};
+    die "keymapd: tap_hold must be a mapping\n"
+        unless ref $tap_hold_in eq 'HASH';
+
+    my %tap_hold;
+    for my $key_name (sort keys %{$tap_hold_in}) {
+        my $entry = $tap_hold_in->{$key_name};
+        die "keymapd: tap_hold.$key_name must be a mapping\n"
+            unless ref $entry eq 'HASH';
+
+        my $key = resolve_key($key_name);
+        die "keymapd: unknown key '$key_name' in tap_hold\n"
+            unless defined $key;
+
+        my $tap = resolve_key($entry->{tap});
+        die "keymapd: unknown tap key for tap_hold.$key_name\n"
+            unless defined $tap;
+
+        my $hold = resolve_key($entry->{hold});
+        die "keymapd: unknown hold key for tap_hold.$key_name\n"
+            unless defined $hold;
+
+        my $timeout = $entry->{hold_timeout} // DEFAULT_HOLD_TIMEOUT;
+        if (!defined $timeout || ref $timeout || $timeout !~ /\A\d+\z/ || $timeout <= 0) {
+            die "keymapd: hold_timeout for tap_hold.$key_name must be a positive integer\n";
+        }
+
+        my $tap_time = $entry->{tap_time} // DEFAULT_TAP_TIME;
+        if (!defined $tap_time || ref $tap_time || $tap_time !~ /\A\d+\z/) {
+            die "keymapd: tap_time for tap_hold.$key_name must be a non-negative integer\n";
+        }
+
+        $tap_hold{$key} = {
+            hold         => $hold,
+            hold_timeout => $timeout,
+            tap          => $tap,
+            tap_time     => $tap_time,
+        };
+    }
+
+    return \%tap_hold;
+}
+
+sub load_bindings($bindings_in) {
+    $bindings_in //= [];
+    die "keymapd: bindings must be a list\n"
+        unless ref $bindings_in eq 'ARRAY';
+
+    my @bindings;
+    my %seen;
+
+    for my $entry (@{$bindings_in}) {
+        my $binding = parse_binding($entry);
+        my @groups  = map {
+            join('+', sort {$a <=> $b} @{$_})
+        } @{$binding->{groups}};
+        my $signature = join(';', sort @groups) . '|' . $binding->{key};
+        die "keymapd: duplicate binding for '$binding->{name}'\n"
+            if $seen{$signature}++;
+        push @bindings, $binding;
+    }
+
+    return \@bindings;
+}
+
+sub load_replacements($replacements_in) {
+    $replacements_in //= {};
+    die "keymapd: replacements must be a mapping\n"
+        unless ref $replacements_in eq 'HASH';
+
+    my %replacements;
+    for my $from (sort keys %{$replacements_in}) {
+        my $to = $replacements_in->{$from};
+        die "keymapd: replacements keys must be non-empty strings\n"
+            if !defined $from || ref $from || !length $from;
+        die "keymapd: replacements.$from must be a non-empty string\n"
+            if !defined $to || ref $to || !length $to;
+
+        $replacements{$from} = $to;
+    }
+
+    return \%replacements;
+}
+
+sub parse_binding($entry) {
+    die "keymapd: each binding must be a mapping\n"
+        unless ref $entry eq 'HASH';
+
+    my $keys = $entry->{keys};
+    die "keymapd: binding.keys must be a non-empty list\n"
+        unless ref $keys eq 'ARRAY' && @{$keys};
+
+    my $command = $entry->{command};
+    if (!defined $command || ref $command || !length $command) {
+        die "keymapd: binding.command must be a non-empty string\n";
+    }
+
+    my @modifier_names = @{$keys}[0 .. $#{$keys} - 1];
+    my $main_name      = $keys->[-1];
+    die "keymapd: binding key must be a string\n"
+        if ref $main_name;
+
+    my $main = resolve_key($main_name);
+    die "keymapd: unknown key '$main_name' in binding\n"
+        unless defined $main;
+    die "keymapd: binding key '$main_name' must not be a modifier\n"
+        if $MODIFIER{$main};
+
+    my %allowed;
+    my @groups;
+
+    for my $modifier_name (@modifier_names) {
+        die "keymapd: binding modifier must be a string\n"
+            if ref $modifier_name;
+
+        my $logical = $LOGICAL_MODIFIER{lc $modifier_name};
+        if ($logical) {
+            my @codes;
+            for my $name (@{$logical}) {
+                my $code = $keyname{$name};
+                die "keymapd: standard modifier '$name' is missing\n"
+                    unless defined $code;
+                push @codes, $code;
+            }
+            $allowed{$_} = 1 for @codes;
+            push @groups, \@codes;
+            next;
+        }
+
+        my $code = resolve_key($modifier_name);
+        die "keymapd: unknown modifier '$modifier_name' in binding\n"
+            unless defined $code;
+        die "keymapd: '$modifier_name' is not a modifier in binding\n"
+            unless $MODIFIER{$code};
+
+        $allowed{$code} = 1;
+        push @groups, [$code];
+    }
+
+    return {
+        allowed => \%allowed,
+        command => $command,
+        groups  => \@groups,
+        key     => $main,
+        name    => join('+', @{$keys}),
+    };
+}
+
+sub bind_any_modifier_held($binder) {
+    return first {$binder->{held}{$_}} keys %MODIFIER;
+}
+
+sub bind_match($binder, $code) {
+    my @held_modifiers = grep {$binder->{held}{$_}} keys %MODIFIER;
+    my ($best, $best_size);
+
+    for my $binding (@{$binder->{config}{bindings}}) {
+        next unless $binding->{key} == $code;
+        next if first {!$binding->{allowed}{$_}} @held_modifiers;
+
+        my $missing = 0;
+        for my $group (@{$binding->{groups}}) {
+            if (!first {$binder->{held}{$_}} @{$group}) {
+                $missing = 1;
+                last;
+            }
+        }
+        next if $missing;
+
+        my $size = scalar keys %{$binding->{allowed}};
+        if (!defined $best_size || $size < $best_size) {
+            $best      = $binding;
+            $best_size = $size;
+        }
+    }
+
+    return $best;
+}
+
+sub bind_emit_marker($binder) {
+    return if $binder->{marker_emitted};
+
+    my $marker = $binder->{config}{binding_marker};
+    return unless defined $marker;
+    return unless bind_any_modifier_held($binder);
+
+    $binder->{marker_emitted} = 1;
+    emit_key($marker, KEY_PRESS);
+    emit_key($marker, KEY_RELEASE);
+}
+
+sub bind_replace($binder, $command) {
+    my $replacements = $binder->{config}{replacements} // {};
+
+    for my $from (sort keys %{$replacements}) {
+        my $to = $replacements->{$from};
+        $command =~ s/\Q$from\E/$to/ge;
+    }
+
+    return $command;
+}
+
+sub bind_execute($binder, $binding) {
+    bind_emit_marker($binder);
+    my $command = bind_replace($binder, $binding->{command});
+    debug("matched $binding->{name}: $command");
+    run_command($command);
+}
+
+sub bind_run($binder, $binding, $code) {
+    $binder->{swallowed}{$code} = 1;
+    bind_execute($binder, $binding);
+}
+
+sub bind_forward($binder, $code, $value) {
+    $binder->{held}{$code}++ if $MODIFIER{$code} && $value == KEY_PRESS;
+    $binder->{held}{$code}--
+        if $MODIFIER{$code} && $value == KEY_RELEASE && $binder->{held}{$code};
+
+    emit_key($code, $value);
+}
+
+# The binder only ever sees committed logical events. It either forwards them
+# to the emitter or consumes them to run a command. It never calls back into
+# the remapper, so the two units share no mutable state.
+sub bind_event($binder, $code, $value) {
+    if ($value == KEY_PRESS) {
+        if ($MODIFIER{$code}) {
+            bind_forward($binder, $code, $value);
+            return;
+        }
+
+        my $binding = bind_match($binder, $code);
+        if ($binding) {
+            bind_run($binder, $binding, $code);
+            return;
+        }
+
+        # A plain key pressed while a modifier is held means the modifier
+        # was not used as a chord, so the marker is no longer needed.
+        $binder->{marker_emitted} = 1 if bind_any_modifier_held($binder);
+        bind_forward($binder, $code, $value);
+        return;
+    }
+
+    if ($value == KEY_REPEAT) {
+        return if $binder->{swallowed}{$code};
+        bind_forward($binder, $code, $value);
+        return;
+    }
+
+    return unless $value == KEY_RELEASE;
+
+    if ($binder->{swallowed}{$code}) {
+        delete $binder->{swallowed}{$code};
+        return;
+    }
+
+    bind_forward($binder, $code, $value);
+    $binder->{marker_emitted} = 0
+        if $MODIFIER{$code} && !bind_any_modifier_held($binder);
+}
+
+sub emit_event($type, $code, $value) {
+    return unless $uinput_fh;
+
+    my $timestamp    = time();
+    my $seconds      = int $timestamp;
+    my $microseconds = int(($timestamp - $seconds) * MICROSECONDS_PER_SECOND);
+    my $event        = pack('l! l! S S l', $seconds, $microseconds, $type, $code, $value);
+    my $written      = syswrite($uinput_fh, $event);
+
+    die "keymapd: cannot write to uinput: $!\n"
+        unless defined $written && $written == length $event;
+}
+
+sub emit_key($code, $value) {
+    debug('emit ' . ($code_name{$code} // $code) . " value=$value");
+
+    if ($value == KEY_PRESS) {
+        $output_refcount{$code}++;
+        return if $output_refcount{$code} > 1;
+    } elsif ($value == KEY_RELEASE) {
+        return unless $output_refcount{$code};
+        $output_refcount{$code}--;
+        return if $output_refcount{$code} > 0;
+    } elsif ($value == KEY_REPEAT) {
+        # Emit the repeat below.
+    } else {
+        return;
+    }
+
+    emit_event(EV_KEY, $code,      $value);
+    emit_event(EV_SYN, SYN_REPORT, 0);
+}
+
+sub systemd_run_available() {
+    my $runtime_dir = $ENV{XDG_RUNTIME_DIR};
+    return 0 if !defined $runtime_dir || !length $runtime_dir;
+    return 0 unless -S File::Spec->catfile($runtime_dir, 'systemd', 'private');
+
+    for my $dir (File::Spec->path) {
+        return 1 if -x File::Spec->catfile($dir, 'systemd-run');
+    }
+
+    return 0;
+}
+
+sub run_command($command) {
+    my $pid = fork();
+    if (!defined $pid) {
+        logmsg("cannot fork: $!");
+        return;
+    }
+
+    if ($pid == 0) {
+        local $SIG{CHLD} = 'DEFAULT';
+        local $SIG{INT}  = 'DEFAULT';
+        local $SIG{TERM} = 'DEFAULT';
+        local $SIG{USR1} = 'DEFAULT';
+        open(STDIN, '<', File::Spec->devnull) or _exit(127);
+
+        # Leave keymapd's session and process group so a signal aimed at the
+        # service cannot reach the spawned application.
+        setsid();
+
+        # Run in a transient scope so the application does not share
+        # keymapd.service's cgroup and outlives the service being stopped.
+        if (systemd_run_available()) {
+            exec('systemd-run', '--user', '--scope', '--collect', '--quiet', '--', '/bin/sh', '-c', $command)
+                or debug("cannot exec systemd-run: $!");
+        }
+
+        # Fall back to a plain shell when systemd-run is unavailable, for
+        # example when keymapd is started outside a systemd user session.
+        exec('/bin/sh', '-c', $command) or _exit(127);
+    }
+}
+
+# The remapper owns all tap-hold state. It publishes committed logical events
+# and never inspects bindings. The event loop flushes its output into the
+# binder, which is the only consumer.
+sub remap_publish($remap, $code, $value) {
+    push @{$remap->{out}},
+        {
+            code  => $code,
+            value => $value,
+        };
+}
+
+sub remap_handle_physical($remap, $code, $value, $now) {
+    return unless $value == KEY_PRESS || $value == KEY_RELEASE || $value == KEY_REPEAT;
+
+    push @{$remap->{backlog}},
+        {
+            code  => $code,
+            now   => $now,
+            value => $value,
+        };
+
+    remap_drain_backlog($remap);
+}
+
+sub remap_blocking_pending_code($remap) {
+    for my $code (sort {$a <=> $b} keys %{$remap->{pending}}) {
+        my $pending = $remap->{pending}{$code};
+        next if $pending->{repress};
+        next if $pending->{hold_emitted};
+        return $code;
+    }
+
+    return;
+}
+
+sub remap_drain_backlog($remap) {
+    while (1) {
+        my $blocking = remap_blocking_pending_code($remap);
+
+        if (defined $blocking) {
+            # The pending tap-hold key is resolved by its own release, which may
+            # sit behind other deferred events. Pull it out of the backlog so the
+            # tap/hold decision is made before those events are replayed.
+            my $index;
+            for my $i (0 .. $#{$remap->{backlog}}) {
+                my $event = $remap->{backlog}[$i];
+                next unless $event->{code} == $blocking && $event->{value} == KEY_RELEASE;
+                $index = $i;
+                last;
+            }
+            last unless defined $index;
+
+            my $event = splice @{$remap->{backlog}}, $index, 1;
+            remap_process_physical($remap, $event->{code}, $event->{value}, $event->{now});
+            next;
+        }
+
+        last unless @{$remap->{backlog}};
+
+        my $event = shift @{$remap->{backlog}};
+        remap_process_physical($remap, $event->{code}, $event->{value}, $event->{now});
+    }
+}
+
+sub remap_process_physical($remap, $code, $value, $now) {
+    debug('physical ' . ($code_name{$code} // $code) . " value=$value");
+
+    my $same_as_last;
+    if ($value == KEY_PRESS) {
+        $same_as_last = defined $remap->{last_press_code} && $remap->{last_press_code} == $code;
+        $remap->{last_press_code} = $code;
+    }
+
+    if ($value == KEY_RELEASE) {
+        if (exists $remap->{disabled_active}{$code}) {
+            my $tap = delete $remap->{disabled_active}{$code};
+            remap_publish($remap, $tap, KEY_RELEASE);
+            return;
+        }
+
+        if ($remap->{swallow_release}{$code}) {
+            delete $remap->{swallow_release}{$code};
+            return;
+        }
+    }
+
+    my $tap_hold = $remap->{config}{$code};
+    if (!$tap_hold) {
+        remap_publish($remap, $code, $value);
+        return;
+    }
+
+    remap_tap_hold($remap, $code, $value, $now, $tap_hold, $same_as_last);
+}
+
+sub remap_tap_hold($remap, $code, $value, $now, $tap_hold, $same_as_last) {
+    if (!$remap->{hold_enabled}) {
+        if ($value == KEY_PRESS) {
+            $remap->{disabled_active}{$code} = $tap_hold->{tap};
+            remap_publish($remap, $tap_hold->{tap}, KEY_PRESS);
+        }
+
+        if ($value == KEY_REPEAT && exists $remap->{disabled_active}{$code}) {
+            my $tap = $remap->{disabled_active}{$code};
+            remap_publish($remap, $tap, KEY_REPEAT) if $tap == $code;
+        }
+
+        return;
+    }
+
+    if ($value == KEY_PRESS) {
+        return if exists $remap->{pending}{$code};
+
+        my $tap_time = $tap_hold->{tap_time};
+        if (   $same_as_last
+            && $tap_time > 0
+            && defined $remap->{last_tap_start}{$code}
+            && $now - $remap->{last_tap_start}{$code} <= $tap_time / MS_PER_SECOND)
+        {
+            delete $remap->{last_tap_start}{$code};
+            $remap->{pending}{$code} = {
+                repress => 1,
+                tap     => $tap_hold->{tap},
+            };
+            debug('tap repress ' . ($code_name{$code} // $code));
+            remap_publish($remap, $tap_hold->{tap}, KEY_PRESS);
+            return;
+        }
+
+        delete $remap->{last_tap_start}{$code};
+        $remap->{pending}{$code} = {
+            deadline     => $now + $tap_hold->{hold_timeout} / MS_PER_SECOND,
+            hold         => $tap_hold->{hold},
+            hold_emitted => 0,
+            pressed_at   => $now,
+            tap          => $tap_hold->{tap},
+        };
+        return;
+    }
+
+    return if $value == KEY_REPEAT;
+
+    my $pending = delete $remap->{pending}{$code};
+    return unless $pending;
+
+    if ($pending->{repress}) {
+        remap_publish($remap, $pending->{tap}, KEY_RELEASE);
+        return;
+    }
+
+    if ($pending->{hold_emitted}) {
+        remap_publish($remap, $pending->{hold}, KEY_RELEASE);
+        return;
+    }
+
+    if ($now >= $pending->{deadline}) {
+        remap_publish($remap, $pending->{hold}, KEY_PRESS);
+        remap_publish($remap, $pending->{hold}, KEY_RELEASE);
+        return;
+    }
+
+    # A tap is always committed. Whether a binding consumes it is the binder's
+    # concern, so the remapper stays independent of the binding config.
+    remap_publish($remap, $pending->{tap}, KEY_PRESS);
+    remap_publish($remap, $pending->{tap}, KEY_RELEASE);
+    $remap->{last_tap_start}{$code} = $pending->{pressed_at};
+}
+
+sub remap_process_timers($remap, $now) {
+    my @expired;
+
+    for my $code (keys %{$remap->{pending}}) {
+        my $pending = $remap->{pending}{$code};
+        next if $pending->{repress};
+        next if $pending->{hold_emitted};
+        next if $now < $pending->{deadline};
+
+        push @expired, $code;
+    }
+
+    for my $code (@expired) {
+        my $pending = $remap->{pending}{$code};
+        $pending->{hold_emitted} = 1;
+        debug('hold ' . ($code_name{$code} // $code));
+        remap_publish($remap, $pending->{hold}, KEY_PRESS);
+    }
+
+    remap_drain_backlog($remap) if @expired;
+}
+
+sub remap_next_timeout($remap, $now) {
+    my $timeout;
+
+    for my $pending (values %{$remap->{pending}}) {
+        next if $pending->{repress};
+        next if $pending->{hold_emitted};
+
+        my $remaining = $pending->{deadline} - $now;
+        $remaining = 0          if $remaining < 0;
+        $timeout   = $remaining if !defined $timeout || $remaining < $timeout;
+    }
+
+    return $timeout // SIGNAL_POLL_TIMEOUT;
+}
+
+# Switching modes must not leave a key logically pressed or a half-decided
+# tap-hold in flight. Pending decisions are committed with the mode that is
+# being left, then the backlog is replayed under the new mode. A key that was
+# already handled by the transition has its physical release swallowed, while
+# a key pressed in the disabled mode keeps its tap mapping until release.
+sub remap_set_hold_enabled($remap, $enabled) {
+    $enabled = $enabled ? 1 : 0;
+    return if $remap->{hold_enabled} == $enabled;
+
+    if (!$enabled) {
+        for my $code (sort {$a <=> $b} keys %{$remap->{pending}}) {
+            my $pending = delete $remap->{pending}{$code};
+
+            if ($pending->{hold_emitted}) {
+                remap_publish($remap, $pending->{hold}, KEY_RELEASE);
+            } elsif ($pending->{repress}) {
+                remap_publish($remap, $pending->{tap}, KEY_RELEASE);
+            } else {
+                remap_publish($remap, $pending->{tap}, KEY_PRESS);
+                remap_publish($remap, $pending->{tap}, KEY_RELEASE);
+            }
+
+            $remap->{swallow_release}{$code} = 1;
+        }
+
+        $remap->{hold_enabled} = 0;
+        remap_drain_backlog($remap);
+        logmsg('hold detection disabled');
+    } else {
+        remap_drain_backlog($remap) if @{$remap->{backlog}};
+        $remap->{hold_enabled} = 1;
+        logmsg('hold detection enabled');
+    }
+
+    $remap->{last_press_code} = undef;
+    $remap->{last_tap_start}  = {};
+}
+
+sub evdev_name($fh) {
+    my $buffer = "\0" x NAME_SIZE;
+    return unless ioctl($fh, eviocgname(NAME_SIZE), $buffer);
+    $buffer =~ s/\0.*\z//s;
+    return $buffer;
+}
+
+sub is_keyboard($fh) {
+    my $bits = "\0" x KEY_BITMAP_SIZE;
+    return unless ioctl($fh, eviocgbit(EV_KEY, KEY_BITMAP_SIZE), $bits);
+
+    for my $name (qw(a enter space z)) {
+        my $code = $keyname{$name};
+        return 0 unless defined $code && vec($bits, $code, 1);
+    }
+
+    return 1;
+}
+
+# A key held while the device is being grabbed would have its press seen by the
+# compositor, while its release is consumed here and dropped. Wait until the
+# device reports no pressed keys so the compositor sees a clean release first.
+sub wait_for_all_keys_unpressed($fh, $name) {
+    my $attempts        = 0;
+    my $pending_release = 0;
+
+    while (1) {
+        my $state = "\0" x KEY_BITMAP_SIZE;
+        if (!ioctl($fh, eviocgkey(KEY_BITMAP_SIZE), $state)) {
+            logmsg("cannot read key state for $name: $!");
+            return;
+        }
+
+        my $pressed = 0;
+        for my $code (1 .. KEY_MAX) {
+            $pressed++ if vec($state, $code, 1);
+        }
+
+        last unless $pressed;
+        $pending_release = 1;
+
+        if ($attempts >= KEY_RELEASE_ATTEMPTS) {
+            logmsg("timed out waiting for $name to release its keys ($pressed pressed)");
+            last;
+        }
+
+        $attempts++;
+        sleep(KEY_RELEASE_POLL);
+    }
+
+    sleep(KEY_RELEASE_SETTLE) if $pending_release;
+}
+
+sub setup_uinput {
+    my $fh;
+    if (!sysopen($fh, '/dev/uinput', O_WRONLY | O_NONBLOCK)) {
+        die "keymapd: cannot open /dev/uinput: $!\n";
+    }
+    $uinput_fh = $fh;
+
+    ioctl($fh, UI_SET_EVBIT, EV_KEY)
+        or die "keymapd: cannot enable EV_KEY on uinput: $!\n";
+
+    for my $code (1 .. KEY_MAX) {
+        ioctl($fh, UI_SET_KEYBIT, $code)
+            or die "keymapd: cannot enable key $code on uinput: $!\n";
+    }
+
+    #<<<
+    my $device = pack(
+        'a80 S S S S L l64 l64 l64 l64',
+        UINPUT_NAME,
+        UINPUT_BUS_USB,
+        UINPUT_VENDOR,
+        UINPUT_PRODUCT,
+        UINPUT_VERSION,
+        0,
+        (0) x UINPUT_ABS_SIZE,
+        (0) x UINPUT_ABS_SIZE,
+        (0) x UINPUT_ABS_SIZE,
+        (0) x UINPUT_ABS_SIZE,
+    );
+    #>>>
+
+    my $written = syswrite($fh, $device);
+    die "keymapd: cannot write uinput device: $!\n"
+        unless defined $written && $written == length $device;
+
+    ioctl($fh, UI_DEV_CREATE, 0)
+        or die "keymapd: cannot create uinput device: $!\n";
+
+    fcntl($fh, F_SETFD, FD_CLOEXEC)
+        or logmsg("cannot set close-on-exec on uinput: $!");
+
+    logmsg('created virtual keyboard');
+}
+
+sub open_devices {
+    for my $path (sort glob '/dev/input/event*') {
+        next unless -c $path;
+
+        my $fh;
+        if (!sysopen($fh, $path, O_RDONLY | O_NONBLOCK)) {
+            logmsg("cannot open $path: $!");
+            next;
+        }
+
+        my $name = evdev_name($fh) // '';
+        if ($name eq UINPUT_NAME || !is_keyboard($fh)) {
+            close $fh;
+            next;
+        }
+
+        wait_for_all_keys_unpressed($fh, $name);
+
+        if (!ioctl($fh, EVIOCGRAB, 1)) {
+            my $busy  = $!{EBUSY};
+            my $error = "$!";
+            close $fh;
+
+            if ($busy) {
+                die "keymapd: $path ($name) is already grabbed; stop kanata or another remapper first\n";
+            }
+            die "keymapd: cannot grab $path ($name): $error\n";
+        }
+
+        fcntl($fh, F_SETFD, FD_CLOEXEC)
+            or logmsg("cannot set close-on-exec on $path: $!");
+
+        my $fileno = fileno $fh;
+        $devices{$fileno} = {
+            buffer => '',
+            fh     => $fh,
+            name   => $name,
+        };
+        $select->add($fh);
+        logmsg("grabbed $path ($name)");
+    }
+
+    die "keymapd: no keyboard devices found\n" unless %devices;
+}
+
+sub remove_device($fh) {
+    my $fileno = fileno $fh;
+    my $device = delete $devices{$fileno};
+    $select->remove($fh);
+    close $fh;
+    return unless $device;
+
+    logmsg("device removed: $device->{name}; restarting");
+    $restart_requested = 1;
+}
+
+sub read_events($fh, $now) {
+    my $fileno = fileno $fh;
+    my $device = $devices{$fileno};
+    return unless $device;
+
+    my $read = sysread($fh, my $buffer, READ_SIZE);
+    if (!defined $read) {
+        return if $!{EAGAIN} || $!{EINTR};
+        logmsg("cannot read from $device->{name}: $!");
+        remove_device($fh);
+        return;
+    }
+
+    if ($read == 0) {
+        remove_device($fh);
+        return;
+    }
+
+    $device->{buffer} .= $buffer;
+
+    my @events;
+    while (length $device->{buffer} >= $EVENT_SIZE) {
+        my $raw = substr($device->{buffer}, 0, $EVENT_SIZE, '');
+        my (undef, undef, $type, $code, $value) = unpack('l! l! S S l', $raw);
+        next unless $type == EV_KEY;
+        next unless $value == KEY_PRESS || $value == KEY_RELEASE || $value == KEY_REPEAT;
+
+        push @events,
+            {
+                code  => $code,
+                now   => $now,
+                value => $value,
+            };
+    }
+
+    return @events;
+}
+
+sub is_press_event($event) {
+    my $value = $event->{value};
+    return 1 if $value == KEY_PRESS || $value == KEY_REPEAT;
+    return 0;
+}
+
+sub reorder_event_batch($events) {
+    # Modifiers are moved ahead of other presses and behind other releases.
+    # Only contiguous runs of the same event kind are reordered, which keeps
+    # press/release ordering intact while fixing chords that arrive together
+    # from one or more devices.
+    my @sorted;
+    my $index = 0;
+
+    while ($index < @{$events}) {
+        my $press = is_press_event($events->[$index]);
+        my $end   = $index + 1;
+        $end++ while $end < @{$events} && is_press_event($events->[$end]) == $press;
+
+        my @run       = @{$events}[$index .. $end - 1];
+        my @modifiers = grep {$MODIFIER{$_->{code}}} @run;
+        my @others    = grep {!$MODIFIER{$_->{code}}} @run;
+
+        push @sorted, $press ? (@modifiers, @others) : (@others, @modifiers);
+        $index = $end;
+    }
+
+    return \@sorted;
+}
+
+sub flush_remap($remap, $binder) {
+    while (@{$remap->{out}}) {
+        my $event = shift @{$remap->{out}};
+        bind_event($binder, $event->{code}, $event->{value});
+    }
+}
+
+sub dispatch_event_batch($remap, $binder, $events) {
+    for my $event (@{reorder_event_batch($events)}) {
+        remap_handle_physical($remap, $event->{code}, $event->{value}, $event->{now});
+        flush_remap($remap, $binder);
+    }
+}
+
+sub run {
+    local $SIG{USR1} = sub {$reload_requested       = 1};
+    local $SIG{USR2} = sub {$hold_disable_requested = 1};
+    local $SIG{TERM} = sub {$stop_requested         = 1};
+    local $SIG{INT}  = sub {$stop_requested         = 1};
+    local $SIG{CHLD} = 'IGNORE';
+
+    while (!$stop_requested && !$restart_requested) {
+        if ($reload_requested) {
+            $reload_requested = 0;
+            remap_set_hold_enabled($remap, 1);
+            my $new_config = eval {load_config($opt{config_dir})};
+
+            if ($new_config) {
+                $remap->{config}  = $new_config->{tap_hold};
+                $binder->{config} = new_binder_config($new_config);
+                logmsg('configuration reloaded');
+            } else {
+                my $error = $@ // 'unknown error';
+                $error =~ s/\n+\z//;
+                logmsg("reload failed, keeping the old configuration: $error");
+            }
+        }
+
+        if ($hold_disable_requested) {
+            $hold_disable_requested = 0;
+            remap_set_hold_enabled($remap, 0);
+        }
+
+        my $now = clock_gettime(CLOCK_MONOTONIC);
+        remap_process_timers($remap, $now);
+        flush_remap($remap, $binder);
+
+        my @ready = $select->can_read(remap_next_timeout($remap, $now));
+        next if $stop_requested || $reload_requested || $hold_disable_requested || $restart_requested;
+
+        my $event_time = clock_gettime(CLOCK_MONOTONIC);
+        remap_process_timers($remap, $event_time);
+        flush_remap($remap, $binder);
+
+        my @events;
+        for my $fh (@ready) {
+            push @events, read_events($fh, $event_time);
+        }
+        dispatch_event_batch($remap, $binder, \@events);
+    }
+}
+
+sub cleanup {
+    return if $cleaned;
+    $cleaned = 1;
+
+    if ($uinput_fh) {
+        for my $code (keys %output_refcount) {
+            next unless $output_refcount{$code};
+
+            $output_refcount{$code} = 1;
+            my $released = eval {emit_key($code, KEY_RELEASE); 1};
+            logmsg("cannot release key $code: $@") unless $released;
+        }
+
+        ioctl($uinput_fh, UI_DEV_DESTROY, 0)
+            or logmsg("cannot destroy uinput device: $!");
+        close $uinput_fh;
+        $uinput_fh = undef;
+    }
+
+    for my $device (values %devices) {
+        close $device->{fh};
+    }
+
+    %devices = ();
+    $select  = IO::Select->new;
+}
+
+END {
+    cleanup();
+}
+
+GetOptions(
+    'check'        => \$opt{check},
+    'config-dir=s' => \$opt{config_dir},
+    'debug'        => \$opt{debug},
+    'help'         => \$opt{help},
+) or usage(2);
+
+usage(0) if $opt{help};
+
+$debug = $opt{debug} ? 1 : 0;
+
+my $config_home = $ENV{XDG_CONFIG_HOME} // "$ENV{HOME}/.config";
+$opt{config_dir} //= "$config_home/keymapd";
+
+load_key_names();
+
+my $loaded = eval {load_config($opt{config_dir})};
+if (!$loaded) {
+    print {*STDERR} ($@ // "keymapd: cannot load configuration\n");
+    exit 1;
+}
+
+if ($opt{check}) {
+    printf "OK: %d tap-hold keys, %d bindings\n", scalar keys %{$loaded->{tap_hold}}, scalar @{$loaded->{bindings}};
+    exit 0;
+}
+
+$remap  = new_remap($loaded->{tap_hold});
+$binder = new_binder(new_binder_config($loaded));
+
+my $ok = eval {
+    setup_uinput();
+    open_devices();
+    run();
+    1;
+};
+
+if (!$ok) {
+    my $error = $@ // 'unknown error';
+    $error =~ s/\n+\z//;
+    logmsg($error);
+}
+
+cleanup();
+
+exit 1 if !$ok;
+exit($restart_requested && !$stop_requested ? 75 : 0);
