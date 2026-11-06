@@ -15,6 +15,7 @@ WORKDIR=$(dirname "$SCRIPT")
 export PATH="$PATH:$WORKDIR/.local/script"
 
 cd "$WORKDIR" || exit 1
+umask go-w
 
 [[ -r "$HOME/.config/user-dirs.dirs" ]] || {
     mkdir -p ~/{desktop,documents,downloads,music,pictures,public,templates,videos}
@@ -52,7 +53,6 @@ ln -srf .config/zsh                                          ~/.config/
 ln -srf .local/lib/*                                         ~/.local/lib/
 ln -srf .local/script                                        ~/.local/
 ln -srf .local/scripts/*                                     ~/.local/scripts/
-ln -srf .local/share/3rdparty                                ~/.local/share/
 ln -srf .local/share/distrobox                               ~/.local/share/
 ln -srf .local/share/skel                                    ~/.local/share/
 
@@ -119,5 +119,7 @@ ln -srf .config/mise/miserc                                  ~/.config/mise/mise
 [[ -d "$HOME/.config/kdedefaults" ]] || {
     command cp -rf ".config/kdedefaults"                     ~/.config/
 }
+
+git submodule update --init .config/zsh/3rdparty
 
 exit 0

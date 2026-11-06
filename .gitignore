@@ -23,7 +23,6 @@
 .gnupg/pubring.kbx~
 .gnupg/random_seed
 .local/bin
-.local/share/3rdparty/
 .ssh/authorized_keys
 .ssh/known_hosts.old
 worktrees/
