@@ -150,8 +150,8 @@ fix-user user:
     cat > /tmp/ignore <<EO_IGNORE
     **/.cache/google-chrome/
     **/.config/google-chrome/
+    **/.config/zsh/3rdparty/
     **/.gnupg/
-    **/.local/share/3rdparty/
     **/.local/share/containers/
     **/.local/share/lilipod/containers/
     **/.local/share/mise/
