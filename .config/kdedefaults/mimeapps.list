@@ -1,0 +1,11 @@
+[Added Associations]
+application/epub+zip=com.github.johnfactotum.Foliate.desktop;
+application/pdf=org.gnome.Papers.desktop;
+application/x-fictionbook+xml=com.github.johnfactotum.Foliate.desktop;
+image/vnd.djvu=org.gnome.Papers.desktop;
+inode/directory=org.kde.dolphin.desktop;org.fooyin.fooyin.desktop;
+x-scheme-handler/http=opera.desktop;
+x-scheme-handler/https=opera.desktop;
+
+[Default Applications]
+application/epub+zip=com.github.johnfactotum.Foliate.desktop;

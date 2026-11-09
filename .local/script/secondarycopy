@@ -12,6 +12,12 @@ if [[ -n "$(command -v xsel)" ]]; then
 	cat "$@" | xsel --input --secondary &>/dev/null
 elif [[ -n "$(command -v xclip)" ]]; then
 	cat "$@" | xclip -sel sec &>/dev/null
+elif [[ -n "${WAYLAND_DISPLAY:-}" ]]; then
+	# Wayland has no secondary selection protocol. xclip/xsel could work via
+	# XWayland, but they are intentionally not installed here.
+	cat >/dev/null
+	echo "secondarycopy: secondary selection is not supported on Wayland" >&2
+	exit 1
 else
 	echo "secondarycopy: xclip/xsel not installed" >&2
 	exit 1

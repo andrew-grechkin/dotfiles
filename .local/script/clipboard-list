@@ -12,7 +12,13 @@ while ((1)); do
 	esac
 done
 
-if [[ -n "$(command -v xsel)" ]]; then
+if [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v wl-paste >/dev/null; then
+	echo "Clipboard: '$(wl-paste --no-newline 2>/dev/null)'"
+	echo
+	echo "Primary: '$(wl-paste --no-newline --primary 2>/dev/null)'"
+	echo
+	echo "Secondary: (not supported on Wayland)"
+elif [[ -n "$(command -v xsel)" ]]; then
 	echo "Clipboard: '$(xsel --clipboard --output 2>/dev/null)'"
 	echo
 	echo "Primary: '$(xsel --primary --output 2>/dev/null)'"

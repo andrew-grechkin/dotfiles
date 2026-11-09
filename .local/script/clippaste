@@ -1,6 +1,4 @@
-#!/usr/bin/env bash
-
-set -Eeuo pipefail
+#!/usr/bin/env -S bash -Eeuo pipefail
 
 # clippaste - Paste data from clipboard to stdout
 #
@@ -17,12 +15,20 @@ case "$OSTYPE" in
 		pbpaste
 		;;
 	*)
-		if [[ -n "$(command -v xsel)" ]]; then
-			xsel --clipboard --output 2>/dev/null
-		elif [[ -n "$(command -v xclip)" ]]; then
-			xclip -o -sel c 2>/dev/null
+		if [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v wl-paste >/dev/null; then
+			# --no-newline preserves xsel/xclip output fidelity
+			wl-paste --no-newline 2>/dev/null
+		elif [[ -n "${DISPLAY:-}" ]]; then
+			if [[ -n "$(command -v xsel)" ]]; then
+				xsel --clipboard --output 2>/dev/null
+			elif [[ -n "$(command -v xclip)" ]]; then
+				xclip -o -sel c 2>/dev/null
+			else
+				echo "clippaste: DISPLAY is set but neither xclip nor xsel is installed" >&2
+				exit 1
+			fi
 		else
-			echo "clippaste: Platform $OSTYPE not supported or xclip/xsel not installed" >&2
+			echo "clippaste: no Wayland or X11 clipboard available (install wl-clipboard)" >&2
 			exit 1
 		fi
 		;;

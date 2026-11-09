@@ -1,0 +1,4 @@
+[Formats]
+LC_MONETARY=nl_NL.UTF-8
+LC_NUMERIC=C
+useDetailed=true
