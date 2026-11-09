@@ -1,11 +1,14 @@
-#!/usr/bin/env bash
-
-set -Eeuo pipefail
+#!/usr/bin/env -S bash -Eeuo pipefail
 
 {
-	if [[ -x "$(command -v spectacle)" ]]; then
-		spectacle -b -n -r -o /dev/stdout
-	else
-		magick import -window root bmp:-
-	fi
-} | tesseract - - 2>/dev/null | tee >(xsel -pint 500) >(xsel -bint 500)
+    if [[ -x "$(command -v spectacle)" ]]; then
+        # spectacle on Wayland saves atomically, so it cannot write to /dev/stdout
+        tmp="$(mktemp --suffix=.png)"
+        trap 'rm -f "$tmp"' EXIT
+        spectacle -b -n -r -o "$tmp" >/dev/null 2>&1
+        [[ -s "$tmp" ]] || exit 0
+        cat "$tmp"
+    else
+        magick import -window root bmp:-
+    fi
+} | tesseract - - 2>/dev/null | clipcopy

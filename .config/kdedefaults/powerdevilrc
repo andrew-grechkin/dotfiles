@@ -1,4 +1,16 @@
+[AC][SuspendAndShutdown]
+AutoSuspendAction=0
+SleepMode=2
+
 [BatteryManagement]
 BatteryCriticalLevel=10
 BatteryLowLevel=15
 PeripheralBatteryLowLevel=15
+
+[Battery][SuspendAndShutdown]
+InhibitLidActionWhenExternalMonitorPresent=false
+SleepMode=2
+
+[LowBattery][SuspendAndShutdown]
+InhibitLidActionWhenExternalMonitorPresent=false
+SleepMode=2

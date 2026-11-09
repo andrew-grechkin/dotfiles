@@ -1,9 +1,4 @@
-[General]
-ColorScheme=BreezeLight
-
-[Icons]
-Theme=breeze
-
 [KDE]
-SingleClick=false
-widgetStyle=Breeze
+AnimationDurationFactor=0
+AutomaticLookAndFeel=true
+DndBehavior=MoveIfSameDevice

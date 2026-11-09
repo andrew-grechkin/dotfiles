@@ -13,12 +13,17 @@ case "$OSTYPE" in
 		cat "$@" >/dev/primary
 		;;
 	*)
-		if [[ -n "$(command -v xsel)" ]]; then
+		if [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v wl-copy >/dev/null; then
+			# wl-copy's broken async behavior: it forks and returns before the compositor accepts the
+			# selection, and the forked owner dies with the launching terminal (e.g. a keybinding-spawned
+			# window). setsid -f moves the owner into its own session, otherwise the selection is lost.
+			cat "$@" | setsid -f wl-copy --primary
+		elif [[ -n "$(command -v xsel)" ]]; then
 			cat "$@" | xsel --input --primary &>/dev/null
 		elif [[ -n "$(command -v xclip)" ]]; then
 			cat "$@" | xclip -sel p &>/dev/null
 		else
-			echo "primarycopy: Platform $OSTYPE not supported or xclip/xsel not installed" >&2
+			echo "primarycopy: no Wayland or X11 primary selection available (install wl-clipboard)" >&2
 			exit 1
 		fi
 		;;
