@@ -1,0 +1,265 @@
+{
+  "binding_marker": "fn",
+  "bindings": [
+    {
+      "command": "$HOME/.local/script/bing-wallpaper -s",
+      "keys": [
+        "super",
+        "f5"
+      ]
+    },
+    {
+      "command": "wezterm start --always-new-process /usr/bin/zsh",
+      "keys": [
+        "super",
+        "return"
+      ]
+    },
+    {
+      "command": "wezterm --config='enable_csi_u_key_encoding=false' start --always-new-process /usr/bin/zsh",
+      "keys": [
+        "super",
+        "alt",
+        "return"
+      ]
+    },
+    {
+      "command": "wezterm start --class 'TermFloatingSmall' --always-new-process menu-system-misc",
+      "keys": [
+        "super",
+        "minus"
+      ]
+    },
+    {
+      "command": "wezterm start --class 'TermFloatingSmall' --always-new-process menu-system-audio",
+      "keys": [
+        "super",
+        "equal"
+      ]
+    },
+    {
+      "command": "wezterm start --class 'TermFloatingSmall' --always-new-process menu-system-exit",
+      "keys": [
+        "super",
+        "backspace"
+      ]
+    },
+    {
+      "command": "busctl --user -j call org.kde.CrowTranslate /org/kde/CrowTranslate/MainWindow org.kde.CrowTranslate.MainWindow translateSelection",
+      "keys": [
+        "super",
+        "r"
+      ]
+    },
+    {
+      "command": "wezterm start --class 'Main-Tmux' --always-new-process tmux",
+      "keys": [
+        "super",
+        "t"
+      ]
+    },
+    {
+      "command": "wezterm start --always-new-process bash",
+      "keys": [
+        "super",
+        "y"
+      ]
+    },
+    {
+      "command": "wezterm start --class 'TermFloating' --always-new-process fzf-select nerd",
+      "keys": [
+        "super",
+        "alt",
+        "y"
+      ]
+    },
+    {
+      "command": "wezterm start --class 'TermFloating' --always-new-process fzf-select unicode",
+      "keys": [
+        "super",
+        "u"
+      ]
+    },
+    {
+      "command": "wezterm start --class 'TermFloating' --always-new-process fzf-select emoji",
+      "keys": [
+        "super",
+        "alt",
+        "u"
+      ]
+    },
+    {
+      "command": "wezterm start --class 'TermFloating' --always-new-process menu-clipboard",
+      "keys": [
+        "super",
+        "o"
+      ]
+    },
+    {
+      "command": "wezterm start --class 'TermFloating' --always-new-process menu-pacman",
+      "keys": [
+        "super",
+        "bracketleft"
+      ]
+    },
+    {
+      "command": "wezterm start --class 'TermFloating' --always-new-process menu-pkg-search",
+      "keys": [
+        "super",
+        "alt",
+        "bracketleft"
+      ]
+    },
+    {
+      "command": "wezterm start --class 'TermFloating' --always-new-process menu-mise",
+      "keys": [
+        "super",
+        "bracketright"
+      ]
+    },
+    {
+      "command": "wezterm start --class 'TermFloating' --always-new-process audio list",
+      "keys": [
+        "super",
+        "alt",
+        "a"
+      ]
+    },
+    {
+      "command": "wezterm start --class 'TermFloating' --always-new-process menu-pass",
+      "keys": [
+        "super",
+        "s"
+      ]
+    },
+    {
+      "command": "wezterm start --class 'TermFloating' --always-new-process menu-app",
+      "keys": [
+        "super",
+        "d"
+      ]
+    },
+    {
+      "command": "wezterm start --class 'TermFloating' --always-new-process video list",
+      "keys": [
+        "super",
+        "alt",
+        "f"
+      ]
+    },
+    {
+      "command": "wezterm start --class 'TermFloating' --always-new-process menu-mpris",
+      "keys": [
+        "super",
+        "alt",
+        "g"
+      ]
+    },
+    {
+      "command": "wezterm start --class 'Floating' --always-new-process gg",
+      "keys": [
+        "super",
+        "g"
+      ]
+    },
+    {
+      "command": "wezterm start --class 'TermFloating' --always-new-process menu-mpv-history",
+      "keys": [
+        "super",
+        "alt",
+        "h"
+      ]
+    },
+    {
+      "command": "wezterm start --class 'TermFloating' --always-new-process book list \"/media/nfs/home/doc/@technical\"",
+      "keys": [
+        "super",
+        "alt",
+        "j"
+      ]
+    },
+    {
+      "command": "wezterm start --class 'TermFloating' --always-new-process menu-man-keyword",
+      "keys": [
+        "super",
+        "alt",
+        "k"
+      ]
+    },
+    {
+      "command": "wezterm start --class 'TermFloating' --always-new-process book list \"/media/nfs/home/doc/@fiction\"",
+      "keys": [
+        "super",
+        "alt",
+        "l"
+      ]
+    },
+    {
+      "command": "wezterm start --class 'TermFloating' --always-new-process book list \"/media/nfs/home/doc/@study\"",
+      "keys": [
+        "super",
+        "alt",
+        "semicolon"
+      ]
+    },
+    {
+      "command": "qrcode2text",
+      "keys": [
+        "super",
+        "z"
+      ]
+    },
+    {
+      "command": "busctl --user -j call org.kde.CrowTranslate /org/kde/CrowTranslate/MainWindow org.kde.CrowTranslate.MainWindow translateScreenArea",
+      "keys": [
+        "super",
+        "alt",
+        "x"
+      ]
+    },
+    {
+      "command": "screen2text",
+      "keys": [
+        "super",
+        "x"
+      ]
+    },
+    {
+      "command": "qalculate-gtk",
+      "keys": [
+        "super",
+        "c"
+      ]
+    },
+    {
+      "command": "wezterm start --class 'TermFloating' --always-new-process menu-man-name",
+      "keys": [
+        "super",
+        "alt",
+        "m"
+      ]
+    },
+    {
+      "command": "wezterm start --class 'TermFloating' --always-new-process menu-docs \"$HOME/.local/share/wiki\"",
+      "keys": [
+        "super",
+        "alt",
+        "comma"
+      ]
+    },
+    {
+      "command": "wezterm start --class 'TermFloating' --always-new-process book list \"${XDG_DATA_HOME}/cheatsheet\"",
+      "keys": [
+        "super",
+        "alt",
+        "period"
+      ]
+    },
+    {
+      "command": "qalculate-gtk",
+      "keys": [
+        "xf86calculator"
+      ]
+    }
+  ]
+}

@@ -19,7 +19,9 @@ QR code to clipboard	$HOME/.local/script/exec-detached $HOME/.local/script/qrcod
 Screen to clipboard	$HOME/.local/script/exec-detached $HOME/.local/script/screen2text
 Generage password	pass gen -c
 Clear mpv cache	rm -f $HOME/.cache/mpv/*
-Start kanata	systemctl --user restart kanata.service
-Stop kanata	systemctl --user stop kanata.service
+Disable keymapd hold	systemctl --user kill -s USR2 keymapd.service
+Enable keymapd hold	systemctl --user reload keymapd.service
+Start keymapd	systemctl --user restart keymapd.service
+Stop keymapd	systemctl --user stop keymapd.service
 Cast xbox	pactl load-module module-loopback; ffplay $(realpath -e "$device")
 EO_COMMANDS

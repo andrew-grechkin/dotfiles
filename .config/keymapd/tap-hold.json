@@ -1,0 +1,43 @@
+{
+  "disable": false,
+  "hold_timeout": 300,
+  "tap_time": 250,
+  "rules": {
+    "a": {
+      "hold": "LeftCtrl",
+      "tap": "a"
+    },
+    "capslock": {
+      "hold": "LeftShift",
+      "tap": "esc"
+    },
+    "d": {
+      "hold": "LeftMeta",
+      "tap": "d"
+    },
+    "f": {
+      "hold": "LeftAlt",
+      "tap": "f"
+    },
+    "j": {
+      "hold": "RightAlt",
+      "tap": "j"
+    },
+    "k": {
+      "hold": "RightMeta",
+      "tap": "k"
+    },
+    "l": {
+      "hold": "RightShift",
+      "tap": "l"
+    },
+    "s": {
+      "hold": "LeftShift",
+      "tap": "s"
+    },
+    "semicolon": {
+      "hold": "RightCtrl",
+      "tap": "semicolon"
+    }
+  }
+}
